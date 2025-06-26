@@ -74,63 +74,65 @@ function drawAxes(startX, startY, endX, endY, clr, axisLabelsXY) {
   text(axisLabelsXY[0], (startX + endX) / 2, endY + 20); // Draw X-axis label
   fill(0, 0, 0, 0); // Reset fill color for next drawing
   // Draw vertical axis label
-  textAlign(RIGHT, CENTER); // Right align text for Y-axis label
-  text(axisLabelsXY[1], startX - 20, (startY + endY) / 2); // Draw Y-axis label
+  textAlign(LEFT, CENTER); // Right align text for Y-axis label
+  fill(clr); // Set fill color for Y-axis label
+  text(axisLabelsXY[1], startX + 10, startY); // Draw Y-axis label
+  fill(0, 0, 0, 0); // Reset fill color for next drawing
 }
 
 // Function to draw Stream A graph
-function drawStream(streamAConfig, thisFrame, rampShift, sineWaveHeight, graphLabel) {
+function drawStream(streamConfig, thisFrame, rampShift, sineWaveHeight, graphLabel) {
   // This function draws the Stream A graph based on the provided configuration
   // Destructure the streamAConfig object for easier access
   let {
     streamStartY,
     streamEndY,
-    streamAHeight,
-    streamAWidth,
+    streamHeight,
+    streamWidth,
     curveXOffset,
     wavefn,
     nseSeed,
     clr,
     curveLabelHeights
-  } = streamAConfig;
+  } = streamConfig;
 
-  // Draw axes for Stream 
+  // Draw axes for Stream A only
   if (graphLabel.includes("A")) {
     drawAxes(streamsStartX, streamStartY, 
-    streamsStartX + streamAWidth, streamEndY, 
+    streamsStartX + streamWidth, streamEndY, 
     clr, [graphLabel, "Value"]); // Draw axes for Stream A
   }
 
   // Plot points for Stream A
   let numBgPts = 500; // Number of points to plot for Streams -- resolution of the graph
-  let bgPtsInterval = streamAWidth / numBgPts * 0.5;
-  for (let i = 0; i < streamAWidth; i++) {
+  let bgPtsInterval = streamWidth / numBgPts * 0.5;
+  for (let i = 0; i < streamWidth; i++) {
     // make normalisedX wrap around 0-1
-    let normalisedX = abs(i / streamAWidth + rampShift) % 1.0; // Normalize x position
+    let normalisedX = abs(i / streamWidth + rampShift) % 1.0; // Normalize x position
     // Set stroke color based on normalized x position
     stroke(red(clr), green(clr), blue(clr), map(getRampValue(normalisedX),0,1,0.15,1)*255*0.3); 
     ellipse(
       streamsStartX + bgPtsInterval * i,
-      streamStartY + noise((thisFrame*0.15 + i*1) * 1.1 + nseSeed) * streamAHeight,
+      streamStartY + noise((thisFrame*0.15 + i*1) * 1.1 + nseSeed) * streamHeight,
       5, 5
     );
   }
 
   noiseSeed(nseSeed); // Set seed for noise function
-  // Draw sine wave for Stream A
-  stroke(clr); // Red for Stream A
+  // Draw sine wave for Stream 
+  stroke(clr); // Set the stroke colour for Stream
   noFill();
-  let avgYStreamA; // average Y position for Stream A label
+  let avgYStreamA; // average Y position for Stream label
   beginShape();
-  for (let x = 0; x < streamAWidth; x++) {
+  for (let x = 0; x < streamWidth; x++) {
     let sineValue; // Variable to hold sine value based on graph label
     sineValue = wavefn(curveXOffset, x); // Get sine wave value
     
-    let y = streamStartY + (streamAHeight * 0.5) + sineValue * sineWaveHeight;
+    let y = streamStartY + (streamHeight * 0.5) + sineValue * sineWaveHeight;
     let nse = noise(thisFrame * 10 + x * 0.13) * 50; // Add noise to y position
     let yVal = y + nse; // Calculate the final y position with noise
     vertex(streamsStartX + x, yVal); // plot the vertex
-    if (x === streamAWidth - 1) {
+    if (x === streamWidth - 1) {
       lastYStreamA = yVal; // Store the last Y position
     }
     // append to global array for Stream B label heights
@@ -148,13 +150,13 @@ function drawStream(streamAConfig, thisFrame, rampShift, sineWaveHeight, graphLa
   fill(clr); // color for the label
   noStroke();
   textAlign(LEFT, CENTER); // Right align text for Y-axis label
-  text(`${graphLabel} Curve`, streamsStartX + streamAWidth + 10, avgYStreamA);
+  text(`${graphLabel} Curve`, streamsStartX + streamWidth + 10, avgYStreamA);
   fill (0, 0, 0, 0); // reset fill color for next drawing
 } // end of drawStreamA function
 
 
 function draw() {
-  background(220);
+  background(140); // Set background color
   let thisFrame = frameCount * 0.013; // frameCount multiplier for animation
   let rampShift = frameCount * 0.0011; // background noise points shift speed
   
@@ -167,12 +169,12 @@ function draw() {
   let streamAConfig = {
     streamStartY: streamAStartY,
     streamEndY: streamAEndY,
-    streamAHeight: streamAHeight,
-    streamAWidth: streamAWidth,
+    streamHeight: streamAHeight,
+    streamWidth: streamAWidth,
     curveXOffset: 0, // Offset for curve X position
     wavefn: (offset, time) => sin(thisFrame + offset + time * 0.02), // Sine wave function for Stream A
     nseSeed: nseSeed,
-    clr: color(255, 0, 0, 255), 
+    clr: color(140, 30, 30, 255),  // dark red for Stream A
     curveLabelHeights: streamALabelHeights
   }
   drawStream(streamAConfig, thisFrame, rampShift, sineWaveHeight, "Stream A");
@@ -186,12 +188,12 @@ function draw() {
   let streamBConfig = {
     streamStartY: streamBStartY,
     streamEndY: streamBEndY,
-    streamAHeight: streamBHeight,
-    streamAWidth: streamBWidth,
+    streamHeight: streamBHeight,
+    streamWidth: streamBWidth,
     curveXOffset: 23+88.834, // Offset for curve X position
     wavefn: (offset, time) => sin(-thisFrame - offset + time * 0.015), // Sine wave function for Stream A
     nseSeed: -12 * noise(nseSeed + 88.834),
-    clr: color(0, 0, 255, 255), 
+    clr: color(30, 30, 180, 255), // dark blue for Stream B
     curveLabelHeights: streamBLabelHeights
   }
   drawStream(streamBConfig, thisFrame, rampShift, sineWaveHeight, "Stream B");
