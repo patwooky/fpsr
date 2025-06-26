@@ -95,11 +95,9 @@ function drawStream(streamAConfig, thisFrame, rampShift, sineWaveHeight, graphLa
   } = streamAConfig;
 
   // Draw axes for Stream 
-  if (graphLabel.includes("A")) {
-    drawAxes(streamsStartX, streamStartY, 
-    streamsStartX + streamAWidth, streamEndY, 
-    clr, [graphLabel, "Value"]); // Draw axes for Stream A
-  }
+  drawAxes(streamsStartX, streamStartY, 
+  streamsStartX + streamAWidth, streamEndY, 
+  clr, [graphLabel, "Value"]); // Draw axes for Stream A
 
   // Plot points for Stream A
   let numBgPts = 500; // Number of points to plot for Streams -- resolution of the graph
@@ -178,7 +176,7 @@ function draw() {
   drawStream(streamAConfig, thisFrame, rampShift, sineWaveHeight, "Stream A");
 
   // Draw axes for Stream B (bottom graph)
-  let streamBStartY = streamAStartY;
+  let streamBStartY = streamAStartY + canvasHeight * 0.55 - 20; // Start Y position for Stream B
   let streamBEndY = streamBStartY + canvasHeight * 0.4;
   let streamBHeight = streamBEndY - streamBStartY;
   let streamBWidth = graphsWidth; // Width of Stream B graph

@@ -178,7 +178,7 @@ function draw() {
   drawStream(streamAConfig, thisFrame, rampShift, sineWaveHeight, "Stream A");
 
   // Draw axes for Stream B (bottom graph)
-  let streamBStartY = streamAStartY;
+  let streamBStartY = streamAStartY; // Start Y position for Stream B
   let streamBEndY = streamBStartY + canvasHeight * 0.4;
   let streamBHeight = streamBEndY - streamBStartY;
   let streamBWidth = graphsWidth; // Width of Stream B graph
