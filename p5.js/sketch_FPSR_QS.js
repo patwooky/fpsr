@@ -6,8 +6,14 @@ let canvasHeight = 800;
 let graphsWidth; // Width of the graphs area  (960px)
 let sineWaveHeight = 50;
 let nseSeed = 1234; // Seed for random number generation
-let streamCPointCount; // Number of points in Stream C curve
-let streamCVals = []; // Array to store Stream C curve values
+
+let streamsPointCount; // Number of points for all Streams (array length of all streams)
+// let streamAVals = []; // Array to store Stream A curve values
+// let streamBVals = []; // Array to store Stream B curve values
+// let streamCVals = []; // Array to store Stream C curve values
+// Array to store all Stream values, Each stream will have its own array of values.
+// elements represent streams A, B, and C respectively
+let streamsVals = [[], [], []]; 
 let streamsStartX = 50; // Starting horzizontal position for the streams
 
 // declaring global variables for Stream A and Stream B label heights
@@ -20,7 +26,7 @@ let streamCLabelHeights = []; // Array to store heights of Stream C labels
 function setup() {
   createCanvas(canvasWidth, 900);
   graphsWidth = floor(canvasWidth * 0.85); 
-  streamCPointCount = floor(graphsWidth); 
+  streamsPointCount = graphsWidth; 
 }
 
 // define a custom ramp with 5 sampled values
@@ -122,8 +128,22 @@ function drawStream(streamConfig, thisFrame, rampShift, sineWaveHeight, graphLab
   // Draw sine wave for Stream 
   stroke(clr); // Set the stroke colour for Stream
   noFill();
-  let avgYStreamA; // average Y position for Stream label
+  let avgYStream; // average Y position for Stream label
   beginShape();
+  // find out length of the respective streamsVals array for the current graph
+  let streamsValsIndex = graphLabel.includes("A") ? 0 : 1; // Index for Stream A or B
+  let streamsValsArray = streamsVals[streamsValsIndex]; // Get the respective streamsVals array
+  // add 1 to the length of the array if it is less than streamsPointCount
+  // this will be the newest point to plot this frame
+  let streamLength = (streamsValsArray.length >= streamsPointCount) ? streamsPointCount 
+                      : streamsValsArray.length + 1; 
+  // loop through streamsVals array to plot the sine wave
+  for (let i = 0; i < streamLength; i++) {
+    // plot each point in the streamsVals array
+    let x = i - frameCount; // X position based on index
+    // vertex(streamsStartX + x, yVal); // plot the vertex
+  }
+
   for (let x = 0; x < streamWidth; x++) {
     let sineValue; // Variable to hold sine value based on graph label
     sineValue = wavefn(curveXOffset, x); // Get sine wave value
@@ -132,9 +152,6 @@ function drawStream(streamConfig, thisFrame, rampShift, sineWaveHeight, graphLab
     let nse = noise(thisFrame * 10 + x * 0.13) * 50; // Add noise to y position
     let yVal = y + nse; // Calculate the final y position with noise
     vertex(streamsStartX + x, yVal); // plot the vertex
-    if (x === streamWidth - 1) {
-      lastYStreamA = yVal; // Store the last Y position
-    }
     // append to global array for Stream B label heights
     curveLabelHeights.push(yVal);
     // Keep only the last 5 heights
@@ -142,7 +159,7 @@ function drawStream(streamConfig, thisFrame, rampShift, sineWaveHeight, graphLab
       curveLabelHeights.shift(); // Remove the oldest height
     }
     // lerp the last 5 heights to get a stable label position
-    avgYStreamA = curveLabelHeights.reduce((a, b) => a + b, 0) / curveLabelHeights.length;
+    avgYStream = curveLabelHeights.reduce((a, b) => a + b, 0) / curveLabelHeights.length;
     vertex(streamsStartX + x, yVal); // plot the vertex
   }
   endShape();
@@ -150,7 +167,7 @@ function drawStream(streamConfig, thisFrame, rampShift, sineWaveHeight, graphLab
   fill(clr); // color for the label
   noStroke();
   textAlign(LEFT, CENTER); // Right align text for Y-axis label
-  text(`${graphLabel} Curve`, streamsStartX + streamWidth + 10, avgYStreamA);
+  text(`${graphLabel} Curve`, streamsStartX + streamWidth + 10, avgYStream);
   fill (0, 0, 0, 0); // reset fill color for next drawing
 } // end of drawStreamA function
 
