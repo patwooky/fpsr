@@ -11,7 +11,10 @@ It’s **repeatable, tunable, and frame-specific**, making it a powerful tool fo
 ---
 ## Sample use in Animation
 
-![FPS-R Algorithm Diagram](resources/readme/images/h_fpsr_01_v002_02.gif)
+![FPS-R Algorithm Diagram](resources/readme/images/h_fpsr_01_v002_02.gif) Eye saccades or darting in Houdini
+
+![FPS-R Algorithm Diagram](resources/readme/images/h_fpsr_01_v002.gif) Eye saccades or darting on top of following an object in Houdini. 
+
 ---
 
 ## ✨ Key Features
