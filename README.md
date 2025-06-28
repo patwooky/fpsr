@@ -4,13 +4,13 @@
 ## What is FPS-R?
 
 ### Short Introduction 
-[Introduction in Chinese, 中文简单介绍](README-CH.md)
+[README in Chinese - README 中文版](README-CH.md)
 
-**FPS-R** (`Frame-Persistent Stateless Randomization` or `静态律动算法` in Chinese), is a lightweight algorithmic pattern for simulating *persistent yet stateless randomness* across a continuous timeline — ideal for procedural motion, glitch aesthetics, and synthesised analog artifact emulation. Inspired by natural behaviors like eye saccades, animal foraging, human hesitation, predatory stalking, and structured noise, FPS-R generates unpredictability without relying on previous-frame memory.
+**FPS-R** stands for `Frame-Persistent Stateless Randomization` (or `静态律动算法` in Chinese), is a lightweight algorithmic pattern for simulating *persistent yet stateless randomness* across a continuous timeline — ideal for procedural motion, glitch aesthetics, and synthesised analog artifact emulation. Inspired by natural behaviors like eye saccades, animal foraging, human hesitation, predatory stalking, and structured noise, FPS-R generates unpredictability without relying on previous-frame memory.
 
 It’s **repeatable**, **tunable**, and **frame-specific**, making it a versatile tool for time-based content creation platforms (Houdini, Maya, 3D Studio Max, Nuke, Adobe After Effects), GLSL, P5.js, game engines (Unity, Unreal) and embedded environments. Thanks to its simplicity and efficiency, FPS-R can also be implemented in any 3D platform that supports expressions or scripting—such as Maya, Nuke, or Adobe After Effects.
 
-## 🎭 Motion Philosophy 
+### 🎭 Motion Philosophy 
 **FPS-R simulates the unpredictability of hesitation—yet within the same framework, it can just as easily express instinct.**  
 When its temporal holds are short, it expresses *impulse*: quick changes that feel twitchy, clipped, or alert.  
 When they lengthen, it evokes *hesitation*: thoughtful pauses, lingering states, the illusion of deliberation.  
@@ -70,7 +70,7 @@ Key advantages include:
 ---
 ## 🧬 Flavours of FPS-R
 
-### 🌀 Stacked Modulo (SM) or (叠模机制 in Chinese)
+### 🌀 Stacked Modulo (SM) or 叠模机制 in Chinese
 The original FPS-R method. **Stacked Modulo** uses layered modulus operations and shifting offsets to produce coherent but unpredictable transitions in output values and frame-held durations. This approach simulates analog drift or organic irregularities with surprising expressiveness.
 - Feels like *memory without memory*  
 - Shaped by frequency, amplitude, and phase control  
@@ -86,7 +86,7 @@ The original FPS-R method. **Stacked Modulo** uses layered modulus operations an
 
 ---
 
-### ✴ Quantised Switching (QS) or (量跃机制 in Chinese)
+### ✴ Quantised Switching (QS) or 量跃机制 in Chinese
 **Quantised Switching** selects discrete values from user-defined inputs using deterministic pseudo-random indexing. It’s excellent for triggering state changes, discrete flicker events, or cascading logic.
 
 This method offers broad flexibility and configuration.
