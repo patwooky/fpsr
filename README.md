@@ -4,57 +4,94 @@ _Stateless unpredictability with a structured soul._
 
 ## What is FPS-R?
 
-**FPS-R** (`Frame-Persistent Stateless Randomization`) is a lightweight algorithmic pattern designed to simulate *persistent yet stateless randomness* across animation frames—ideal for procedural motion, glitch aesthetics, and analog artifact emulation. Inspired by natural behaviors like eye saccades, VHS drift, and procedural noise, FPS-R produces unpredictability without relying on previous-frame memory.
+**FPS-R** (`Frame-Persistent Stateless Randomization`) is a lightweight algorithmic pattern for simulating *persistent yet stateless randomness* across animation frames—ideal for procedural motion, glitch aesthetics, and analog artifact emulation. Inspired by natural behaviors like eye saccades, VHS drift, and structured noise, FPS-R generates unpredictability without relying on previous-frame memory.
 
-It’s **repeatable, tunable, and frame-specific**, making it a powerful tool for Houdini, GLSL, P5.JS,and embedded environments alike. In fact this simple and lightweight method can be implemented in any 3D software that supports expressions and/or scripting (eg, Maya, Nuke, Adobe After Effects).
+It’s **repeatable**, **tunable**, and **frame-specific**, making it a versatile tool for Houdini, GLSL, P5.js, and embedded environments. Thanks to its simplicity and efficiency, FPS-R can also be implemented in any 3D platform that supports expressions or scripting—such as Maya, Nuke, or Adobe After Effects.
 
 ---
-## Sample use in Animation
 
-![FPS-R Algorithm Diagram](resources/readme/images/h_fpsr_01_v002_02.gif) Eye saccades or darting in Houdini
+## 🎞 Sample Uses in Animation
 
-![FPS-R Algorithm Diagram](resources/readme/images/h_fpsr_01_v002.gif) 
-Eye saccades or darting on top of following an object in Houdini. 
+![FPS-R Algorithm Diagram](resources/readme/images/h_fpsr_01_v002_02.gif)  
+*Eye saccades or darting behavior in Houdini*
+
+![FPS-R Algorithm Diagram](resources/readme/images/h_fpsr_01_v002.gif)  
+*Saccades layered on top of object tracking in Houdini*
 
 ---
 
 ## ✨ Key Features
 
-- Frame-anchored **repeatability** with no frame-to-frame state  
-- Adjustable **“chaos profiles”** with modular curve shaping  
-- Compatible with real-time systems, stateless shaders, and simulation loops  
-- Ideal for creating **“alive” but non-random-looking behavior**
+- Frame-anchored **repeatability** without storing state  
+- Tunable **chaos profiles** with modular curve sculpting  
+- Compatible with stateless shaders, simulation loops, and real-time systems  
+- Ideal for generating behavior that feels **alive**, not algorithmic
+
+---
+
+## 🧬 Flavours of FPS-R
+
+### 🌀 Stacked Modulo (SM)
+
+The original FPS-R method. **Stacked Modulo** uses layered modulus operations and shifting offsets to produce coherent but unpredictable transitions in output values and frame-held durations. This approach simulates analog drift or organic irregularities with surprising expressiveness.
+
+- Feels like *memory without memory*  
+- Shaped by frequency, amplitude, and phase control  
+- Lightweight and highly composable
+
+**SM Features:**
+- Adjustable upper bounds for how long values are held between regenerations  
+- Uses native `rand()` or platform-specific random functions to preserve entropy
+
+---
+
+### ✴ Quantised Switching (QS)
+
+**Quantised Switching** selects discrete values from user-defined inputs using deterministic pseudo-random indexing. It’s excellent for triggering state changes, discrete flicker events, or cascading logic.
+
+This method offers broad flexibility and configuration.
+
+- Great for **glitch jumps**, **channel flickering**, or **logic switching**  
+- Stateless but consistently frame-coherent  
+- Supports frequency shaping and value distribution
+
+**QS Features:**
+- Accepts any input: procedural noise, parametric curves, or lookup splines  
+- Optional quantization bypass for continuous, ordered output  
+- Optional randomness bypass for fully structured transitions using raw inputs
+
+Both methods are interoperable—layer them to blend abrupt shifts with smooth drift for richer behavior.
 
 ---
 
 ## 🧪 Use Cases
 
-- **Procedural animation systems**: motion patterns that feel human or organic  
-- **Analog artifact emulation**: including drifting VHS snow, chroma tear, and pop flicker  
-- **Embedded systems**: when you want deterministic behavior without heavy buffers and computation overheads.
+- **Procedural animation systems**: structured motion that resists mechanical repetition  
+- **Analog artifact emulation**: including chroma roll, signal pop, and drift  
+- **Embedded systems**: when temporal variation is needed but memory is limited
 
 ---
 
 ## 🔩 How It Works
 
-At its core, FPS-R uses stacked modulo logic and structured offsetting to yield consistent, frame-specific entropy. Think of it as noise that forgets the past—but never acts out of character.
+FPS-R leverages frame-indexed logic—often stacked modulos, shaped ramps, and deterministic randomness—to generate entropy without internal state. It outputs motion and behavior that evolves believably without memory.
 
-> Imagine your random number generator read its own diary yesterday, then tore the page out and wrote today's entry in the same chaotic tone.
+> _Imagine your random number generator read its diary from yesterday, tore out the page, and wrote today’s in the same erratic tone._
 
 ---
 
 ## 🚧 Current Status
 
-FPS-R is currently under active development. Expect:
-- Refactoring of utility functions  
-- GLSL and Houdini-friendly versions  
-- More sample use cases  
-- Parameterized presets for common “chaos curves”
+FPS-R is under active development. Planned updates include:
+- Modular utility refactors  
+- Ready-to-deploy Houdini and GLSL implementations  
+- More creative samples and behaviors  
+- Preset “chaos curves” and transition archetypes
 
-This repo is **temporarily private** while core logic is stabilized, cleaned up, and packaged for creative deployment.
+This repository is **currently private** during code cleanup and finalization.
 
 ---
 
 ## 🤝 Contributions
 
-Got thoughts on structured unpredictability, glitch theory, or embedded-friendly chaos? Contributions, critiques, and collaborative ideas are welcome once this project returns to public.
+Intrigued by deterministic chaos, analog glitch modeling, or entropy as narrative? Contributions, suggestions, and entropy philosophies are welcome once the repo returns to public life.
