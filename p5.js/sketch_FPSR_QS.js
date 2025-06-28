@@ -15,6 +15,7 @@ let streamsPointCount; // Number of points for all Streams (array length of all 
 // elements represent streams A, B, and C respectively
 let streamsVals = [[], [], []]; 
 let streamsStartX = 50; // Starting horzizontal position for the streams
+let frameOffset = 0; // Offset for the current frame to animate the streams
 
 // declaring global variables for Stream A and Stream B label heights
 // store last 5 frames of each label height
@@ -102,15 +103,22 @@ function drawStream(streamConfig, thisFrame, rampShift, sineWaveHeight, graphLab
     curveLabelHeights
   } = streamConfig;
 
+  let streamIdx; // Index to determine which stream is being drawn
+  if (graphLabel.includes("A")) streamIdx = 0;
+  if (graphLabel.includes("B")) streamIdx = 1;
+  if (graphLabel.includes("C")) streamIdx = 2;
+
   // Draw axes for Stream A only
-  if (graphLabel.includes("A")) {
+  if (streamIdx === 0) {
     drawAxes(streamsStartX, streamStartY, 
     streamsStartX + streamWidth, streamEndY, 
     clr, [graphLabel, "Value"]); // Draw axes for Stream A
   }
+  
+  noiseSeed(nseSeed); // Set seed for noise function
 
-  // Plot points for Stream A
-  let numBgPts = 500; // Number of points to plot for Streams -- resolution of the graph
+  // Plot BG Points for Stream
+  let numBgPts = 500; // Number of points to plot for Streams, the resolution of the graph
   let bgPtsInterval = streamWidth / numBgPts * 0.5;
   for (let i = 0; i < streamWidth; i++) {
     // make normalisedX wrap around 0-1
@@ -124,26 +132,46 @@ function drawStream(streamConfig, thisFrame, rampShift, sineWaveHeight, graphLab
     );
   }
 
-  noiseSeed(nseSeed); // Set seed for noise function
   // Draw sine wave for Stream 
   stroke(clr); // Set the stroke colour for Stream
   noFill();
-  let avgYStream; // average Y position for Stream label
+  let avgYStream; // average (more stable) Y position for Stream label
   beginShape();
   // find out length of the respective streamsVals array for the current graph
-  let streamsValsIndex = graphLabel.includes("A") ? 0 : 1; // Index for Stream A or B
-  let streamsValsArray = streamsVals[streamsValsIndex]; // Get the respective streamsVals array
-  // add 1 to the length of the array if it is less than streamsPointCount
-  // this will be the newest point to plot this frame
-  let streamLength = (streamsValsArray.length >= streamsPointCount) ? streamsPointCount 
-                      : streamsValsArray.length + 1; 
-  // loop through streamsVals array to plot the sine wave
-  for (let i = 0; i < streamLength; i++) {
-    // plot each point in the streamsVals array
-    let x = i - frameCount; // X position based on index
-    // vertex(streamsStartX + x, yVal); // plot the vertex
-  }
+  // let streamsValsIndex = graphLabel.includes("A") ? 0 : 1; // Index for Stream A or B
+  let streamsValsArray = streamsVals[streamIdx]; // Get the respective streamsVals array
 
+  let sineValue = wavefn(frameCount, thisFrame); // Get sine wave value for the current frame
+  let nse = noise(thisFrame * 10 * random(nseSeed)) * 1; // Add noise to y position
+  // Push sine value to the respective streamsVals array
+  streamsValsArray.push(sineValue + nse); 
+  // Length of the current stream values array
+  let streamLength = streamsValsArray.length; 
+  if (streamLength > streamsPointCount) {
+    streamsValsArray.shift(); // array exceeds point count, Remove the oldest value
+  }
+  // loop through streamsVals array to plot the sine wave
+  for (let x = 0; x < streamLength; x++) {
+    // plot each point in the streamsVals array
+    let yVal = streamStartY + (streamHeight * 0.5) + streamsValsArray[x] * sineWaveHeight;
+    vertex(streamsStartX + x, yVal); // plot the vertex
+
+    // append to global array for Stream B label heights
+    curveLabelHeights.push(yVal);
+    // Keep only the last x number of height values
+    if (curveLabelHeights.length > streamLabelHeightsMax) {
+      curveLabelHeights.shift(); // Remove the oldest height
+    }
+    if (x === streamLength - 1) { // only do this at the last iteration
+      // avg the last 5 heights to get a stable label position
+      avgYStream = curveLabelHeights.slice(0, curveLabelHeights.length - 1).reduce(
+                    (a, b) => a + b, 0) / curveLabelHeights.length;
+      // give the last position a bit more weight
+      avgYStream = lerp(avgYStream, curveLabelHeights[curveLabelHeights.length - 1], 0.1); 
+    }
+  } // end of for loop
+
+  /*
   for (let x = 0; x < streamWidth; x++) {
     let sineValue; // Variable to hold sine value based on graph label
     sineValue = wavefn(curveXOffset, x); // Get sine wave value
@@ -158,10 +186,16 @@ function drawStream(streamConfig, thisFrame, rampShift, sineWaveHeight, graphLab
     if (curveLabelHeights.length > streamLabelHeightsMax) {
       curveLabelHeights.shift(); // Remove the oldest height
     }
-    // lerp the last 5 heights to get a stable label position
-    avgYStream = curveLabelHeights.reduce((a, b) => a + b, 0) / curveLabelHeights.length;
     vertex(streamsStartX + x, yVal); // plot the vertex
-  }
+    if (x === streamWidth - 1) { // only do this at the last iteration
+      // avg the last 5 heights to get a stable label position
+      avgYStream = curveLabelHeights.slice(0, curveLabelHeights.length-1).reduce(
+                    (a, b) => a + b, 0) / curveLabelHeights.length;
+      // give the last position a bit more weight
+      avgYStream = lerp(avgYStream, curveLabelHeights[curveLabelHeights.length-1], 0.1); 
+    }
+  } // end of for loop
+  */
   endShape();
   // Add label for Stream 
   fill(clr); // color for the label
@@ -176,6 +210,7 @@ function draw() {
   background(140); // Set background color
   let thisFrame = frameCount * 0.013; // frameCount multiplier for animation
   let rampShift = frameCount * 0.0011; // background noise points shift speed
+  frameOffset++; // Increment frame offset for index continuity for scrolling curves
   
   // Draw axes for Stream A (top graph)
   let streamAStartY = 40;
@@ -189,7 +224,7 @@ function draw() {
     streamHeight: streamAHeight,
     streamWidth: streamAWidth,
     curveXOffset: 0, // Offset for curve X position
-    wavefn: (offset, time) => sin(thisFrame + offset + time * 0.02), // Sine wave function for Stream A
+    wavefn: (offset, time) => sin(offset + time * 0.02), // Sine wave function for Stream A
     nseSeed: nseSeed,
     clr: color(140, 30, 30, 255),  // dark red for Stream A
     curveLabelHeights: streamALabelHeights
@@ -208,7 +243,7 @@ function draw() {
     streamHeight: streamBHeight,
     streamWidth: streamBWidth,
     curveXOffset: 23+88.834, // Offset for curve X position
-    wavefn: (offset, time) => sin(-thisFrame - offset + time * 0.015), // Sine wave function for Stream A
+    wavefn: (offset, time) => sin(- offset + time * 0.015), // Sine wave function for Stream B
     nseSeed: -12 * noise(nseSeed + 88.834),
     clr: color(30, 30, 180, 255), // dark blue for Stream B
     curveLabelHeights: streamBLabelHeights
