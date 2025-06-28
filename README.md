@@ -1,14 +1,17 @@
-
 # 🎲 FPS-R Algorithm: Frame-Persistent Stateless Randomization
 
 _Stateless unpredictability with a structured soul._
 
 ## What is FPS-R?
 
-**FPS-R** (Frame-Persistent Stateless Randomization) is a lightweight algorithmic pattern designed to simulate *persistent yet stateless randomness* across animation frames—ideal for procedural motion, glitch aesthetics, and analog artifact emulation. Inspired by natural behaviors like eye saccades, VHS drift, and procedural noise, FPS-R produces unpredictability without relying on previous-frame memory.
+**FPS-R** (`Frame-Persistent Stateless Randomization`) is a lightweight algorithmic pattern designed to simulate *persistent yet stateless randomness* across animation frames—ideal for procedural motion, glitch aesthetics, and analog artifact emulation. Inspired by natural behaviors like eye saccades, VHS drift, and procedural noise, FPS-R produces unpredictability without relying on previous-frame memory.
 
-It’s **repeatable, tunable, and frame-specific**, making it a powerful tool for Houdini, GLSL, and embedded environments alike.
+It’s **repeatable, tunable, and frame-specific**, making it a powerful tool for Houdini, GLSL, P5.JS,and embedded environments alike. In fact this simple and lightweight method can be implemented in any 3D software that supports expressions and/or scripting (eg, Maya, Nuke, Adobe After Effects).
 
+---
+## Sample use in Animation
+
+![FPS-R Algorithm Diagram](resources/readme/images/h_fpsr_01_v002_02.gif)
 ---
 
 ## ✨ Key Features
@@ -24,7 +27,7 @@ It’s **repeatable, tunable, and frame-specific**, making it a powerful tool fo
 
 - **Procedural animation systems**: motion patterns that feel human or organic  
 - **Analog artifact emulation**: including drifting VHS snow, chroma tear, and pop flicker  
-- **Embedded systems**: when you want deterministic behavior without heavy buffers
+- **Embedded systems**: when you want deterministic behavior without heavy buffers and computation overheads.
 
 ---
 
