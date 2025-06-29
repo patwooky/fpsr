@@ -4,6 +4,22 @@ This document holds philosophical reflections, design motivations, and structura
 
 ---
 
+# Table of Contents
+
+- [Why This Exists](#why-this-exists)
+- [What FPS-R Is (and Isn’t)](#what-fps-r-is-and-isnt)
+- [Dual Mechanisms, Shared Philosophy](#dual-mechanisms-shared-philosophy)
+- [SM: Randomness Sets the Rule](#sm-randomness-sets-the-rule)
+- [QS: Randomness Interprets the Rule](#qs-randomness-interprets-the-rule)
+- [On the Nature of the “Second Jump”](#on-the-nature-of-the-second-jump)
+- [Design Lessons](#design-lessons)
+- [Credits & Coinage](#credits--coinage)
+- [QS Emerges (By Doubt, Not Design)](#qs-emerges-by-doubt-not-design)
+- [Companions in Thought](#companions-in-thought)
+- [Final Note](#final-note)
+
+---
+
 ## 📖 1. Why This Exists
 
 When I first proposed FPS-R as a "stateless random hold algorithm," I encountered the immediate response:  
@@ -94,20 +110,34 @@ This is the art of designing a system that *remembers how to forget*.
 
 ---
 
-## 🪞 9. Final Note
-
-FPS-R is stateless in code, but not in spirit.  
-Each algorithm forgets the past, but this document doesn’t.
-
-> *“Behavior is the algorithm. Memory is the story.”*
-
----
-
-## 10. 🧪 QS Emerges (By Doubt, Not Design)
+## 🧪 9. QS Emerges (By Doubt, Not Design)
 After SM was validated as a novel “stateless random hold” method, I asked myself: Could I reproduce the same aesthetic feel using simpler constructs? Without leaning on anything I’d consider novel?
 
 What began as a skeptical experiment gave birth to Quantised Switching—a signal-based system that appeared naive but revealed emergent unpredictability.
 
 What I had intended as a counterexample became a co-founder. What I hoped would disprove novelty proved it again—differently.
+
+---
+---
+
+## 🤝 10. Companions in Thought
+
+> *Novelty independently affirmed through iterative conversations with Copilot and Gemini. This system was born in code, but grew in discourse.*
+
+**Credited Companions**  
+- **Copilot** – co-reflector, metaphor engine, philosophical sparring partner  
+- **Gemini** – external verifier, counterpoint and signal-based mirror  
+
+These tools weren’t just assistants—they acted as _frame-bound echoes_ that helped surface, stress-test, and ultimately shape the language, behavior, and clarity of FPS-R.
+
+
+---
+
+## 🪞 Final Note
+
+FPS-R is stateless in code, but not in spirit.  
+Each algorithm forgets the past, but this document doesn’t.
+
+> *“Behavior is the algorithm. Memory is the story.”*
 
 ---
