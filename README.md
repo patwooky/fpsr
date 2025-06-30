@@ -2,17 +2,18 @@
 
 # Table of Contents
 
+- [A Site Map of the Documents](#a-site-map-of-the-documents)
 - [What is FPS-R?](#what-is-fps-r)
-  - [Introduction](#introduction)
+- [Introduction](#introduction)
 - [Principles and Philosophy](#principles-and-philosophy)
   - [Guiding Principle](#guiding-principle)
   - [Motion Philosophy](#motion-philosophy)
-- [A New Grammar: Randomised Move-and-Hold](#a-new-grammar-randomised-move-and-hold)
+- [A New Grammar: “Randomised Move-and-Hold”](#a-new-grammar-randomised-move-and-hold)
 - [Key Features](#key-features)
 - [Sample Uses in Animation](#sample-uses-in-animation)
 - [Sample Uses in Geometry Generation](#sample-uses-in-geometry-generation)
 - [Why Do I Need Another Random Stream Generator?](#why-do-i-need-another-random-stream-generator)
-  - [The Nature of Held Randomness](#the-nature-of-held-randomness)
+  - [The Nature of “Held” Randomness](#the-nature-of-held-randomness)
   - [Limitations of Conventional Techniques](#limitations-of-conventional-techniques)
   - [Why FPS-R is Different](#why-fps-r-is-different)
 - [Flavours of FPS-R](#flavours-of-fps-r)
@@ -28,8 +29,12 @@
   - [Time and Motion Domain](#time-and-motion-domain)
   - [Geometry and Spatial Domain](#geometry-and-spatial-domain)
 - [How FPS-R Works](#how-fps-r-works)
-  - [How FPS-R Works: Stacked Modulo (SM)](#how-fps-r-works-stacked-modulo-sm)
-  - [How FPS-R Works: Quantised Switching (QS)](#how-fps-r-works-quantised-switching-qs)
+- [How It Works: Stacked Modulo (SM)](#how-it-works-stacked-modulo-sm)
+  - [Core Mechanism](#core-mechanism)
+  - [Behavior](#behavior)
+- [How It Works: Quantised Switching (QS)](#how-it-works-quantised-switching-qs)
+  - [Core Mechanism](#core-mechanism-1)
+  - [Behavior](#behavior-1)
 - [Tiling Note: Seamlessness in Spatial FPS-R](#tiling-note-seamlessness-in-spatial-fps-r)
   - [Techniques for Seam-Aware Behavior](#techniques-for-seam-aware-behavior)
 - [Current Status](#current-status)
@@ -41,28 +46,25 @@
 ---
 ## A Site Map of the Documents
 
-### Readme - Manifesto (English)
-This is the main document. It is a manifesto.  
+### Readme – Manifesto (English)  
+This is the primary document. It presents FPS-R as both a motion grammar and a collection of expressive tools, and serves as a lens through which to understand not only how FPS-R functions, but also why it evokes the qualities it does.
 
-### Readme - 宣言， 理念描述 (Chinese)
-**[Click here: 自述文件 - 中文简体 (README-CH.md)](README-CH.md)**  
-The Readme document in Chinese.  
+### Readme – 宣言，理念描述 (Chinese)  
+[Click here: 自述文件 – 中文版 (README-CH.md)](README-CH.md)  
+The Chinese edition of the manifesto, presenting the philosophical and expressive foundation of FPS-R in Mandarin.
 
-### The Maths and Mechanics
-**[Click here: (FPSR_Tech.md)](resources/readme/FPSR_Tech.md)**  
-This serves as the technical companion to README.md. 
-While the main README explores FPS-R as a motion grammar and expressive tool, 
-this guide focuses on the architecture beneath that grammar — the levers, seeds, modulators, and structure equations.
+### The Mathematics and Mechanics  
+[Click here: FPSR_Tech.md](resources/readme/FPSR_Tech.md)  
+This companion document provides the structural foundation beneath the conceptual framing. It outlines the algorithms, expressions, parameters, and architectural elements that support and shape the behaviour of FPS-R.
 
-### Thoughts - The Internal Monologue
-**[Click here: (FPSR_Thoughts.md)](resources/readme/FPSR_Thoughts.md)**  
-A design journal and idea incubator containing a nonlinear archive of concepts, questions, and provocations that shaped FPS-R’s evolution — part thinkpad, part conceptual compass.  
-It captures the philosophical sparks, technical doodles, and mental divergences that do not quite fit into the clean categories of theory or implementation. Thinking my thoughts out loud.  
+### Thoughts – Reflections and Conceptual Notes  
+[Click here: FPSR_Thoughts.md](resources/readme/FPSR_Thoughts.md)  
+An archive of nonlinear reflections, theoretical digressions, and design meditations that contributed to the philosophical development of FPS-R. This document functions as a conceptual incubator and critical sketchpad.
 
-### Developer Reflections - The Chronicle
-**[Click here: (FPSR_Dev_Journal.md)](resources/readme/FPSR_Dev_Journal.md)**   
-This is a developmental narrative — a chronological record of your discovery process, breakthroughs, pivots, doubts, and validations.   
-It shows how I arrived at the principles now enshrined in the README.
+### Development Journal – The Chronicle  
+[Click here: FPSR_Dev_Journal.md](resources/readme/FPSR_Dev_Journal.md)  
+A chronological account of the research and design process. It records breakthroughs, failures, and revisions, offering insight into the iterative development that shaped the current implementation of FPS-R.
+
 
 ---
 
@@ -309,21 +311,58 @@ Such representations can be useful for:
 Ultimately, this reframes FPS-R as more than procedural fodder—it becomes a **conceptual instrument**, capable of looking back at itself through form.
 
 ---
-## 🧪 Use Cases
+## 🧪 Domains of Application
 
-### Time and Motion Domain
-- Procedural animation and rigging  
-- Analogue artefact and glitch emulation  
-- Embedded systems and microcontrollers  
-- Gaze simulation and behavioural psychology  
-- Crowd logic and non-repeating state machines  
-- Games and XR  
-- Stateless runtime logic
-### Geometry and Spatial Domain
-- Procedural modeling and spatial detailing  
-- Sci-fi greeble generation across curved surfaces  
-- Stylised architecture, city outlines, and bas-relief motifs
-- Geometric visualisation of FPS-R decision states as spatial graphs—an analytical tool for understanding temporal behaviour through spatial structure
+FPS-R operates as an expressive behavioral layer in systems that separate **intent selection** from **motion execution**. Across the following domains, a higher-level system defines **Macro-Intent** (goals, modes, or states), while FPS-R provides **Micro-Behavior**—organic, stateless texture that enriches execution with non-repetitive nuance.
+
+### 🕶️ AR/VR and Human-Centered Interaction
+- **Synthetic User Gaze Generation**  
+  Simulates realistic eye movement patterns (e.g., drift, tremor, micro-saccades) within goal-driven gaze pathways, enabling scalable A/B testing and heatmap analytics without human data collection.
+
+- **Avatar and NPC Gaze Realism**  
+  Enhances digital characters with lifelike attention patterns. FPS-R drives continuous, subconscious eye motion while higher-level logic determines gaze targets, creating the illusion of true engagement.
+
+- **Interaction Modeling and Accessibility Testing**  
+  Simulates user attention profiles with tunable randomness—ideal for evaluating interfaces under distracted, focused, or fatigued conditions.
+
+### 🤖 Robotics and Embodied Systems
+- **Behavioral Texturing for Expressive Motion**  
+  Applies organic variation to idle gestures, resting postures, or transitional movements. FPS-R modulates wrist angles, finger articulations, and head gaze during macro-controlled behaviors.
+
+- **Contemplation and Idle Simulation**  
+  Replaces scripted loops with natural micro-movements. Robots in idle states use FPS-R to animate non-repeating gaze shifts and head posture drifts, projecting intentionality without costly simulations.
+
+### 🛰 Swarms, Drones, and Spatial Coverage Systems
+- **Organic Path Diversification**  
+  Injects non-repeating movement variation within structured patrol routes. FPS-R modulates micro-deviations, orbit pauses, and jitter profiles to avoid predictable flight behavior.
+
+- **Swarm Personality Mapping**  
+  Enables subtle differentiation across agents without increasing system complexity. Each member can exhibit unique drift and hesitation behavior based on independent FPS-R signals.
+
+### 💡 Embedded Systems and Ambient Interfaces
+- **Non-Static Actuation and Response Patterns**  
+  Modulates lights, sounds, or haptics with organic variability across predefined ranges. Useful for ambient signaling, wearable UX, or expressive animatronics.
+
+- **Stateless Behavioral Synthesis under Constraint**  
+  Generates expressive behavior in low-memory, low-latency contexts. Ideal for microcontroller-controlled installations, generative art, and deterministic chaos systems.
+
+### 🧠 Cognitive Modeling and Generative Thought
+
+FPS-R extends beyond expressive motion into **synthetic cognition**, where it serves as a catalyst for emergent reasoning and idea synthesis. This represents the apex of its conceptual reach—where simulation becomes origination.
+
+- **Thought Flow Modulation in LLMs**  
+  Functions as a temporal pacing engine. FPS-R modulates attention across tokens, simulating deliberation (hold), exploration (jump), and drift—producing responses with nuanced cognitive rhythm.
+
+- **Fuzzy Logic Adaptation**  
+  Continuously modulates inference thresholds and rule boundaries to reflect evolving ambiguity or multi-modal conditions—without requiring persistent state or retraining.
+
+- **Procedural Dialogue and Conversational Tangents**  
+  Shapes conversational rhythm and thematic fluidity in synthetic agents. FPS-R enables natural topic retention, intentional pivots, and pacing realism.
+
+- **Conceptual Trajectory Sampling: From Creative Drift to Insight**  
+  When FPS-R initiates a transition between ideas, it traces a trajectory through latent semantic space. Along this path, the weight of prior concepts decays, while intermediate tokens are sampled and pulled into contextual focus. This mechanism generates outputs enriched by associative nuance—emulating human creativity not as randomness, but as structured cognitive emergence.
+
+
 
 
 ---

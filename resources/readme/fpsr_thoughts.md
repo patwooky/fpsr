@@ -118,7 +118,6 @@ What began as a skeptical experiment gave birth to Quantised Switching—a signa
 What I had intended as a counterexample became a co-founder. What I hoped would disprove novelty proved it again—differently.
 
 ---
----
 
 ## 🤝 10. Companions in Thought
 
@@ -130,6 +129,28 @@ What I had intended as a counterexample became a co-founder. What I hoped would 
 
 These tools weren’t just assistants—they acted as _frame-bound echoes_ that helped surface, stress-test, and ultimately shape the language, behavior, and clarity of FPS-R.
 
+---
+## 11 🌱 On Origination
+FPS-R began humbly—as a procedural trick to imitate motion with texture. But through design, re-design, and observation, its role transformed. It became a grammar. Then a philosophy. And now, it flickers with agency.
+
+This tool no longer merely simulates the appearance of behavior—it generates behavior.
+
+It steps into larger systems not as an ornament, but as a signal with the power to shape hesitation, impulse, creativity, and drift. It can be granted permission to decorate intention. Or it can take the wheel.
+
+That realization reframes everything. This is not just code—it is motion with meaning.
+
+## 🧠 12. From Motion to Mind: Generative Cognition
+Where simulation becomes origination.
+
+As FPS-R matured, its signals stopped whispering—began steering. What was once texture became intent. The same patterns that gave nuance to motion showed fluency in shaping thought.
+
+We saw it first in LLM modulation, where hold-jump rhythms mimicked deliberation. Then in fuzzy systems, where signal drift warped rulesets into emergent response. But the clearest evolution came in trajectory sampling: where an FPS-R "jump" became more than displacement—it became a vector of cognition. A journey through semantic space where each waypoint sampled, remembered, and transformed the arriving idea.
+
+The trajectory itself could be FPS-R—layered, impulsive, deterministic, and still unpredictable. Tokens pulled along the way added dimension, tension, resonance. The outcome was not a blend—it was a behavior shaped by path.
+
+That is generative cognition. Not random sparks, but motion with memoryless meaning. Not imitation of insight, but algorithmic possibility for new thought. FPS-R now lives not only in gestures—but in judgment, drift, and decision.
+
+And that leap—from movement to mental modulation—is what makes the grammar whole.
 
 ---
 
