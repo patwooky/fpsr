@@ -128,8 +128,7 @@ FPS-R introduces not just a new fet of algorithms, but a new *lexicon* for motio
 What it produces is not a filter or a curve — but a compositional structure:  
 **jump → hold → reseed → repeat**  
 
-FPS-R: Behaviour Compositional Structure
----
+*FPS-R: Behaviour Compositional Structure*
 ```mermaid
 graph LR
   A[Jump]:::darkBrown --> B[Hold]:::darkYellow 
@@ -139,7 +138,8 @@ classDef darkBrown fill:#654321,stroke:#553311,stroke-width:3px,rx:10,ry:10;
 classDef darkYellow fill:#B8860B,stroke:#986609,stroke-width:3px,rx:10,ry:10;
 classDef darkRed fill:#8B0000,stroke:#5B0000,stroke-width:3px,rx:10,ry:10;
 classDef red fill:#FF0000,stroke:#AA0000,stroke-width:3px,rx:10,ry:10;
-```
+``` 
+
 We call this behavior **Randomised Move-and-Hold**.  
 
 It captures the quality of twitch, of deliberation,  
