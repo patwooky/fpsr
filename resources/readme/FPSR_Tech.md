@@ -18,6 +18,8 @@ SM uses **layered modulus operations** combined with shifting `rand()` seeds to 
 
 ### Core Mechanism
 
+#### One-Line Compact
+
 1. **Primary Modulus Control**  
    The input coordinate (e.g. `@Frame`, `x`, or `uv.x`) is divided by a tunable modulus (e.g. `mod($F, 24)`), which segments the timeline or space into consistent-sized “holding zones.”
 

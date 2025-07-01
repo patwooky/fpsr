@@ -1,50 +1,50 @@
 # 🎲 FPS-R Algorithm: Frame-Persistent Stateless Randomisation  
 
-# Table of Contents
+## Table of Contents
 
-- [A Site Map of the Documents](#a-site-map-of-the-documents)
-- [What is FPS-R?](#what-is-fps-r)
-- [Principles and Philosophy](#principles-and-philosophy)
-  - [🧭 Guiding Principle](#🧭-guiding-principle)
-  - [🎭 Motion Philosophy](#🎭-motion-philosophy)
-- [A New Grammar: "Randomised Move-and-Hold"](#a-new-grammar-randomised-move-and-hold)
-- [✨ Key Features](#✨-key-features)
-- [🎞 Sample Uses in Animation](#🎞-sample-uses-in-animation)
-- [🧱 Sample Uses in Geometry Generation](#🧱-sample-uses-in-geometry-generation)
-- [💡 Why Do I Need Another Random Stream Generator?](#💡-why-do-i-need-another-random-stream-generator)
-  - [🧬 The Nature of "Held" Randomness](#🧬-the-nature-of-held-randomness)
-  - [🧱 Limitations of Conventional Techniques](#🧱-limitations-of-conventional-techniques)
-  - [⚙️ Why FPS-R is Different](#⚙️-why-fps-r-is-different)
-- [🧬 Flavours of FPS-R](#🧬-flavours-of-fps-r)
-  - [🌀 Stacked Modulo (SM) or 叠模机制](#🌀-stacked-modulo-sm-or-叠模机制)
-  - [✴ Quantised Switching (QS) or 量跃机制](#✴-quantised-switching-qs-or-量跃机制)
-- [🏙 Spatial Extension: From Time to Space](#🏙-spatial-extension-from-time-to-space)
-  - [Spatial Modes](#spatial-modes)
-  - [✴ Quantised Switching in Space](#✴-quantised-switching-in-space)
-- [🧠 Recursive Chaos: FPS-R as Modulator](#🧠-recursive-chaos-fps-r-as-modulator)
-  - [Fractal Modulation](#fractal-modulation)
-- [📈 Meta-Signal Analysis: FPS-R as Its Own Observer](#📈-meta-signal-analysis-fps-r-as-its-own-observer)
-- [🧪 Domains of Application](#🧪-domains-of-application)
-  - [🕶️ AR/VR and Human-Centered Interaction](#🕶️-arvr-and-human-centered-interaction)
-  - [🤖 Robotics and Embodied Systems](#🤖-robotics-and-embodied-systems)
-  - [🛰 Swarms, Drones, and Spatial Coverage Systems](#🛰-swarms-drones-and-spatial-coverage-systems)
-  - [💡 Embedded Systems and Ambient Interfaces](#💡-embedded-systems-and-ambient-interfaces)
-  - [🎼 Domains of Application in Audio and Composition](#🎼-domains-of-application-in-audio-and-composition)
-  - [👟 Foley and Movement Stylisation](#👟-foley-and-movement-stylisation)
-  - [📡 Ambient Soundscape Evolution](#📡-ambient-soundscape-evolution)
-  - [🗣️ Dynamic Speech Cadence](#🗣️-dynamic-speech-cadence)
-  - [🧠 Cognitive Modeling and Generative Thought](#🧠-cognitive-modeling-and-generative-thought)
-- [🌐 Closing Thoughts on Usage](#🌐-closing-thoughts-on-usage)
-- [🔩 How FPS-R Works (A Gentle Primer)](#🔩-how-fps-r-works-a-gentle-primer)
-  - [🎼 Stacked Modulo (SM)](#🎼-stacked-modulo-sm)
-  - [✴️ Quantised Switching (QS)](#✴️-quantised-switching-qs)
-- [⚠️ Tiling Note: Seamlessness in Spatial FPS-R](#⚠️-tiling-note-seamlessness-in-spatial-fps-r)
-  - [🪡 Techniques for Seam-Aware Behavior](#🪡-techniques-for-seam-aware-behavior)
-- [🚧 Current Status](#🚧-current-status)
-- [Additional Development Notes](#additional-development-notes)
-  - [FPSR Thoughts](#fpsr-thoughts-click-here)
-  - [Development Reflections](#development-reflections-click-here)
-- [🤝 Contributions](#🤝-contributions)
+- [🗺️ A Site Map of the Documents](#a-site-map-of-the-documents)
+- [🎲 What is FPS-R?](#what-is-fps-r)
+- [🎓 Principles and Philosophy](#principles-and-philosophy)
+  - [🧭 Guiding Principle](#guiding-principle)
+  - [🎭 Motion Philosophy](#motion-philosophy)
+- [🗣 A New Grammar: "Randomised Move-and-Hold"](#a-new-grammar-randomised-move-and-hold)
+- [✨ Key Features](#key-features)
+- [🎞 Sample Uses in Animation](#sample-uses-in-animation)
+- [🧱 Sample Uses in Geometry Generation](#sample-uses-in-geometry-generation)
+- [💡 Why Do I Need Another Random Stream Generator?](#why-do-i-need-another-random-stream-generator)
+  - [🧬 The Nature of "Held" Randomness](#the-nature-of-held-randomness)
+  - [🧱 Limitations of Conventional Techniques](#limitations-of-conventional-techniques)
+  - [⚙️ Why FPS-R is Different](#why-fps-r-is-different)
+- [🧬 Flavours of FPS-R](#flavours-of-fps-r)
+  - [🌀 Stacked Modulo (SM) or 叠模机制](#stacked-modulo-sm-or-叠模机制)
+  - [✴ Quantised Switching (QS) or 量跃机制](#quantised-switching-qs-or-量跃机制)
+- [🏙 Spatial Extension: From Time to Space](#spatial-extension-from-time-to-space)
+  - [🗺️ Spatial Modes](#spatial-modes)
+  - [✴ Quantised Switching in Space](#quantised-switching-in-space)
+- [🧠 Recursive Chaos: FPS-R as Modulator](#recursive-chaos-fps-r-as-modulator)
+  - [🧬 Fractal Modulation](#fractal-modulation)
+- [📈 Meta-Signal Analysis: FPS-R as Its Own Observer](#meta-signal-analysis-fps-r-as-its-own-observer)
+- [🧪 Domains of Application](#domains-of-application)
+  - [🕶️ AR/VR and Human-Centered Interaction](#arvr-and-human-centered-interaction)
+  - [🤖 Robotics and Embodied Systems](#robotics-and-embodied-systems)
+  - [🛰 Swarms, Drones, and Spatial Coverage Systems](#swarms-drones-and-spatial-coverage-systems)
+  - [💡 Embedded Systems and Ambient Interfaces](#embedded-systems-and-ambient-interfaces)
+  - [🎼 Domains of Application in Audio and Composition](#domains-of-application-in-audio-and-composition)
+  - [👟 Foley and Movement Stylisation](#foley-and-movement-stylisation)
+  - [📡 Ambient Soundscape Evolution](#ambient-soundscape-evolution)
+  - [🗣️ Dynamic Speech Cadence](#dynamic-speech-cadence)
+  - [🧠 Cognitive Modeling and Generative Thought](#cognitive-modeling-and-generative-thought)
+- [🌐 Closing Thoughts on Usage](#closing-thoughts-on-usage)
+- [🔩 How FPS-R Works (A Gentle Primer)](#how-fps-r-works-a-gentle-primer)
+  - [🎼 Stacked Modulo (SM)](#stacked-modulo-sm)
+  - [✴️ Quantised Switching (QS)](#quantised-switching-qs)
+- [⚠️ Tiling Note: Seamlessness in Spatial FPS-R](#tiling-note-seamlessness-in-spatial-fps-r)
+  - [🪡 Techniques for Seam-Aware Behavior](#techniques-for-seam-aware-behavior)
+- [🚧 Current Status](#current-status)
+- [📓 Additional Development Notes](#additional-development-notes)
+  - [🧠 FPSR Thoughts](#fpsr-thoughts-click-here)
+  - [🗒️ Development Reflections](#development-reflections-click-here)
+- [🤝 Contributions](#contributions)
 
 ---
 ## A Site Map of the Documents
@@ -138,7 +138,6 @@ classDef darkBrown fill:#654321,stroke:#553311,stroke-width:3px,rx:10,ry:10;
 classDef darkYellow fill:#B8860B,stroke:#986609,stroke-width:3px,rx:10,ry:10;
 classDef darkRed fill:#8B0000,stroke:#5B0000,stroke-width:3px,rx:10,ry:10;
 classDef red fill:#FF0000,stroke:#AA0000,stroke-width:3px,rx:10,ry:10;
-``` 
 ``` 
 
 We call this behavior **Randomised Move-and-Hold**.  
@@ -545,11 +544,11 @@ FPS-R is under active development and currently private during cleanup. Planned 
 - Plug-and-play GLSL and Houdini expressions  
 - Ready-made presets and chaos profiles
 ---
-## Additional Development Notes
-### FPSR Thoughts [(click here)](resources\readme\fpsr_thoughts.md)
+## 📓 Additional Development Notes
+### 🧠 FPSR Thoughts [(click here)](resources\readme\fpsr_thoughts.md)
 This is a the thoughts about the tools I have created. 
 
-### Development Reflections [(click here)](resources\readme\development_reflections.md)
+### 🗒️ Development Reflections [(click here)](resources\readme\development_reflections.md)
 This is the chronological diary of the events leading to the discovery of these methods and techniques.
 
 ---
