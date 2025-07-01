@@ -25,9 +25,12 @@
 - [Recursive Chaos: FPS-R as Modulator](#recursive-chaos-fps-r-as-modulator)
   - [Fractal Modulation](#fractal-modulation)
 - [Meta-Signal Analysis: FPS-R as Its Own Observer](#meta-signal-analysis-fps-r-as-its-own-observer)
-- [Use Cases](#use-cases)
-  - [Time and Motion Domain](#time-and-motion-domain)
-  - [Geometry and Spatial Domain](#geometry-and-spatial-domain)
+- [Domains of Application](#domains-of-application)
+  - [AR/VR and Human-Centered Interaction](#arvr-and-human-centered-interaction)
+  - [Robotics and Embodied Systems](#robotics-and-embodied-systems)
+  - [Swarms, Drones, and Spatial Coverage Systems](#swarms-drones-and-spatial-coverage-systems)
+  - [Embedded Systems and Ambient Interfaces](#embedded-systems-and-ambient-interfaces)
+  - [Cognitive Modeling and Generative Thought](#cognitive-modeling-and-generative-thought)
 - [How FPS-R Works](#how-fps-r-works)
 - [How It Works: Stacked Modulo (SM)](#how-it-works-stacked-modulo-sm)
   - [Core Mechanism](#core-mechanism)
@@ -124,6 +127,19 @@ What emerges is not chaos, but *temporal behaviour shaped by structure*.
 FPS-R introduces not just a new fet of algorithms, but a new *lexicon* for motion.  
 What it produces is not a filter or a curve — but a compositional structure:  
 **jump → hold → reseed → repeat**  
+
+FPS-R: Behaviour Compositional Structure
+---
+```mermaid
+graph LR
+  A[Jump]:::darkBrown --> B[Hold]:::darkYellow 
+  B --> C[Reseed]:::darkRed --> D[Repeat]:::red
+
+classDef darkBrown fill:#654321,stroke:#553311,stroke-width:3px,rx:10,ry:10;
+classDef darkYellow fill:#B8860B,stroke:#986609,stroke-width:3px,rx:10,ry:10;
+classDef darkRed fill:#8B0000,stroke:#5B0000,stroke-width:3px,rx:10,ry:10;
+classDef red fill:#FF0000,stroke:#AA0000,stroke-width:3px,rx:10,ry:10;
+```
 We call this behavior **Randomised Move-and-Hold**.  
 
 It captures the quality of twitch, of deliberation,  
@@ -137,6 +153,7 @@ of pauses that feel like thought.
   <img src="https://img.shields.io/badge/Repeat-1?style=for-the-badge&color=red" alt="Repeat">
   </b>
 </p>
+
 
 ---
 
@@ -359,8 +376,11 @@ FPS-R extends beyond expressive motion into **synthetic cognition**, where it se
 - **Procedural Dialogue and Conversational Tangents**  
   Shapes conversational rhythm and thematic fluidity in synthetic agents. FPS-R enables natural topic retention, intentional pivots, and pacing realism.
 
-- **Conceptual Trajectory Sampling: From Creative Drift to Insight**  
-  When FPS-R initiates a transition between ideas, it traces a trajectory through latent semantic space. Along this path, the weight of prior concepts decays, while intermediate tokens are sampled and pulled into contextual focus. This mechanism generates outputs enriched by associative nuance—emulating human creativity not as randomness, but as structured cognitive emergence.
+- **Conceptual Trajectory Sampling: FPS-R as Path and Behavior**  
+  When FPS-R initiates a transition between semantic regions (start_vector to end_vector), it defines a trajectory—an active signal stream rather than a static interpolation. This trajectory itself can be structured by FPS-R, exhibiting jump-hold dynamics along its arc. At each sampled waypoint, related tokens are drawn not only from proximity but through **layered randomness**, allowing bursts of associative insight or tangential grabs that echo creative intuition.
+
+  The result is a synthesized idea that is not merely a blend of endpoints, but a **path-dependent composition**—one where the journey shapes the destination, and stochastic sampling enriches conceptual texture. This moves beyond simulating the appearance of cognition and into the territory of **generating synthetic thought** with structured expressive motion.
+
 
 
 
@@ -400,6 +420,7 @@ SM uses **layered modulus operations** combined with shifting `rand()` seeds to 
 - Short mod spans → twitchy impulse
 - Long mod spans → hesitant deliberation
 - Layered mods → emergent switching logic, without simulation
+
 
 ---
 
