@@ -2,18 +2,18 @@
 
 # Table of Contents {#TableofCo}
 
-- [A Site Map of the Documents](#ASiteMapf)
-  - [Readme — Manifesto (English)](#ReadmeMan)
-  - [Readme — 宣言,理念描述 (Chinese)](#Readme宣言)
-  - [The Mathematics and Mechanics](#TheMathem)
-  - [Thoughts — Reflections and Conceptual Notes](#Thoughts)
-  - [Development Journal — The Chronicle](#DevJournal)
-- [What is FPS-R?](#WhatisFPSR)
-  - [Introduction](#Introduction)
-- [Principles and Philosophy](#PrinciplesPhilo)
+- [🗺️A Site Map of the Documents](#ASiteMapf)
+  - [📜 Readme — Manifesto (English)](#ReadmeMan)
+  - [🈸 Readme — 宣言,理念描述 (Chinese)](#Readme宣言)
+  - [📐 The Mathematics and Mechanics](#TheMathem)
+  - [🧠 Thoughts — Reflections and Conceptual Notes](#Thoughts)
+  - [📓 Development Journal — The Chronicle](#DevJournal)
+- [🎲 What is FPS-R?](#WhatisFPSR)
+  - [🪞 Introduction](#Introduction)
+- [🎓 Principles and Philosophy](#PrinciplesPhilo)
   - [🧭 Guiding Principle](#GuidingPri)
   - [🎭 Motion Philosophy](#MotionPhil)
-- [A New Grammar: "Randomised Move-and-Hold"](#ANewGrammar)
+- [🗣 A New Grammar: "Randomised Move-and-Hold"](#ANewGrammar)
 - [✨ Key Features](#KeyFeatures)
 - [🎞 Sample Uses in Animation](#SampleUsesAnim)
 - [🧱 Sample Uses in Geometry Generation](#SampleUsesinGeo)
@@ -44,38 +44,38 @@
 - [⚠️ Tiling Note: Seamlessness in Spatial FPS-R](#TilingNote)
   - [🪡 Techniques for Seam-Aware Behavior](#TechniquesSeam)
 - [🚧 Current Status](#CurrentStatus)
-- [Additional Development Notes](#AdditionalDev)
-  - [FPSR Thoughts](#FPSRThough)
-  - [Development Reflections](#DevReflection)
+- [🗒️ Additional Development Notes](#AdditionalDev)
+  - [🧠 FPSR Thoughts](#FPSRThough)
+  - [📔 Development Reflections](#DevReflection)
 - [🤝 Contributions](#Contributions)
 
 ---
 
-## A Site Map of the Documents {#ASiteMapf}
+## 🗺️ A Site Map of the Documents {#ASiteMapf}
 
-### Readme — Manifesto (English) {#ReadmeMan}
+### 📜 Readme — Manifesto (English) {#ReadmeMan}
 This is the primary document. It presents FPS-R as both a motion grammar and a collection of expressive tools, and serves as a lens through which to understand not only how FPS-R functions, but also why it evokes the qualities it does.
 
-### Readme — 宣言,理念描述 (Chinese) {#Readme宣言}
+### 🈸 Readme — 宣言,理念描述 (Chinese) {#Readme宣言}
 [Click here: 自述文件 — 中文版 (README-CH.md)](README-CH.md)
 The Chinese edition of the manifesto, presenting the philosophical and expressive foundation of FPS-R in Mandarin.
 
-### The Mathematics and Mechanics {#TheMathem}
+### 📐 The Mathematics and Mechanics {#TheMathem}
 [Click here: FPSR_Tech.md](resources/readme/FPSR_Tech.md)
 This companion document provides the structural foundation beneath the conceptual framing. It outlines the algorithms, expressions, parameters, and architectural elements that support and shape the behaviour of FPS-R.
 
-### Thoughts — Reflections and Conceptual Notes {#Thoughts}
+### 🧠 Thoughts — Reflections and Conceptual Notes {#Thoughts}
 [Click here: FPSR_Thoughts.md](resources/readme/FPSR_Thoughts.md)
 An archive of nonlinear reflections, theoretical digressions, and design meditations that contributed to the philosophical development of FPS-R. This document functions as a conceptual incubator and critical sketchpad.
 
-### Development Journal — The Chronicle {#DevJournal}
+### 📓 Development Journal — The Chronicle {#DevJournal}
 [Click here: FPSR_Dev_Journal.md](resources/readme/FPSR_Dev_Journal.md)
 A chronological account of the research and design process. It records breakthroughs, failures, and revisions, offering insight into the iterative development that shaped the current implementation of FPS-R.
 
 
 ---
 
-## What is FPS-R? {#WhatisFPSR}
+## 🎲 What is FPS-R? {#WhatisFPSR}
 #### _Stateless unpredictability with a structured soul._
 
 **FPS-R** is a system that expresses a motion archetype we call  **"Randomized Move-and-Hold."**  
@@ -84,7 +84,7 @@ and organic, yet requires no memory or state.
 
 This concept forms the bedrock of FPS-R's philosophy...
 
-### Introduction {#Introduction}
+### 🪞 Introduction {#Introduction}
 
 **FPS-R** stands for `Frame-Persistent Stateless Randomisation` (or `静态律动算法` in Chinese). It is a philosophy behind a collection of lightweight algorithmic pattern for simulating persistent yet stateless randomness across a continuous timeline—ideal for procedural motion, glitch aesthetics, synthesised organic behaviour, and analogue artefact emulation.
 
@@ -99,7 +99,7 @@ It is **repeatable**, **tunable**, and **frame-specific**, making it a versatile
 In the spatial domain, FPS-R can be implemented into shaders for vertex displacement or surface perturbation, with its effects expressed through normals, bumps, and parallax techniques. When integrated with procedural modeling workflows, it becomes a generator of richly detailed and recursively layered geometry—ideal for greebling, erosion maps, stylised terrain, and sci-fi paneling. While the nature of FPS-R is non-repeating, with appropriate use of tiling techniques it allows spatial patterns to tile seamlessly across UVs or wrap naturally around curved surfaces, offering control without constraint.
 
 ---
-### Principles and Philosophy {#PrinciplesPhilo}
+### 🎓 Principles and Philosophy {#PrinciplesPhilo}
 ---
 ### 🧭 Guiding Principle {#GuidingPri}
 "FPS-R isn't a single algorithm. It's a design philosophy for *shaping signals*. Whether by arithmetic folding or signal quantisation — whether in time or space — the goal is the same: give structure permission to behave."
@@ -538,12 +538,12 @@ FPS-R is under active development and currently private during cleanup. Planned 
 - Plug-and-play GLSL and Houdini expressions  
 - Ready-made presets and chaos profiles
 ---
-## Additional Development Notes {#AdditionalDev}
-### FPSR Thoughts {#FPSRThough}
+## 🗒️ Additional Development Notes {#AdditionalDev}
+### 🧠 FPSR Thoughts {#FPSRThough}
 [(click here)](resources\readme\fpsr_thoughts.md)  
 This is a the thoughts about the tools I have created. 
 
-### Development Reflections {#DevReflection}
+### 📔 Development Reflections {#DevReflection}
 [(click here)](resources\readme\development_reflections.md)  
 This is the chronological diary of the events leading to the discovery of these methods and techniques.
 
