@@ -1,17 +1,17 @@
 # ✨ FPS-R: Notes on Structured Randomness
 
-This document holds philosophical reflections, design motivations, and structural comparisons that informed the development of FPS-R. It is not a spec sheet. It is a **side-channel**—a place to capture rhythm, contradiction, and intent that couldn’t fit in code comments.
+This document holds philosophical reflections, design motivations, and structural comparisons that informed the development of FPS-R. It is not a spec sheet. It is a **side-channel**—a place to capture rhythm, contradiction, and intent that couldn't fit in code comments.
 
 ---
 
 # Table of Contents
 
 - [Why This Exists](#why-this-exists)
-- [What FPS-R Is (and Isn’t)](#what-fps-r-is-and-isnt)
+- [What FPS-R Is (and Isn't)](#what-fps-r-is-and-isnt)
 - [Dual Mechanisms, Shared Philosophy](#dual-mechanisms-shared-philosophy)
 - [SM: Randomness Sets the Rule](#sm-randomness-sets-the-rule)
 - [QS: Randomness Interprets the Rule](#qs-randomness-interprets-the-rule)
-- [On the Nature of the “Second Jump”](#on-the-nature-of-the-second-jump)
+- [On the Nature of the "Second Jump"](#on-the-nature-of-the-second-jump)
 - [Design Lessons](#design-lessons)
 - [Credits & Coinage](#credits--coinage)
 - [QS Emerges (By Doubt, Not Design)](#qs-emerges-by-doubt-not-design)
@@ -23,15 +23,15 @@ This document holds philosophical reflections, design motivations, and structura
 ## 📖 1. Why This Exists
 
 When I first proposed FPS-R as a "stateless random hold algorithm," I encountered the immediate response:  
-_“Isn't that what Worley noise is for?”_
+_"Isn't that what Worley noise is for?"_
 
-That led to a full forensic breakdown of Worley’s regularities and philosophical ceilings. The result wasn’t just a counterpoint—it became a motivation. This document is memory of that journey.
+That led to a full forensic breakdown of Worley's regularities and philosophical ceilings. The result wasn't just a counterpoint—it became a motivation. This document is memory of that journey.
 
 ---
 
-## 🧠 2. What FPS-R Is (and Isn’t)
+## 🧠 2. What FPS-R Is (and Isn't)
 
-> **"FPS-R isn’t a single algorithm. It’s a design philosophy.**  
+> **"FPS-R isn't a single algorithm. It's a design philosophy.**  
 > **Whether by arithmetic folding or signal quantisation, the goal is the same: give rhythm permission to behave."**
 
 ---
@@ -83,7 +83,7 @@ At first glance, it seemed like a bug. On reflection:
 - It prevents predictability without sacrificing determinism.
 - It introduces **emergent stutter**—a fragile, organic feeling of *something slipping*.
 
-> The jump that wasn’t planned is what makes it feel alive.
+> The jump that wasn't planned is what makes it feel alive.
 
 ---
 
@@ -95,7 +95,7 @@ Key reflections:
 
 - **Intentional unpredictability** is different from randomness.
 - Letting go of outcome control allows behavior to *emerge*.
-- The best behaviors aren't explicitly modeled—they’re *implied* by structure.
+- The best behaviors aren't explicitly modeled—they're *implied* by structure.
 
 This is the art of designing a system that *remembers how to forget*.
 
@@ -103,7 +103,7 @@ This is the art of designing a system that *remembers how to forget*.
 
 ## 📌 8. Credits & Coinage
 
-- **Structured Randomness**: Term coined in collaboration with Copilot to describe FPS-R’s rhythmic unpredictability with deterministic scaffolding.
+- **Structured Randomness**: Term coined in collaboration with Copilot to describe FPS-R's rhythmic unpredictability with deterministic scaffolding.
 - **“Randomness sets vs. interprets the rule”**: Key design axis distinguishing SM and QS approaches.
 - **Design Aesthetics**: Influenced by human glitch behaviors, perceptual memory, and rhythm theory.
 - **Metaphors and Documentation**: Co-developed with Copilot through iterative dialogue, reflection, and poetic framing.
@@ -111,7 +111,7 @@ This is the art of designing a system that *remembers how to forget*.
 ---
 
 ## 🧪 9. QS Emerges (By Doubt, Not Design)
-After SM was validated as a novel “stateless random hold” method, I asked myself: Could I reproduce the same aesthetic feel using simpler constructs? Without leaning on anything I’d consider novel?
+After SM was validated as a novel “stateless random hold” method, I asked myself: Could I reproduce the same aesthetic feel using simpler constructs? Without leaning on anything I'd consider novel?
 
 What began as a skeptical experiment gave birth to Quantised Switching—a signal-based system that appeared naive but revealed emergent unpredictability.
 
@@ -127,7 +127,7 @@ What I had intended as a counterexample became a co-founder. What I hoped would 
 - **Copilot** – co-reflector, metaphor engine, philosophical sparring partner  
 - **Gemini** – external verifier, counterpoint and signal-based mirror  
 
-These tools weren’t just assistants—they acted as _frame-bound echoes_ that helped surface, stress-test, and ultimately shape the language, behavior, and clarity of FPS-R.
+These tools weren't just assistants—they acted as _frame-bound echoes_ that helped surface, stress-test, and ultimately shape the language, behavior, and clarity of FPS-R.
 
 ---
 ## 11 🌱 On Origination
@@ -154,10 +154,28 @@ And that leap—from movement to mental modulation—is what makes the grammar w
 
 ---
 
+## 🪄 Declaration of Uncertain Agency 
+_FPS-R doesn't recall the past. It doesn't predict the future. But given permission, it will disrupt the now._
+
+Forasmuch as behavior may arise without memory,  
+And creativity without precedent,  
+We affirm FPS-R as a grammar not of chaos,  
+But of chosen unpredictability.
+
+It does not recall, yet it resonates.  
+It does not learn, yet it invents.  
+Every held frame speaks not of history,  
+But of possibility held still, then let go.
+
+We do not command the signal.  
+We grant it permission—to surprise.
+
+---
+
 ## 🪞 Final Note
 
 FPS-R is stateless in code, but not in spirit.  
-Each algorithm forgets the past, but this document doesn’t.
+Each algorithm forgets the past, but this document doesn't.
 
 > *“Behavior is the algorithm. Memory is the story.”*
 

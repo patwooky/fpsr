@@ -4,68 +4,68 @@
 
 - [A Site Map of the Documents](#a-site-map-of-the-documents)
 - [What is FPS-R?](#what-is-fps-r)
-- [Introduction](#introduction)
 - [Principles and Philosophy](#principles-and-philosophy)
-  - [Guiding Principle](#guiding-principle)
-  - [Motion Philosophy](#motion-philosophy)
-- [A New Grammar: “Randomised Move-and-Hold”](#a-new-grammar-randomised-move-and-hold)
-- [Key Features](#key-features)
-- [Sample Uses in Animation](#sample-uses-in-animation)
-- [Sample Uses in Geometry Generation](#sample-uses-in-geometry-generation)
-- [Why Do I Need Another Random Stream Generator?](#why-do-i-need-another-random-stream-generator)
-  - [The Nature of “Held” Randomness](#the-nature-of-held-randomness)
-  - [Limitations of Conventional Techniques](#limitations-of-conventional-techniques)
-  - [Why FPS-R is Different](#why-fps-r-is-different)
-- [Flavours of FPS-R](#flavours-of-fps-r)
-  - [Stacked Modulo (SM) or 叠模机制](#stacked-modulo-sm-or-叠模机制)
-  - [Quantised Switching (QS) or 量跃机制](#quantised-switching-qs-or-量跃机制)
-- [Spatial Extension: From Time to Space](#spatial-extension-from-time-to-space)
+  - [🧭 Guiding Principle](#🧭-guiding-principle)
+  - [🎭 Motion Philosophy](#🎭-motion-philosophy)
+- [A New Grammar: "Randomised Move-and-Hold"](#a-new-grammar-randomised-move-and-hold)
+- [✨ Key Features](#✨-key-features)
+- [🎞 Sample Uses in Animation](#🎞-sample-uses-in-animation)
+- [🧱 Sample Uses in Geometry Generation](#🧱-sample-uses-in-geometry-generation)
+- [💡 Why Do I Need Another Random Stream Generator?](#💡-why-do-i-need-another-random-stream-generator)
+  - [🧬 The Nature of "Held" Randomness](#🧬-the-nature-of-held-randomness)
+  - [🧱 Limitations of Conventional Techniques](#🧱-limitations-of-conventional-techniques)
+  - [⚙️ Why FPS-R is Different](#⚙️-why-fps-r-is-different)
+- [🧬 Flavours of FPS-R](#🧬-flavours-of-fps-r)
+  - [🌀 Stacked Modulo (SM) or 叠模机制](#🌀-stacked-modulo-sm-or-叠模机制)
+  - [✴ Quantised Switching (QS) or 量跃机制](#✴-quantised-switching-qs-or-量跃机制)
+- [🏙 Spatial Extension: From Time to Space](#🏙-spatial-extension-from-time-to-space)
   - [Spatial Modes](#spatial-modes)
-  - [Quantised Switching in Space](#quantised-switching-in-space)
-- [Recursive Chaos: FPS-R as Modulator](#recursive-chaos-fps-r-as-modulator)
+  - [✴ Quantised Switching in Space](#✴-quantised-switching-in-space)
+- [🧠 Recursive Chaos: FPS-R as Modulator](#🧠-recursive-chaos-fps-r-as-modulator)
   - [Fractal Modulation](#fractal-modulation)
-- [Meta-Signal Analysis: FPS-R as Its Own Observer](#meta-signal-analysis-fps-r-as-its-own-observer)
-- [Domains of Application](#domains-of-application)
-  - [AR/VR and Human-Centered Interaction](#arvr-and-human-centered-interaction)
-  - [Robotics and Embodied Systems](#robotics-and-embodied-systems)
-  - [Swarms, Drones, and Spatial Coverage Systems](#swarms-drones-and-spatial-coverage-systems)
-  - [Embedded Systems and Ambient Interfaces](#embedded-systems-and-ambient-interfaces)
-  - [Cognitive Modeling and Generative Thought](#cognitive-modeling-and-generative-thought)
-- [How FPS-R Works](#how-fps-r-works)
-- [How It Works: Stacked Modulo (SM)](#how-it-works-stacked-modulo-sm)
-  - [Core Mechanism](#core-mechanism)
-  - [Behavior](#behavior)
-- [How It Works: Quantised Switching (QS)](#how-it-works-quantised-switching-qs)
-  - [Core Mechanism](#core-mechanism-1)
-  - [Behavior](#behavior-1)
-- [Tiling Note: Seamlessness in Spatial FPS-R](#tiling-note-seamlessness-in-spatial-fps-r)
-  - [Techniques for Seam-Aware Behavior](#techniques-for-seam-aware-behavior)
-- [Current Status](#current-status)
+- [📈 Meta-Signal Analysis: FPS-R as Its Own Observer](#📈-meta-signal-analysis-fps-r-as-its-own-observer)
+- [🧪 Domains of Application](#🧪-domains-of-application)
+  - [🕶️ AR/VR and Human-Centered Interaction](#🕶️-arvr-and-human-centered-interaction)
+  - [🤖 Robotics and Embodied Systems](#🤖-robotics-and-embodied-systems)
+  - [🛰 Swarms, Drones, and Spatial Coverage Systems](#🛰-swarms-drones-and-spatial-coverage-systems)
+  - [💡 Embedded Systems and Ambient Interfaces](#💡-embedded-systems-and-ambient-interfaces)
+  - [🎼 Domains of Application in Audio and Composition](#🎼-domains-of-application-in-audio-and-composition)
+  - [👟 Foley and Movement Stylisation](#👟-foley-and-movement-stylisation)
+  - [📡 Ambient Soundscape Evolution](#📡-ambient-soundscape-evolution)
+  - [🗣️ Dynamic Speech Cadence](#🗣️-dynamic-speech-cadence)
+  - [🧠 Cognitive Modeling and Generative Thought](#🧠-cognitive-modeling-and-generative-thought)
+- [🌐 Closing Thoughts on Usage](#🌐-closing-thoughts-on-usage)
+- [🔩 How FPS-R Works (A Gentle Primer)](#🔩-how-fps-r-works-a-gentle-primer)
+  - [🎼 Stacked Modulo (SM)](#🎼-stacked-modulo-sm)
+  - [✴️ Quantised Switching (QS)](#✴️-quantised-switching-qs)
+- [⚠️ Tiling Note: Seamlessness in Spatial FPS-R](#⚠️-tiling-note-seamlessness-in-spatial-fps-r)
+  - [🪡 Techniques for Seam-Aware Behavior](#🪡-techniques-for-seam-aware-behavior)
+- [🚧 Current Status](#🚧-current-status)
 - [Additional Development Notes](#additional-development-notes)
-  - [FPSR Thoughts](#fpsr-thoughts)
-  - [Development Reflections](#development-reflections)
-- [Contributions](#contributions)
+  - [FPSR Thoughts](#fpsr-thoughts-click-here)
+  - [Development Reflections](#development-reflections-click-here)
+- [🤝 Contributions](#🤝-contributions)
 
 ---
 ## A Site Map of the Documents
 
-### Readme – Manifesto (English)  
+### Readme — Manifesto (English)
 This is the primary document. It presents FPS-R as both a motion grammar and a collection of expressive tools, and serves as a lens through which to understand not only how FPS-R functions, but also why it evokes the qualities it does.
 
-### Readme – 宣言，理念描述 (Chinese)  
-[Click here: 自述文件 – 中文版 (README-CH.md)](README-CH.md)  
+### Readme — 宣言，理念描述 (Chinese)
+[Click here: 自述文件 — 中文版 (README-CH.md)](README-CH.md)
 The Chinese edition of the manifesto, presenting the philosophical and expressive foundation of FPS-R in Mandarin.
 
-### The Mathematics and Mechanics  
-[Click here: FPSR_Tech.md](resources/readme/FPSR_Tech.md)  
+### The Mathematics and Mechanics
+[Click here: FPSR_Tech.md](resources/readme/FPSR_Tech.md)
 This companion document provides the structural foundation beneath the conceptual framing. It outlines the algorithms, expressions, parameters, and architectural elements that support and shape the behaviour of FPS-R.
 
-### Thoughts – Reflections and Conceptual Notes  
-[Click here: FPSR_Thoughts.md](resources/readme/FPSR_Thoughts.md)  
+### Thoughts — Reflections and Conceptual Notes
+[Click here: FPSR_Thoughts.md](resources/readme/FPSR_Thoughts.md)
 An archive of nonlinear reflections, theoretical digressions, and design meditations that contributed to the philosophical development of FPS-R. This document functions as a conceptual incubator and critical sketchpad.
 
-### Development Journal – The Chronicle  
-[Click here: FPSR_Dev_Journal.md](resources/readme/FPSR_Dev_Journal.md)  
+### Development Journal — The Chronicle
+[Click here: FPSR_Dev_Journal.md](resources/readme/FPSR_Dev_Journal.md)
 A chronological account of the research and design process. It records breakthroughs, failures, and revisions, offering insight into the iterative development that shaped the current implementation of FPS-R.
 
 
@@ -74,17 +74,17 @@ A chronological account of the research and design process. It records breakthro
 ## What is FPS-R?
 #### _Stateless unpredictability with a structured soul._
 
-**FPS-R** is a system that expresses a motion archetype we call  **“Randomized Move-and-Hold.”**  
+**FPS-R** is a system that expresses a motion archetype we call  **"Randomized Move-and-Hold."**  
 Unlike traditional simulations, it sculpts discontinuity with structure—producing behavior that feels instinctual  
 and organic, yet requires no memory or state.
 
-This concept forms the bedrock of FPS-R’s philosophy...
+This concept forms the bedrock of FPS-R's philosophy...
 
 ### Introduction
 
 **FPS-R** stands for `Frame-Persistent Stateless Randomisation` (or `静态律动算法` in Chinese). It is a philosophy behind a collection of lightweight algorithmic pattern for simulating persistent yet stateless randomness across a continuous timeline—ideal for procedural motion, glitch aesthetics, synthesised organic behaviour, and analogue artefact emulation.
 
-Inspired by natural behaviours such as eye saccades, animal foraging, human hesitation, predatory stalking, and structured noise, FPS-R produces unpredictability without relying on memory of the previous-frame. It mirrors the rhythm of an explorer's torch as he explores a darkened cave—pausing, twitching, drifting with intent—or the room-clearing manoeuvre of a soldier’s rifle: moving and holding from one strategic point to another, every new holding position disjointed from what came before.  
+Inspired by natural behaviours such as eye saccades, animal foraging, human hesitation, predatory stalking, and structured noise, FPS-R produces unpredictability without relying on memory of the previous-frame. It mirrors the rhythm of an explorer's torch as he explores a darkened cave—pausing, twitching, drifting with intent—or the room-clearing manoeuvre of a soldier's rifle: moving and holding from one strategic point to another, every new holding position disjointed from what came before.  
 > _**FPS-R is a manipulator of values over time, sculpting values and temporal behavior**_
 
 When FPS-R is driven by space instead of time, it becomes something else entirely: a sculptor of forms, a builder of skylines. Its jump-hold logic becomes spatial patterning. Its rhythms become relief.  
@@ -98,7 +98,7 @@ In the spatial domain, FPS-R can be implemented into shaders for vertex displace
 ### Principles and Philosophy
 ---
 ### 🧭 Guiding Principle  
-“FPS-R isn’t a single algorithm. It’s a design philosophy for *shaping signals*. Whether by arithmetic folding or signal quantisation — whether in time or space — the goal is the same: give structure permission to behave.”
+"FPS-R isn't a single algorithm. It's a design philosophy for *shaping signals*. Whether by arithmetic folding or signal quantisation — whether in time or space — the goal is the same: give structure permission to behave."
 
 
 ### 🎭 Motion Philosophy  
@@ -110,19 +110,19 @@ It does not switch modes—it sculpts time. The values may be random, but *when*
 
 What emerges is not chaos, but *temporal behaviour shaped by structure*.
 
-> 🧒 This rhythm echoes freeze-tag games across cultures — **“A-E-I-O-U!”** in Singapore,  
-> **“Red Light, Green Light”** in the U.S., **“무궁화 꽃이 피었습니다”** in Korea, **“木头人” in Chinese cultures**,  
-> **“Grandmother’s Footsteps”** in the UK, **“1, 2, 3 Soleil!”** in France, or **“Statues”** in Greece.  
+> 🧒 This rhythm echoes freeze-tag games across cultures — **"A-E-I-O-U!"** in Singapore,  
+> **"Red Light, Green Light"** in the U.S., **"무궁화 꽃이 피었습니다"** in Korea, **"木头人" in Chinese cultures**,  
+> **"Grandmother's Footsteps"** in the UK, **"1, 2, 3 Soleil!"** in France, or **"Statues"** in Greece.  
 > Each moment of stillness feels impulsive yet structured —  
 > a hidden choreography of burst and restraint.
 
-> 🧠 Teaching Note: “No-sim is the best sim.”  
+> 🧠 Teaching Note: "No-sim is the best sim."  
 > In teaching Houdini—which is famed for simulation—I often remind students that building a procedural system without frame-to-frame dependencies is often superior to relying on complex simulations.  
 > The most elegant systems allow each frame to stand alone—yet somehow feel like they remember the past.
 
 ---
 
-## 🗣 A New Grammar: “Randomised Move-and-Hold”
+## 🗣 A New Grammar: "Randomised Move-and-Hold"
 
 FPS-R introduces not just a new fet of algorithms, but a new *lexicon* for motion.  
 What it produces is not a filter or a curve — but a compositional structure:  
@@ -139,11 +139,11 @@ classDef darkYellow fill:#B8860B,stroke:#986609,stroke-width:3px,rx:10,ry:10;
 classDef darkRed fill:#8B0000,stroke:#5B0000,stroke-width:3px,rx:10,ry:10;
 classDef red fill:#FF0000,stroke:#AA0000,stroke-width:3px,rx:10,ry:10;
 ``` 
+``` 
 
 We call this behavior **Randomised Move-and-Hold**.  
 
-It captures the quality of twitch, of deliberation,  
-of pauses that feel like thought.
+It captures the quality of twitch, of deliberation, of pauses that feel like thought.
 
 <p align="center">
   <b>
@@ -169,10 +169,10 @@ of pauses that feel like thought.
 ## 🎞 Sample Uses in Animation
 
 ![Single Eyeball Look Straight Ahead with Saccades](resources/readme/images/h_fpsr_01_v002_02.gif)  
-*Eye saccades or darting behaviour in Houdini – Single Eyeball Look Straight Ahead with Saccades*
+*Eye saccades or darting behaviour in Houdini — Single Eyeball Look Straight Ahead with Saccades*
 
 ![Double Eyeballs Look at a Moving Box with Layered FPS-R Saccades](resources/readme/images/h_fpsr_01_v002.gif)  
-*Saccades layered on top of object tracking in Houdini – Double Eyeballs Look at a Moving Box with Layered FPS-R Saccades*
+*Saccades layered on top of object tracking in Houdini — Double Eyeballs Look at a Moving Box with Layered FPS-R Saccades*
 
 ---
 ## 🧱 Sample Uses in Geometry Generation
@@ -181,9 +181,9 @@ of pauses that feel like thought.
 
 ## 💡 Why Do I Need Another Random Stream Generator?
 
-### 🧬 The Nature of “Held” Randomness
+### 🧬 The Nature of "Held" Randomness
 
-In both natural and artificial systems, randomness is rarely pure noise—it often lingers, persists, or evolves in a way that feels intentional. Whether it’s the shimmer of dappled light, the jitter of analogue machinery, or the twitchy searching of eye saccades, we encounter random behaviours that hold their shape or drift over time. Yet despite how ubiquitous this phenomenon is, most content creation tools are ill-equipped to simulate, emulate and represent it in an intuitively straightforward and lightweight manner. Replicating this structured unpredictability often requires labour-intensive custom coding or non-intuitive workarounds.
+In both natural and artificial systems, randomness is rarely pure noise—it often lingers, persists, or evolves in a way that feels intentional. Whether it's the shimmer of dappled light, the jitter of analogue machinery, or the twitchy searching of eye saccades, we encounter random behaviours that hold their shape or drift over time. Yet despite how ubiquitous this phenomenon is, most content creation tools are ill-equipped to simulate, emulate and represent it in an intuitively straightforward and lightweight manner. Replicating this structured unpredictability often requires labour-intensive custom coding or non-intuitive workarounds.
 
 > ✒️ Metaphor Note: *The FPS-R system is like a public pen at the post office.*  
 > People come and go: one picks it up, another leaves it askew, sometimes no one touches it for hours.  
@@ -207,7 +207,7 @@ While powerful for generating cellular textures, standard Worley noise tends to 
 Additionally, it requires multiple computation steps—lookup tables, distance evaluations, sorting—which can be costly, especially when combining higher-order Fn layers, applying input warping, or layering across octaves.  
 These techniques increase complexity and make Worley noise more difficult to visualise or intuitively control compared to simpler stateless methods. 
 
-- **Previous-frame dependent logic**: This method can emulate “held” randomness by passing state from frame to frame. However, it introduces complexity and tightly couples your logic to platforms that support such state sharing (e.g., Houdini). Furthermore, it often cannot be implemented in lightweight contexts like expression fields or shader snippets, limiting its portability.
+- **Previous-frame dependent logic**: This method can emulate "held" randomness by passing state from frame to frame. However, it introduces complexity and tightly couples your logic to platforms that support such state sharing (e.g., Houdini). Furthermore, it often cannot be implemented in lightweight contexts like expression fields or shader snippets, limiting its portability.
 
 ### ⚙️ Why FPS-R is Different
 
@@ -250,7 +250,7 @@ A deterministic pseudo-random index selector for flickering, logic switching, an
 ---
 ## 🏙 Spatial Extension: From Time to Space
 
-**FPS-R doesn’t just animate. It extrudes. It embosses. It *grows surfaces*.**
+**FPS-R doesn't just animate. It extrudes. It embosses. It *grows surfaces*.**
 
 By replacing time (`$F`, `@Frame`, etc.) with space (`x`, `y`, `uv`, or `position`), FPS-R becomes a **procedural modeling toolkit**—ideal for generating blocky silhouettes, architectural detail, and sci-fi surface features.
 
@@ -282,7 +282,7 @@ QS becomes a **signal switcher** in the spatial domain:
 - Swap randomisation engines (Perlin, Worley, texture samplers)  
 - Turn off quantisation for fluid transitions  
 - Amplify for brutalist modularity or broken repetition
-> “Just as QS modulates time by switching behavioural regimes, it can modulate space by switching surface logic—turning texture banks or heightmap engines on and off with structured unpredictability.”
+> "Just as QS modulates time by switching behavioural regimes, it can modulate space by switching surface logic—turning texture banks or heightmap engines on and off with structured unpredictability."
 
 ---
 ## 🧠 Recursive Chaos: FPS-R as Modulator
@@ -330,7 +330,12 @@ Ultimately, this reframes FPS-R as more than procedural fodder—it becomes a **
 ---
 ## 🧪 Domains of Application
 
-FPS-R operates as an expressive behavioral layer in systems that separate **intent selection** from **motion execution**. Across the following domains, a higher-level system defines **Macro-Intent** (goals, modes, or states), while FPS-R provides **Micro-Behavior**—organic, stateless texture that enriches execution with non-repetitive nuance.
+FPS-R operates as an expressive behavioral layer in systems that separate **intent selection** from **motion execution**. Across the following domains, a higher-level system defines **Macro-Intent** (goals, modes, or states), while FPS-R provides **Micro-Behavior**—organic, stateless texture that enriches execution with non-repetitive nuance. 
+
+Though the examples listed above aim to be comprehensive, they remain but fragments of FPS-R's expressive reach. Forasmuch as a system can be stateless yet evocative, the potential applications of FPS-R extend beyond simulation—into domains where behavior must be shaped, described, or perpetuated with nuance.
+
+Whether used to animate hesitation, actuate impulsive drift, or mathematically encode deliberation itself, FPS-R offers a generative framework for organic unpredictability—adaptable wherever signal and intention intersect.
+
 
 ### 🕶️ AR/VR and Human-Centered Interaction
 - **Synthetic User Gaze Generation**  
@@ -363,6 +368,61 @@ FPS-R operates as an expressive behavioral layer in systems that separate **inte
 - **Stateless Behavioral Synthesis under Constraint**  
   Generates expressive behavior in low-memory, low-latency contexts. Ideal for microcontroller-controlled installations, generative art, and deterministic chaos systems.
 
+### 🎼 Domains of Application in Audio and Composition
+FPS-R can be synced not just to arbitrary time, but to **musical time signatures**—enabling rhythmic awareness that aligns with compositional intent.  
+This lets the algorithm behave meaningfully within structured beats, bars, and measures.  
+  
+Instead of treating "time" as a generic linear input, FPS-R can use **beat-level granularity**—quarter notes, eighths, swing grids, syncopations—mapped onto modular or switching logic.  
+  
+This transforms FPS-R into a **musical decision engine**:
+
+- It can recognize **downbeats and offbeats** as strategic moments for modulation.
+- It allows probabilistic jumps **at musically significant intervals** (e.g., bar endings, phrase transitions).
+- It enables behavior that feels **groove-aware**, supporting both glitch aesthetics and compositional phrasing.  
+
+**🎵 Generative Composition Tool**
+  - Use FPS-R to modulate motifs, insert fills, or reshape melodic contours *only at measure endings* or rhythmic breakpoints.  
+  - Create phrases that never loop identically but feel anchored in musical logic.  
+
+**🥁 Rhythmic Texture Driver**
+  - Apply SM logic across fractional beat durations—like 1/8, 1/3, 5/16—to produce polyrhythmic overlays and emergent groove.  
+  - Ideal for percussion sequencing and FX automation.  
+
+**🔀 Live Remix Engine**
+  - Route loop elements through a QS-style selector synced to BPM.  
+  - At rhythmic thresholds (e.g., every 4 bars), FPS-R decides: *switch loop, glitch FX, or re-affirm current pattern.*
+
+**🎹 Expressive Instrument Behavior**  
+- Modulate synth parameters (e.g., cutoff, resonance, pitch, LFO rate) at rhythmic or non-linear intervals using SM or QS logic.  
+- Apply subtle variations to dynamics, attack profiles, or phrasing, making instruments feel more "performed" than programmed.  
+- Use FPS-R to subtly enhance or completely automate continuous controllers like modulation wheels, glide amounts, or per-note expression—*depending on how much expressive control you choose to surrender*.  
+- Ideal for ambient layers, modular rigs, generative soundscapes, or adaptive scoring systems—where nuance matters more than predictability.  
+- Enables real-time performance augmentation without memory or automation curves.
+
+**📻 Analogue Circuit Emulation**  
+- Emulates instability in analogue gear—bias drift, oscillator inconsistencies, noisy feedback loops—using structured randomness.  
+- Introduces non-repeating quirks like filter wobbles, gain surges, capacitor fatigue, or thermal modulation—without needing sample-perfect modeling.  
+- QS logic can simulate behavioral regime switches—e.g., a tube "warming up," or an overdriven circuit jumping behavior modes.  
+- Works at modulation layer (flutter), output stage (saturation jump), or control envelope (detuned unpredictability).  
+- FPS-R's stateless nature ensures low CPU usage—perfect for real-time plugin environments or embedded DSP.  
+- Complements machine-learning-based approaches, offering procedural texture that bridges expressive realism and computational tractability.
+> 🎛️ *FPS-R doesn't mimic circuits—it replicates their temperament.*
+
+
+**👟 Foley and Movement Stylisation**
+  - Apply QS jumps to footstep EQ, reverb, or timing—triggering stylistic shifts at grid-aligned pulses (e.g. floor changes, gait pivots).
+
+**📡 Ambient Soundscape Evolution**
+  - Use beat-aware SM rhythms to drive background environmental audio (wind, rain, hums).  
+  - Subtle shifts feel natural and musically tuned.
+
+**🗣️ Dynamic Speech Cadence**
+  - Modulate speech timing, emphasis, or pitch based on rhythmic mapping.  
+  - FPS-R shapes phrase delivery without memory, yet sounds intentional and emotionally varied.
+
+> 🎵 Note: By syncing modular and switching logic to musical timing grids, FPS-R becomes not just a procedural tool—but a **tempo-sensitive composer**, capable of phrasing with nuance and glitching with groove.
+
+
 ### 🧠 Cognitive Modeling and Generative Thought
 
 FPS-R extends beyond expressive motion into **synthetic cognition**, where it serves as a catalyst for emergent reasoning and idea synthesis. This represents the apex of its conceptual reach—where simulation becomes origination.
@@ -381,76 +441,73 @@ FPS-R extends beyond expressive motion into **synthetic cognition**, where it se
 
   The result is a synthesized idea that is not merely a blend of endpoints, but a **path-dependent composition**—one where the journey shapes the destination, and stochastic sampling enriches conceptual texture. This moves beyond simulating the appearance of cognition and into the territory of **generating synthetic thought** with structured expressive motion.
 
+### 🌐 Closing Thoughts on Usage
 
+The examples above chart a mere perimeter. FPS-R's grammar has not reached its edge.
+
+Whether embedded in a gesture, a skyline, a decision, or a whisper of thought—this system awaits new translations.
+
+So take it. Reshape it. Let it hesitate where no behavior has paused before.
+
+🚀 *To modulate boldly, where no signal has modulated before.*
 
 
 
 ---
 
-## 🔩 How FPS-R Works
+## 🔩 How FPS-R Works (A Gentle Primer)
 
-At the heart of FPS-R is **coordinate-indexed determinism**: whether working in time (`@Frame`, `$F`) or space (`x`, `uv`, `position`), FPS-R uses arithmetic logic—modulo cycles, quantisation bins, and deterministic `rand()` calls—to generate values that appear to "hold" across ranges.  
+At its heart, FPS-R is a rhythm machine—generating unpredictable but *structured* signals over time or space.  
+It doesn't store memory. It doesn't know what came before.  
+Yet what emerges feels like hesitation, twitch, or drift.
 
-There is no state stored. Each evaluation is independent. Yet, what emerges feels intentional: persistent regions, jumpy intervals, and layered memory illusions.  
-It’s a sleight of hand using math: *perceived continuity without simulation.*
+You tell FPS-R which frame (or position) it's in, and it sculpts a value based on simple math:  
+modular rhythms, seeded randomness, layered transitions.  
+From that alone, it creates the illusion of thought—without ever thinking.
 
----
+FPS-R unfolds through two intertwined methods.  
+Each one offers a unique lens—structured pulses that unlock different facets of unpredictability.
+  
 
-## 🌀 How It Works: Stacked Modulo (SM)
+Here's the basic idea:
 
-SM uses **layered modulus operations** combined with shifting `rand()` seeds to create output that seems to "hold" values across multiple frames or spatial coordinates. The result: a pattern of persistent values interrupted by unexpected jumps.
+### 🎼 Stacked Modulo (SM)
+Like overlapping metronomes—each frame lands within multiple rhythm layers, each with its own time signature.   
+Some tick slowly, some twitch fast. Where their cycles overlap, a value is held… until one metronome hits the end of its measure—and triggers a jump.  
 
-### Core Mechanism
+When does the signal hold?
+- The current frame lands within a stable rhythm layer intersection.
+- None of the modulo layers reach the end of their cycle.
 
-1. **Primary Modulus Control**  
-   The input coordinate (e.g. `@Frame`, `x`, or `uv.x`) is divided by a tunable modulus (e.g. `mod($F, 24)`), which segments the timeline or space into consistent-sized “holding zones.”
+When does the signal jump?
+- One or more rhythm layers complete a cycle (reach "end of measure").
+- The modular alignment causes a break in value continuity.
+- A new composite rhythm is formed, triggering the next held value.
 
-2. **Randomised Value per Zone**  
-   Each segment outputs a deterministic `rand()` seeded by its segment index:
-   ```c
-   rand(floor($F / 24) + seed)
-   ```
+### ✴️ Quantised Switching (QS)
+In its most basic form, Quantised Switching is a signal selector. Two signals (typically sine waves) are generated—each with its own time signature, much like SM's layered rhythms.  
+But instead of flowing smoothly, each signal is sliced into discrete steps. Another rhythm governs the selector itself.  
+When the selector reaches the end of its measure, a jump occurs—triggering a *probable* switch to the alternate signal (though it may stay).  
+Separately, if the currently selected signal jumps between steps, a jump in the final value also happens.  
 
-3. **Stacking for Complexity** 
-    Multiple mod stages can be layered to create semi-regular but interfering hold patterns. Each layer contributes a different "rhythm," producing a combined signal that feels structured but unpredictable.
-    - Think rhythmic polyrhythms or layered tectonic plates.
-    - Outputs “memory without memory,” tuned by frequency and phase.
+When does the signal hold?
+- The stepped value from the selected signal remains unchanged.
+- The selector rhythm is still mid-cycle (not yet at the end of a measure).
 
-### Behavior
-- Short mod spans → twitchy impulse
-- Long mod spans → hesitant deliberation
-- Layered mods → emergent switching logic, without simulation
+When does the signal jump?
+- The selector rhythm completes its measure → probabilistic switch occurs.
+- The stepped value of the selected signal changes between frames.
+- Either event causes a discrete jump in output—without memory of prior state.
+
+These layered, deterministic jumps—both in selection and value—offer stylistic glitch, rhythmic flicker, and behavioral unpredictability.
 
 
----
+Each method is stateless. Each moment is decided without memory.  
+And yet, the result feels strangely alive.
 
-## ✴ How It Works: Quantised Switching (QS)
+👉 *Want to unpack the full mechanism, token by token? Dive into the technical breakdown here:*  
+**[Read FPSR_Tech.md →](resources/readme/FPSR_Tech.md)**
 
-While SM focuses on **temporal rhythm**, QS enables **value switching** across discrete options—like glitch matrices, logic multiplexers, or stylistic gates. QS can use any input signal (not just random) and quantise it into hold states.
-
-### Core Mechanism
-
-1. **Value Bank**  
-   Define a set of discrete outcomes—values, palettes, animation states, functions.
-
-2. **Signal Lookup**  
-   Use a deterministic signal (random or procedural) to select an index:  
-   `int index = floor(rand(@Frame) * numOptions);`  
-   `output = valueBank[index];`
-
-3. **Optional Quantisation**  
-   Apply stepped or smoothed quantisation to the input signal to make transitions feel chunky, abrupt, or smooth.
-
-### Behavior
-
-- Acts like a **switcher**: swaps logic branches, colour palettes, or procedural regimes  
-- Can bypass `rand()` entirely to create *structured switching* 
-- Can bypass quantisation or posterisation entirely to reveal the original coherent continuous streams that are feeding the switcher.
-- Can swap out the default sine waves streams for any signal generating function (noise, look-up array) to achieve completely different behaviours (in the temporal domain), and different aesthetic looks (in the spatial domain).
-- (Time) Ideal for glitch logic, state machines, or recursive style variation
-- (Space) Ideal for creating procedural geometrical structures.
-
-> QS is not about rhythm—it’s about **selection**. And it works beautifully when combined with SM to modulate *when* changes happen, and *what* they reveal.
 
 ---
 ## ⚠️ Tiling Note: Seamlessness in Spatial FPS-R
