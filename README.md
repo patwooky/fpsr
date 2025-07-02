@@ -15,7 +15,7 @@
   - [🎭 Motion Philosophy](#MotionPhil)
   - [📐 Structure and the Illusion of Chaos](#StructureChaos)
 - [🗣 A New Grammar: "Randomised Move-and-Hold"](#ANewGrammar)
-- [✨ Key Features](#-key-features-keyfeatures)
+- [✨ Key Features](#-key-features)
 - [🎞 Sample Uses in Animation](#SampleUsesAnim)
 - [🧱 Sample Uses in Geometry Generation](#SampleUsesinGeo)
 - [💡 Why Do I Need Another Random Stream Generator?](#WhyDoINeed)
@@ -166,7 +166,7 @@ It captures the quality of twitch, of deliberation, of pauses that feel like tho
 
 ---
 
-## ✨ Key Features {#KeyFeatures}
+## ✨ Key Features
 
 - Frame-anchored **repeatability** without storing state  
 - Tunable **chaos profiles** with modular curve sculpting  
