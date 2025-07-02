@@ -15,7 +15,7 @@
   - [🎭 Motion Philosophy](#MotionPhil)
   - [📐 Structure and the Illusion of Chaos](#StructureChaos)
 - [🗣 A New Grammar: "Randomised Move-and-Hold"](#ANewGrammar)
-- [✨ Key Features](#KeyFeatures)
+- [✨ Key Features](#-key-features-keyfeatures)
 - [🎞 Sample Uses in Animation](#SampleUsesAnim)
 - [🧱 Sample Uses in Geometry Generation](#SampleUsesinGeo)
 - [💡 Why Do I Need Another Random Stream Generator?](#WhyDoINeed)
