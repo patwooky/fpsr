@@ -248,7 +248,7 @@ The original FPS-R method. Uses layered modulus operations and shifting offsets 
 **SM Features:**
 
 - Adjustable upper bounds for how long values are held  
-- Adjustable value for a _more probable_ lower bound
+- Adjustable lower bounds to influence the minimum possible hold duration between jumps.
 - Uses `rand()` and `mod()` functions on current frame  
 - Works in one-liner form in many toolkits
 
