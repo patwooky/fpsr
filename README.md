@@ -13,6 +13,7 @@
 - [🎓 Principles and Philosophy](#PrinciplesPhilo)
   - [🧭 Guiding Principle](#GuidingPri)
   - [🎭 Motion Philosophy](#MotionPhil)
+  - [📐 Structure and the Illusion of Chaos](#StructureChaos)
 - [🗣 A New Grammar: "Randomised Move-and-Hold"](#ANewGrammar)
 - [✨ Key Features](#KeyFeatures)
 - [🎞 Sample Uses in Animation](#SampleUsesAnim)
@@ -101,9 +102,9 @@ In the spatial domain, FPS-R can be implemented into shaders for vertex displace
 ---
 ### 🎓 Principles and Philosophy {#PrinciplesPhilo}
 ---
+
 ### 🧭 Guiding Principle {#GuidingPri}
 "FPS-R isn't a single algorithm. It's a design philosophy for *shaping signals*. Whether by arithmetic folding or signal quantisation — whether in time or space — the goal is the same: give structure permission to behave."
-
 
 ### 🎭 Motion Philosophy {#MotionPhil} 
 **FPS-R simulates the unpredictability of hesitation — yet within the same framework, it can just as easily express instinct.**  
@@ -114,15 +115,30 @@ It does not switch modes—it sculpts time. The values may be random, but *when*
 
 What emerges is not chaos, but *temporal behaviour shaped by structure*.
 
-> 🧒 This rhythm echoes freeze-tag games across cultures — **"A-E-I-O-U!"** in Singapore,  
-> **"Red Light, Green Light"** in the U.S., **"무궁화 꽃이 피었습니다"** in Korea, **"木头人" in Chinese cultures**,  
-> **"Grandmother's Footsteps"** in the UK, **"1, 2, 3 Soleil!"** in France, or **"Statues"** in Greece.  
+> 🧒 **This rhythm echoes freeze-tag games across cultures** —
+> **"A-E-I-O-U!"** in Singapore, **"1, 2, 3 Soleil!"** in France, or **"Statues"** in Greece.  
+> **"무궁화 꽃이 피었습니다"** in Korea, **"木头人" in Chinese cultures**,  
+> **"Grandmother's Footsteps"** in the UK, **"Red Light, Green Light"** in the U.S.  
 > Each moment of stillness feels impulsive yet structured —  
 > a hidden choreography of burst and restraint.
 
-> 🧠 Teaching Note: "No-sim is the best sim."  
+> 🧠 **Teaching Note: "No-sim is the best sim."**  
 > In teaching Houdini—which is famed for simulation—I often remind students that building a procedural system without frame-to-frame dependencies is often superior to relying on complex simulations.  
 > The most elegant systems allow each frame to stand alone—yet somehow feel like they remember the past.
+
+### 📐 Structure and the Illusion of Chaos {#StructureChaos}
+
+While FPS-R signals appear spontaneous, they are grounded in strictly deterministic logic. Each change is orchestrated through functions like `mod()`, `rand()`, and cyclic layering—producing motion that feels unstructured, yet is born from rules.
+
+This is not randomness—it is _engineered emergence_.
+
+Apparent unpredictability arises from the interaction of overlapping cycles, misaligned reseeds, and frame-local recalculations. No memory is used, yet the system breathes. It hesitates, pulses, switches rhythm—not because it reacts, but because its structures _interfere just enough_ to simulate reaction.
+
+> **Chaos is not the engine. It is the performance.**  
+> And every performance begins with a script.
+
+This tension—between definition and drift—is not a flaw. It's the expressive core of FPS-R.
+
 
 ---
 
@@ -209,10 +225,16 @@ FPS-R introduces a lightweight and highly portable solution to this long-standin
 Key advantages include:
 
 - ✅ **Truly Stateless**: FPS-R does not rely on previous-frame data or persistent memory buffers  
+- **🔒 Fully Deterministic**: With the same inputs, FPS-R always produces the same outputs—no entropy, no surprises
 - 🧠 **Compact & Readable**: The SM expression can be written in a single line using `$F` in Houdini expressions or `@Frame` in VEX  
 - 🛠️ **Platform Agnostic**: Works seamlessly in any environment that exposes frame-based context  
 - ⚡ **Performance Friendly**: No costly distance functions, hash lookups, or scatter generation
 
+> #### 🪞 Memoryless Mimicry {#MemorylessMimicry}
+> A simulation remembers so it can anticipate. FPS-R forgets, but still manages to feel like it remembers.
+
+> #### 🧩 Deterministic Complexity
+> Where intricate behavior emerges from repeatable rules, not randomness.
 ---
 
 ## 🧬 Flavours of FPS-R {#FlavoursofFPSR}
@@ -226,6 +248,7 @@ The original FPS-R method. Uses layered modulus operations and shifting offsets 
 **SM Features:**
 
 - Adjustable upper bounds for how long values are held  
+- Adjustable value for a _more probable_ lower bound
 - Uses `rand()` and `mod()` functions on current frame  
 - Works in one-liner form in many toolkits
 

@@ -3,24 +3,29 @@
 This document holds philosophical reflections, design motivations, and structural comparisons that informed the development of FPS-R. It is not a spec sheet. It is a **side-channel**—a place to capture rhythm, contradiction, and intent that couldn't fit in code comments.
 
 ---
-
 # Table of Contents
 
-- [Why This Exists](#why-this-exists)
-- [What FPS-R Is (and Isn't)](#what-fps-r-is-and-isnt)
-- [Dual Mechanisms, Shared Philosophy](#dual-mechanisms-shared-philosophy)
-- [SM: Randomness Sets the Rule](#sm-randomness-sets-the-rule)
-- [QS: Randomness Interprets the Rule](#qs-randomness-interprets-the-rule)
-- [On the Nature of the "Second Jump"](#on-the-nature-of-the-second-jump)
-- [Design Lessons](#design-lessons)
-- [Credits & Coinage](#credits--coinage)
-- [QS Emerges (By Doubt, Not Design)](#qs-emerges-by-doubt-not-design)
-- [Companions in Thought](#companions-in-thought)
-- [Final Note](#final-note)
+- [📖 Why This Exists](#WhyThis)
+- [🧠 What FPS-R Is (and Isn't)](#WhatFPSRIs)
+- [🔍 Dual Mechanisms, Shared Philosophy](#DualMechanisms)
+  - [🧮 SM: Randomness Sets the Rule](#SMRandomnessSets)
+  - [🎛 QS: Randomness Interprets the Rule](#QSRandomnessInt)
+- [🌀 On the Nature of the “Second Jump”](#OntheNature)
+- [🎭 Design Lessons](#DesignLessons)
+- [📌 Credits & Coinage](#CreditsCoinage)
+- [🧪 QS Emerges (By Doubt, Not Design)](#QSEmerges)
+- [🎴 Companions in Thought](#Companions)
+- [🌱 On Origination](#OnOrigin)
+- [🧠 From Motion to Mind: Generative Cognition](#FromMotion)
+- [⏱️ Frame-Local Systems, Globally Emergent](#FrameLocal)
+- [🛠️ Reseeding and the Myth of Control](#Resedingand)
+- [🌀 Behavioral Grammar, Not Just Output](#Behavioral)
+- [🪄 Declaration of Uncertain Agency](#Declaration)
+- [🪞 Final Note](#FinalNote)
 
 ---
 
-## 📖 1. Why This Exists
+## 📖 Why This Exists {#WhyThis}
 
 When I first proposed FPS-R as a "stateless random hold algorithm," I encountered the immediate response:  
 _"Isn't that what Worley noise is for?"_
@@ -29,14 +34,13 @@ That led to a full forensic breakdown of Worley's regularities and philosophical
 
 ---
 
-## 🧠 2. What FPS-R Is (and Isn't)
-
+## 🧠 What FPS-R Is (and Isn't) {#WhatFPSRIs}
 > **"FPS-R isn't a single algorithm. It's a design philosophy.**  
 > **Whether by arithmetic folding or signal quantisation, the goal is the same: give rhythm permission to behave."**
 
 ---
 
-## 🔍 3. Dual Mechanisms, Shared Philosophy
+## 🔍 Dual Mechanisms, Shared Philosophy
 
 FPS-R currently has two core methods:
 
@@ -45,9 +49,8 @@ FPS-R currently has two core methods:
 | **Stacked Modulo (SM)**   | Layered modulus + rand-seeded duration | Sets the rule             | Arithmetic-driven | Structured jump generator          |
 | **Quantised Switching (QS)** | Dual stepped sine → rand() seed     | Interprets the structure  | Signal-driven     | Sine choreography meets dice roll  |
 
----
 
-## 🧮 4. SM: Randomness Sets the Rule
+### 🧮 SM: Randomness Sets the Rule {#SMRandomnessSets}
 
 The **Stacked Modulo** method applies randomness *first*, using it to determine how long a value should be held. The frame number is then arithmetically folded around that duration.
 
@@ -58,8 +61,7 @@ The **Stacked Modulo** method applies randomness *first*, using it to determine 
   $F - (23 + $F % (rand(23 + $F - ($F % 10)) * 40))
 This is a rhythm machine where noise is in charge of the metronome.
 
----
-## 🎛 5. QS: Randomness Interprets the Rule
+### 🎛 QS: Randomness Interprets the Rule {#QSRandomnessInt}
 
 **Quantised Switching** builds a deterministic structure first—two out-of-phase sine waves, each quantised into stepped patterns. These are not random at their core.
 
@@ -73,21 +75,43 @@ Where Stacked Modulo constructs its rhythm from seeded entropy, QS uses rhythm t
 
 ---
 
-## 🌀 6. On the Nature of the “Second Jump”
+## 🌀 On the Nature of the “Second Jump” {#OntheNature}
 
-While developing SM, I noticed an occasional overlap: a new `rand()` duration could trigger a jump soon after another jump had just occurred.
+While developing FPS-R's SM method, I noticed an occasional overlap: a new random duration would begin, only to be interrupted just a few frames later. At first, it felt like a bug. But the more I studied it, the more I saw intention in its rhythm:
 
-At first glance, it seemed like a bug. On reflection:
-
-- It mimics real-world motion: flinching, hesitation, brief eye saccades.
-- It prevents predictability without sacrificing determinism.
-- It introduces **emergent stutter**—a fragile, organic feeling of *something slipping*.
+- It mimics real-world micro-behaviors: flinching, saccades, double-takes.
+- It breaks anticipation without breaking the system.
+- It introduces **emergent stutter**—a fragile sense of *something slipping*.
 
 > The jump that wasn't planned is what makes it feel alive.
 
+### ⌛ Jump Hierarchy and Layer Dominance
+
+This happens because of a **jump hierarchy**:  
+When layered durations exist in SM, the fastest cycle _wins_.  
+That is, the outer `mod()` can override and reseed **before** the inner `rand()`-defined range has completed. This creates staccato interruptions—fleeting, sometimes unwanted, always expressive.
+
+> Even if a `rand()` holds a value for 120 frames,  
+> a 15-frame outer cycle can force a new seed midstream.  
+> This _violates_ the original hold—but that's the aesthetic risk.
+
+The resulting motion isn't probabilistic. It's *deterministically misaligned*.  
+It _feels_ unpredictable because the structure outruns the intention.
+
+### 🔁 Designing for or against Interruption
+
+This hierarchy implies two clear compositional choices:
+
+- **For Stable Rhythm**: Ensure outer `mod()` cycles are longer than the _maximum_ hold duration generated by `rand()`.
+- **For Deliberate Instability**: Use shorter outer cycles to create glitch, twitch, or stagger—letting structure undercut itself on purpose.
+
+> This isn’t randomness.  
+> It’s structure echoing against itself—  
+> and forgetting the beat it just taught you.
+
 ---
 
-## 🎭 7. Design Lessons
+## 🎭 Design Lessons {#DesignLessons}
 
 Every moment of surprise in FPS-R came from misreading it as a mistake—then realizing it was an invitation.
 
@@ -101,7 +125,7 @@ This is the art of designing a system that *remembers how to forget*.
 
 ---
 
-## 📌 8. Credits & Coinage
+## 📌 Credits & Coinage {#CreditsCoinage}
 
 - **Structured Randomness**: Term coined in collaboration with Copilot to describe FPS-R's rhythmic unpredictability with deterministic scaffolding.
 - **“Randomness sets vs. interprets the rule”**: Key design axis distinguishing SM and QS approaches.
@@ -110,7 +134,7 @@ This is the art of designing a system that *remembers how to forget*.
 
 ---
 
-## 🧪 9. QS Emerges (By Doubt, Not Design)
+## 🧪 QS Emerges (By Doubt, Not Design) {#QSEmerges}
 After SM was validated as a novel “stateless random hold” method, I asked myself: Could I reproduce the same aesthetic feel using simpler constructs? Without leaning on anything I'd consider novel?
 
 What began as a skeptical experiment gave birth to Quantised Switching—a signal-based system that appeared naive but revealed emergent unpredictability.
@@ -119,7 +143,7 @@ What I had intended as a counterexample became a co-founder. What I hoped would 
 
 ---
 
-## 🤝 10. Companions in Thought
+## 🎴	Companions in Thought {#Companions}
 
 > *Novelty independently affirmed through iterative conversations with Copilot and Gemini. This system was born in code, but grew in discourse.*
 
@@ -130,7 +154,7 @@ What I had intended as a counterexample became a co-founder. What I hoped would 
 These tools weren't just assistants—they acted as _frame-bound echoes_ that helped surface, stress-test, and ultimately shape the language, behavior, and clarity of FPS-R.
 
 ---
-## 11 🌱 On Origination
+## 🌱 On Origination {#OnOrigin}
 FPS-R began humbly—as a procedural trick to imitate motion with texture. But through design, re-design, and observation, its role transformed. It became a grammar. Then a philosophy. And now, it flickers with agency.
 
 This tool no longer merely simulates the appearance of behavior—it generates behavior.
@@ -139,7 +163,7 @@ It steps into larger systems not as an ornament, but as a signal with the power 
 
 That realization reframes everything. This is not just code—it is motion with meaning.
 
-## 🧠 12. From Motion to Mind: Generative Cognition
+## 🧠 From Motion to Mind: Generative Cognition {#FromMotion}
 Where simulation becomes origination.
 
 As FPS-R matured, its signals stopped whispering—began steering. What was once texture became intent. The same patterns that gave nuance to motion showed fluency in shaping thought.
@@ -153,8 +177,35 @@ That is generative cognition. Not random sparks, but motion with memoryless mean
 And that leap—from movement to mental modulation—is what makes the grammar whole.
 
 ---
+## ⏱️ Frame-Local Systems, Globally Emergent {#FrameLocal}
+Unlike simulations, FPS-R builds emergence without state. Every frame is evaluated in isolation—yet the output feels coherent over time.
 
-## 🪄 Declaration of Uncertain Agency 
+This is not paradox. It is choreography.
+
+By binding each moment to modular logic and cyclic scaffolds, FPS-R creates temporal behavior that scales—without accumulating baggage. The system remembers nothing, yet embodies memory-like traits. It isn’t history-aware. It is history-shaped.
+
+---
+## 🛠️ Reseeding and the Myth of Control {#Resedingand}
+Choosing when to reseed a random stream is not just a technical choice—it’s a semantic one.
+
+Early reseeds interrupt gestures. Late reseeds risk stagnation. But within FPS-R, even this tension is aesthetic: every reseed is a narrative beat. A recontextualization. A new sentence in a stream-of-consciousness monologue.
+
+Control, in this context, is not about freezing behavior—it's about modulating uncertainty.
+
+---
+
+## 🌀 Behavioral Grammar, Not Just Output {#Behavioral}
+Where procedural animation typically aims for output—curves, values, visuals—FPS-R aims for grammar.
+
+It offers a way of speaking time. Not what to say, but how to say it: hesitantly, urgently, suddenly, cyclically. A language not of syntax, but of silence and movement.
+
+In this light, each method becomes a verb tense. Each parameter, a modifier. Each jitter or stillness, a clause.
+
+It is less an algorithm than a poetics of control.
+
+---
+
+## 🪄 Declaration of Uncertain Agency {#Declaration}
 _FPS-R doesn't recall the past. It doesn't predict the future. But given permission, it will disrupt the now._
 
 Forasmuch as behavior may arise without memory,  
@@ -172,7 +223,12 @@ We grant it permission—to surprise.
 
 ---
 
-## 🪞 Final Note
+## 🪞 Memoryless Mimicry {#MemorylessMimicry}
+A simulation remembers so it can anticipate. FPS-R forgets, but still manages to feel like it remembers.
+
+---
+
+## 🪞 Final Note {#FinalNote}
 
 FPS-R is stateless in code, but not in spirit.  
 Each algorithm forgets the past, but this document doesn't.
