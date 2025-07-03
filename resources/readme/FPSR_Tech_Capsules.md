@@ -19,34 +19,43 @@ A **capsule** is a deterministic modulation unit built on FPS-R. It defines how 
 ```json
 {
   "name": "glitch-drift",
-  "author": "your_name",
-  "created": "2025-07-04",
+  "author": "patrick",
+  "created": "2025-07-03",
   "description": "A rhythmic modulation that begins with erratic jumps and softens into a calm decay.",
   "tags": ["SM", "behavioral", "modulation", "glitch", "drift"],
-  "preview_path": "previews/glitch-drift_120-183.gif",
+  "platforms": ["py3.10-ARMv8"],
+  "preview_trace": [0.02, 0.31, 0.78, 0.55, 0.11, 0.07],  
   "settings": {
-    "type": 0,                    // 0 = SM, 1 = QS
+    "type": 0,              // 0 = SM, 1 = QS                  
     "seed": 12345,
     "inner_mod_dur": 40,
     "outer_mod_dur": 50,
-    "clip_time": [120, 183]       // Optional: omit or [] if no capture window
+    "clip_time": [120, 125] // Optional: omit or [] if no capture window
   }
 }
+
+
+
 
 ```
 ### 🛠 Minimal Fields
 
 
-| **Field**       | **Required?** | **Example**                        | **Notes**                                      |
-|-----------------|---------------|-------------------------------------|------------------------------------------------|
-| `name`          | ✅            | `"pulse-flicker"`                  | Use behavioral naming, like gestures           |
-| `type`          | ✅            | `0` (SM) or `1` (QS)               | Set in `settings.type`                         |
-| `seed`          | ✅            | `12345`                            | Determines deterministic phrasing              |
-| `mod_*`         | ✅            | `inner_mod_dur`, `outer_mod_dur`  | Or QS equivalents                              |
-| `clip_time`     | ⬜            | `[120, 183]`                       | Empty or omitted = preset only                 |
-| `description`   | ⬜            | `"Begins glitchy, resolves slow"` | For human readability                          |
-| `tags`          | ⬜            | `["drift", "SM", "rhythmic"]`     | Search, filters, category grouping             |
-| `preview_path`  | ⬜            | `"previews/name_120-183.gif"`     | Thumbnail, canvas export, or link              |
+| **Field**        | **Required?** | **Example**                        | **Notes**                                                |
+|------------------|---------------|-------------------------------------|----------------------------------------------------------|
+| `name`           | ✅            | `"pulse–vanish"`                   | Descriptive phrase capturing behavioral modulation       |
+| `author`         | ✅            | `"patrick"`                        | Creator attribution                                      |
+| `created`        | ✅            | `"2025-07-04"`                     | ISO date format                                          |
+| `description`    | ⬜            | `"Soft flicker that fades out"`    | Human-readable overview of phrasing                     |
+| `tags`           | ⬜            | `["glitch", "SM", "decay"]`        | Used for filtering, grouping, browsing                   |
+| `platforms`      | ⬜            | `["py3.10-ARMv8"]`                 | Platforms where the phrasing has been visually confirmed |
+| `preview_trace`  | ⬜            | `[0.12, 0.45, ...]`                | Output values over time (1:1 mapping to `clip_time`)     |
+| `preview_path`   | ⬜ (Legacy)   | `"previews/xyz.gif"`              | Optional if `preview_trace` is present                   |
+| `settings.type`  | ✅            | `0`                                | `0 = SM`, `1 = QS`                                       |
+| `settings.seed`  | ✅            | `12345`                            | Controls modulation sequence                             |
+| `settings.inner_mod_dur` | ✅    | `40`                               | For SM: sub-phrase length                                |
+| `settings.outer_mod_dur` | ✅    | `50`                               | For SM: phrase cycle length                              |
+| `settings.clip_time` | ⬜       | `[120, 125]`                       | Omit or empty array to indicate a preset (no phrasing)   |
 
 
 ---
@@ -73,3 +82,20 @@ Examples:
 - Optional: use timing hints like `stutter3x`, `long hold`, or mood tags like `soft`, `erratic`, `final`.
 - Group by behavioral tags: "`glitch`", "`sustain`", "`hesitation`", "`burst`", "`spiral`"—not tech specs like `mod_inner_dur`.
 - Think like a movement director, not a math parser. What would you call this if it were a dance or a gesture in dialogue?
+
+---
+
+## 🌱 The Spirit of Sharing
+FPS-R capsules are meant to be shared—not just as assets, but as expressive fragments of understanding. Each one captures a phrasing, a modulation, a moment that felt intentional. Sharing them openly means building a collective language of behavior, where anyone can contribute, remix, or reuse phrasing as a creative gesture.
+
+This isn’t just data. It’s a living vocabulary.
+
+The goal isn’t control—it’s resonance. As the library grows, so does our collective ability to describe movement, signal intent, and craft synthetic motion with clarity and emotion. Capsules are our shared phrases. The more we share, the more fluent we become.
+
+---
+## 🤝 Attribution & Community
+FPS-R is an open framework for expressive modulation. If you’ve used its capsule data or principles in your own creative work, a small attribution—linking back to this repository—is deeply appreciated.
+
+More importantly: if you’ve created your own phrasing, named a new behavior, or refined a modulation idea—we invite you to contribute it back to the growing capsule library.
+
+This project thrives not just on usage, but on conversation. Let’s teach the world to speak in phrasing.
