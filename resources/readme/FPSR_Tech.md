@@ -1,4 +1,5 @@
 # FPS-R Technical Documentation
+##### This documentation is still in development. While every update strives to be accurate, there will be parts that are incomplete or inaccurate. 
 
 # Table of Contents
 
@@ -54,26 +55,17 @@ This is the foundation of what we've come to call:
 ---
 
 ## 🌀 How It Works: Stacked Modulo (SM)
-
 SM uses **layered modulus operations** combined with shifting `rand()` seeds to create output that seems to "hold" values across multiple frames or spatial coordinates. The result: a pattern of persistent values interrupted by unexpected jumps.
 
 ### Core Mechanism
+The Stacked Modulo (SM) method generates its unique "move-and-hold" rhythm through a nested, procedural process. Instead of using fixed holding zones, it creates a variable-length rhythm where the duration of each hold is itself determined by a nested FPS-R pattern.
+1. **Procedural Hold Duration**  
+   At the core of the function, a simple, high-frequency FPS-R pattern generates a random value. This value is then used to calculate an adaptive hold duration, H, that falls between a defined `minHold` and `maxHold`. This `H` value itself holds steady for a short period before being re-randomized.
+2. **Variable-Length Modulo Cycle**
+   This procedurally generated hold duration, `H`, is then used as the modulus in the main timing operation (`frame % H`). This creates a primary rhythmic cycle whose length is not constant but changes dynamically over time.
 
-#### One-Line Compact
-
-1. **Primary Modulus Control**  
-   The input coordinate (e.g. `@Frame`, `x`, or `uv.x`) is divided by a tunable modulus (e.g. `mod($F, 24)`), which segments the timeline or space into consistent-sized “holding zones.”
-
-2. **Randomised Value per Zone**  
-   Each segment outputs a deterministic `rand()` seeded by its segment index:
-   ```c
-   rand(floor($F / 24) + seed)
-   ```
-
-3. **Stacking for Complexity** 
-    Multiple mod stages can be layered to create semi-regular but interfering hold patterns. Each layer contributes a different "rhythm," producing a combined signal that feels structured but unpredictable.
-    - Think rhythmic polyrhythms or layered tectonic plates.
-    - Outputs “memory without memory,” tuned by frequency and phase.
+3. **Phase-Shifted Seeding**
+   The result of this variable-length modulo is used to create a phase-shifted offset. This offset is subtracted from the main `frame` counter to produce a final, complex seed. It is this constantly shifting, rhythmically inconsistent seed that is fed into the final `rand()` function to produce the output.
 
 ### Behavior
 - Short mod spans → twitchy impulse
@@ -110,3 +102,143 @@ While SM focuses on **temporal rhythm**, QS enables **value switching** across d
 - (Space) Ideal for creating procedural geometrical structures.
 
 > QS is not about rhythm—it's about **selection**. And it works beautifully when combined with SM to modulate *when* changes happen, and *what* they reveal.
+
+---
+
+## Stacked Modulo (SM) - Mathematical Model
+The output is a function of a composite seed, which is the sum of multiple layered rhythm functions.
+<!-- latex markdown -->
+$$
+Seed(t) = \sum_{i=1}^{n} \left\lfloor \frac{t}{P_i} + O_i \right\rfloor
+$$
+$$
+f(t)_{\text{SM}} = \text{rand}\left(Seed(t)\right)
+$$
+**$f(t)$** is the final output of FPS-R:SM.
+Where $P\_i$ is the period and $O\_i$ is the phase offset for the $i$-th rhythm layer.
+
+## Stacked Modulo (SM) - Code
+### One-Line Compact
+This is Stacked Modulo in a nutshell—a simple single-line that tells the whole story. 
+```c 
+frame - (23 + frame % (minHold + floor(rand(23 + frame - (frame % 10)) * (maxHold - minHold))))
+```
+At the heart, FPS-R:SM is a temporal modulation function, where the output adjusts the current frame value in a structured-random way. Let’s unpack it inside-out:
+
+### 🧩 Component Breakdown
+Here’s how the expression works, from the inside out:
+1. `(frame % 10)`
+   - **What it does:** This calculates the remainder when the current `frame` number is divided by 10.
+   - **Observable Outcome:** It produces a simple, repeating sequence of integers: `0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3...`.
+   - **Intent:** This creates a short, rhythmic, 10-frame cycle that acts as the foundational "pacemaker" for the entire system. It defines the smallest unit of time before a _potential_ change can be evaluated.
+2. `(23 + frame - (frame % 10))`
+   - **What it does:** It subtracts the 10-frame cycle from the current `frame` and adds a prime number offset (`23`).
+   - **Observable Outcome:** This calculation effectively quantizes time into 10-frame blocks. For frames 0 through 9, the output is 23. For frames 10 through 19, the output is 33, and so on. The value remains constant for 10-frame intervals.
+   - **Intent:** This is the core of the **reseeding mechanism**. By creating a stable value that only changes every 10 frames, it ensures that the random number generator produces the same result for that entire duration, establishing the "hold" phase. The `23` is a "magic number" used to create a unique starting point for the randomness. This ensures that the "outer" `frame` and the "inner" `frame` do not start off at the same time, minimising unexpected accumulated resonance and cancellation effects.
+3. `rand(...) * (maxHold - minHold)`
+   - **What it does:**  It uses the 10-frame seed to generate a random number between 0.0 and 1.0, then multiplies it by the _range_ of possible hold durations.
+   - **Observable Outcome:** A random floating-point number between 0 and (`maxHold` - `minHold`). Because the seed is stable for 10 frames, this value is also stable for that duration.
+   - **Intent:** This step calculates a random duration within your specified range.
+4. `floor(...)`
+   - **What it does:** It truncates the floating-point result from the previous step, converting it into an integer.
+   - **Observable Outcome:** A random integer between 0 and (`maxHold - minHold - 1`).
+   - **Intent:** This ensures the duration is a whole number, which is cleaner for frame-based calculations.
+5. `minHold + floor(...)`
+   - **What it does:** It adds the `minHold` value to the random integer.
+   - **Observable Outcome:** A final random integer that is guaranteed to be between `minHold` and `maxHold - 1`.
+   - **Intent:** It establishes the final, random hold duration. By adding minHold, you enforce a minimum holding time and, most importantly, prevent the duration from ever being zero, which would cause a "divide by zero" error in the outer modulo operation.
+6. `frame % (minHold + ...)`
+   - **What it does:** The primary **"Stacked Modulo"** operation. The current `frame` is divided by the final, clamped random hold duration, and the remainder is taken.
+   - **Observable Outcome:** A sawtooth wave that ramps from 0 up to the hold duration minus one, then resets to 0.
+   - **Intent:** This generates the core dynamic that resets or "jumps" when the frame count exceeds the calculated hold period.
+7. `frame - (...)`
+   - **What it does:** Subtracts the entire ramping value from the current `frame`.
+   - **Observable Outcome:** A value that remains constant for the duration determined in step 5, and then jumps to a new constant value.
+   - **Intent:** This final step **locks the value**, creating the explicit "hold" state. The subtraction cancels out the frame's increment, resulting in a stable output until the modulo operation triggers a jump.
+
+**Summary of the "Randomised Move-and-Hold" Behavior**
+   - **Hold:** For a random number of frames, the expression outputs a constant, unchanging integer. This duration is controlled by `minHold` and `maxHold` parameters, guaranteeing the hold period falls within a specific, use-defined range. This is the "hold" phase, which creates the illusion of a system that is deliberately pausing or waiting.
+   - **Jump:** Once the current frame count surpasses the randomly generated hold duration, the `frame % (duration)` operation resets. This causes a sudden, discontinuous "jump" in the final output value.
+   - **Reseed:** The seed for the random hold duration is itself updated every 10 frames. This ensures that the system doesn't fall into a simple, repeating loop and that the lengths of the "hold" periods feel unpredictable and organic.
+
+In essence, the expression uses nested, deterministic cycles to create a larger, seemingly random behavior without ever storing information from one frame to the next. By incorporating `minHold` and `maxHold`, it provides direct control over the rhythm of this behavior, perfectly embodying the FPS-R philosophy of generating structured, stateless unpredictability.
+
+### A Defined Function
+Here is a function defined C that goes beyond the compact single-line code. It abstracts the expression into a function with parameters that can be tweaked and controlled. This should be portable across languages and platforms.
+```c
+// A simple, portable pseudo-random number generator that takes an integer seed.
+// Different languages have different rand() implementations, so using a custom
+// one like this ensures identical results on any platform.
+float portable_rand(int seed) {
+    // A common technique for a simple hash-like random number.
+    // The large number can be any arbitrary large float.
+    return fract(sin(float(seed) * 12.9898) * 43758.5453);
+}
+
+/**
+ * Frame-Persistent Stateless Randomisation (Stacked Modulo)
+ *
+ * @param frame The current frame or time input.
+ * @param minHold The minimum duration for a value to hold.
+ * @param maxHold The maximum duration for a value to hold.
+ * @param reseedInterval The fixed interval at which a new duration is calculated.
+ * @param offset An offset to create unique random sequences.
+ * @return A float value between 0.0 and 1.0 that holds for a random duration.
+ */
+float fpsr_sm(int frame, int minHold, int maxHold, int reseedInterval, int offset) {
+    // 1. Calculate the random hold duration.
+    // We use our portable_rand() function and standard math to replace fit01().
+    float rand_for_duration = portable_rand(offset + frame - (frame % reseedInterval));
+    int holdDuration = floor(minHold + rand_for_duration * (maxHold - minHold));
+
+    // Ensure holdDuration is at least 1 to prevent division by zero.
+    if (holdDuration < 1) {
+        holdDuration = 1;
+    }
+
+    // 2. Generate the stable integer "state" for the hold period.
+    int held_integer_state = (offset + frame) - ((offset + frame) % holdDuration);
+
+    // 3. Use the stable integer state as a seed for the final random value.
+    // This is the key two-step process, now fully encapsulated.
+    float final_held_value = portable_rand(held_integer_state);
+
+    return final_held_value;
+}
+
+// Parameters
+int minHoldFrames = 16; // probable minimum held period
+int maxHoldFrames = 24; // maximum held period before cycling
+int reseedFrames = 10; // inner mod cycle timing
+int offset = 23; // offsets the outer frame
+
+// Call the FPSR function
+float randVal = 
+    FPSR(int(@Frame), minHoldFrames, maxHoldFrames, reseedFrames, offset);
+```
+
+### Behaviour of the Stacked Modulo Function
+The expressive range of the Stacked Modulo (SM) method is controlled by the selection of its core timing parameters. The relationship between cycle lengths and their interaction dictates the character of the output signal.
+
+**High-Frequency Modulation (Twitch & Impulse)**
+When the modulo spans (P_i in the formula) are set to small values, the individual rhythm layers complete their cycles at a high frequency. This causes the composite Seed(t) to change rapidly and frequently. The resulting output is a high-frequency signal with short hold durations, producing a behavior that feels twitchy, alert, or like stochastic noise.
+
+**Low-Frequency Modulation (Hesitation & Deliberation)**
+Conversely, using large values for the modulo spans results in long cycle lengths. The Seed(t) remains stable for extended periods, only changing when one of the slow-moving layers completes its long cycle. This creates significant temporal stability, where a single random value is held for a long duration before jumping. This behavior is perceived as hesitation, deliberation, or a state-like persistence.
+
+**Rhythmic Interference (Emergent Logic)**
+The true complexity emerges from layering multiple modulo functions with non-harmonious periods (e.g., using prime numbers like 13, 31, 97). The cycles of these layers go in and out of phase at irregular intervals. A "jump" in the final output is triggered whenever any of the layers completes its cycle, creating a complex interference pattern. This composite rhythm produces state-like transitions that are not explicitly programmed, mimicking the emergent logic of a complex state machine without storing any state.
+
+---
+## Quantised Switching (QS) - Mathematical Model
+The output is determined by a selector function choosing from a set of source functions.
+<!-- latex markdown -->
+$$
+Selector(t) = \left\lfloor \frac{t}{P_s} \right\rfloor \pmod{N}
+$$
+$$
+f(t)_{\text{QS}} = \text{Source}_{Selector(t)}(t)
+$$
+Where $P\_s$ is the period of the selector and N is the number of available sources.
+
+## Quantised Switching (QS) - Code
