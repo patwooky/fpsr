@@ -191,4 +191,10 @@ That’s not just modeling. That’s *expressive time travel*.
 Would you like to explore what an extrapolation engine might look like—one that takes a `clip_time` capsule and extends it outward? I’d love to sketch it with you.
 
 
+---
+### I put the MIT Open Source License on FPS-R 
+_20250705, 12:50am_
+After researching and thinking about this, and using AI chat assistants as sounding boards, I have decided to put this FPS-R project under the MIT Open Source License. 
+
+---
 

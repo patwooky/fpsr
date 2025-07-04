@@ -1,4 +1,5 @@
 # FPS-R Technical Documentation
+##### This documentation is still in development. While every update strives to be accurate, there will be parts that are incomplete or inaccurate. 
 
 # Table of Contents
 
@@ -54,26 +55,17 @@ This is the foundation of what we've come to call:
 ---
 
 ## 🌀 How It Works: Stacked Modulo (SM)
-
 SM uses **layered modulus operations** combined with shifting `rand()` seeds to create output that seems to "hold" values across multiple frames or spatial coordinates. The result: a pattern of persistent values interrupted by unexpected jumps.
 
 ### Core Mechanism
+The Stacked Modulo (SM) method generates its unique "move-and-hold" rhythm through a nested, procedural process. Instead of using fixed holding zones, it creates a variable-length rhythm where the duration of each hold is itself determined by a nested FPS-R pattern.
+1. **Procedural Hold Duration**  
+   At the core of the function, a simple, high-frequency FPS-R pattern generates a random value. This value is then used to calculate an adaptive hold duration, H, that falls between a defined `minHold` and `maxHold`. This `H` value itself holds steady for a short period before being re-randomized.
+2. **Variable-Length Modulo Cycle**
+   This procedurally generated hold duration, `H`, is then used as the modulus in the main timing operation (`frame % H`). This creates a primary rhythmic cycle whose length is not constant but changes dynamically over time.
 
-
-
-1. **Primary Modulus Control**  
-   A continuously incrementing input coordinate (e.g. `frame`, `x`, or `uv.x`) is divided by a tunable modulus (e.g. `frame % 24`), which segments the timeline or space into consistent-sized “holding zones.”
-
-2. **Randomised Value per Zone**  
-   Each segment outputs a deterministic `rand()` seeded by its segment index:
-   ```c
-   rand(floor($F / 24) + seed)
-   ```
-
-3. **Stacking for Complexity** 
-    Multiple mod stages can be layered to create semi-regular but interfering hold patterns. Each layer contributes a different "rhythm," producing a combined signal that feels structured but unpredictable.
-    - Think rhythmic polyrhythms or layered tectonic plates.
-    - Outputs “memory without memory,” tuned by frequency and phase.
+3. **Phase-Shifted Seeding**
+   The result of this variable-length modulo is used to create a phase-shifted offset. This offset is subtracted from the main `frame` counter to produce a final, complex seed. It is this constantly shifting, rhythmically inconsistent seed that is fed into the final `rand()` function to produce the output.
 
 ### Behavior
 - Short mod spans → twitchy impulse
@@ -113,8 +105,19 @@ While SM focuses on **temporal rhythm**, QS enables **value switching** across d
 
 ---
 
-## Code - Stacked Modulo (SM)
+## Stacked Modulo (SM) - Mathematical Model
+The output is a function of a composite seed, which is the sum of multiple layered rhythm functions.
+<!-- latex markdown -->
+$$
+Seed(t) = \sum_{i=1}^{n} \left\lfloor \frac{t}{P_i} + O_i \right\rfloor
+$$
+$$
+f(t)_{\text{SM}} = \text{rand}\left(Seed(t)\right)
+$$
+**$f(t)$** is the final output of FPS-R:SM.
+Where $P\_i$ is the period and $O\_i$ is the phase offset for the $i$-th rhythm layer.
 
+## Stacked Modulo (SM) - Code
 ### One-Line Compact
 This is Stacked Modulo in a nutshell—a simple single-line that tells the whole story. 
 ```c 
@@ -213,3 +216,29 @@ int offset = 23; // offsets the outer frame
 float randVal = 
     FPSR(int(@Frame), minHoldFrames, maxHoldFrames, reseedFrames, offset);
 ```
+
+### Behaviour of the Stacked Modulo Function
+The expressive range of the Stacked Modulo (SM) method is controlled by the selection of its core timing parameters. The relationship between cycle lengths and their interaction dictates the character of the output signal.
+
+**High-Frequency Modulation (Twitch & Impulse)**
+When the modulo spans (P_i in the formula) are set to small values, the individual rhythm layers complete their cycles at a high frequency. This causes the composite Seed(t) to change rapidly and frequently. The resulting output is a high-frequency signal with short hold durations, producing a behavior that feels twitchy, alert, or like stochastic noise.
+
+**Low-Frequency Modulation (Hesitation & Deliberation)**
+Conversely, using large values for the modulo spans results in long cycle lengths. The Seed(t) remains stable for extended periods, only changing when one of the slow-moving layers completes its long cycle. This creates significant temporal stability, where a single random value is held for a long duration before jumping. This behavior is perceived as hesitation, deliberation, or a state-like persistence.
+
+**Rhythmic Interference (Emergent Logic)**
+The true complexity emerges from layering multiple modulo functions with non-harmonious periods (e.g., using prime numbers like 13, 31, 97). The cycles of these layers go in and out of phase at irregular intervals. A "jump" in the final output is triggered whenever any of the layers completes its cycle, creating a complex interference pattern. This composite rhythm produces state-like transitions that are not explicitly programmed, mimicking the emergent logic of a complex state machine without storing any state.
+
+---
+## Quantised Switching (QS) - Mathematical Model
+The output is determined by a selector function choosing from a set of source functions.
+<!-- latex markdown -->
+$$
+Selector(t) = \left\lfloor \frac{t}{P_s} \right\rfloor \pmod{N}
+$$
+$$
+f(t)_{\text{QS}} = \text{Source}_{Selector(t)}(t)
+$$
+Where $P\_s$ is the period of the selector and N is the number of available sources.
+
+## Quantised Switching (QS) - Code

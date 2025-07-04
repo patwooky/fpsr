@@ -1,5 +1,7 @@
 # FPS-R Applications
-This document details potential use cases of the **Frame-Persistent Stateless Randomisation (FPS-R)** framework 
+##### This documentation is still in development. While every update strives to be accurate, there will be parts that are incomplete or inaccurate.
+
+#### This document details potential use cases of the **Frame-Persistent Stateless Randomisation (FPS-R)** framework 
 
 # Table of Contents
 
@@ -324,8 +326,10 @@ FPS-R offers **procedural insight into system readiness**: How well is a process
 - **Agent Forecasting**: Extend a known behavior into its next probable phrasing, given its expressive momentum.
 - **Forensics & Memory Reconstruction**: Work backwards from outcomes to simulate a rhythmically plausible past.
 
-#### 📡 A Real-Time Use Case
+#### Use Cases
 
+#### 📡 A Real-Time Use Case
+This use case is a speculative future possibility. It assumes an AI that has been trained to identify specific movements—more probably horizontal movement (perpendicular to the the camera's axis to the object)—and is able to extract the movement profile in real time, and match an FPSR profile for in settings and frame number to the motion currently taking place.
 Imagine pointing a camera at a candle’s flicker or a leaf’s tremble. An AI matches an FPS-R configuration to its phrasing rhythm. Onscreen, the system now generates:
 
 - A **“Present” line**: matched phrasing values derived from observed motion
@@ -333,6 +337,7 @@ Imagine pointing a camera at a candle’s flicker or a leaf’s tremble. An AI m
 - A **“Future” line**: phrasing extrapolated beyond what was observed, within the same modulation parameters
 
 What appears is not simply replay—but **a plausible procedural history and future**, based on phrasing grammar.
+
 
 That’s not just modeling.
 
@@ -345,11 +350,7 @@ And because FPS-R generates phrasing deterministically from fixed seeds and sett
 
 ---
 
-### 🧭 Closing Reflection: A Framework and Mathematical Model That Both Expresses and Understands
-
-With the end of the most ambitious and advanced application I can think of for FPS-R, I want to summarise again in retrospect what FPS-R is.
-
-🧶 Final Note: On Language, Timing, and Unfolding
+### 🧶 Final Note: On Language, Timing, and Unfolding
 In the end, FPS-R is not just a tool for generating behavior—it is a grammar of time. It doesn’t simulate noise. It phrases emergence. And the more fluently we learn to read its parameters, the more expressive and explainable our systems become.
 
 Whether shaping synthetic motion, decoding emotional rhythm, or reconstructing plausible memory, FPS-R offers not the right answers, but the right space in which to ask better questions.
