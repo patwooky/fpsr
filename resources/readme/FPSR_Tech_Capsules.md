@@ -28,28 +28,33 @@ A FPS-R capsule's settings is **reusable**, and a capsule's performance is **rep
 Here is the format of a capsule file.
 
 ### A Typical 📦 `.cap.json` Format
+#### FPS-R: Stacked Modulo Capsule Format
 ```json
 {
-  "name": "glitch-drift",
-  "author": "patrick",
-  "URL": "author's website",
-  "created": "2025-07-03",
-  "description": "A rhythmic modulation that begins with erratic jumps and softens into a calm decay.",
-  "tags": ["SM", "behavioral", "modulation", "glitch", "drift"],
-  "platforms": ["py3.10-ARMv8"],  
-  "preview_trace": [0.02, 0.31, 0.78, 0.55, 0.11, 0.07],  
-  "settings": {
-    "type": 0,              // 0 = SM, 1 = QS                  
-    "seed": 12345,
-    "inner_mod_dur": 40,
-    "outer_mod_dur": 50,
-    "clip_time": [start_frame, end_frame] // Optional: omit or [] if no capture window
-  }
+    "metadata": {
+        "name": "glitch-drift",
+        "author": "patrick",
+        "URL": "author's website",
+        "created": "2025-07-03",
+        "description": "A rhythmic modulation that begins with erratic jumps and softens into a calm decay.",
+        "tags": ["SM", "behavioral", "modulation", "glitch", "drift"],
+        "platforms": ["py3.10-ARMv8"],
+    },
+    "performance_clip": {
+        "preview_trace": [0.02, 0.31, 0.78, 0.55, 0.11, 0.07],  
+        "clip_time": [start_frame, end_frame] // [] if no capture window
+    }, 
+    "engine": "sm", // "sm" stacked modulo or "qs" for quantised_switching
+    "config": {
+        "minHoldFrames": 16,
+        "maxHoldFrames": 24,
+        "reseedFrames": 9,
+        "offsetOuter": 23,
+        "offsetInner": -41
+    }
 }
-
-This format is currently targeted for Stacked Modulo, and has not included parameters for Quantised Switching.
-
 ```
+
 ### 🛠 Minimal Fields
 
 
@@ -69,6 +74,56 @@ This format is currently targeted for Stacked Modulo, and has not included param
 | `settings.inner_mod_dur` | ✅    | `40`                               | For SM: sub-phrase length                                |
 | `settings.outer_mod_dur` | ✅    | `50`                               | For SM: phrase cycle length                              |
 | `settings.clip_time` | ⬜       | `[120, 125]`                        | The start and end frames of the observed performance. Omit or empty array `[ ]` indicates no performance, capsule becomes just a setting           |
+
+---
+#### FPS-R: Quantised Switching Capsule Format
+```json
+{
+    "metadata": {
+        "name": "glitch-drift",
+        "author": "patrick",
+        "URL": "author's website",
+        "created": "2025-07-03",
+        "description": "A rhythmic modulation that begins with erratic jumps and softens into a calm decay.",
+        "tags": ["SM", "behavioral", "modulation", "glitch", "drift"],
+        "platforms": ["py3.10-ARMv8"],
+    },
+    "performance_clip": {
+        "preview_trace": [0.02, 0.31, 0.78, 0.55, 0.11, 0.07],  
+        "clip_time": [start_frame, end_frame] // [] if no capture window
+    }, 
+    "engine": "qs", // "sm" stacked modulo or "qs" for quantised_switching
+    "config": {
+        "baseHoldFreq": 0.15,
+        "quantization": {
+            "minLevels": 4,
+            "maxLevels": 10
+        },
+        "timing": {
+            "switchFactor": 0.4,
+            "stream1QuantFactor": 0.9,
+            "stream2QuantFactor": 0.65
+        },
+        "stream1": {
+            "offset": 0,
+            "generator": "sine",
+            "params": {
+                "freqFactor": 1.0,
+                "phaseOffset": 0.0
+            }
+        },
+        "stream2": {
+            "offset": 5,
+            "generator": "sine",
+            "params": {
+                "freqFactor": 5.2,
+                "phaseOffset": 90.0
+            }
+        }
+    }
+}
+```
+
 
 ---
 ### 🌱 Naming Guidelines (Optional, Suggested)

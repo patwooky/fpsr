@@ -16,8 +16,9 @@
   - [📐 Structure and the Illusion of Chaos](#-structure-and-the-illusion-of-chaos)
 - [🗣 A New Grammar: "Randomised Move-and-Hold"](#-a-new-grammar-randomised-move-and-hold)
 - [✨ Key Features](#-key-features)
-- [🎞 Sample Uses in Animation](#-sample-uses-in-animation)
-- [🧱 Sample Uses in Geometry Generation](#-sample-uses-in-geometry-generation)
+- [🎞 Sample Uses of the FPS-R](#-sample-uses-of-the-fps-r)
+  - [🧭 FPS-R in Animation](#-fps-r-in-animation)
+  - [🧱 FPS-R in Geometry Generation](#-fps-r-in-geometry-generation)
 - [💡 Why Do I Need Another Random Stream Generator?](#-why-do-i-need-another-random-stream-generator)
   - [🧬 The Nature of "Held" Randomness](#-the-nature-of-held-randomness)
   - [🧱 Limitations of Conventional Techniques](#-limitations-of-conventional-techniques)
@@ -30,12 +31,13 @@
 - [🧠 Recursive Chaos: FPS-R as Modulator](#-recursive-chaos-fps-r-as-modulator)
   - [Fractal Modulation](#fractal-modulation)
 - [📈 Meta-Signal Analysis: FPS-R as Its Own Observer](#-meta-signal-analysis-fps-r-as-its-own-observer)
-- [🧪 Domains of Application](#-domains-of-application)
-  - [🕶️ AR/VR and Human-Centered Interaction](#️-arvr-and-human-centered-interaction)
-  - [🤖 Robotics and Embodied Systems](#-robotics-and-embodied-systems)
-  - [🛰 Swarms, Drones, and Spatial Coverage Systems](#-swarms-drones-and-spatial-coverage-systems)
-  - [💡 Embedded Systems and Ambient Interfaces](#-embedded-systems-and-ambient-interfaces)
-  - [🎼 Domains of Application in Audio and Composition](#-domains-of-application-in-audio-and-composition)
+- [🧭 Application Paradigms](#-application-paradigms)
+  - [🎨 Part I — Generative Expression & Organic Simulation](#-part-i--generative-expression--organic-simulation))
+    - [🕶️ AR/VR and Human-Centered Interaction](#️-arvr-and-human-centered-interaction)
+    - [🤖 Robotics and Embodied Systems](#-robotics-and-embodied-systems)
+    - [🛰 Swarms, Drones, and Spatial Coverage Systems](#-swarms-drones-and-spatial-coverage-systems)
+    - [💡 Embedded Systems and Ambient Interfaces](#-embedded-systems-and-ambient-interfaces)
+    - [🎼 Domains of Application in Audio and Composition](#-domains-of-application-in-audio-and-composition)
   - [🧠 Cognitive Modeling and Generative Thought](#-cognitive-modeling-and-generative-thought)
   - [🌐 Closing Thoughts on Usage](#-closing-thoughts-on-usage)
 - [🔩 How FPS-R Works (A Gentle Primer)](#-how-fps-r-works-a-gentle-primer)
@@ -157,11 +159,10 @@ Apparent unpredictability arises from the interaction of overlapping cycles, mis
 
 This tension—between definition and drift—is not a flaw. It's the expressive core of FPS-R.
 
-
 ---
 
 ## 🗣 A New Grammar: 
-FPS-R introduces not just a new fet of algorithms, but a new *lexicon* for motion.  
+FPS-R introduces not just a new set of algorithms, but a new *lexicon* for motion.  
 
 ### "Randomised Move-and-Hold"
 What FPS-R produces is not a filter or a curve — but a compositional structure:  
@@ -183,15 +184,21 @@ We call this behavior **Randomised Move-and-Hold**.
 
 It captures the quality of twitch, of deliberation, of pauses that feel like thought.
 
-### Capsules
-#### What are capsules?
-Capsules are "performance clips" of desirable 
 
-#### Why do we need capsules?
-given the unpredictable nature of 
+---
+## 🎞 Sample Uses of the FPS-R
 
-#### What can we do with capsules?
+### 🧭 FPS-R in Animation
 
+![Single Eyeball Look Straight Ahead with Saccades](resources/readme/images/h_fpsr_01_v002_02.gif)  
+*Eye saccades or darting behaviour in Houdini — Single Eyeball Look Straight Ahead with Saccades*🕰️
+
+![Double Eyeballs Look at a Moving Box with Layered FPS-R Saccades](resources/readme/images/h_fpsr_01_v002.gif)  
+*Saccades layered on top of object tracking in Houdini — Double Eyeballs Look at a Moving Box with Layered FPS-R Saccades*  
+
+_[Eyeball model](#https://sketchfab.com/3d-models/simple-stylised-eye-c26043a12a32447f99f45ac84b4fb570) courtesy of [rosytoonz](#https://sketchfab.com/rosytoonz)._
+
+### 🧱 FPS-R in Geometry Generation
 
 ---
 
@@ -203,22 +210,23 @@ given the unpredictable nature of
 - Ideal for generating behaviour that feels **alive**, not algorithmic
 
 ---
+### 🧩 FPS-R as a Sub-System
+FPS-R is not a decision-maker. It is not an AI. It does not carry goals or plans. **It is a modulation layer**—a signal generator that animates behavior within boundaries defined by a larger system. It produces phrasing, not purpose. Drift, not direction.
 
-## 🎞 Sample Uses in Animation
+By itself, FPS-R can generate values that appear expressive—but those values do no real work unless **shaped and routed** by a parent system that knows _where, when_, and _why_ those motions matter.
 
-![Single Eyeball Look Straight Ahead with Saccades](resources/readme/images/h_fpsr_01_v002_02.gif)  
-*Eye saccades or darting behaviour in Houdini — Single Eyeball Look Straight Ahead with Saccades*
+#### 🧠 The Role of FPS-R in a Parent System
+Think of FPS-R as a heart. It beats. It pulses. But it doesn't decide which muscles to move or what path to walk. **The parent system is the circulatory map**. It determines:
+- where phrasing is needed (e.g. a gesture system, a gaze field, a limb joint)
+- how much expressive deviation is tolerable
+- when to enable modulation versus holding still
 
-![Double Eyeballs Look at a Moving Box with Layered FPS-R Saccades](resources/readme/images/h_fpsr_01_v002.gif)  
-*Saccades layered on top of object tracking in Houdini — Double Eyeballs Look at a Moving Box with Layered FPS-R Saccades*
+FPS-R can be configured to run on a leash or let loose entirely—governed, gated, or simply used as a phrasing spark beneath reactive logic. When given space, it can phrase behavior with full autonomy. When tightly framed, it adds nuance without volatility.
+
+> The heartbeat doesn’t know where to send blood. But everything alive still needs it.
 
 ---
-## 🧱 Sample Uses in Geometry Generation
-
----
-
 ## 💡 Why Do I Need Another Random Stream Generator?
-
 ### 🧬 The Nature of "Held" Randomness
 
 In both natural and artificial systems, randomness is rarely pure noise—it often lingers, persists, or evolves in a way that feels intentional. Whether it's the shimmer of dappled light, the jitter of analogue machinery, or the twitchy searching of eye saccades, we encounter random behaviours that hold their shape or drift over time. Yet despite how ubiquitous this phenomenon is, most content creation tools are ill-equipped to simulate, emulate and represent it in an intuitively straightforward and lightweight manner. Replicating this structured unpredictability often requires labour-intensive custom coding or non-intuitive workarounds.
@@ -237,19 +245,66 @@ In both natural and artificial systems, randomness is rarely pure noise—it oft
 
 
 ### 🧱 Limitations of Conventional Techniques
+#### The Current State of Computation and Calculations
+Most computational systems are wired for one principle: efficiency. From shortest-path solvers to rendering pipelines, the default trajectory is straight, steady, and economical. Time, space, value—they're meant to increment steadily, predictably, toward a desired state. This is the grammar of most algorithms: fewer steps, straighter lines, minimal deviation.
 
-The most common approaches tend to fall into two camps:
+To simulate natural behavior—pause, drift, delay—we layer complexity upon complexity: recursive pathfinding, Perlin-turbulence on top of sine waves, obstacle-based path deformation, stateful random jumps. These additions mimic real-world unpredictability, but they do so by **fighting the system's fundamental bias toward order**. Complexity becomes the price of feeling organic.
 
-- **Worley-like noise functions**: These typically rely on spatially seeded feature points—often distributed via jittered grids or hash-based schemes—and compute distances between each sample and its surrounding points. 
-While powerful for generating cellular textures, standard Worley noise tends to use evenly spaced seed distributions, leading to Voronoi-like cells with relatively uniform size and brightness. This results in predictable distance falloffs and similar displacement amplitudes across the field, which limits its expressiveness in simulating more erratic or organic behaviours.  
-Additionally, it requires multiple computation steps—lookup tables, distance evaluations, sorting—which can be costly, especially when combining higher-order Fn layers, applying input warping, or layering across octaves.  
-These techniques increase complexity and make Worley noise more difficult to visualise or intuitively control compared to simpler stateless methods. 
+**FPS-R flips this tendency**. It starts with modulation. It phrases. It doesn’t bend straight lines—it draws with drift, from the beginning. And yet, paradoxically, it remains **stateless, deterministic, lightweight**. Rather than accumulating structure to simulate spontaneity, FPS-R embodies expressive irregularity as its default form.
 
-- **Previous-frame dependent logic**: This method can emulate "held" randomness by passing state from frame to frame. However, it introduces complexity and tightly couples your logic to platforms that support such state sharing (e.g., Houdini). Furthermore, it often cannot be implemented in lightweight contexts like expression fields or shader snippets, limiting its portability.
+> And if richer behavior is required? FPS-R can still be stacked with conventional noise, physics, or reactive inputs—composing layered systems that maintain their phrasing logic even in deeper entanglements.
+
+> 🧩 FPS-R is a phrasing engine, not a planner.
+Works _with_ your system. Not to replace it.
+
+When systems attempt to simulate phrased irregularity—deviation, hesitation, unpredictability—they often reach for one of two broad approaches. Both are useful. Both are limited. And neither offers phrasing as its native dialect.
+
+##### 🧊 1. Spatialized Randomness (e.g. Worley Noise & Distance-Based Fields)
+These techniques rely on pre-seeded feature points—often jittered grids or hashed distributions—and compute behavior by measuring distance to these anchors. Worley noise, Voronoi fields, and similar cellular approaches are powerful for generating structured randomness across surfaces.
+
+But their strengths are their constraints:
+- Uniform seed distributions lead to uniform phrasing patterns
+- Modifications require cost-heavy operations (distance calculations, re-indexing)
+- Expressiveness is bounded by spatial regularity, not temporal rhythm
+- And control often means fighting the function, not collaborating with it
+
+This makes them excellent for texture, weak for time.
+
+##### 🔁 2. Stateful Behavioral Logic (e.g. Timers, Delays, Pauses, Walks)
+To generate deviation in motion or behavior, developers often build state machines or custom update loops that track progress over time. These accumulate logic as layers of interrupts against straight-line behavior. The goal: produce a sense of intent through delay, error, or noise.
+
+This family is broad. But its footprint is heavy.
+🌀 Signal Distortion and Perturbation
+- Random noise injection to modulate path or output jitter
+- Random walks to simulate directionless deviation
+- Sinusoidal overlays and Bezier oscillations for smooth wiggles
+
+⏱ Holding, Delaying, and Interrupting
+- Variable speed logic that simulates drift, fatigue, or lag
+- Step functions, staircase patterns, and random delays for hold-and-burst effects
+- Zigzag alternation for enforced directional instability
+
+🛣️ Path Complexity via Indirect Algorithms
+- Pathfinding (A, Dijkstra)* to intentionally reroute around obstacles
+- Dynamic heuristics that distort toward longer routes
+- Redirect forces (attraction/repulsion, magnet fields) that bias local curvature
+
+🌪️ Contextual Inputs and Reactive Systems
+- User input deviations, causing behavior to “wobble” under influence
+- Environment simulation (wind, terrain, gravity) to trigger plausible sway
+- Feedback loops that adjust based on previous moves—embedded memory disguised as logic
+
+These approaches _can_ work. Many do. But they share four liabilities:
+1. They assume memory
+2. They demand scaffolding
+3. They are rarely portable
+4. They are neither composable nor phrased
 
 ### ⚙️ Why FPS-R is Different
 
-FPS-R introduces a lightweight and highly portable solution to this long-standing problem. At its core is the **Stacked Modulo (SM)** method, which generates structured, frame-evolving randomness without relying on state or lookup tables.
+Where most systems create irregularity by layering complexity onto predictable logic, FPS-R begins with modulation. It doesn’t simulate drift—it phrases it. And unlike traditional methods that rely on accumulated state, scaffolded logic, or seeded lookup tables, FPS-R distills expressive behavior into a **single, frame-aware grammar**.
+
+Its modulation is clean, deterministic, and portable—expressing structured spontaneity without state.
 
 Key advantages include:
 
@@ -259,10 +314,16 @@ Key advantages include:
 - 🛠️ **Platform Agnostic**: Works seamlessly in any environment that exposes frame-based context  
 - ⚡ **Performance Friendly**: No costly distance functions, hash lookups, or scatter generation
 
-> #### 🪞 Memoryless Mimicry
-> A simulation remembers so it can anticipate. FPS-R forgets, but still manages to feel like it remembers.
+> 🪞 Most modulation systems simulate intent by scaffolding state. **FPS-R phrases intent by design—and does so without memory**.
 
-> #### 🧩 Deterministic Complexity
+That’s why FPS-R can:
+- Replace brittle scaffolding with composable phrasing logic
+- Operate cleanly in shaders, expressions, and parallel domains
+- Stack with traditional techniques when needed—without collapsing determinism
+
+> The world of simulation builds structure to allow drift. FPS-R starts in drift—and phrases structure into it.
+
+> 🧩 Deterministic Complexity
 > Where intricate behavior emerges from repeatable rules, not randomness.
 ---
 
@@ -399,52 +460,72 @@ Such representations can be useful for:
 Ultimately, this reframes FPS-R as more than procedural fodder—it becomes a **conceptual instrument**, capable of looking back at itself through form.
 
 ---
-## 🧪 Domains of Application
+## 🧭 Application Paradigms
 
-FPS-R operates as an expressive layer within systems where **intent selection** (planning, decision-making, inference) is decoupled from **behavioral execution** (movement, modulation, feedback). In these architectures, macro-level goals define what should happen, while FPS-R shapes how it happens—animating motion, timing, or modulation with organic nuance.
+FPS-R serves as an expressive modulation engine operating within larger systems that determine intent—whether that intent is to gaze, to move, to signal, or to wait. These higher-level systems—planners, controllers, inference engines, or decision layers—define the what and why; FPS-R defines the how.
 
-Across domains—from robotics to haptics, vision to audio, biofeedback to cognitive systems—FPS-R introduces **deterministic unpredictability**, enabling systems to behave with **structured spontaneity** and **non-repeating richness**, even under stateless constraint.
+It does not decide. It phrases.
 
-Though the capsules documented here illustrate practical integrations, they reflect only a fraction of FPS-R's expressive spectrum. Wherever systems move, gesture, signal, or **respond—not by chance, but with intention**—FPS-R can encode texture, delay, emphasis, or drift, grounding synthetic behavior in a rhythm that feels quietly alive.
+What FPS-R contributes is **behavioral unfolding**: stateless, deterministic modulation that brings human-feeling variation to systems without introducing chaos. Its role is not to improvise beyond the system’s goals, but to render those goals with texture, rhythm, and restraint.
 
-> Whether shaping drift in a robotic limb, phrasing a haptic pulse, or pacing the gaze of an attention agent, FPS-R offers a grammar for micro-behavior—adaptable across systems, expressive without memory, and resonant with human timing.
+Rather than categorizing its capabilities by industry, we present FPS-R’s expressive range through **three paradigms of integration**. Each reflects a different posture toward modulation:
+- One uses phrasing to simulate **naturalistic behavior**
+- One uses it to pressure systems into revealing **robustness or failure**
+- One uses it to explore **intentional ambiguity and emergent possibility**
 
-### 🕶️ AR/VR and Human-Centered Interaction
+Wherever a larger system supplies purpose, FPS-R offers phrased expression. Within the envelope of intent, it breathes.
+
+> The following paradigms offer not simply areas of application, but distinct philosophies of use—revealing how phrasing, when framed by purpose, becomes meaningful motion across domains.
+
+### 🎨 Part I — Generative Expression & Organic Simulation
+**FPS-R as a composer of lifelike timing and motion.**
+
+This paradigm explores how FPS-R introduces lifelike irregularity into synthetic systems—animating timing, drift, and hesitation in a way that feels natural, not scripted. It offers structure without repetition, and variation without chaos.
+
+> In these systems, phrasing is not ornament—it's how behavior becomes expressive.
+
+#### 🕶️ AR/VR and Human-Centered Interaction
 Enhance gaze realism, avatar subtlety, and user modeling through structured micro-variation. FPS-R simulates organic attention and perceptual drift—ideal for believable interaction, accessibility testing, and immersive behavioral nuance.
 
-### 🤖 Robotics and Embodied Systems
+#### 🤖 Robotics and Embodied Systems
 Infuse robots with micro-behavior that signals awareness, hesitation, or subtle intent. FPS-R drives expressive motion and non-repeating attention patterns—ideal for idle simulation, adaptive control, and believable human-robot interaction.
 
-### 🧤 Wearables and Assistive Technologies
+#### 🧤 Wearables and Assistive Technologies
 FPS-R restores expressive nuance to prosthetics, exosuits, and haptic wearables—introducing natural micro-variation that makes robotic extensions feel embodied, familiar, and socially intuitive. It enhances psychological acceptance for users, eases interaction for others, and reintroduces dignity through movement that feels quietly human.
 
-### 🧬 Biofeedback and Adaptive Expression
+#### 🧬 Biofeedback and Adaptive Expression
 FPS-R gives biofeedback systems a voice—translating internal signals into rhythmic, non-repeating feedback that guides, calms, and attunes. It renders physiological data with expressive timing, helping users feel seen, supported, and subtly understood.
 
-### 🛰 Swarms, Drones, and Spatial Coverage Systems
+#### 🛰 Swarms, Drones, and Spatial Coverage Systems
 By modulating micro-deviations, route pauses, and procedural hesitation, FPS-R allows drones and mobile agents to avoid repetitive patterns while maintaining deterministic replayability. It enables expressive decentralization—no memory, no communication overhead, just lifelike modulation at the edge.
 
-### 💡 Embedded Systems and Ambient Interfaces
+#### 💡 Embedded Systems and Ambient Interfaces
 Whether it's a kinetic sculpture, an expressive animatronic, or a wearable signaling device, FPS-R enables stateless behavior that feels alive and intentional. Drift, hold, and repeat parameters can be tuned precisely—even in microcontroller environments with limited cycles.
 
-### 🎼 Domains of Application in Audio and Composition
+#### 🎼 Domains of Application in Audio and Composition
 🎼 Audio Systems and Musical Modulation
 FPS-R brings **rhythmic awareness** to generative music, instrument expression, and sound design—aligning modulation with beats, bars, and phrase timing. From glitch textures to analogue warmth, **it enables sonic systems to groove, drift, and phrase with intention**.
 
-### ⚔️ Game Theory, Politics, and Strategic Modeling
-Model decision rhythms, timing asymmetries, and state transitions across agents and adversaries. FPS-R brings temporal nuance to strategic simulations—mapping escalation, delay, and unpredictability with deterministic control.
+### 🧪 Part II — Systemic Resilience & Analysis
+FPS-R as phrasing logic under pressure.
 
-### 🛡️ Cybersecurity and Adversarial Simulation
+This paradigm treats FPS-R as a deterministic stress layer—used to reveal brittleness, surface assumptions, and replay edge conditions across critical systems. It modulates volatility with control, generating structured entropy without memory or chaos.
+> Here, phrasing isn’t decorative—it’s diagnostic.
+
+#### 🛡️ Cybersecurity and Adversarial Simulation
 Generate procedural threats that are stateless, layered, and perfectly replayable. FPS-R enables red/blue parity, forensic breach capsule logging, and scenario-driven defense training under controlled chaos.
 
-### 💸 Financial Systems and Economic Simulation
+#### 💸 Financial Systems and Economic Simulation
 Model structured volatility and regime shifts with deterministic unpredictability. FPS-R enables stress testing of trading algorithms, policy resilience, and systemic stability—without relying on historical data.
 
-### 🧪 Software Testing and Fuzzing
+#### 🧪 Software Testing and Fuzzing
 Simulate unpredictable user and API behavior with structured randomness. FPS-R can expose fragile edge cases and systemic blind spots—offering deterministic chaos for input fuzzing, timing violation, and error cascade discovery.
 
-### 🧵 Systems-Level Protocol & Infrastructure Simulation
+#### 🧵 Systems-Level Protocol & Infrastructure Simulation
 Simulate layered protocol behavior and infrastructure churn using deterministic modulation. Reconstruct systemic failures, timing anomalies, and resilience under pressure.
+
+### ⚔️ Game Theory, Politics, and Strategic Modeling
+Model decision rhythms, timing asymmetries, and state transitions across agents and adversaries. FPS-R brings temporal nuance to strategic simulations—mapping escalation, delay, and unpredictability with deterministic control.
 
 ### 🧭 Process & Contingency Simulation
 Model operational drift, failure cascades, and procedural stress scenarios with structured randomness. Ideal for testing resilience in planning, logistics, and industrial workflows.
@@ -617,6 +698,21 @@ FPS-R is under active development and currently private during cleanup. Planned 
 - Modular utilities  
 - Plug-and-play GLSL and Houdini expressions  
 - Ready-made presets and chaos profiles
+
+---
+## Future Developments
+
+### Capsules
+#### What are capsules?
+Capsules are "performance clips", which FPS-R can achieve under different parameter settings and input time. Capsules aim to capture the wide gamut of phrasing, and behaviour that FPS-R can exhibit. This will assist with categorising and organising "clips" and moments of "desirable" value jumps, "happy accidents" of poetic movement as motion phrases. 
+
+> Capsules are possible because of the deterministic and repeatable nature of FPS-R.
+
+#### Why do We Need Capsules?
+Given the unpredictable and continuous nature of FPS-R's performances, it is easy to get lost with endlessly tweaking seed values and parameters without being able to get the exact performance we want. Capsules serve as a collection of "moments", giving descriptive names to its behaviour and performance characteristic of captured clips, we can store these for repeated use when the context calls for it.
+
+#### What can we do with capsules?
+
 ---
 ## 🗒️ Additional Development Notes
 ### 🧠 FPSR Thoughts

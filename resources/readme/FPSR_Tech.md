@@ -5,15 +5,52 @@
 
 
 ---
-# The Purpose of This Document {#ThePurpose}
-This document will explain and explore the algorithms that make up the **Frame-Persistent Stateless Randomisation (FPS-R)**.
+# The Purpose of This Document
+This document explains and explores the algorithms that constitute **Frame-Persistent Stateless Randomisation (FPS-R)**. It breaks down the mechanics of its modulation logic—revealing how structure, randomness, and phrasing combine to form behavior that feels intentional, yet requires no memory.
 
-### Algorithmic Detail, Code Structure, Usage Notes {#AlgoDetail}
-In this document I will explain the FPS-R algorithms by breaking down the code structure into their respective components.  
-From the code fragments we will see how each component affects the resulting signal.
+### A Word of Thanks
+Thank you for taking the time to explore these notes on the algorithm and its inner workings. Whether you’re here out of curiosity, critique, or collaboration—welcome.
 
+#### ⚖️ Attribution Note 
+FPS-R is released under the MIT License, which means you're free to use it in commercial, private, and artistic projects without restriction.
 
-## 🔩 How FPS-R Works {#HowFPSRWorks}
+In many contexts—SaaS platforms, embedded systems, or creative outputs like VFX shots, motion design, and procedural soundscapes—the code never ships. In those cases, attribution isn’t legally required.
+
+But if FPS-R helped phrase the blink in your commercial, the irregular glitch in your shader, or the drift in your kinetic sculpture—it would mean a lot to be credited. Even a quiet mention in your documentation or acknowledgments helps others discover the grammar behind your motion.
+
+> The code may stay invisible. But if the phrasing speaks? Give it a name.
+
+### 👥 Who This Document Is For
+This document is for anyone who wants to see what lives behind the phrasing.
+
+🧑‍💻 Developers will find structured breakdowns of how randomness, modularity, and statelessness combine—ready for implementation across timelines, shaders, or signal streams.
+
+🎨 Designers and motion artists who have used FPS-R instinctively can now peek behind the curtain—understanding what shaped the gestures they've phrased.
+
+🧠 Thinkers, tinkerers, and curious system-builders are welcome too. If you’ve ever wondered how behavior can breathe without memory—this is your invitation to explore.
+
+> There’s no pre-requisite here—just an interest in what modulation can do when left to its own logic.
+
+Come as you are. Stay as long as you like. The phrasing engine is always running.
+
+### Algorithmic Detail, Code Structure, Usage Notes
+In this document, we will unpack the FPS-R methods by deconstructing their code into modular components. Each section examines how a fragment contributes to the resulting phrasing—allowing you to understand, modulate, and compose behavior with precision.
+
+### 🧾 Code Snippets Provided in this Repository
+The code examples in this repository are **platform-conscious**, not platform-specific. Each snippet has been deliberately shaped for **clarity of intent**, avoiding language-dependent operators (like ternaries), environment-specific idioms, or dependency-bound functions. Where expressive quirks exist (e.g. modulus, quantisation rhythms), they are surfaced with **plain logic and comments that explain the phrasing**, not just the math.
+
+These implementations prioritize **readability, reproducibility, and minimal refactoring cost** across most C-family and expression-bound languages—including C++, Java, JavaScript, GLSL, HLSL, MEL, and Houdini VEX.
+
+While some language-specific adjustment may still be necessary—such as:
+- Array declarations ([] vs {} syntax)
+- Math operations (floor, mod, frac) depending on standard library access
+- Type casting and rounding functions
+
+…the core logic is designed to port cleanly, and has been tested for deterministic phrasing integrity across platforms.
+
+> These snippets are not drop-in libraries—they're reference phrasing kernels. Use them to reconstruct modulation logic in your language of choice, knowing that the behavior should survive the translation.
+
+## 🔩 How FPS-R Works
 
 At its core, FPS-R operates through **coordinate-indexed determinism**. Whether evaluated over time (e.g., `$F`, `@Frame`) or space (`@P`, `uv`, `x`), it applies arithmetic logic—such as `mod()` cycles, `floor()` binning, and seeded `rand()` functions—to produce values that appear to hold, snap, or jump across defined intervals.
 
@@ -24,11 +61,11 @@ This yields a surprising property: **discontinuities feel intentional**, and reg
 
 ---
 
-## ⚙️ Features of FPS-R {#FeaturesofFPSR}
+## ⚙️ Features of FPS-R
 
 Understanding how FPS-R achieves its behavior requires a closer look at what we mean by "stateless" and "deterministic":
 
-### 🧳 Stateless {#Stateless}
+### 🧳 Stateless
 
 Stateful systems rely on memory—they accumulate, simulate, or propagate values over time. In contrast, **FPS-R is stateless**: it evaluates in-place, without any dependency on past or future frames.
 
@@ -36,7 +73,7 @@ A typical FPS-R expression evaluates a jump or hold using only the current frame
 
 This quality makes FPS-R not only performant, but also **portable and resilient**. Its behavior can be trusted in multi-threaded, parallel, or distributed contexts without simulation overhead.
 
-### 🧩 Deterministic {#Deterministic}
+### 🧩 Deterministic
 
 With the same inputs—frame number, seed parameters, and method—FPS-R always produces the same output. This deterministic footprint enables:
 
@@ -48,7 +85,7 @@ With the same inputs—frame number, seed parameters, and method—FPS-R always 
 
 This is the foundation of what we've come to call:
 
-> #### 🪞 Memoryless Mimicry {#MemorylessMimicry}  
+> #### 🪞 Memoryless Mimicry  
 > A simulation remembers so it can anticipate. FPS-R forgets, but still manages to feel like it remembers.
 
 
@@ -163,16 +200,19 @@ Here’s how the expression works, from the inside out:
 
 In essence, the expression uses nested, deterministic cycles to create a larger, seemingly random behavior without ever storing information from one frame to the next. By incorporating `minHold` and `maxHold`, it provides direct control over the rhythm of this behavior, perfectly embodying the FPS-R philosophy of generating structured, stateless unpredictability.
 
-### A Defined Function
+### Stacked Modulo - A Defined Function
 Here is a function defined C that goes beyond the compact single-line code. It abstracts the expression into a function with parameters that can be tweaked and controlled. This should be portable across languages and platforms.
 ```c
+// Frame-Persistent Stateless Randomisation: Stacked Modulo (SM)
+// Designed for portability across GLSL, JS, C, and VEX-style environments
+
 // A simple, portable pseudo-random number generator that takes an integer seed.
 // Different languages have different rand() implementations, so using a custom
 // one like this ensures identical results on any platform.
 float portable_rand(int seed) {
     // A common technique for a simple hash-like random number.
     // The large number can be any arbitrary large float.
-    return fract(sin(float(seed) * 12.9898) * 43758.5453);
+    return frac(sin(float(seed) * 12.9898) * 43758.5453);
 }
 
 /**
@@ -185,19 +225,21 @@ float portable_rand(int seed) {
  * @param offset An offset to create unique random sequences.
  * @return A float value between 0.0 and 1.0 that holds for a random duration.
  */
-float fpsr_sm(int frame, int minHold, int maxHold, int reseedInterval, int offset) {
+float fpsr_sm(int frame; int minHold; int maxHold; int reseedInterval; int offsetOuter; int offsetInner) {
+    if (reseedInterval < 1) {
+        reseedInterval = 1; // at least 1 to prevent division by zero
+    }
     // 1. Calculate the random hold duration.
     // We use our portable_rand() function and standard math to replace fit01().
-    float rand_for_duration = portable_rand(offset + frame - (frame % reseedInterval));
+    float rand_for_duration = portable_rand(offsetInner + frame - (frame % reseedInterval));
     int holdDuration = floor(minHold + rand_for_duration * (maxHold - minHold));
 
-    // Ensure holdDuration is at least 1 to prevent division by zero.
     if (holdDuration < 1) {
-        holdDuration = 1;
+        holdDuration = 1; // at least 1 to prevent division by zero
     }
 
     // 2. Generate the stable integer "state" for the hold period.
-    int held_integer_state = (offset + frame) - ((offset + frame) % holdDuration);
+    int held_integer_state = (offsetOuter + frame) - ((offsetOuter + frame) % holdDuration);
 
     // 3. Use the stable integer state as a seed for the final random value.
     // This is the key two-step process, now fully encapsulated.
@@ -209,12 +251,13 @@ float fpsr_sm(int frame, int minHold, int maxHold, int reseedInterval, int offse
 // Parameters
 int minHoldFrames = 16; // probable minimum held period
 int maxHoldFrames = 24; // maximum held period before cycling
-int reseedFrames = 10; // inner mod cycle timing
-int offset = 23; // offsets the outer frame
+int reseedFrames = 9; // inner mod cycle timing
+int offsetOuter = 23; // offsets the outer frame
+int offsetInner = -41; // offsets the inner frame
 
 // Call the FPSR function
 float randVal = 
-    FPSR(int(@Frame), minHoldFrames, maxHoldFrames, reseedFrames, offset);
+    fpsr_sm(int(frame), minHoldFrames, maxHoldFrames, reseedFrames, offsetOuter, offsetInner);
 ```
 
 ### Behaviour of the Stacked Modulo Function
@@ -242,3 +285,115 @@ $$
 Where $P\_s$ is the period of the selector and N is the number of available sources.
 
 ## Quantised Switching (QS) - Code
+
+```c
+// Frame-Persistent Stateless Randomisation: Quantised Switching (QS)
+// Designed for portability across GLSL, JS, C, and VEX-style environments
+
+// A simple, portable pseudo-random number generator that takes an integer seed.
+// Different languages have different rand() implementations, so using a custom
+// one like this ensures identical results on any platform.
+float portable_rand(int seed) {
+    // A common technique for a simple hash-like random number.
+    // The large number can be any arbitrary large float.
+    return frac(sin(float(seed) * 12.9898) * 43758.5453);
+}
+
+// FPS-R Quantised Switching (QS)
+/*
+  returns a normalised 0 to 1 pseudo-random value based on the current frame, 
+  base hold frequency, and quantisation levels.
+  
+  float frame: The current frame number, which is used to generate a pseudo-random value.
+  float baseHoldFreq: The base frequency for the hold modulation.
+  float stream2freqMult: A multiplier for the second stream's frequency, which can be adjusted to create different rhythms.
+  int quantLevelsMinMax: An array of two integers for the min and max numbers of quantisation levels for the two streams.
+  streamSwitchDur: The number of frames after which the streams switch.
+  streamsOffset: An array of two integers that offsets the quantisation for each stream.
+  stream1QuantDur: The duration for the first stream's quantisation in frames.
+  stream2QuantDur: The duration for the second stream's quantisation in frames.
+*/
+float fpsr_qs(int frame, 
+    float baseHoldFreq, float stream2freqMult=-1, 
+    int quantLevelsMinMax=[1, 10], 
+    int streamsOffset=[0, 0], int streamSwitchDur=-1, 
+    int stream1QuantDur=-1, int stream2QuantDur=-1)
+     
+{
+    if (streamSwitchDur < 1) { // streamSwitchDur is not provided, derive from baseHoldFreq.
+        // default: 76% of inverse of baseHoldFreq.
+        streamSwitchDur = floor(1.0 / baseHoldFreq * 0.76);
+        if (streamSwitchDur < 1) {
+            streamSwitchDur = 1; // Ensure it's at least 1 frame.
+        }
+    }
+    if (stream1QuantDur < 1) { // stream1QuantDur is not provided, derive from baseHoldFreq.
+        // default: 120% of inverse of baseHoldFreq.
+        stream1QuantDur = floor((1.0 / baseHoldFreq) * 1.2);
+        if (stream1QuantDur < 1) {
+            stream1QuantDur = 1; // Ensure it's at least 1 frame.
+        }
+    }
+    if (stream2QuantDur < 1) { // stream2QuantDur is not provided, derive from baseHoldFreq.
+        // default: 90% of inverse of baseHoldFreq.
+        stream2QuantDur = floor((1.0 / baseHoldFreq) * 0.9);
+        if (stream2QuantDur < 1) {
+            stream2QuantDur = 1; // Ensure it's at least 1 frame.
+        }
+    }
+    
+    // Calculate quantised values for the two streams based on their respective durations.
+    float s1quantised = 0.0;
+    if (int(streamsOffset[0] + frame) % stream1QuantDur < (stream1QuantDur * 0.5)) {
+        s1quantised = quantLevelsMinMax[0]; // Use min quantisation level for first half of the duration.
+    } else {
+        s1quantised = quantLevelsMinMax[1]; // Use max quantisation level for second half of the duration.
+    }
+    s1quantised = floor(s1quantised);
+    
+    // stream2QuantRatio Min and Max are multipliers for the quantisation levels for stream 2.
+    // These are magic numbers to drive stream 2's to quantise to different levels.
+    // These can be adjusted to create different quantisation effects.
+    float stream2QuantRatioMin = 1.24;
+    float stream2QuantRatioMax = 0.66;
+    float s2quantised = 0.0;
+    if (int(streamsOffset[1] + frame) % stream2QuantDur < stream2QuantDur * 0.5) {
+        // Use the minimum quantisation level for the first half of the duration.
+        s2quantised = floor(quantLevelsMinMax[0] * stream2QuantRatioMin);
+    } else {
+        // Use the maximum quantisation level for the second half of the duration.
+        s2quantised = floor((quantLevelsMinMax[1] + 0.999) * stream2QuantRatioMax);
+    }
+    s2quantised = floor(s2quantised);
+
+    // Generate two streams based on sine functions, quantised to the respective levels.
+    // A different value for the second stream's frequency will create a different rhythm.
+    if (stream2freqMult < 0) {
+        // If stream2FreqMult is not provided, provide a magic number.
+        // default: 3.7 times the baseHoldFreq.
+        stream2FreqMult = 3.7; // This multiplier can be adjusted to change the rhythm of the 
+    }
+    float stream1 = floor(sin(int(streamsOffset[0] + frame)/24 * baseHoldFreq) * s1quantised) / s1quantised;
+    float stream2 = floor(sin(int(streamsOffset[1] + frame)/24 * baseHoldFreq * stream2FreqMult) * s2quantised) / s2quantised;
+    float outVal = 0.0;
+    if ((frame % streamSwitchDur) < streamSwitchDur * 0.5) {
+        outVal = stream1; // Use the first stream for the first half of the switch duration.
+    } else {
+        outVal = stream2; // Use the second stream for the second half of the switch duration.
+    }
+    outVal = outVal * 2.0 - 1.0; // Convert to range [-1, 1]
+    return portable_rand(int(outVal * 100000.0)); // Scale to a larger integer for better distribution.
+}
+
+float baseHoldFreq = 0.012;
+float stream2freqMult = 3.1; // Multiplier for the second stream's frequency
+int quantLevelsMinMax[2] = {12, 22}; // Min, Max quantisation levels for the two streams
+int streamsOffset[2] = {0, 76}; // Offset for the two streams
+int streamSwitchDur = 24; // Duration for switching streams in frames
+int stream1QuantDur = 16; // Duration for the first stream's quantisation in frames
+int stream2QuantDur = 20; // Duration for the second stream's quantisation in frames
+
+float randVal = fpsr_qs(
+    frame, baseHoldFreq, stream2freqMult, quantLevelsMinMax, 
+    streamsOffset, streamSwitchDur, stream1QuantDur, stream2QuantDur);
+```

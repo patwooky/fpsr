@@ -1,16 +1,28 @@
 # FPS-R Applications
+
+#### License  
+MIT — see [LICENSE](../../LICENSE) for details.  
+If you reference or adapt this framework, please credit Patrick and this repository.
+
 ##### This documentation is still in development. While every update strives to be accurate, there will be parts that are incomplete or inaccurate.
 
 #### This document details potential use cases of the **Frame-Persistent Stateless Randomisation (FPS-R)** framework 
 
 # Table of Contents
+<TOC goes here>
 
 ---
 
 ## Introduction
-This document serves as a detailed compendium of potential applications for the Frame-Persistent Stateless Randomisation (FPS-R) framework. While the main README.md establishes the core philosophy, this document explores the practical implementation of that philosophy across a diverse range of technical, creative, and strategic domains.
+This document serves as a detailed compendium of potential applications for the Frame-Persistent Stateless Randomisation (FPS-R) framework. While the main README.md establishes the core philosophy, this document explores the practical implementation of that philosophy across a diverse range of technical, creative, and strategic domains. While these domains attempt to show the broad area that FPS-R can be applied to, they are not exhaustive. I believe there will be a huge number of use cases will be discovered once the users understand the potential in the framework.
 
 ---
+## Current Challenges
+
+
+
+---
+## Application Domains
 
 ### 🕶️ AR/VR and Human-Centered Interaction
 FPS-R augments synthetic perception systems with organic, non-repeating behavioral texture—introducing subtle timing variation, micro-drift, and decision hesitation across gaze, gesture, and stimulus response. In human-centered environments, where uncanny precision breaks realism, FPS-R fills the behavioral gaps between macro-intent and execution nuance.
