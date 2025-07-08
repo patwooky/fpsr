@@ -4,7 +4,6 @@ This document holds philosophical reflections, design motivations, and structura
 
 ---
 # Table of Contents
-
 - [📖 How Did FPR-S Come Into Existence?](#-how-did-fpr-s-come-into-existence)
 - [🧠 What FPS-R Is (and Isn't)](#-what-fps-r-is-and-isnt)
 - [🔍 Dual Mechanisms, Shared Philosophy](#-dual-mechanisms-shared-philosophy)
@@ -19,13 +18,26 @@ This document holds philosophical reflections, design motivations, and structura
 - [🎴 Companions in Thought](#-companions-in-thought)
 - [🌱 On Origination](#-on-origination)
 - [🧠 From Motion to Mind: Generative Cognition](#-from-motion-to-mind-generative-cognition)
-- [⏱️ Frame-Local Systems, Globally Emergent](#️-frame-local-systems-globally-emergent)
-- [🛠️ Reseeding and the Myth of Control](#️-reseeding-and-the-myth-of-control)
+- [⏱️ Frame-Local Systems, Globally Emergent](#-frame-local-systems-globally-emergent)
+- [🛠️ Reseeding and the Myth of Control](#-reseeding-and-the-myth-of-control)
 - [🌀 Behavioral Grammar, Not Just Output](#-behavioral-grammar-not-just-output)
 - [🪄 Declaration of Uncertain Agency](#-declaration-of-uncertain-agency)
 - [🪞 Memoryless Mimicry](#-memoryless-mimicry)
-- [From an Algorithm to a Grammer, and then to a Framework](#from-an-algorithm-to-a-grammer-and-then-to-a-framework)
+- [🌀 Phrasing the Mind](#-phrasing-the-mind)
+- [Towards a Grammar of Visual Salience](#towards-a-grammar-of-visual-salience)
+- [Not Convinced FPS-R is Truly Unique](#not-convinced-fps-r-is-truly-unique)
+- [Microsoft Copilot's Defence](#microsoft-copilots-defence)
+- [Gemini's Defence](#geminis-defence)
+- [📜 Scene Sketch: The Last Stateful Question](#-scene-sketch-the-last-stateful-question)
+- [Why "Framework" and "Grammar" are Fitting Terms for FPS-R](#why-framework-and-grammar-are-fitting-terms-for-fps-r)
+- [Why "Framework" is an Appropriate Term](#why-framework-is-an-appropriate-term)
+- [Why "Grammar" is a Justified Term](#why-grammar-is-a-justified-term)
+- [Conclusion on "Over-sensationalizing"](#conclusion-on-over-sensationalizing)
 - [🪞 Final Note](#-final-note)
+- [Speculative](#speculative)
+  - [From an Algorithm to a Grammer, and to a Framework](#from-an-algorithm-to-a-grammer-and-to-a-framework)
+  - [Toward a Tactile Grammar](#toward-a-tactile-grammar)
+
 
 ---
 
@@ -286,7 +298,7 @@ Not randomness. Not simulation. But a compositional grammar for cognition itself
 
 ---
 
-### Toward a Grammar of Visual Salience
+### Towards a Grammar of Visual Salience
 _2025-07-03_
 
 If FPS-R has taught us anything, it’s that **timing is not just a byproduct of behavior—it’s a medium of meaning**. While its current applications focus on output—gesture, feedback, modulation—there may come a time when FPS-R plays a role in perception itself.
@@ -341,7 +353,7 @@ Why then do we need FPR-S?
 >     Held_rand_val = rand(frame) 
 > ```
 
-### Micosoft Copilot's Defence
+### Microsoft Copilot's Defence
 **🧨 So why would FPS-R take off, if people already have patterns like this?**
 1. **Because what you're doing is already FPS-R—just unnamed, unstandardized, and fragile in scaling.** Your code is a seed! It lives inside FPS-R, it’s a capsule stub. But as soon as you want more than “12 frames of hold” and “flip a coin at expiration,” you begin to accumulate:
 - Custom thresholds

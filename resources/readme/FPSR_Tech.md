@@ -3,6 +3,30 @@
 
 # Table of Contents
 
+- [The Purpose of This Document](#the-purpose-of-this-document)
+  - [A Word of Thanks](#a-word-of-thanks)
+  - [⚖️ Attribution Note](#️-attribution-note)
+  - [👥 Who This Document Is For](#-who-this-document-is-for)
+- [Algorithmic Detail, Code Structure, Usage Notes](#algorithmic-detail-code-structure-usage-notes)
+  - [🧾 Code Snippets Provided in this Repository](#-code-snippets-provided-in-this-repository)
+- [🔩 How FPS-R Works](#-how-fps-r-works)
+- [⚙️ Features of FPS-R](#️-features-of-fps-r)
+  - [🧳 Stateless](#-stateless)
+  - [🧩 Deterministic](#-deterministic)
+- [🌀 How It Works: Stacked Modulo (SM)](#-how-it-works-stacked-modulo-sm)
+  - [Core Mechanism](#core-mechanism)
+  - [Behavior](#behavior)
+- [✴ How It Works: Quantised Switching (QS)](#-how-it-works-quantised-switching-qs)
+  - [Core Mechanism](#core-mechanism-1)
+  - [Behavior](#behavior-1)
+- [Stacked Modulo (SM) - Mathematical Model](#stacked-modulo-sm---mathematical-model)
+- [Stacked Modulo (SM) - Code](#stacked-modulo-sm---code)
+  - [One-Line Compact](#one-line-compact)
+  - [🧩 Component Breakdown](#-component-breakdown)
+  - [Stacked Modulo - A Defined Function](#stacked-modulo---a-defined-function)
+  - [Behavior of the Stacked Modulo Function](#behavior-of-the-stacked-modulo-function)
+- [Quantised Switching (QS) - Mathematical Model](#quantised-switching-qs---mathematical-model)
+- [Quantised Switching (QS) - Code](#quantised-switching-qs---code)
 
 ---
 # The Purpose of This Document
@@ -85,7 +109,7 @@ With the same inputs—frame number, seed parameters, and method—FPS-R always 
 
 This is the foundation of what we've come to call:
 
-> #### 🪞 Memoryless Mimicry  
+> **🪞 Memoryless Mimicry**
 > A simulation remembers so it can anticipate. FPS-R forgets, but still manages to feel like it remembers.
 
 
@@ -287,8 +311,7 @@ Where $P\_s$ is the period of the selector and N is the number of available sour
 ## Quantised Switching (QS) - Code
 
 ```c
-// Frame-Persistent Stateless Randomisation: Quantised Switching (QS)
-// Designed for portability across GLSL, JS, C, and VEX-style environments
+// FPS-R Quantised Switching (QS)
 
 // A simple, portable pseudo-random number generator that takes an integer seed.
 // Different languages have different rand() implementations, so using a custom
@@ -305,38 +328,41 @@ float portable_rand(int seed) {
   base hold frequency, and quantisation levels.
   
   float frame: The current frame number, which is used to generate a pseudo-random value.
-  float baseHoldFreq: The base frequency for the hold modulation.
+  float baseWaveFreq: The base frequency for the modulation wave of stream 1.
   float stream2freqMult: A multiplier for the second stream's frequency, which can be adjusted to create different rhythms.
   int quantLevelsMinMax: An array of two integers for the min and max numbers of quantisation levels for the two streams.
   streamSwitchDur: The number of frames after which the streams switch.
-  streamsOffset: An array of two integers that offsets the quantisation for each stream.
-  stream1QuantDur: The duration for the first stream's quantisation in frames.
-  stream2QuantDur: The duration for the second stream's quantisation in frames.
+  streamsOffset: An array of two integers that offsets the frame used in quantisation and sine wave for each stream.
+  stream1QuantDur: The duration for the first stream's quantisation switch cycle in frames.
+  stream2QuantDur: The duration for the second stream's quantisation switch cycle in frames.
 */
 float fpsr_qs(int frame, 
-    float baseHoldFreq, float stream2freqMult=-1, 
+    float baseWaveFreq, float stream2freqMult=-1, 
     int quantLevelsMinMax=[1, 10], 
     int streamsOffset=[0, 0], int streamSwitchDur=-1, 
     int stream1QuantDur=-1, int stream2QuantDur=-1)
      
 {
-    if (streamSwitchDur < 1) { // streamSwitchDur is not provided, derive from baseHoldFreq.
-        // default: 76% of inverse of baseHoldFreq.
-        streamSwitchDur = floor(1.0 / baseHoldFreq * 0.76);
+    if (streamSwitchDur < 1) {
+        // If streamSwitchDur is not provided, derive from baseWaveFreq.
+        // default: 76% of inverse of baseWaveFreq.
+        streamSwitchDur = floor(1.0 / baseWaveFreq * 0.76);
         if (streamSwitchDur < 1) {
             streamSwitchDur = 1; // Ensure it's at least 1 frame.
         }
     }
-    if (stream1QuantDur < 1) { // stream1QuantDur is not provided, derive from baseHoldFreq.
-        // default: 120% of inverse of baseHoldFreq.
-        stream1QuantDur = floor((1.0 / baseHoldFreq) * 1.2);
+    if (stream1QuantDur < 1) {
+        // If stream1QuantDur is not provided, derive from baseWaveFreq.
+        // default: 120% of inverse of baseWaveFreq.
+        stream1QuantDur = floor((1.0 / baseWaveFreq) * 1.2);
         if (stream1QuantDur < 1) {
             stream1QuantDur = 1; // Ensure it's at least 1 frame.
         }
     }
-    if (stream2QuantDur < 1) { // stream2QuantDur is not provided, derive from baseHoldFreq.
-        // default: 90% of inverse of baseHoldFreq.
-        stream2QuantDur = floor((1.0 / baseHoldFreq) * 0.9);
+    if (stream2QuantDur < 1) {
+        // If stream2QuantDur is not provided, derive from baseWaveFreq.
+        // default: 90% of inverse of baseWaveFreq.
+        stream2QuantDur = floor((1.0 / baseWaveFreq) * 0.9);
         if (stream2QuantDur < 1) {
             stream2QuantDur = 1; // Ensure it's at least 1 frame.
         }
@@ -345,13 +371,14 @@ float fpsr_qs(int frame,
     // Calculate quantised values for the two streams based on their respective durations.
     float s1quantised = 0.0;
     if (int(streamsOffset[0] + frame) % stream1QuantDur < (stream1QuantDur * 0.5)) {
-        s1quantised = quantLevelsMinMax[0]; // Use min quantisation level for first half of the duration.
+        s1quantised = quantLevelsMinMax[0]; // Use the minimum quantisation level for the first half of the duration.
     } else {
-        s1quantised = quantLevelsMinMax[1]; // Use max quantisation level for second half of the duration.
+        s1quantised = quantLevelsMinMax[1]; // Use the maximum quantisation level for the second half of the duration.
     }
     s1quantised = floor(s1quantised);
     
-    // stream2QuantRatio Min and Max are multipliers for the quantisation levels for stream 2.
+    // stream2QuantRatio Min and Max are multipliers for 
+    // the quantisation levels for stream 2.
     // These are magic numbers to drive stream 2's to quantise to different levels.
     // These can be adjusted to create different quantisation effects.
     float stream2QuantRatioMin = 1.24;
@@ -367,14 +394,14 @@ float fpsr_qs(int frame,
     s2quantised = floor(s2quantised);
 
     // Generate two streams based on sine functions, quantised to the respective levels.
-    // A different value for the second stream's frequency will create a different rhythm.
+    // A multiplier for the second stream's frequency will create a different rhythm.
     if (stream2freqMult < 0) {
         // If stream2FreqMult is not provided, provide a magic number.
-        // default: 3.7 times the baseHoldFreq.
+        // default: 3.7 times the baseWaveFreq.
         stream2FreqMult = 3.7; // This multiplier can be adjusted to change the rhythm of the 
     }
-    float stream1 = floor(sin(int(streamsOffset[0] + frame)/24 * baseHoldFreq) * s1quantised) / s1quantised;
-    float stream2 = floor(sin(int(streamsOffset[1] + frame)/24 * baseHoldFreq * stream2FreqMult) * s2quantised) / s2quantised;
+    float stream1 = floor(sin(int(streamsOffset[0] + frame)/24 * baseWaveFreq) * s1quantised) / s1quantised;
+    float stream2 = floor(sin(int(streamsOffset[1] + frame)/24 * baseWaveFreq * stream2FreqMult) * s2quantised) / s2quantised;
     float outVal = 0.0;
     if ((frame % streamSwitchDur) < streamSwitchDur * 0.5) {
         outVal = stream1; // Use the first stream for the first half of the switch duration.
@@ -385,15 +412,25 @@ float fpsr_qs(int frame,
     return portable_rand(int(outVal * 100000.0)); // Scale to a larger integer for better distribution.
 }
 
-float baseHoldFreq = 0.012;
+float baseWaveFreq = 0.012; // Base frequency for the modulation wave of stream 1
 float stream2freqMult = 3.1; // Multiplier for the second stream's frequency
 int quantLevelsMinMax[2] = {12, 22}; // Min, Max quantisation levels for the two streams
 int streamsOffset[2] = {0, 76}; // Offset for the two streams
 int streamSwitchDur = 24; // Duration for switching streams in frames
-int stream1QuantDur = 16; // Duration for the first stream's quantisation in frames
-int stream2QuantDur = 20; // Duration for the second stream's quantisation in frames
+int stream1QuantDur = 16; // Duration for the first stream's quantisation switch cycle in frames
+int stream2QuantDur = 20; // Duration for the second stream's quantisation switch cycle in frames
 
 float randVal = fpsr_qs(
-    frame, baseHoldFreq, stream2freqMult, quantLevelsMinMax, 
+    frame, baseWaveFreq, stream2freqMult, quantLevelsMinMax, 
     streamsOffset, streamSwitchDur, stream1QuantDur, stream2QuantDur);
+
+// another call to fpsr_qs for the previous frame
+float randVal_previous = fpsr_qs(
+    int(@Frame - 1), baseWaveFreq, stream2freqMult, quantLevelsMinMax, 
+    streamsOffset, streamSwitchDur, stream1QuantDur, stream2QuantDur);
+
+int changed = 0; // Variable to track if the value has changed
+if (randVal != randVal_previous) {
+    changed = 1; // Mark as changed if the value has changed from the previous frame
+} 
 ```
