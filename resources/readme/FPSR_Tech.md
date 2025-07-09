@@ -89,7 +89,14 @@ This yields a surprising property: **discontinuities feel intentional**, and reg
 
 Understanding how FPS-R achieves its behavior requires a closer look at what we mean by "stateless" and "deterministic":
 
-### 🧳 Stateless
+### FPS-R Seems to Remember
+Due to how the algorithms are formulated and constructed, FPS-R algorithms behave like they remember. This means that a random value is held for a number of frames before "moving on" to the next random value. Before FPS-R, this behaviour is usually achieved through stateful methods. If the result of FPS-R is shown to a programmer or technical artist for the first time, he or she would probably believe this to be coming from a stateful technique that involves remembering that random number from the previous frame and holding it the value with a counter until the next reseed.
+
+This is the foundation of what we've come to call:
+> **🪞 Memoryless Mimicry**
+> A simulation remembers so it can anticipate. FPS-R forgets, but still manages to feel like it remembers.
+
+### 🧳 FPS-R is Stateless
 
 Stateful systems rely on memory—they accumulate, simulate, or propagate values over time. In contrast, **FPS-R is stateless**: it evaluates in-place, without any dependency on past or future frames.
 
@@ -97,7 +104,7 @@ A typical FPS-R expression evaluates a jump or hold using only the current frame
 
 This quality makes FPS-R not only performant, but also **portable and resilient**. Its behavior can be trusted in multi-threaded, parallel, or distributed contexts without simulation overhead.
 
-### 🧩 Deterministic
+### 🧩 FPS-R is Deterministic
 
 With the same inputs—frame number, seed parameters, and method—FPS-R always produces the same output. This deterministic footprint enables:
 
@@ -107,11 +114,14 @@ With the same inputs—frame number, seed parameters, and method—FPS-R always 
 - 📈 Cross-domain applicability—whether in robotics, interaction design, motion synthesis, or data-driven generative tools, repeatability ensures trust
 - 🧠 Expressive layering: deterministic scaffolds enable deliberate rhythm clashes, controlled glitches, and predictable emergent timing behaviors between the signal systems
 
-This is the foundation of what we've come to call:
+### FPS-R Plays Well with Others
+#### Playing Well with Everybody
+As a modulation framework that adds to the behavior of larger systems, it can create its deterministic move-and-hold behaviour in both stateful and stateless environments.
 
-> **🪞 Memoryless Mimicry**
-> A simulation remembers so it can anticipate. FPS-R forgets, but still manages to feel like it remembers.
+#### Playing Better with Stateless Operators
+The true power of FPS-R’s stateless determinism emerges when paired with other stateless systems. In such a case, **the final result will be equally stateless**.
 
+> The section “**Combining FPS-R Algorithms**” explores how these principles can be layered, stacked, and merged with other systems to unlock deeper phrasing behavior.
 
 ---
 
@@ -133,7 +143,6 @@ The Stacked Modulo (SM) method generates its unique "move-and-hold" rhythm throu
 - Long mod spans → hesitant deliberation
 - Layered mods → emergent switching logic, without simulation
 
-
 ---
 
 ## ✴ How It Works: Quantised Switching (QS)
@@ -153,16 +162,44 @@ While SM focuses on **temporal rhythm**, QS enables **value switching** across d
 3. **Optional Quantisation**  
    Apply stepped or smoothed quantisation to the input signal to make transitions feel chunky, abrupt, or smooth.
 
-### Behavior
-
+### Behaviour
 - Acts like a **switcher**: swaps logic branches, colour palettes, or procedural regimes  
-- Can bypass `rand()` entirely to create *structured switching* 
-- Can bypass quantisation or posterisation entirely to reveal the original coherent continuous streams that are feeding the switcher.
-- Can swap out the default sine waves streams for any signal generating function (noise, look-up array) to achieve completely different behaviours (in the temporal domain), and different aesthetic looks (in the spatial domain).
 - (Time) Ideal for glitch logic, state machines, or recursive style variation
 - (Space) Ideal for creating procedural geometrical structures.
 
+### Advanced Forms and Features
+The form of the supplied QS function is only one of the possible forms it can take on. QS approaches stateless randomness differently—by layering continuous signal streams. When quantising and randomising stages are removed, it unlocks richly varied and often surprising behaviours. 
+
+These features can also serve as debugging or visualising tools to reveal the characteristics of the streams of signals underneath to observe how it works before turning them off again for more controlled sculpting.
+- Can bypass `rand()` entirely to create *structured switching* revealing the quantised signal streams—stepped but coherent—behind the `rand()` operation.
+- Can bypass quantisation or posterisation entirely to reveal the original coherent continuous streams that feed the switcher. This will then become a very regular switching jump between 2 continuous signals.
+- Can swap out the default sine wave streams for any signal generating function (noise, look-up array) to achieve completely different behaviours (in the temporal domain), and different aesthetic looks (in the spatial domain).
+
 > QS is not about rhythm—it's about **selection**. And it works beautifully when combined with SM to modulate *when* changes happen, and *what* they reveal.
+
+---
+## Combining FPS-R Algorithms
+### FPS-R Algorithms Working Together
+FPS-R methods can be stacked, nested, or intertwined to unlock even richer phrasing behaviors.
+- A Quantised Switching (QS) output can be fed into one or both frame inputs of a Stacked Modulo (SM) instance—overlaying unpredictable switching on top of rhythmic structure.
+- Algorithms can also be self-nesting: QS driving QS, SM shaping SM—allowing phrasing to modulate itself recursively.
+
+> Even when layered, the resulting motion remains deterministic, stateless, and reproducible. The phrasing may feel unpredictable—but it will always remember how it moved.
+
+### FPS-R Algorithms Working with Other Algorithms
+FPS-R plays well with others. As long as the external algorithms are **stateless and deterministic**, their outputs can be safely embedded or layered into FPS-R phrasing systems without breaking reproducibility.
+
+Below is a non-exhaustive list of common stateless functions and procedural sources:
+
+| Category | Stateless Function Examples |
+| :--- | :--- |
+| **Mathematical & Trigonometric** | `sin`, `cos`, `pow`, `sqrt`, `floor`, `ceil`, `round`, `min`, `max`, `clamp`, `abs`, `mod`, `frac`, `lerp`, `smoothstep` |
+| **Procedural Noise & Patterns** | `Perlin Noise`, `Simplex Noise`, `Worley Noise (Voronoi)`, `Value Noise`, `Fractal Brownian Motion (fBm)` |
+| **Hashing & Pseudo-Random** | `Seeded rand(seed)`, various hash functions that convert coordinates or seeds into repeatable numbers |
+| **Geometric & Coordinate-Based**| `dot`, `cross`, `normalize`, `distance`, `length`, `SDFs (Signed Distance Functions)`, `Texture Lookups` |
+| **Logic & Data Manipulation** | `step`, `mix`, `Bitwise Operations (AND, OR, XOR)` |
+
+> ⚠️ FPS-R can coexist with non-deterministic or stateful sources, but the resulting phrasing will not be traceable or reproducible. That may be an intentional choice—but it's a choice worth naming.
 
 ---
 
@@ -227,8 +264,7 @@ In essence, the expression uses nested, deterministic cycles to create a larger,
 ### Stacked Modulo - A Defined Function
 Here is a function defined C that goes beyond the compact single-line code. It abstracts the expression into a function with parameters that can be tweaked and controlled. This should be portable across languages and platforms.
 ```c
-// Frame-Persistent Stateless Randomisation: Stacked Modulo (SM)
-// Designed for portability across GLSL, JS, C, and VEX-style environments
+// Frame-Persistent Stateless Randomisation (Stacked Modulo)
 
 // A simple, portable pseudo-random number generator that takes an integer seed.
 // Different languages have different rand() implementations, so using a custom
@@ -240,16 +276,19 @@ float portable_rand(int seed) {
 }
 
 /**
- * Frame-Persistent Stateless Randomisation (Stacked Modulo)
- *
- * @param frame The current frame or time input.
- * @param minHold The minimum duration for a value to hold.
- * @param maxHold The maximum duration for a value to hold.
- * @param reseedInterval The fixed interval at which a new duration is calculated.
- * @param offset An offset to create unique random sequences.
- * @return A float value between 0.0 and 1.0 that holds for a random duration.
- */
-float fpsr_sm(int frame; int minHold; int maxHold; int reseedInterval; int offsetOuter; int offsetInner) {
+    Frame-Persistent Stateless Randomisation (Stacked Modulo)
+    int frame The current frame or time input.
+    int minHold The minimum duration for a value to hold.
+    int maxHold The maximum duration for a value to hold.
+    int reseedInterval The fixed interval at which a new duration is calculated.
+    int offsetInner An inner offset to create unique random sequences.
+    int offsetOuter An outer offset to create unique random sequences.
+    returns A float value between 0.0 and 1.0 that holds for a random duration.
+**/
+float fpsr_sm(
+    int frame, int minHold, int maxHold, 
+    int reseedInterval, int offsetInner, int offsetOuter) 
+{
     if (reseedInterval < 1) {
         reseedInterval = 1; // at least 1 to prevent division by zero
     }
@@ -276,12 +315,22 @@ float fpsr_sm(int frame; int minHold; int maxHold; int reseedInterval; int offse
 int minHoldFrames = 16; // probable minimum held period
 int maxHoldFrames = 24; // maximum held period before cycling
 int reseedFrames = 9; // inner mod cycle timing
-int offsetOuter = 23; // offsets the outer frame
 int offsetInner = -41; // offsets the inner frame
+int offsetOuter = 23; // offsets the outer frame
 
 // Call the FPSR function
 float randVal = 
-    fpsr_sm(int(frame), minHoldFrames, maxHoldFrames, reseedFrames, offsetOuter, offsetInner);
+    fpsr_sm(
+        int(@Frame), minHoldFrames, maxHoldFrames, 
+        reseedFrames, offsetInner, offsetOuter);
+float randVal_previous = 
+    fpsr_sm(
+        int(@Frame-1), minHoldFrames, maxHoldFrames, 
+        reseedFrames, offsetInner, offsetOuter);
+int changed = 0;
+if (randVal != randVal_previous) {
+    changed = 1; // value has changed from the previous frame
+}
 ```
 
 ### Behaviour of the Stacked Modulo Function
