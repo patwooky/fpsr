@@ -80,7 +80,7 @@ The Chinese edition of the manifesto, presenting the philosophical and expressiv
 
 ### 📐 The Mathematics and Mechanics
 [Click here: FPSR_Tech.md](resources/readme/FPSR_Tech.md)
-This extension document provides the structural foundation beneath the conceptual framing. It outlines the algorithms, expressions, parameters, and architectural elements that support and shape the behaviour of FPS-R.
+This extension document provides the structural foundation beneath the conceptual framing. It outlines the algorithms, expressions, parameters, and architectural elements that support and shape the behaviour of FPS-R. **_The codes live here._**
 
 ### 🍭 Applications 
 This document complements and extends the applications of FPS-R beyond the high-level summarised view provided in this ReadMe file. The document will dig deeper into each domain and provide larger number of use cases for each area of use. 
@@ -97,7 +97,7 @@ An archive of nonlinear reflections, theoretical digressions, and design meditat
 ---
 
 ## 🎲 What is FPS-R?
-#### _Stateless unpredictability with a structured soul._
+**_Stateless unpredictability with a structured soul._**
 
 **FPS-R** is a system that expresses a motion archetype we call  **"Randomized Move-and-Hold."**  
 Unlike traditional simulations, it sculpts discontinuity with structure—producing behavior that feels instinctual  
@@ -107,7 +107,7 @@ This concept forms the bedrock of FPS-R's philosophy...
 
 ### 🪞 Introduction
 
-**FPS-R** stands for `Frame-Persistent Stateless Randomisation` (or `静态律动算法` in Chinese). It is a philosophy behind a collection of lightweight algorithmic pattern for simulating persistent yet stateless randomness across a continuous timeline—ideal for procedural motion, glitch aesthetics, synthesised organic behaviour, and analogue artefact emulation.
+**FPS-R** stands for `Frame-Persistent Stateless Randomisation` (or `静态律动算法` in Chinese). It is a philosophy and framework behind a collection of lightweight algorithmic pattern and mathematical models for simulating persistent yet stateless randomness across a continuous timeline—ideal for procedural motion, glitch aesthetics, synthesised organic behaviour, and analogue artefact emulation. 
 
 Inspired by natural behaviours such as eye saccades, animal foraging, human hesitation, predatory stalking, and structured noise, FPS-R produces unpredictability without relying on memory of the previous-frame. It mirrors the rhythm of an explorer's torch as he explores a darkened cave—pausing, twitching, drifting with intent—or the room-clearing manoeuvre of a soldier's rifle: moving and holding from one strategic point to another, every new holding position disjointed from what came before.  
 > _**FPS-R is a manipulator of values over time, sculpting values and temporal behavior**_
@@ -183,7 +183,6 @@ classDef red fill:#FF0000,stroke:#AA0000,stroke-width:3px,rx:10,ry:10;
 We call this behavior **Randomised Move-and-Hold**.  
 
 It captures the quality of twitch, of deliberation, of pauses that feel like thought.
-
 
 ---
 ## 🎞 Sample Uses of the FPS-R
@@ -350,6 +349,18 @@ Because beyond simple systems lies a world of **stateless surfaces**, **reproduc
 FPS-R doesn’t scaffold behavior through memory or timers—it composes it directly, using deterministic randomness and stateless modulation. With reproducibility by design and support for spatial and temporal domains, it acts not just as a method but as a grammar: one that encodes drift, hesitation, and surprise across surfaces, systems, and synthetic agents.
 
 > Traditional state holds behavior in place. **FPS-R lets behavior move—across systems, across domains, across minds.**
+
+---
+### 📊 Explore the Algorithm's Fingerprint
+The FPS-R algorithms produce a unique rhythmic "fingerprint" over time. The animated preview below shows the scrollable timeline graph from the included Jupyter Notebook, which allows you to explore this behavior visually.
+
+![FPS-R-SM Timeline Graph Preview](resources/readme/images/jpynotebookFpsrSmScroll.gif) 
+FPS-R: Stacked Modulo Timeline Graph Preview
+
+![FPS-R Timeline Graph Preview](resources/readme/images/jpynotebookFpsrQsScroll.gif)
+FPS-R: Quantised Switching Timeline Graph Preview
+
+To try it yourself, you can [explore the interactive timeline in the Jupyter Notebook](./resources/code/python/fpsr_algorithms.ipynb)
 
 ---
 
