@@ -22,7 +22,9 @@
 - [💡 Why Do I Need Another Random Stream Generator?](#-why-do-i-need-another-random-stream-generator)
   - [🧬 The Nature of "Held" Randomness](#-the-nature-of-held-randomness)
   - [🧱 Limitations of Conventional Techniques](#-limitations-of-conventional-techniques)
-  - [⚙️ Why FPS-R is Different](#️-why-fps-r-is-different)
+  - [⚙️ Why FPS-R is Different](#-why-fps-r-is-different)
+- [❓ Why Not Just Use State?](#-why-not-just-use-state)
+- [📊 Explore the Algorithm's Fingerprint](#-explore-the-algorithms-fingerprint)
 - [🧬 Flavours of FPS-R](#-flavours-of-fps-r)
   - [🌀 Stacked Modulo (SM) or 叠模机制](#-stacked-modulo-sm-or-叠模机制)
   - [✴ Quantised Switching (QS) or 量跃机制](#-quantised-switching-qs-or-量跃机制)
@@ -351,7 +353,7 @@ FPS-R doesn’t scaffold behavior through memory or timers—it composes it dire
 > Traditional state holds behavior in place. **FPS-R lets behavior move—across systems, across domains, across minds.**
 
 ---
-### 📊 Explore the Algorithm's Fingerprint
+## 📊 Explore the Algorithm's Fingerprint
 The FPS-R algorithms produce a unique rhythmic "fingerprint" over time. The animated preview below shows the scrollable timeline graph from the included Jupyter Notebook, which allows you to explore this behavior visually.
 
 ![FPS-R-SM Timeline Graph Preview](resources/readme/images/jpynotebookFpsrSmScroll.gif) 
