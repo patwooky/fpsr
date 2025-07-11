@@ -19,6 +19,7 @@
 - [🎞 Sample Uses of the FPS-R](#-sample-uses-of-the-fps-r)
   - [🧭 FPS-R in Animation](#-fps-r-in-animation)
   - [🧱 FPS-R in Geometry Generation](#-fps-r-in-geometry-generation)
+  - [⏱️ Visualisation Videos - FPS-R in Action](#️-visualisation-videos---fps-r-in-action)
 - [💡 Why Do I Need Another Random Stream Generator?](#-why-do-i-need-another-random-stream-generator)
   - [🧬 The Nature of "Held" Randomness](#-the-nature-of-held-randomness)
   - [🧱 Limitations of Conventional Techniques](#-limitations-of-conventional-techniques)
@@ -200,6 +201,18 @@ It captures the quality of twitch, of deliberation, of pauses that feel like tho
 _[Eyeball model](#https://sketchfab.com/3d-models/simple-stylised-eye-c26043a12a32447f99f45ac84b4fb570) courtesy of [rosytoonz](#https://sketchfab.com/rosytoonz)._
 
 ### 🧱 FPS-R in Geometry Generation
+
+
+### ⏱️ Visualisation Videos - FPS-R in Action
+Here is a collection of visualisations showing how FPS-R can work within larger systems in different contexts to achieve meaningful behaviour. Mostly created in Houdini, posted on YouTube as videos, and as articles on LinkedIn.
+
+[LinkedIn Article: FPS-R Test: Rat Movement Demo](https://www.linkedin.com/pulse/fps-r-test-rat-movement-demo-patrick-woo-ker-yang-i7foc)
+[YouTube - Rat Demo](https://youtu.be/ZHUvv6YxjKw)
+<img src="https://media.licdn.com/dms/image/v2/D5612AQEOZ-WhINj_Dg/article-cover_image-shrink_600_2000/B56ZfhTq9oHUAQ-/0/1751831721665?e=1757548800&v=beta&t=Af8C2WN0524qRF_labYDXIcyIXj9BuYeBSCezvoAHCo" alt="'article banner" width="260" height="160">
+
+[LinkedIn Article: The Straight Line and the Crooked Path: FPS-R, A New Model for Simulating Reality](https://www.linkedin.com/pulse/straight-line-crooked-path-fps-r-new-model-simulating-woo-ker-yang-ha9rc)
+[YouTube - FPS-R as a Moving Target on Swarm](https://youtu.be/uQ7krluFvic)
+<img src="https://media.licdn.com/dms/image/v2/D5612AQEqDyv-WbKPGg/article-cover_image-shrink_720_1280/B56ZfoU1KLHUAQ-/0/1751949467407?e=1757548800&v=beta&t=GDBWV6AvcwTgWSQzwWcK_khENyFQ3D8DhrH1RmDVxSk" alt="'article banner" width="260" height="160">
 
 ---
 
