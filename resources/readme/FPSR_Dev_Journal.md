@@ -198,3 +198,25 @@ After researching and thinking about this, and using AI chat assistants as sound
 
 ---
 
+### Created Two Visualisation Videos
+_20250707 - 20250708_
+I created 2 visualisations in 2 days. Both are made with Houdini, and I posted them as articles on LinkedIn.
+
+[LinkedIn Article: FPS-R Test: Rat Movement Demo](https://www.linkedin.com/pulse/fps-r-test-rat-movement-demo-patrick-woo-ker-yang-i7foc)
+[YouTube Rat Demo](https://youtu.be/ZHUvv6YxjKw)
+<img src="https://media.licdn.com/dms/image/v2/D5612AQEOZ-WhINj_Dg/article-cover_image-shrink_600_2000/B56ZfhTq9oHUAQ-/0/1751831721665?e=1757548800&v=beta&t=Af8C2WN0524qRF_labYDXIcyIXj9BuYeBSCezvoAHCo" alt="'article banner" width="260" height="160">
+
+[LinkedIn Article: The Straight Line and the Crooked Path: FPS-R, A New Model for Simulating Reality](https://www.linkedin.com/pulse/straight-line-crooked-path-fps-r-new-model-simulating-woo-ker-yang-ha9rc)
+[YouTube FPS-R as a Moving Target on Swarm](https://youtu.be/uQ7krluFvic)
+<img src="https://media.licdn.com/dms/image/v2/D5612AQEqDyv-WbKPGg/article-cover_image-shrink_720_1280/B56ZfoU1KLHUAQ-/0/1751949467407?e=1757548800&v=beta&t=GDBWV6AvcwTgWSQzwWcK_khENyFQ3D8DhrH1RmDVxSk" alt="'article banner" width="260" height="160">
+
+---
+### Released the Codes in C, Python, Jupyter Notebook, and Houdini Vex.
+_20250711_
+I worked hard and ported the codes over to these platforms.
+
+Notebook file size was too large. I have to find ways to reduce it
+
+---
+
+

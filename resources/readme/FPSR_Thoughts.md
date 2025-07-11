@@ -1,6 +1,9 @@
-# ✨ FPS-R: Notes on Structured Randomness
+# ✨ FPS-R: Notes and Thoughts on Structured Randomness
 
 This document holds philosophical reflections, design motivations, and structural comparisons that informed the development of FPS-R. It is not a spec sheet. It is a **side-channel**—a place to capture rhythm, contradiction, and intent that couldn't fit in code comments.
+
+
+> _FPS-R: This phrasing system didn’t start here—it was waiting in the folds of modular arithmetic. I gave it structure. Now I care for its shape._
 
 ---
 # Table of Contents
