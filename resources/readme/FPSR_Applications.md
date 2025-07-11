@@ -393,10 +393,7 @@ Whether shaping synthetic motion, decoding emotional rhythm, or reconstructing p
 
 Phrasing isn’t about control. It’s about timing. And through timing, we see not just what happens—but how something becomes itself.
 
-
-
 ---
-
 ## 🔚 Epilogue: From Phrasing to Possibility
 
 FPS-R began as a modulation engine. It has become a **language of behavioral emergence**.
