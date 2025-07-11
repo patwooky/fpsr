@@ -223,6 +223,10 @@ Implementation of the algorithms in a variety of software and environments.
 FPS-R: Stacked Modulo Timeline Graph Preview
 <img src="../readme/images/jpynotebookFpsrQsScroll.gif" alt="FPS-R-QS Timeline Graph Preview" width="350" height="150">
 FPS-R: Quantised Switching Timeline Graph Preview
+> Note: Jupyter notebooks render only as static content on GitHub's web viewer. Interactive scrolling graphs for SM and QS will not show up. If you want to play around with the parameters and drive a different resulting curve, and inspect the scrolling graphs, please feel free to download the notebook and execute it on your local machine runnning Jupyter notebook on a Python 3.x kernal with the relevant dependencies (`Pandas` and `Matplotlib`). 
+
+To access the read-only notebook with the interactive scrolling graphs, you can: [explore the interactive timeline in a Jupyter notebook on `nbviewer`](https://nbviewer.org/github/patwooky/FPSR_Algorithm/blob/main/resources/code/python/fpsr_algorithms.ipynb)
+The interactive scrolling graphs are the last 2 cells at the end of the notebook.
 
 ### Houdini
 [**Houdini `.hip` File**](../code/houdini/h_fpsr_code_v001_01.hip): This is a Houdini project file that has a geometry node. In it there are two `point wrangle` nodes that provide `FPS-R: SM` and and `FPS-R: QS`. Both will produce a FPS-R signal to drive the y-axis of the position of a box.

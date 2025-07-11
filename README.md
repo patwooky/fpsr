@@ -362,7 +362,10 @@ FPS-R: Stacked Modulo Timeline Graph Preview
 ![FPS-R Timeline Graph Preview](resources/readme/images/jpynotebookFpsrQsScroll.gif)
 FPS-R: Quantised Switching Timeline Graph Preview
 
-To try it yourself, you can [explore the interactive timeline in the Jupyter Notebook](./resources/code/python/fpsr_algorithms.ipynb)
+To try it yourself, you can [explore the interactive timeline in a Jupyter notebook on `nbviewer`](https://nbviewer.org/github/patwooky/FPSR_Algorithm/blob/main/resources/code/python/fpsr_algorithms.ipynb)
+The interactive scrolling graphs are the last 2 cells at the end of the notebook.
+
+> Note: Jupyter notebooks render only as static content on GitHub's web viewer. Interactive scrolling graphs for SM and QS will not show up. If you want to play around with the parameters and drive a different resulting curve, and inspect the scrolling graphs, please feel free to download the notebook and execute it on your local machine runnning Jupyter notebook on a Python 3.x kernal with the relevant dependencies (`Pandas` and `Matplotlib`). 
 
 ---
 

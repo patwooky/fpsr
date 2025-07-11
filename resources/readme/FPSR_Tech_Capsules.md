@@ -4,8 +4,17 @@
 
 
 ## Table of Contents
-
-
+- [✍️ FPS-R Capsule Contribution Guide](#-fps-r-capsule-contribution-guide)
+- [🎯 What Is a FPS-R Capsule?](#-what-is-a-fps-r-capsule)
+- [A Typical 📦 `.cap.json` Format](#a-typical--capjson-format)
+  - [FPS-R: Stacked Modulo Capsule Format](#fps-r-stacked-modulo-capsule-format)
+    - [🛠 Minimal Fields](#-minimal-fields)
+  - [FPS-R: Quantised Switching Capsule Format](#fps-r-quantised-switching-capsule-format)
+- [🌱 Naming Guidelines (Optional, Suggested)](#-naming-guidelines-optional-suggested)
+- [🧪 How to Observe & Curate a Capsule](#-how-to-observe--curate-a-capsule)
+- [🌱 The Spirit of Sharing](#-the-spirit-of-sharing)
+- [🌱 The Current State of the Capsules Technology](#-the-current-state-of-the-capsules-technology)
+- [🤝 Attribution & Community](#-attribution--community)
 
 ---
 
@@ -55,7 +64,7 @@ Here is the format of a capsule file.
 }
 ```
 
-### 🛠 Minimal Fields
+##### 🛠 Minimal Fields
 
 
 | **Field**        | **Required?** | **Example**                        | **Notes**                                                |
@@ -94,15 +103,14 @@ Here is the format of a capsule file.
     }, 
     "engine": "qs", // "sm" stacked modulo or "qs" for quantised_switching
     "config": {
-        "baseHoldFreq": 0.15,
-        "quantization": {
-            "minLevels": 4,
-            "maxLevels": 10
+        "baseHoldFreq": 0.035,
+        "quantLevelsMinMax": [4, 10],
         },
         "timing": {
             "switchFactor": 0.4,
             "stream1QuantFactor": 0.9,
             "stream2QuantFactor": 0.65
+            "streamSwitchDur": 24 // Duration for switching streams in frames
         },
         "stream1": {
             "offset": 0,
@@ -126,7 +134,7 @@ Here is the format of a capsule file.
 
 
 ---
-### 🌱 Naming Guidelines (Optional, Suggested)
+## 🌱 Naming Guidelines (Optional, Suggested)
 Capsules represent captured performances—they’re behavioral phrases, not just functions. Name them like gestures, not parameters.
 - Use flowing phrase structures, like [adjective] verb – [adjective] verb – [optional more phrases]  
 Examples:
@@ -140,7 +148,7 @@ Examples:
 - Think like a movement director, not a math parser. What would you call this if it were a dance or a gesture in dialogue?
 
 ---
-### 🧪 How to Observe & Curate a Capsule
+## 🧪 How to Observe & Curate a Capsule
 1. **Start from a preset –** define core parameters, mod durations, and seed
 2. **Run it through your FPS-R system –** play over timeline or field
 3. **Watch for phrasing –** does a recognizable behavior emerge over N frames?
@@ -161,15 +169,16 @@ The goal isn’t control—it’s resonance. As the library grows, so does our c
 
 ---
 ### 🌱 The Current State of the Capsules Technology
-The implementation of FPS-R Capsules is still in the conception stage. The vision is clear and the use-cases for FPS-R Capsules are vast.
+The implementation of FPS-R Capsules is **still in the conception stage**. The vision is clear and the use-cases for FPS-R Capsules are vast.
 
-A system needs to
+As the technology matures and its use becomes wide-spread, the need of capturing performances and sharing them will become increasingly helpful and important. 
 
+As the framework takes off, more work will be put into refining and implementing the capsule technology.
 
 ---
 ## 🤝 Attribution & Community
 FPS-R is an open framework for expressive modulation. If you’ve used its capsule data or principles in your own creative work, a small attribution—linking back to this repository—is deeply appreciated.
 
-More importantly: if you’ve created your own phrasing, named a new behavior, or refined a modulation idea—we invite you to contribute it back to the growing capsule library.
+More importantly: if you’ve created your own phrasing, named a new behaviors, or refined a modulation idea—we invite you to contribute it back to the growing capsule library.
 
 This project thrives not just on usage, but on conversation. Let’s teach the world to speak in phrasing.
