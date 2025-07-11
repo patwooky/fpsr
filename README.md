@@ -64,7 +64,7 @@
 
 ## 🗺️ A Site Map of the Documents
 
-```Mermaid
+```mermaid
 %%{ init: { "theme": "neutral" } }%%
 graph TD
   A[README.md 🏁<br>Manifesto & Overview] --> B[FPSR_Tech.md 📐<br>Mathematics & Mechanics]
