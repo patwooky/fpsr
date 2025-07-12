@@ -262,6 +262,14 @@ yet lack the **vocabulary** and **tools** to describe it faithfully.
 **FPS-R** proposes a *phrasing architecture* to address that void —  
 not by replacing existing algorithms, but by offering a **grammar** to sculpt what’s always been there, *waiting to be named*.
 
+And that is...
+
+🎛️ *In the language of math and algorithm*:  
+**FPS-R (Frame-Persistent Stateless Randomisation)**
+
+🗣️ *In everyday spoken English*:  
+**Randomised Move and Hold**
+
 ---
 
 ### 🧬 *The Nature of "Held" Randomness*
