@@ -88,7 +88,7 @@ The Chinese edition of the manifesto, presenting the philosophical and expressiv
 
 ### 📐 The Mathematics and Mechanics
 [Click here: FPSR_Tech.md](resources/readme/FPSR_Tech.md)
-This extension document provides the structural foundation beneath the conceptual framing. It outlines the algorithms, expressions, parameters, and architectural elements that support and shape the behaviour of FPS-R. **_The codes live here._**
+This extension document provides the structural foundation beneath the conceptual framing. It outlines the algorithms, expressions, parameters, and architectural elements that support and shape the behaviour of FPS-R. **_The code lives here._**
 
 ### 🍭 Applications 
 This document complements and extends the applications of FPS-R beyond the high-level summarised view provided in this ReadMe file. The document will dig deeper into each domain and provide larger number of use cases for each area of use. 
@@ -182,14 +182,14 @@ FPS-R introduces not just a new set of algorithms, but a new *lexicon* for motio
 What FPS-R produces is not a filter or a curve — but a compositional structure:  
 **jump → hold → reseed → repeat**  
 
-*FPS-R: Behaviour Compositional Structure*
 ```mermaid
 graph LR
-  A[Jump]:::darkBrown --> B[Hold]:::darkYellow 
-  B --> C[Reseed]:::darkRed --> D[Repeat]:::red
+  A[**Jump**]:::darkBrown --> B[**Hold**]:::darkYellow 
+  B --> C[**Reseed**]:::darkRed --> D[**Repeat**]:::red
 
 classDef darkBrown fill:#654321,stroke:#553311,stroke-width:3px,rx:10,ry:10;
-classDef darkYellow fill:#B8860B,stroke:#986609,stroke-width:3px,rx:10,ry:10;
+classDef darkYellow fill:#B8860B,stroke:#986609,stroke*FPS-R: Behaviour Compositional Structure*
+-width:3px,rx:10,ry:10;
 classDef darkRed fill:#8B0000,stroke:#5B0000,stroke-width:3px,rx:10,ry:10;
 classDef red fill:#FF0000,stroke:#AA0000,stroke-width:3px,rx:10,ry:10;
 ``` 
