@@ -250,14 +250,38 @@ FPS-R can be **leashed or liberated** — gated behind reactive logic, or given 
 
 ---
 ## 💡 Why Do I Need Another Random Stream Generator?
-### 🧬 The Nature of "Held" Randomness
 
-In both natural and artificial systems, randomness is rarely pure noise—it often lingers, persists, or evolves in a way that feels intentional. Whether it's the shimmer of dappled light, the jitter of analogue machinery, or the twitchy searching of eye saccades, we encounter random behaviours that hold their shape or drift over time. Yet despite how ubiquitous this phenomenon is, most content creation tools are ill-equipped to simulate, emulate and represent it in an intuitively straightforward and lightweight manner. Replicating this structured unpredictability often requires labour-intensive custom coding or non-intuitive workarounds.
+### 🔍 *A Lexicon Gap, Hidden in Plain Sight*
+
+**FPS-R** is not just a random stream generator — it’s a **language** for articulating the *elusive behavior* of random movement and holding.  
+
+The fact that this article devotes so much effort to **illustrating**, **contextualizing**, and **visualizing** examples is itself proof of a *quiet gap* in our expressive vocabulary:  
+we often observe *naturally occurring randomness* that *feels structured*,  
+yet lack the **vocabulary** and **tools** to describe it faithfully.  
+
+**FPS-R** proposes a *phrasing architecture* to address that void —  
+not by replacing existing algorithms, but by offering a **grammar** to sculpt what’s always been there, *waiting to be named*.
+
+---
+
+### 🧬 *The Nature of "Held" Randomness*
+
+In both natural and artificial systems, randomness is *rarely pure noise* —  
+it often *lingers*, *persists*, or *evolves* in a way that feels **intentional**.  
+Whether it's the *shimmer of dappled light*, the *jitter of analogue machinery*,  
+or the *twitchy searching* of eye saccades,  
+we encounter random behaviours that *hold their shape* or *drift over time*.
+
+Yet despite how ubiquitous this phenomenon is, most content creation tools are *ill-equipped* to simulate, emulate and represent it in an **intuitively straightforward** and **lightweight** manner.  
+
+Replicating this structured unpredictability often requires *labour-intensive custom coding* or *non-intuitive workarounds*.
+
 
 > ✒️ Metaphor Note: *The FPS-R system is like a public pen at the post office.*  
 > People come and go: one picks it up, another leaves it askew, sometimes no one touches it for hours.  
 > Each interaction changes its orientation, position, or status—but never with memory.  
-> Yet from a time-lapse sped-up video review, it appears to dance with intention.  
+> Yet from a time-lapse sped-up video review, it appears to dance with intention.
+
 
 <br>
 <p align="center">
