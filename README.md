@@ -188,11 +188,13 @@ graph LR
   B --> C[**Reseed**]:::darkRed --> D[**Repeat**]:::red
 
 classDef darkBrown fill:#654321,stroke:#553311,stroke-width:3px,rx:10,ry:10;
-classDef darkYellow fill:#B8860B,stroke:#986609,stroke*FPS-R: Behaviour Compositional Structure*
--width:3px,rx:10,ry:10;
+
+classDef darkYellow fill:#B8860B,stroke:#986609,stroke-width:3px,rx:10,ry:10;
+
 classDef darkRed fill:#8B0000,stroke:#5B0000,stroke-width:3px,rx:10,ry:10;
+
 classDef red fill:#FF0000,stroke:#AA0000,stroke-width:3px,rx:10,ry:10;
-``` 
+```
 
 We call this behavior **Randomised Move-and-Hold**.  
 
