@@ -78,6 +78,11 @@ While some language-specific adjustment may still be necessary—such as:
 
 > These snippets are not drop-in libraries—they're reference phrasing kernels. Use them to reconstruct modulation logic in your language of choice, knowing that the behavior should survive the translation.
 
+## FPS-R Re-Introduction
+First introduced in the `README.md` manifesto, I shall re-introduce it here again in a more objective manner.
+
+The FPS-R framework is designed to produce pseudo-random values that remain constant for a specific, but randomly determined, duration. This "frame persistence" is essential for applications like animation, visual effects, and procedural content generation where randomness is desired, but it needs to be stable from one frame to the next to create coherent and visually pleasing results. The "stateless" nature means it doesn't need to store any values between frames; the result is calculated purely from the input parameters, making it highly portable and efficient.
+
 ## 🔩 How FPS-R Works
 
 At its core, FPS-R operates through **coordinate-indexed determinism**. Whether evaluated over time (e.g., `$F`, `@Frame`) or space (`@P`, `uv`, `x`), it applies arithmetic logic—such as `mod()` cycles, `floor()` binning, and seeded `rand()` functions—to produce values that appear to hold, snap, or jump across defined intervals.
@@ -233,6 +238,8 @@ The interactive scrolling graphs are the last 2 cells at the end of the notebook
 <img src="../code/houdini/h_fpsr_code_v001_01.gif" alt="'hip' file" width="134" height="157">
 
 ---
+## Stacked Modulo (SM)
+The Stacked Modulo (SM) algorithm uses nested modulo operations to create a stable value that persists for a variable number of frames. It first determines a random "hold duration" and then generates a consistent value that lasts for that duration.
 
 ## Stacked Modulo (SM) - Mathematical Model
 The output is a function of a composite seed, which is the sum of multiple layered rhythm functions.
@@ -247,8 +254,12 @@ $$
 Where $P\_i$ is the period and $O\_i$ is the phase offset for the $i$-th rhythm layer.
 
 ## Stacked Modulo (SM) - Code
+The Stacked Modulo (SM) algorithm uses nested modulo operations to create a stable value that persists for a variable number of frames. It first determines a random "hold duration" and then generates a consistent value that lasts for that duration.
+
+It is presented here in two forms: a compact one-liner for expression-based systems, and a more readable expanded function.
+
 ### One-Line Compact
-This is Stacked Modulo in a nutshell—a simple single-line that tells the whole story. 
+This version is a highly compact form of the SM logic, suitable for environments that only allow for simple expressions, like shader node graphs or embedded systems.
 ```c 
 frame - (23 + frame % (minHold + floor(rand(23 + frame - (frame % 10)) * (maxHold - minHold))))
 ```
@@ -285,6 +296,22 @@ Here’s how the expression works, from the inside out:
    - **Observable Outcome:** A value that remains constant for the duration determined in step 5, and then jumps to a new constant value.
    - **Intent:** This final step **locks the value**, creating the explicit "hold" state. The subtraction cancels out the frame's increment, resulting in a stable output until the modulo operation triggers a jump.
 
+#### The Core Mechanism: Hold vs. Jump in the One-Liner
+The expression's behaviour is governed by the interplay between an "outer" and "inner" modulo operation.
+- **The Outer Modulo:** `frame % (hold_duration)` is the **primary engine for the jump**. It creates a ramping value that, when subtracted from `frame`, produces the stable "held" output.
+- **The Inner Modulo:** `frame % 10` is the engine for the **reseed**. It ensures the `hold_duration` itself only changes at a fixed interval.
+
+##### When does the value HOLD?
+The final output value holds steady only when **both** the inner and outer modulo operations are in a stable state. This occurs during the frames between jump events.
+
+##### When does the value JUMP?
+A jump in the final output occurs if **either** the inner or outer modulo resets its cycle.
+1. **Outer Modulo Jump (Natural Expiration):** The value jumps when the `frame` counter completes the current `hold_duration` cycle. This is the natural end of a hold period.
+2. **Inner Modulo Jump (Forced Reseed):** The value also jumps every 10 frames when the inner modulo (frame % 10) resets. This forces a recalculation of the hold_duration. Because the system is stateless, the frame enters this new hold cycle at an arbitrary point, almost always resulting in an immediate change to the final output value.
+
+##### When does the HOLD DURATION itself change?
+This is the "stacked" part of the algorithm. The length of the hold is determined by the `rand()` function. The seed for this function is controlled by the inner modulo (`frame % 10`). This means a new `hold_duration` is only calculated every 10 frames. **This creates the signature FPS-R rhythm**: the value jumps at a variable rate, and the rate of that variation itself changes at a fixed, slower interval.
+
 **Summary of the "Randomised Move-and-Hold" Behavior**
    - **Hold:** For a random number of frames, the expression outputs a constant, unchanging integer. This duration is controlled by `minHold` and `maxHold` parameters, guaranteeing the hold period falls within a specific, use-defined range. This is the "hold" phase, which creates the illusion of a system that is deliberately pausing or waiting.
    - **Jump:** Once the current frame count surpasses the randomly generated hold duration, the `frame % (duration)` operation resets. This causes a sudden, discontinuous "jump" in the final output value.
@@ -293,12 +320,14 @@ Here’s how the expression works, from the inside out:
 In essence, the expression uses nested, deterministic cycles to create a larger, seemingly random behavior without ever storing information from one frame to the next. By incorporating `minHold` and `maxHold`, it provides direct control over the rhythm of this behavior, perfectly embodying the FPS-R philosophy of generating structured, stateless unpredictability.
 
 ### Stacked Modulo - A Defined Function
-Here is a function defined in C that goes beyond the compact single-line code. It abstracts the expression into a function with parameters that can be tweaked and controlled. This should be portable across languages and platforms.
+This is a more readable and flexible implementation of the same core logic. It breaks the process into clear, understandable steps with named variables and parameters for greater control.
+
+The function is defined in C and should be portable across languages and platforms.
 ```c
 /**
  * @file fpsr_algorithms.c
  * @brief Portable C implementation of FPS-R: Stacked Modulo (SM) algorithm
- * @details This file contains the stateless, frame-persistent randomization Stacked Modulo algorithm.
+ * @details This file contains the stateless, frame-persistent randomisation Stacked Modulo algorithm.
  * It uses a custom portable_rand() function to ensure deterministic and
  * consistent results across any platform.
  */
@@ -321,24 +350,30 @@ float portable_rand(int seed) {
 }
 
 
-/******************************************************************************/
-/* FPS-R: Stacked Modulo (SM)                            */
-/******************************************************************************/
-
-/**
- * @brief Generates a persistent random value that holds for a calculated duration.
- * @details This function uses a two-step process. First, it determines a random
- * "hold duration". Second, it generates a stable integer for that duration,
- * which is then used as a seed to produce the final, held random value.
- *
- * @param frame The current frame or time input.
- * @param minHold The minimum duration (in frames) for a value to hold.
- * @param maxHold The maximum duration (in frames) for a value to hold.
- * @param reseedInterval The fixed interval at which a new hold duration is calculated.
- * @param seedInner An offset for the random duration calculation to create unique sequences.
- * @param seedOuter An offset for the final value calculation to create unique sequences.
- * @return A float value between 0.0 and 1.0 that remains constant for the hold duration.
- */
+ /******************************************************************************/
+ /* FPS-R: Stacked Modulo (SM)                            */
+ /******************************************************************************/
+ 
+ /**
+  * @brief Generates a persistent random value that holds for a calculated duration.
+  * @details This function uses a two-step process. First, it determines a random
+  * "hold duration". Second, it generates a stable integer for that duration,
+  * which is then used as a seed to produce the final, held random value.
+  *
+  * int frame: The current frame or time input.
+  * int minHold: The minimum duration (in frames) for a value to hold.
+  * int maxHold: The maximum duration (in frames) for a value to hold.
+  * int reseedInterval: The fixed interval at which a new hold duration is calculated.
+  * int seedInner: An offset for the random duration calculation to create unique sequences.
+  * int seedOuter: An offset for the final value calculation to create unique sequences.
+  * int finalRandSwitch: A flag that can turn off the final randomisation step.
+  * return 
+  *     when finalRandSwitch is 0: 
+  *         An integer value representing the currently held frame 
+  *         that remains constant for the hold duration.
+  *     when finalRandSwitch is 1: 
+  *         A float value between 0.0 and 1.0 that remains constant for the hold duration.
+  */
 float fpsr_sm(
     int frame, int minHold, int maxHold,
     int reseedInterval, int seedInner, int seedOuter)
@@ -357,38 +392,138 @@ float fpsr_sm(
 
     // --- 3. Use the stable state as a seed for the final random value ---
     // Because the seed is stable, the final value is also stable.
-    float final_held_value = portable_rand(held_integer_state);
-
-    return final_held_value;
+    float fpsr_output = 0.0;
+    if (finalRandSwitch) {
+        // If finalRandSwitch is true, we apply the final randomisation step.
+        fpsr_output = portable_rand(held_integer_state);
+    } else {
+        // If finalRandSwitch is false, we return the active stream value directly.
+        fpsr_output = held_integer_state; 
+    }
+    return fpsr_output;
 }
 ```
 
 #### A Sample call to the FPS-R:SM function
 ```c
+// Sample code to call the FPS-R:SM function
 // Parameters
-int frame = 103; // provides the current frame
+int frame = 100; // Replace with the current frame value
 int minHoldFrames = 16; // probable minimum held period
 int maxHoldFrames = 24; // maximum held period before cycling
 int reseedFrames = 9; // inner mod cycle timing
 int offsetInner = -41; // offsets the inner frame
 int offsetOuter = 23; // offsets the outer frame
+int finalRandSwitch = 1; // 1 to apply the final randomisation step, 0 to skip it
 
-// Call the FPSR function
+// Call the FPS-R:SM function
 float randVal = 
     fpsr_sm(
         int(frame), minHoldFrames, maxHoldFrames, 
-        reseedFrames, offsetInner, offsetOuter);
+        reseedFrames, offsetInner, offsetOuter, finalRandSwitch);
 float randVal_previous = 
     fpsr_sm(
         int(frame-1), minHoldFrames, maxHoldFrames, 
-        reseedFrames, offsetInner, offsetOuter);
+        reseedFrames, offsetInner, offsetOuter, finalRandSwitch);
 int changed = 0;
 if (randVal != randVal_previous) {
     changed = 1; // value has changed from the previous frame
 }
 ```
+#### 🧩 Component Breakdown
+Here’s how the function works, step-by-step:
 
-### Behaviour of the Stacked Modulo Function
+**Part 1:** Calculate the Random Hold Duration
+
+1. `frame - (frame % reseedInterval)`
+- **What it does:** It subtracts the remainder of `frame / reseedInterval` from the `frame` number.
+- **Observable Outcome:** An integer that remains constant for `reseedInterval` frames and then jumps. For a reseedInterval of 20, it would be 0 for frames 0-19, then 20 for frames 20-39, and so on.
+- **Intent:** This is the **reseeding mechanism**. It quantises time into fixed blocks, creating a stable value that will be used as the basis for the random seed. This ensures the `holdDuration` is only recalculated periodically, not every frame.
+2. `portable_rand(seedInner + ...)`
+- **What it does:** It calls the random number generator using the quantized time value from the previous step. `seedInner` is added to offset the sequence, preventing different instances from being synchronised.
+- **Observable Outcome:** A pseudo-random float between 0.0 and 1.0 that is constant for `reseedInterval` frames.
+- **Intent:** To generate a stable random value that will determine the length of the next hold period.
+3. `minHold + rand_for_duration * (maxHold - minHold)`
+- **What it does:** A standard linear mapping formula. It scales the 0-to-1 random value to the desired range defined by `minHold` and `maxHold`.
+- **Observable Outcome:** A floating-point number between `minHold` and `maxHold`. This value is also stable for `reseedInterval` frames.
+- **Intent:** To translate the base random value into a meaningful duration range.
+4. `holdDuration = (int)floor(...)`
+- **What it does:** It truncates the floating-point duration to get a whole number.
+- **Observable Outcome:** The final, integer `holdDuration`, which is stable for `reseedInterval` frames.
+- **Intent:** To establish the precise, non-fractional number of frames that the final output value will hold for. The `if (holdDuration < 1)` guard prevents a value of zero, which would cause a division-by-zero error.
+
+**Part 2:** Generate and Hold the Final Value
+
+5. `(seedOuter + frame) % holdDuration`
+- **What it does:** The primary **"Stacked Modulo"** operation. The current `frame` (offset by `seedOuter` for variation) is divided by the `holdDuration` calculated in _Part 1_, and the remainder is taken.
+- **Observable Outcome:** A sawtooth wave that ramps from 0 up to `holdDuration - 1`, then resets to 0. The length of this ramp is variable, determined by `holdDuration`.
+- **Intent:** This generates the core dynamic that resets or "jumps" when the frame count exceeds the calculated hold period.
+
+6. `held_integer_state = (seedOuter + frame) - (...)`
+- What it does: It subtracts the ramping sawtooth value from the current (offset) `frame`.
+- **Observable Outcome:** An integer that remains constant for the entire `holdDuration`, and then jumps to a new constant value.
+- **Intent:** This final step **locks the value**, creating the explicit "hold" state. The subtraction cancels out the frame's continuous increment, resulting in a stable integer until the modulo operation triggers a jump.
+
+**Part 3:** Final Output Selection
+
+7. `if (finalRandSwitch) { ... } else { ... }`
+- **What it does:** This is a bypass switch for the final randomisation step. It checks the boolean value of `finalRandSwitch`.
+- **Observable Outcome:** 
+    - If `true`, the `held_integer_state` is used as a seed for `portable_rand()`, and the output is a pseudo-random float between 0.0 and 1.0.
+    - If `false`, the final hashing step is skipped, and the raw `held_integer_state` is returned directly (cast to a float). The output is a stepped, non-random integer value reflecting the current "frame" of the spatial/temporal system.
+- **Intent:** 
+    - To produce the final, frame-persistent random output. Because its seed is stable, the value itself is stable. To provide direct access to the underlying stable integer signal. 
+    - The bypass feature of `finalRandSwitch` is incredibly useful for debugging, visualisation, or for driving systems that require a predictable, stepped integer input rather than a randomized float. It allows you to "see" the raw rhythm of the hold mechanism.
+
+#### The Core Mechanism: Stacked Rhythms and Hashing
+The signature feel of the SM algorithm comes from its "stacked" or nested rhythmic structure. It's an interference pattern created by two different clocks running at the same time.
+- **The Reseed Clock:** This is a fixed, metronome-like rhythm controlled by `reseedInterval`. Its only job is to decide _when_ to pick a new random hold duration.
+- **The Hold Clock:** This is a chaotic, variable-length rhythm controlled by the `holdDuration`. Its job is to determine _how_ long the current value will actually persist.
+- **The Hashing:** The final step converts the stable integer state from the "Hold Clock" into a pseudo-random value. This ensures the output feels unpredictable, even though the underlying hold mechanism is a simple mathematical pattern.
+
+The final behaviour emerges from the interplay of these two clocks. The predictable Reseed Clock periodically forces a change upon the unpredictable Hold Clock, creating a unique rhythm of structured chaos.
+
+#### The Core Mechanism: When Does the Value Hold vs. Jump?
+The algorithm's rhythm is defined by two distinct types of "jump" events.
+
+##### When does the random value HOLD?
+The final random value remains **constant** only during the frames between jump events. For the value to be stable, the underlying `held_integer_state` must also be stable.
+
+##### When does the random value JUMP?
+A jump occurs whenever the `held_integer_state` changes. This can be triggered in two ways:
+1. **Natural Jump (Hold Expiration):** The value jumps when the `frame` counter completes the current `holdDuration` cycle. This is the "natural" end of a hold, happening when `(frame) % holdDuration` resets.
+2. **Forced Jump (Reseed Event):** The value also jumps whenever the `reseedInterval` is crossed (e.g., every 20 frames). At this moment, a new `holdDuration` is calculated. Because the system is stateless, the `frame` enters this new duration cycle at an arbitrary point, which almost always changes the `held_integer_state` and forces an immediate jump in the final output, regardless of whether the previous hold period had finished.
+
+This two-tiered jump system is what creates the signature FPS-R behaviour: a value holds for a variable period, but the length of that period is itself reassessed at a fixed, rhythmic interval.
+
+##### The `portable_rand` Helper Function
+This is a simple, deterministic pseudo-random number generator. It's not cryptographically secure, but it's perfect for graphics.
+- **Deterministic:** For the same `seed`, it will always produce the same output. This is the key to the entire FPS-R framework.
+- **`sin(...) * large_number`**: This is a classic technique to create a chaotic, hash-like function. The sine function provides a non-linear distribution, and multiplying by large prime numbers helps to spread the results out, making them appear random.
+- **`result - floor(result)`**: This is a mathematical trick to get the fractional part of a number (equivalent to `fmod(result, 1.0)`). It ensures the final output is always a float between 0.0 and 1.0.
+
+
+#### A Note on Typical Application: Controlling the Rhythm
+The final rhythm of the algorithm is dictated by whichever cycle is shorter: the fixed `reseedInterval` or the variable `holdDuration`. You can leverage this interplay to create different rhythmic feels.
+
+**Approach 1:** The Metronome (More Predictable Rhythm)
+For a slightly more predictable rhythm where the output jumps at a consistent primary interval, you should make the `reseedInterval` **the dominant (shorter) cycle**.
+- How to set it up:
+    1. Decide your primary rhythm: e.g., a new value every **20 frames**. Set `reseedInterval` to `20`.
+    2. Make the hold duration longer: Set `minHold` and `maxHold` to be greater than `reseedInterval`. For example, `minHold = 25` and `maxHold = 50`.
+- **Why this works:** By ensuring the `holdDuration` is always longer than the `reseedInterval`, you make the "Natural Jump" (hold expiration) a rare event. The "Forced Jump" (reseed event) becomes the main driver of change. The output will reliably jump every 20 frames, with unpredictable texture within that block.
+
+**Approach 2:** The Organic Rhythm (Centered and Chaotic)
+For a more natural and less rigid rhythm that still feels anchored, you can create a dynamic tension between the two jump types.
+- How to set it up:
+    1. Decide your target average rhythm: e.g., a jump roughly every 20 frames. Set `reseedInterval` to `20`.
+    2. Bracket the `reseedInterval` with your hold durations. For example, set `minHold = 11` and `maxHold = 22`.
+- **Why this works:** This setup creates a competition between the two jump events.
+    - If the randomly chosen `holdDuration` is less than 20 (e.g., 15), the "Natural Jump" will happen first, creating a shorter, unexpected hold.
+    - If the chosen `holdDuration` is greater than 20 (e.g., 21), the "Forced Jump" at frame 20 will happen first, creating a predictable hold.
+- This approach embraces the stateless chaos. It acknowledges that `minHold` doesn't guarantee a minimum hold time but rather influences the probability. The result is a rhythm that feels centered around your target interval but is punctuated by organic variation.
+
+### SM Summary: Behaviour of the Stacked Modulo Function
 The expressive range of the Stacked Modulo (SM) method is controlled by the selection of its core timing parameters. The relationship between cycle lengths and their interaction dictates the character of the output signal.
 
 **High-Frequency Modulation (Twitch & Impulse)**
@@ -401,6 +536,11 @@ Conversely, using large values for the modulo spans results in long cycle length
 The true complexity emerges from layering multiple modulo functions with non-harmonious periods (e.g., using prime numbers like 13, 31, 97). The cycles of these layers go in and out of phase at irregular intervals. A "jump" in the final output is triggered whenever any of the layers completes its cycle, creating a complex interference pattern. This composite rhythm produces state-like transitions that are not explicitly programmed, mimicking the emergent logic of a complex state machine without storing any state.
 
 ---
+## Quantised Switching (QS)
+The Quantised Switching (QS) algorithm generates complex, rhythmic, and often "glitchy" patterns. It does this by creating two independent, quantised (or "stepped") sine waves and rapidly switching between them. The final stepped value is then used as a seed to produce a frame-persistent random number, converting the predictable wave into an unpredictable but stable output.
+
+Unlike Stacked Modulo, QS does not have a compact one-liner form due to its structural complexity.
+
 ## Quantised Switching (QS) - Mathematical Model
 The output is determined by a selector function choosing from a set of source functions.
 <!-- latex markdown -->
@@ -413,13 +553,16 @@ $$
 Where $P\_s$ is the period of the selector and N is the number of available sources.
 
 ## Quantised Switching (QS) - Code
-Here is a function defined in C with parameters that can be tweaked and controlled. This should be portable across languages and platforms.
+This is the full implementation of the QS logic, with parameters for controlling the frequencies, quantisation levels, and switching speeds of the two internal streams.
 
+The function is defined in C and should be portable across languages and platforms.
+
+### Quantised SWitching - A Defined Function
 ```c
 /**
  * @file fpsr_algorithms.c
  * @brief Portable C implementation of FPS-R: Quantised Switching (QS) algorithm
- * @details This file contains the stateless, frame-persistent randomization Quantised Switching algorithm.
+ * @details This file contains the stateless, frame-persistent randomisation Quantised Switching algorithm.
  * It uses a custom portable_rand() function to ensure deterministic and
  * consistent results across any platform.
  */
@@ -450,20 +593,22 @@ float portable_rand(int seed) {
  * @details This function creates two separate, quantised sine waves and switches
  * between them at a fixed interval to create complex, glitch-like patterns.
  *
- * @param frame The current frame or time input.
- * @param baseWaveFreq The base frequency for the modulation wave of stream 1.
- * @param stream2FreqMult A multiplier for the second stream's frequency. If < 0, a default is used.
- * @param quantLevelsMinMax An array of two integers for the min and max quantisation levels.
- * @param streamsOffset An array of two integers to offset the frame for each stream.
- * @param streamSwitchDur The number of frames after which the streams switch. If < 1, a default is derived.
- * @param stream1QuantDur The duration for stream 1's quantisation switch. If < 1, a default is derived.
- * @param stream2QuantDur The duration for stream 2's quantisation switch. If < 1, a default is derived.
- * @return A pseudo-random float value between 0.0 and 1.0.
+ * int frame: The current frame or time input.
+ * float baseWaveFreq: The base frequency for the modulation wave of stream 1.
+ * float stream2FreqMult: A multiplier for the second stream's frequency. If < 0, a default is used.
+ * int quantLevelsMinMax: An array of two integers for the min and max quantisation levels.
+ * int streamsOffset: An array of two integers to offset the frame for each stream.
+ * int streamSwitchDur: The number of frames after which the streams switch. If < 1, a default is derived.
+ * int stream1QuantDur: The duration for stream 1's quantisation switch. If < 1, a default is derived.
+ * int stream2QuantDur: The duration for stream 2's quantisation switch. If < 1, a default is derived.
+ * int finalRandSwitch: A flag that can turn off the final randomisation step.
+ * return: A float value between 0.0 and 1.0 that remains constant for the hold duration.
  */
 float fpsr_qs(
     int frame, float baseWaveFreq, float stream2FreqMult,
     const int quantLevelsMinMax[2], const int streamsOffset[2],
-    int streamSwitchDur, int stream1QuantDur, int stream2QuantDur)
+    int streamSwitchDur, int stream1QuantDur, int stream2QuantDur,
+    int finalRandSwitch)
 {
     // --- 1. Set default durations if not provided ---
     // This pattern allows for optional parameters in a portable C-style.
@@ -484,7 +629,7 @@ float fpsr_qs(
     // --- 2. Calculate quantisation levels for each stream ---
     // The quantisation level itself switches halfway through its own duration cycle.
     int s1_quant_level;
-    if ((streamsOffset[0] + frame) % stream1QuantDur < stream1QuantDur / 2) {
+    if ((streamsOffset[0] + frame) % stream1QuantDur < stream1QuantDur * 0.5) {
         s1_quant_level = quantLevelsMinMax[0];
     } else {
         s1_quant_level = quantLevelsMinMax[1];
@@ -492,10 +637,10 @@ float fpsr_qs(
 
     int s2_quant_level;
     // Magic numbers are used to create more variation in the second stream's character.
-    // Change these to affect a different look.
+    // Stream 2 uses these values as a multiplier of Stream 1's quantisation levels.
     const float STREAM2_QUANT_RATIO_MIN = 1.24;
     const float STREAM2_QUANT_RATIO_MAX = 0.66;
-    if ((streamsOffset[1] + frame) % stream2QuantDur < stream2QuantDur / 2) {
+    if ((streamsOffset[1] + frame) % stream2QuantDur < stream2QuantDur * 0.5) {
         s2_quant_level = (int)floor(quantLevelsMinMax[0] * STREAM2_QUANT_RATIO_MIN);
     } else {
         s2_quant_level = (int)floor(quantLevelsMinMax[1] * STREAM2_QUANT_RATIO_MAX);
@@ -506,13 +651,16 @@ float fpsr_qs(
 
 
     // --- 3. Generate the two quantised sine wave streams ---
-    if (stream2FreqMult < 0) { stream2FreqMult = 3.7; } // Default multiplier.
+    float STREAM2_DEFAULT_FREQ_MULT = 3.7; // Default multiplier for stream 2.
+    if (stream2FreqMult < 0) { stream2FreqMult = STREAM2_DEFAULT_FREQ_MULT; } 
 
-    float stream1 = floor(sin((float)(streamsOffset[0] + frame) * baseWaveFreq) * s1_quant_level) / s1_quant_level;
-    float stream2 = floor(sin((float)(streamsOffset[1] + frame) * baseWaveFreq * stream2FreqMult) * s2_quant_level) / s2_quant_level;
+    float stream1 = floor(sin((float)(streamsOffset[0] + frame) * baseWaveFreq) 
+                        * s1_quant_level) / s1_quant_level;
+    float stream2 = floor(sin((float)(streamsOffset[1] + frame) * baseWaveFreq * stream2FreqMult) 
+                        * s2_quant_level) / s2_quant_level;
 
     // --- 4. Switch between the two streams ---
-    float active_stream_val;
+    float active_stream_val = 0.0;
     if ((frame % streamSwitchDur) < streamSwitchDur / 2) {
         active_stream_val = stream1;
     } else {
@@ -522,7 +670,140 @@ float fpsr_qs(
     // --- 5. Hash the final output to create a random-looking value ---
     // The stepped sine wave output is converted to a large integer and used
     // as a seed to produce the final, held random value.
-    return portable_rand((int)(active_stream_val * 100000.0));
+    float fpsr_output = 0.0;
+    if (finalRandSwitch) {
+        // If finalRandSwitch is true, we apply the final randomisation step.
+        fpsr_output = portable_rand((int)(active_stream_val * 100000.0));
+    } else {
+        // If finalRandSwitch is false, we return the active stream value directly.
+        fpsr_output = active_stream_val;
+    }
+
+     return fpsr_output;
 }
 ```
 
+#### A Sample call to the FPS-R:QS function
+```c
+// Sample code to call the FPS-R:QS function
+// Parameters
+int frame = 103; // Current frame number
+float baseWaveFreq = 0.012; // Base frequency for the modulation wave of stream 1
+float stream2freqMult = 3.1; // Multiplier for the second stream's frequency
+int quantLevelsMinMax[2] = {12, 22}; // Min, Max quantisation levels for the two streams
+int streamsOffset[2] = {0, 76}; // Offset for the two streams
+int streamSwitchDur = 24; // Duration for switching streams in frames
+int stream1QuantDur = 16; // Duration for the first stream's quantisation switch cycle in frames
+int stream2QuantDur = 20; // Duration for the second stream's quantisation switch cycle in frames
+int finalRandSwitch = 1; // 1 to apply the final randomisation step, 0 to skip it
+
+float randVal = fpsr_qs(
+    frame, baseWaveFreq, stream2freqMult, quantLevelsMinMax, 
+    streamsOffset, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch);
+
+// another call to fpsr_qs for the previous frame
+float randVal_previous = fpsr_qs(
+    int(@Frame - 1), baseWaveFreq, stream2freqMult, quantLevelsMinMax, 
+    streamsOffset, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch);
+
+int changed = 0; // Variable to track if the value has changed
+if (randVal != randVal_previous) {
+    changed = 1; // Mark as changed if the value has changed from the previous frame
+} 
+```
+
+### 🧩 Component Breakdown
+Here’s how the function works, step-by-step:
+
+**Part 1:** Setting Default Durations
+- **What it does:** The initial block of `if` statements checks if valid durations have been provided for switching. If a negative or zero value is passed, it calculates a default duration based on the `baseWaveFreq`.
+- **Observable Outcome:** The variables `streamSwitchDur`, `stream1QuantDur`, and `stream2QuantDur` are guaranteed to be at least 1, preventing any division-by-zero errors later.
+- **Intent:** This provides flexibility, allowing the user to omit detailed timing parameters for simpler use cases. The defaults are derived from the base frequency to ensure they are musically and rhythmically related to the main wave.
+
+**Part 2:** Calculating Quantisation Levels
+- **What it does:** This section determines the number of "steps" each sine wave will be broken into. It uses a modulo operation (`%`) to switch between a `min` and `max` quantisation level at a fixed interval (`stream1QuantDur` and `stream2QuantDur`).
+- **Observable Outcome:** The variables `s1_quant_level` and `s2_quant_level` hold integer values that periodically switch back and forth. For example, `s1_quant_level` might be 3 for 20 frames, then jump to 8 for the next 20 frames. Stream 2 uses "magic number" multipliers to give it a different character from stream 1.
+- **Intent:** To create a dynamic texture where the "resolution" or "crunchiness" of each sine wave changes over time. This is a key source of the algorithm's complex, evolving patterns.
+
+**Part 3:** Generating the Sine Wave Streams
+- **What it does:** This is where the two core, quantised sine waves are generated using the formula `floor(sin(...) * level) / level`.
+- **Observable Outcome:** `stream1` and `stream2` hold the values of two stepped waves. Instead of a smooth curve, their output is a series of flat "steps," like a staircase. The number of steps is determined by the s_quant_level variables from the previous part.
+- **Intent:** To create two distinct, predictable, and rhythmically stepped signals. stream2FreqMult and streamsOffset ensure the two streams have different frequencies and phases, so they are out of sync and create interesting interplay when switched.
+
+**Part 4:** Switching Between the Two Streams
+- **What it does:** A simple `if/else` block checks the frame number against the `streamSwitchDur`. For the first half of the duration, it selects `stream1`; for the second half, it selects `stream2`.
+- **Observable Outcome:** The `active_stream_val` variable holds the value of either `stream1` or `stream2`, flipping between them at a fixed rate.
+- **Intent:** This is the primary switching mechanism. It creates an audible or visible "flicker" as the output jumps between the two different underlying patterns.
+
+**Part 5:** Final Output Selection
+- **What it does:** This is a bypass switch for the final randomisation step. It checks the boolean value of `finalRandSwitch`.
+- **Observable Outcome:** 
+    - If `true`, the function behaves as before: the `active_stream_val` is hashed by `portable_rand()`, and the output is a pseudo-random float between 0.0 and 1.0.
+    - If `false`, the final hashing step is skipped, and the raw `active_stream_val` is returned directly. The output is a predictable, stepped, flickering signal.
+- **Intent:** 
+    - To convert the predictable, stepped wave into an unpredictable, frame-persistent random value. This is the final step that fulfills the FPS-R philosophy: it takes a deterministic, rhythmic pattern and uses it to drive a chaotic but stable output.
+    - The bypass feature of `finalRandSwitch` provides direct access to the underlying rhythmic signal created by the switching streams. This is invaluable for debugging, for creating predictable glitch effects, creative variations, or for driving systems that require a stepped, deterministic input rather than a randomized one.
+
+##### The `portable_rand` Helper Function
+This is a simple, deterministic pseudo-random number generator. It's not cryptographically secure, but it's perfect for graphics.
+- **Deterministic:** For the same `seed`, it will always produce the same output. This is the key to the entire FPS-R framework.
+- **`sin(...) * large_number`**: This is a classic technique to create a chaotic, hash-like function. The sine function provides a non-linear distribution, and multiplying by large prime numbers helps to spread the results out, making them appear random.
+- **`result - floor(result)`**: This is a mathematical trick to get the fractional part of a number (equivalent to `fmod(result, 1.0)`). It ensures the final output is always a float between 0.0 and 1.0.
+
+#### The Core Mechanism: Layered Rhythms and Hashing
+The unique feel of the QS algorithm comes from its layers of nested, rhythmic switching.
+
+- **The Primary Switch:** The output signal jumps between `stream1` and `stream2` at a fixed interval defined by `streamSwitchDur`. This creates the most noticeable, top-level flicker.
+- **The Quantisation Switch:** Within each stream, the resolution of the wave changes at its own interval (`stream1QuantDur`, `stream2QuantDur`). This means that even when the active stream is `stream1`, its texture can suddenly become more or less "chunky," adding a secondary layer of variation.
+- **The Stepped "Hold":** The final output of `portable_rand` holds its value as long as the active stream's output is on the same quantised step.
+- **The Hashed "Jump":** The final value jumps to a new random number the instant the underlying stepped wave moves to a new level. This can be triggered either by the sine wave naturally moving to its next step, the quantisation level changing, or the primary stream switch occurring.
+
+This combination of layered, deterministic switching, followed by a final random hash, creates results that feel both structured and chaotic at the same time.
+
+#### The Core Mechanism: When Does the Value Hold vs. Jump?
+The unique feel of the QS algorithm comes from its layers of nested, rhythmic switching. Because there are many moving parts, the final value is more volatile than in the SM algorithm. For a value to remain stable, more "stars must align."
+
+##### When does the random value JUMP?
+A jump in the final output occurs if any of the following events happen:
+1. **The Primary Stream Switch:** The value jumps when `(frame % streamSwitchDur)` crosses its halfway point, causing the active stream to flip from `stream1` to `stream2` or vice-versa.
+2. **A Quantisation Level Switch:** The value jumps if either `stream1QuantDur` or `stream2QuantDur` completes its half-cycle, changing the number of steps in the underlying sine wave.
+3. **A Natural Step Change:** Even if all timers are stable, the value will jump if the active sine wave naturally progresses to its next quantised step.
+
+##### When does the random value HOLD?
+The final random value holds **only when all three of the above factors are stable simultaneously**. The primary stream switch timer must not be at its halfway point, both quantisation timers must be stable, and the active sine wave must remain on the same quantised step.
+
+#### A Note on Typical Application
+##### 1. Taming the Chaos
+The QS algorithm has many sensitive, interacting parameters. To avoid being overwhelmed by chaotic output when first using it, a methodical approach is recommended.
+1. **Start Slow and Stable:** Begin with a very low `baseWaveFreq` (e.g., in the range of `0.005` to `0.012` for a 24fps system) and a long `streamSwitchDur` (e.g., 30 frames or more). This slows down all the moving parts.
+2. **Adjust Incrementally:** Make small, isolated changes to one parameter at a time. For instance, slightly increase the `baseWaveFreq` or slightly decrease the `streamSwitchDur`. Observe the effect before changing another parameter.
+3. **Understand Frequency:** The `baseWaveFreq` is the most sensitive parameter. It controls how quickly the sine waves oscillate. Even a small change can dramatically increase the rate of "Natural Step Changes," leading to much faster output.
+
+By starting slow and making gradual adjustments, you can build an intuition for how the different rhythmic layers interact, allowing you to sculpt the chaos intentionally rather than being confused by it.
+
+##### 2. Bypassing for Analysis and Simpler Effects
+The algorithm includes two "bypass" mechanisms that let you peel back the layers of complexity:
+- Bypass 1 (Final Randomisation): Setting `finalRandSwitch` to `false` disables the final `portable_rand()` hash. This exposes the raw, stepped signal, which is useful for debugging or creating predictable, ordered glitch patterns.
+- Bypass 2 (Quantisation): By setting the `quantLevelsMinMax` to a very high number (e.g., `100`), the quantisation artefacts become so small that they effectively disappear. The output will be the two original, smooth sine waves switching back and forth.
+
+By using both bypasses at once, FPS-R: QS transforms into a simple, versatile signal switcher, toggling between two smooth waves at a regular interval.
+
+##### 3. Advanced Customisation with Custom Signals
+For ultimate flexibility, the internal signal generators can be replaced entirely. The `sin()` functions are merely defaults. You can modify the function to use any signal-generating algorithm you choose, such as:
+- Other mathematical waves (triangle, square, sawtooth).
+- Noise functions (Perlin, Simplex, Worley).
+- Pre-defined arrays or lookup tables for specific animation curves.
+
+The only requirement is that the chosen signal generator must be stateless—its output should depend only on the `frame` and its parameters, not on previous results. This ensures that the entire FPS-R: QS function remains true to its stateless philosophy.
+
+### QS Summary: Behaviour of the Quantised Switching Function
+The expressive range of the Quantised Switching (QS) method is controlled by the interplay of its multiple core timing cycles. Its behaviour is inherently more volatile than SM's, as a change in any of its layered rhythms can trigger a jump in the final output.
+
+#### High-Frequency Modulation (Glitch & Flicker)
+When the timing parameters (`streamSwitchDur`, `stream1QuantDur`, `stream2QuantDur`) are set to small values, the system switches rapidly between streams and their quantisation levels. Combined with a high `baseWaveFreq`, this causes the underlying stepped sine waves to change constantly. The resulting output is a high-frequency, chaotic signal that feels like digital static, a broken signal, or a fast, nervous flicker.
+
+#### Low-Frequency Modulation (Stateful Drifting)
+Conversely, using large values for the timing parameters creates long cycles. The system will hold on one stream for an extended period, and that stream's quantisation level will also remain stable for a long time. This produces behaviour that feels like the system is switching between two distinct, persistent "states" or "personalities." The holds are long, the transitions are deliberate, and the overall feel is one of slow, intentional drifting between modes.
+
+#### Rhythmic Interference (Complex Textures)
+The true complexity of QS emerges from setting the three timing cycles to non-harmonious values (e.g., primes like 17, 23, 31). The main switch, and the quantisation switches for each stream, go in and out of phase at irregular intervals. This creates a deeply layered texture where the active stream, its frequency, and its "chunkiness" all evolve independently. The output is not just a simple switch between two values, but a switch between two _behaviours_, each with its own changing rhythm, resulting in complex and unpredictable patterns.
