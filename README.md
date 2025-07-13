@@ -547,7 +547,7 @@ These representations let FPS-R become both **performer** and **diagnostician** 
 ### 🪞 Use Cases for Meta-Signal Mapping
 - Teaching phrasing logic and modulation character 
 - Debugging emergent behavior by tracing rhythm profile
-- Designing visual glyphs of logic for capsule fingerprinting
+- Designing visual glyphs of logic for storing and naming phrases
 - Feedback tuning across time, attention, or surface topologies
 
 Ultimately, meta-signal analysis reframes FPS-R from engine to instrument — a system not only capable of phrasing, but of illuminating the shape of phrasing itself.

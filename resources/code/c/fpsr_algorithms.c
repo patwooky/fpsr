@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: MIT — See LICENSE for full terms
+// Created by Patrick Woo, 2025.
+// This file is part of the FPS-R (Frame-Persistent Stateless Randomisation) project.
+// https://github.com/patwooky/FPSR_Algorithm
 
 /**
  * @file fpsr_algorithms.c
@@ -17,6 +20,10 @@
  * @param seed An integer used to generate the random number.
  * @return A pseudo-random float between 0.0 and 1.0.
  */
+
+// A simple, portable pseudo-random number generator that takes an integer seed.
+// Different languages have different rand() implementations, so using a custom
+// one like this ensures identical results on any platform.
 float portable_rand(int seed) {
     // A common technique for a simple hash-like random number.
     // The large prime numbers are used to create a chaotic, unpredictable result.
@@ -71,7 +78,7 @@ float fpsr_sm(
     float fpsr_output = 0.0;
     if (finalRandSwitch) {
         // If finalRandSwitch is true, we apply the final randomisation step.
-        fpsr_output = portable_rand(held_integer_state);
+        fpsr_output = portable_rand(held_integer_state * 100000.0);
     } else {
         // If finalRandSwitch is false, we return the active stream value directly.
         fpsr_output = held_integer_state; 
@@ -195,8 +202,9 @@ float fpsr_qs(
         // If finalRandSwitch is true, we apply the final randomisation step.
         fpsr_output = portable_rand((int)(active_stream_val * 100000.0));
     } else {
-        // If finalRandSwitch is false, we return the active stream value directly.
-        fpsr_output = active_stream_val;
+        // If finalRandSwitch is false, we need to scale down the sine curve ranges (-1 to 1)
+        // to 0 to 1 before we can return the active stream value directly.
+        fpsr_output = 0.5 * active_stream_val + 0.5; // Scale from [-1, 1] to [0, 1];
     }
 
      return fpsr_output;
