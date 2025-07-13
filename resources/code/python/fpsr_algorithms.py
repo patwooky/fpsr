@@ -1,16 +1,24 @@
 # SPDX-License-Identifier: MIT — See LICENSE for full terms
+# Created by Patrick Woo, 2025.
+# This file is part of the FPS-R (Frame-Persistent Stateless Randomisation) project.
+# https://github.com/patwooky/FPSR_Algorithm
 
 '''
 file: fpsr_algorithms.py
 brief: Python implementation of FPS-R algorithms: Stacked Modulo (SM) and Quantised Switching (QS).
 details: 
+    FPS-R (Frame-Persistent Stateless Randomisation) is a set of algorithms that
+    generate frame-persistent and stateless random values. 
     This file contains two stateless, frame-persistent randomization algorithms.
-    
+    This file contains two stateless, frame-persistent randomization algorithms.
     It uses a custom portable_rand() function to ensure deterministic and consistent results across any platform.
 '''
 
 import math
 
+# A simple, portable pseudo-random number generator that takes an integer seed.
+# Different languages have different rand() implementations, so using a custom
+# one like this ensures identical results on any platform.
 def portable_rand(seed):
     """
     A simple, portable pseudo-random number generator.
@@ -167,8 +175,9 @@ def fpsr_qs(frame, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffs
         # If finalRandSwitch is true, we apply the final randomisation step.
         fpsr_output = portable_rand(int(active_stream_val * 100000.0))
     else:
-        # If finalRandSwitch is false, we return the active stream value directly.
-        fpsr_output = active_stream_val
+        # If finalRandSwitch is false, we must scale the sine curve ranges (-1 to 1)
+        # to 0 to 1 before we can return the active stream value.
+        fpsr_output = 0.5 * active_stream_val + 0.5  # Scale from [-1, 1] to [0, 1]
         
     return fpsr_output
 

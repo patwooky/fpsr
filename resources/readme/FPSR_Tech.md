@@ -214,16 +214,16 @@ Below is a non-exhaustive list of common stateless functions and procedural sour
 ## Show Me the Code!
 Implementation of the algorithms in a variety of software and environments. 
 
-[Code Implementations](../code/): (a directory) Here is a high level directory in this repository that contains the code implemented in several languages and platforms.
+[**Code Implementations**](../code/) This high level directory in the repository contains the code implemented in several languages and platforms.
 
 ### C
-[**Code in C**](../code/c/fpsr_algorithms.c): FPS-R SM and QS in portable C code that would run with minimal modifications in many c-style languages. 
+[**Code in C**](../code/c/fpsr_algorithms.c) FPS-R SM and QS in portable C code that would run with minimal modifications in many c-style languages. 
 
 ### Python
-[**Code in Python**](../code/python/fpsr_algorithms.py): FPS-R SM and QS in a Python `.py` file.
+[**Code in Python**](../code/python/fpsr_algorithms.py) FPS-R SM and QS in a Python `.py` file.
 
 ### Jupyter Notebook
-[**Code in Jupyter Notebook**](../code/python/fpsr_algorithms.ipynb): FPS-R SM and FPS-R QS Python code in notebook cells, in a visually pleasant layout. For the most intuitive and hands-on exploration, the Jupyter Notebook provides interactively scrollable graphs. This is the recommended way to visually understand the characteristics and "fingerprint" of each algorithm's output.
+[**Code in Jupyter Notebook**](../code/python/fpsr_algorithms.ipynb) FPS-R SM and FPS-R QS Python code in notebook cells, in a visually pleasant layout. For the most intuitive and hands-on exploration, the Jupyter Notebook provides interactively scrollable graphs. This is the recommended way to visually understand the characteristics and "fingerprint" of each algorithm's output.
 <img src="../readme/images/jpynotebookFpsrSmScroll.gif" alt="FPS-R-SM Timeline Graph Preview" width="350" height="150">
 FPS-R: Stacked Modulo Timeline Graph Preview
 <img src="../readme/images/jpynotebookFpsrQsScroll.gif" alt="FPS-R-QS Timeline Graph Preview" width="350" height="150">
@@ -233,9 +233,14 @@ FPS-R: Quantised Switching Timeline Graph Preview
 To access the read-only notebook with the interactive scrolling graphs, you can: [explore the interactive timeline in a Jupyter notebook on `nbviewer`](https://nbviewer.org/github/patwooky/FPSR_Algorithm/blob/main/resources/code/python/fpsr_algorithms.ipynb)
 The interactive scrolling graphs are the last 2 cells at the end of the notebook.
 
-### Houdini
-[**Houdini `.hip` File**](../code/houdini/h_fpsr_code_v001_01.hip): This is a Houdini project file that has a geometry node. In it there are two `point wrangle` nodes that provide `FPS-R: SM` and and `FPS-R: QS`. Both will produce a FPS-R signal to drive the y-axis of the position of a box.
+### SideFX Houdini
+[**Houdini `Vex` file**](../code/houdini/fpsr_algorithms.vex) This file contains the vex code for both `FPS-R: SM` and `FPS-R: QS` algorithms in a plain text file. 
+[**Houdini `.hip` File**](../code/houdini/h_fpsr_code_v001_01.hip) This is a Houdini project file that has a geometry node. Inside are two `point wrangle` nodes that provide `FPS-R: SM` and `FPS-R: QS`. Both will produce a FPS-R signal to drive the y-axis position of a box.
 <img src="../code/houdini/h_fpsr_code_v001_01.gif" alt="'hip' file" width="134" height="157">
+
+### Autodesk Maya
+[**Maya `.mel` Script**](../code/maya/fpsr_algorithms.mel) The Mel expressions, same as those used in the `.ma` file, but in a easy to read plain text format.
+[**Maya `.ma` File**](../code/maya/fpsr_algorithms.ma) Maya file a group node. In its `attribute Editor -> notes section` there are the expressions for both `FPS-R: SM` and `FPS-R: QS`. There are also 2 boxes with expression-driven by the 2 FPS-R algorithms in their y- and z- position values.
 
 ---
 ## Stacked Modulo (SM)
@@ -675,8 +680,9 @@ float fpsr_qs(
         // If finalRandSwitch is true, we apply the final randomisation step.
         fpsr_output = portable_rand((int)(active_stream_val * 100000.0));
     } else {
-        // If finalRandSwitch is false, we return the active stream value directly.
-        fpsr_output = active_stream_val;
+        // If finalRandSwitch is false, we need to scale down the sine curve ranges (-1 to 1)
+        // to 0 to 1 before we can return the active stream value directly.
+        fpsr_output = 0.5 * active_stream_val + 0.5; // Scale from [-1, 1] to [0, 1];
     }
 
      return fpsr_output;
