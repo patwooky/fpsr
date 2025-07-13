@@ -355,6 +355,7 @@ These approaches _can_ work. Many do. But they share four liabilities:
 3. They are rarely portable
 4. They are neither composable nor phrased
 
+---
 ### ⚙️ Why FPS-R is Different
 
 Where most systems create irregularity by layering complexity onto predictable logic, FPS-R begins with modulation. It doesn’t simulate drift—it phrases it. And unlike traditional methods that rely on accumulated state, scaffolded logic, or seeded lookup tables, FPS-R distills expressive behavior into a **single, frame-aware grammar**.
@@ -380,8 +381,8 @@ That’s why FPS-R can:
 
 > 🧩 Deterministic Complexity
 > Where intricate behavior emerges from repeatable rules, not randomness.
----
 
+---
 ## ❓ Why Not Just Use State?
 In a **stateful** system, behavior depends on remembering what happened before—like a dancer who needs to recall their last step before taking the next. A **stateless** system, like FPS-R, behavior is calculated fresh every time, based on inputs like time, position, or **pattern—no memory, no history, just clean response.**
 
@@ -395,11 +396,20 @@ Because beyond simple systems lies a world of **stateless surfaces**, **reproduc
 **Why Traditional State Falls Short**
 **🧳 State Doesn’t Travel** Your hold/reseed-jump loop works in a script—but it relies on persistent memory. That loop breaks in shaders, in stateless expression fields, in stream processors, GPU pipelines—anywhere **state doesn’t persist**. FPS-R? Stateless by design. It runs wherever functions do: in time, in space, in parallel.
 
-**🧠 No Forensic Trail** Once a stateful loop has run, its past is a blur of overwritten variables. A crash at frame 58200? Good luck explaining why your held value jumped. FPS-R is deterministic and leaves a procedural trail: any frame, any capsule, always reproducible. Every decision path is reconstructable from a seed and a frame. FPS-R a glass box—not just a tool, but a timeline.
+**🧠 No Forensic Trail** Once a stateful loop has run, its past is a blur of overwritten variables. A crash at frame 58200? Good luck explaining why your held value jumped — most state-driven systems leave no traceable path.
+
+FPS-R, by contrast, is a glass box:
+- It’s fully deterministic
+- Built on stateless, inspectable math
+- Transparent by design, not by accident
+
+Every value it produces is derived from visible, reproducible inputs — frame, seed, pattern — not hidden buffers or accumulated memory. There’s no fog of history, no mystery behavior, no black-box opacity. Every phrased moment can be **reconstructed**, **explained**, and **replayed** from a single formula.
+
+FPS-R doesn’t obscure logic — it **exposes** it. It’s not just a modulation engine — **it’s a procedural timeline you can rewind, inspect, and narrate**.
 
 **🌌 Time-Bound, Not Domain-Agnostic** Stateful loops are temporal by nature. They work on a clock. Try to modulate a surface, a gesture velocity, or a gaze field—**time-only logic fractures**. FPS-R works across **domain inputs**. Any scalar, vector, or multidimensional stream can become a behavior substrate.
 
-**🧭 Hard to Compose** Integrating multiple stateful modulators is brittle. FPS-R capsules are modular, chainable, and named. They compose cleanly—stackable, layerable, with expressive guarantees. With input parameters, you describe intent—hesitate, glide, surprise—and the capsule knows how to phrase it.
+**🧭 Hard to Compose** Integrating multiple stateful modulators is brittle. FPS-R can be encapsulated into "capsules" that are modular, chainable, and named. They compose cleanly—stackable, layerable, with expressive guarantees. With input parameters, you describe intent—hesitate, glide, surprise—and the capsule knows how to phrase it.
 
 **💡 The Real Difference**
 FPS-R doesn’t scaffold behavior through memory or timers—it composes it directly, using deterministic randomness and stateless modulation. With reproducibility by design and support for spatial and temporal domains, it acts not just as a method but as a grammar: one that encodes drift, hesitation, and surprise across surfaces, systems, and synthetic agents.
@@ -419,10 +429,9 @@ FPS-R: Quantised Switching Timeline Graph Preview
 To try it yourself, you can [explore the interactive timeline in a Jupyter notebook on `nbviewer`](https://nbviewer.org/github/patwooky/FPSR_Algorithm/blob/main/resources/code/python/fpsr_algorithms.ipynb)
 The interactive scrolling graphs are the last 2 cells at the end of the notebook.
 
-> Note: Jupyter notebooks render only as static content on GitHub's web viewer. Interactive scrolling graphs for SM and QS will not show up. If you want to play around with the parameters and drive a different resulting curve, and inspect the scrolling graphs, please feel free to download the notebook and execute it on your local machine runnning Jupyter notebook on a Python 3.x kernal with the relevant dependencies (`Pandas` and `Matplotlib`). 
+> Note: Jupyter notebooks render only as static content on GitHub's web viewer. Interactive scrolling graphs for SM and QS will not show up. If you want to play around with the parameters and drive a different resulting curve, and inspect the scrolling graphs, please feel free to download the notebook and execute it on your local machine runnning Jupyter notebook on a `Python 3.x` kernel with the relevant dependencies (`Pandas` and `Matplotlib`). 
 
 ---
-
 ## 🧬 Flavours of FPS-R
 FPS-R comprises two distinct mathematical algorithms — each offering a stateless, deterministic approach to phrased modulation:
 - 🌀 Stacked Modulo (SM)
@@ -432,6 +441,8 @@ These form the primary **modulation operators** within the FPS-R framework, usab
 
 ### 🌀 Stacked Modulo (SM) or 叠模机制
 The original FPS-R operator. SM constructs motion through layered modulus functions with shifting offsets — producing transitions that feel spontaneous, yet arise from strict deterministic interference.  
+
+The signature feel of the SM algorithm comes from its "stacked" or nested rhythmic structure. It's an interference pattern created by two different clocks running at the same time.
 - **Expressive feel**: memory without memory
 - **Phrasing shaped by**: frequency, amplitude, offset phase
 - **Strengths**: highly composable, compact implementation
@@ -446,6 +457,8 @@ The original FPS-R operator. SM constructs motion through layered modulus functi
 
 ### ✴ Quantised Switching (QS) or 量跃机制
 QS selects and switches between indexed value streams — flickering between discrete steps or smoothly interpolated paths. It simulates glitch-like transitions, logical flicker, and compositional jump behavior through deterministic switching logic.
+
+The expressive range of the Quantised Switching (QS) method is controlled by the interplay of its multiple core timing cycles. Its behaviour is inherently more volatile than SM's, as a change in any of its layered rhythms can trigger a jump in the final output.
 
 **QS Features:**
 - Deterministic pseudo-random stream selection
