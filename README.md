@@ -15,7 +15,7 @@
   - [🎭 Motion Philosophy](#-motion-philosophy)
   - [📐 Structure and the Illusion of Chaos](#-structure-and-the-illusion-of-chaos)
 - [🗣 A New Grammar](#-a-new-grammar)
-  - ["Randomised Move-and-Hold"](#randomised-move-and-hold)
+  - ["Random Move-and-Hold"](#random-move-and-hold)
 - [🎞 Sample Uses of the FPS-R](#-sample-uses-of-the-fps-r)
   - [🧭 FPS-R in Animation](#-fps-r-in-animation)
   - [🧱 FPS-R in Geometry Generation](#-fps-r-in-geometry-generation)
@@ -183,7 +183,7 @@ This tension—between definition and drift—is not a flaw. It's the expressive
 ## 🗣 A New Grammar: 
 FPS-R introduces not just a new set of algorithms, but a new *lexicon* for motion.  
 
-### "Randomised Move-and-Hold"
+### "Random Move-and-Hold"
 What FPS-R produces is not a filter or a curve — but a compositional structure:  
 **jump → hold → reseed → repeat**  
 
