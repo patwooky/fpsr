@@ -27,10 +27,10 @@ This document serves as a detailed compendium of potential applications for the 
 ## 🎨 Part I — Generative Expression & Organic Simulation
 **FPS-R as a composer of lifelike timing and motion.**
 
-This theme explores FPS-R as a grammar of expressive modulation—used to animate behavior that feels real, alive, and intentionally imprecise. Whether powering an avatar’s hesitant eye shift, a prosthetic’s subtle posture correction, or a synthesizer’s phrasing drift, FPS-R injects rhythm and irregularity with poise.
+This theme explores FPS-R as a grammar of expressive modulation—used to animate behaviour that feels real, alive, and intentionally imprecise. Whether powering an avatar’s hesitant eye shift, a prosthetic’s subtle posture correction, or a synthesizer’s phrasing drift, FPS-R injects rhythm and irregularity with poise.
 
 Here, randomness is not noise—it’s performance. Modulation becomes motion. Hesitation becomes presence.
-> FPS-R contributes phrasing logic that is deterministic yet organic—producing expressive behavior across AR, robotics, wearables, and musical systems without scripting or simulation overhead.
+> FPS-R contributes phrasing logic that is deterministic yet organic—producing expressive behaviour across AR, robotics, wearables, and musical systems without scripting or simulation overhead.
 
 ### 🕶️ AR/VR and Human-Centered Interaction
 FPS-R augments synthetic perception systems with organic, non-repeating behavioral texture—introducing subtle timing variation, micro-drift, and decision hesitation across gaze, gesture, and stimulus response. In human-centered environments, where uncanny precision breaks realism, FPS-R fills the behavioral gaps between macro-intent and execution nuance.
@@ -56,12 +56,12 @@ As robotics moves from automation to articulation—from machines that complete 
 - Contemplation and Idle Simulation Replaces scripted loops with natural micro-movements. Robots in idle states use FPS-R to animate non-repeating gaze shifts and head posture drifts, projecting intentionality without costly simulations.
 - Deliberation Simulation and Action Hesitation Modulates micro-pauses before actions—suggesting internal weighing of options or non-linear reasoning. FPS-R introduces subtle latency and signal modulation to simulate “thinking before acting.”
 - Non-Repetitive Attention Realignment Drives periodic visual, tactile, or postural scanning of the environment in non-looping patterns—ideal for adaptive agents in surveillance, caregiving, or co-working scenarios.
-- Empathetic Mirror Behavior in Social Robots Enables soft mimicry with delay and variance: when a human leans in, the robot adjusts after a beat—not in rigid sync, but with expressive drift—simulating shared attunement rather than programmed mimicry.
-- Procedural Training Behavior FPS-R can drive variation across repetitions in robot learning contexts—creating slightly different angles, approaches, or grip stiffnesses even when practicing the same routine. Ideal for physical learning environments that would otherwise overfit on memorized movement.
+- Empathetic Mirror behaviour in Social Robots Enables soft mimicry with delay and variance: when a human leans in, the robot adjusts after a beat—not in rigid sync, but with expressive drift—simulating shared attunement rather than programmed mimicry.
+- Procedural Training behaviour FPS-R can drive variation across repetitions in robot learning contexts—creating slightly different angles, approaches, or grip stiffnesses even when practicing the same routine. Ideal for physical learning environments that would otherwise overfit on memorized movement.
 
 **FPS-R Strengths Leveraged:**
 - Temporal modulation of actuation events with expressive intent
-- Stateless behavior = low memory, highly composable
+- Stateless behaviour = low memory, highly composable
 - Fine-grained drift, delay, and micro-correction infusion
 - Expressivity without scripting or decision fatigue
 - Deterministic capsules for debugging, training, or demos
@@ -100,7 +100,7 @@ Where assistive robotics actuate on behalf of the user, biofeedback systems spea
 
 **Use Cases:**
 - Stress Regulation Interfaces FPS-R modulates breath prompts, light intensity, or tactile pulses with gentle variation—avoiding cue fatigue while maintaining a calming rhythm.
-- Neurofeedback for Attention Training Instead of raw audio-visual cues tied to EEG states, FPS-R drives expressive timing that reflects micro-shifts in focus—mirroring inner dynamics rather than dictating behavior.
+- Neurofeedback for Attention Training Instead of raw audio-visual cues tied to EEG states, FPS-R drives expressive timing that reflects micro-shifts in focus—mirroring inner dynamics rather than dictating behaviour.
 - Postural and Muscle Tension Feedback Haptic feedback systems use FPS-R to encode body alignment or muscle strain in subtle, pulsatile rhythms—keeping awareness alive without nagging.
 - EMG-Based Rehab and Performance Tuning Real-time muscle activation data guides user training via adaptive modulation: longer holds for strength, hesitation for control, jitter for instability zones.
 - Closed-Loop Mindfulness Tools Breath, skin conductance, and HRV values drive procedural soundscapes or visuals modulated by FPS-R, creating meditative environments that feel alive and subtly attuned to the user's state.
@@ -124,7 +124,7 @@ Swarms and autonomous coverage systems often fall into deterministic loops—pre
 
 **🔧 FPS-R Strengths Leveraged**
 - ⏱️ Temporal variation without state
-- 🧬 Emergent behavior from deterministic seeds
+- 🧬 Emergent behaviour from deterministic seeds
 - 🧠 No inter-agent communication required
 - 🎛️ Local modulation = low compute, high diversity
 - 📡 Enhances unpredictability in coverage and observation systems
@@ -135,11 +135,11 @@ Swarms and autonomous coverage systems often fall into deterministic loops—pre
 Ambient and embedded systems often operate with tight constraints—limited memory, low power, real-time requirements. FPS-R introduces expressive modulation into these systems without breaking the bank on logic complexity or storage.
 **🧰 Use Cases:**
 - Non-Static Actuation and Response Patterns Drives motors, LEDs, or buzzers with varied timing and amplitude patterns—creating organic feedback without scripting loops.
-- Stateless Behavioral Synthesis under Constraint Generates expressive, legible behavior in highly constrained environments: generative art, ambient notification systems, embedded biofeedback devices.
+- Stateless Behavioral Synthesis under Constraint Generates expressive, legible behaviour in highly constrained environments: generative art, ambient notification systems, embedded biofeedback devices.
 
 **🔧 FPS-R Strengths Leveraged:**
 - 🎯 Ultra-low memory footprint
-- 📦 Capsule presets for expressive embedded behavior
+- 📦 Capsule presets for expressive embedded behaviour
 - 🔄 Procedural movement from deterministic sources
 - 🎨 Rich modulation without scripting logic
 - ⌛ Compatible with timing-constrained environments
@@ -150,7 +150,7 @@ Ambient and embedded systems often operate with tight constraints—limited memo
 FPS-R syncs not just to linear time, but to **musical structures**—bars, beats, swings, syncopation. This rhythmic awareness transforms FPS-R into a **musical decision engine**, where modulation is phrased rather than triggered. 
 
 🧭 Overview
-By locking into tempo grids and rhythmic thresholds, FPS-R enables non-repeating musical behavior that feels intentionally structured. It supports everything from generative loops to expressive controller behavior, producing motion that grooves, glitches, and phrases like a musician.
+By locking into tempo grids and rhythmic thresholds, FPS-R enables non-repeating musical behaviour that feels intentionally structured. It supports everything from generative loops to expressive controller behaviour, producing motion that grooves, glitches, and phrases like a musician.
   
 **🛠 Categories and Use Cases**
 **🎵 Generative Composition & Rhythmic Systems**
@@ -161,13 +161,13 @@ By locking into tempo grids and rhythmic thresholds, FPS-R enables non-repeating
 
 **🎹 Expressive Instrument Modulation**
 - Modulate synth parameters (cutoff, LFO, pitch) or articulation profiles (attack, vibrato, phrasing) using FPS-R capsules.
-- Expressive drift replaces automation lanes; parameter behavior feels played, not programmed.
+- Expressive drift replaces automation lanes; parameter behaviour feels played, not programmed.
 - Compatible with MPE, modulation wheels, and ambient scoring rigs.
 > 🎛️ Ideal for generative soundscapes, modular patches, and live adaptive scoring.
 
 **📻 Sonic Emulation and Circuit Temperament**
-- **Analogue Behavior Emulation** Use FPS-R to simulate quirks of analogue hardware—thermal drift, saturation bloom, or feedback warble. → No sampling, no ML—just deterministic temperament through stateless variation.
-- **Mode-Switching via QS** Mimic tubes "warming up" or circuits "snapping modes" based on capsule-defined switching behavior. → Creates expressive realism without high CPU cost. Great for real-time, low-latency, on-chip DSP or audio plugins.
+- **Analogue behaviour Emulation** Use FPS-R to simulate quirks of analogue hardware—thermal drift, saturation bloom, or feedback warble. → No sampling, no ML—just deterministic temperament through stateless variation.
+- **Mode-Switching via QS** Mimic tubes "warming up" or circuits "snapping modes" based on capsule-defined switching behaviour. → Creates expressive realism without high CPU cost. Great for real-time, low-latency, on-chip DSP or audio plugins.
 > 🔄 FPS-R doesn't mimic electronics. It channels their mood.
 
 **👂 Sound Design and Affective Rhythm**
@@ -180,7 +180,7 @@ By locking into tempo grids and rhythmic thresholds, FPS-R enables non-repeating
 - 🔄 Structured variation within compositional boundaries
 - 🎹 Enables expressivity without memory or scripting
 - 🧠 Stateless by design, real-time performance-ready
-- 🎛️ Switches behavior modes rhythmically (QS), or modulates flowline variation (SM)
+- 🎛️ Switches behaviour modes rhythmically (QS), or modulates flowline variation (SM)
 
 > 🎼 _FPS-R doesn't just keep time—it listens to it._
 
@@ -195,7 +195,7 @@ It’s not about what a system should do under load. It’s about what it phrase
 >FPS-R contributes controlled unpredictability, stateless variation, and deterministic replay to domains like software testing, adversarial simulation, and infrastructure resilience.
 
 ### 🛡️ Cybersecurity and Adversarial Simulation
-FPS-R acts as a deterministic chaos engine for both attackers and defenders. It generates realistic, layered threat behavior with replayable entropy—ideal for red/blue team parity, postmortem forensics, and training under chaos.
+FPS-R acts as a deterministic chaos engine for both attackers and defenders. It generates realistic, layered threat behaviour with replayable entropy—ideal for red/blue team parity, postmortem forensics, and training under chaos.
 
 **Use Cases:**
 - Modulated Attack Sequencing: Chain payload types over time (e.g., brute force → delay → form spam) with tempo-controlled escalation.
@@ -211,7 +211,7 @@ FPS-R acts as a deterministic chaos engine for both attackers and defenders. It 
 In environments sensitive to market volatility and sequence-dependent decision logic, FPS-R produces reproducible shockwaves—ideal for system resilience testing, trading algorithm evaluation, and policy stress simulations.
 
 **Use Cases:**
-- Synthetic Volatility Cycles: Trigger black-swan behavior (e.g., flash crashes, recovery delays) with controlled escalation logic.
+- Synthetic Volatility Cycles: Trigger black-swan behaviour (e.g., flash crashes, recovery delays) with controlled escalation logic.
 - Market Regime Switching: Procedurally modulate agent responses between optimism, fear, and deadlock.
 - Seeded Timeline Replay: Reconstruct behavioral sequences for auditor reviews or post-analysis without historical data dependencies.
 
@@ -234,7 +234,7 @@ FPS-R excels at semantic stress-testing—generating inputs and sequences that f
 - Deterministic diversity for QA pipelines
 
 ### 🧵 Systems-Level OSI Testing and Infrastructure Simulation
-FPS-R can be used to simulate layered protocol behavior, infrastructure churn, and network stress conditions across the OSI model—from physical transmission to application-layer anomalies. Its deterministic modulation enables reproducible chaos across distributed systems, ideal for testing resilience, timing, and fault tolerance.
+FPS-R can be used to simulate layered protocol behaviour, infrastructure churn, and network stress conditions across the OSI model—from physical transmission to application-layer anomalies. Its deterministic modulation enables reproducible chaos across distributed systems, ideal for testing resilience, timing, and fault tolerance.
 
 **Use Cases:**
 - Layered Protocol Stress Testing Simulate jitter, packet loss, encoding drift, and timing anomalies across OSI layers (e.g., MAC-layer collisions, TCP retransmission storms, session-layer resets) using FPS-R to modulate event timing and intensity.
@@ -243,11 +243,11 @@ FPS-R can be used to simulate layered protocol behavior, infrastructure churn, a
 - Multi-Layer Replay Capsules Capture and replay entire infrastructure event timelines—e.g., a simulated DDoS that begins at the transport layer and escalates to application-layer overload—using FPS-R's seed/frame/parameter signature.
 
 **FPS-R Strengths Leveraged:**
-- Stateless modulation of multi-layer behavior
+- Stateless modulation of multi-layer behaviour
 - Reproducible infrastructure churn and recovery
 - Temporal orchestration of system-wide transitions
 
-> 🧠 FPS-R doesn't just simulate packets—it choreographs protocol behavior across time.
+> 🧠 FPS-R doesn't just simulate packets—it choreographs protocol behaviour across time.
 
 ---
 
@@ -291,7 +291,7 @@ While not adversarial in nature, these domains thrive on scenario generation, ti
 🧠 Cognitive Modeling and Generative Thought
 At its most abstract and powerful, FPS-R serves not merely as a modulation layer—but as a **catalyst for cognition itself**. In this speculative but increasingly tangible domain, it animates the inner workings of large language models—not by influencing their semantics, but by shaping their **tempo of thought**.
 
-**Thought as Temporal Behavior** In systems like LLMs, FPS-R can function as a **temporal pacing engine**, modulating how attention flows—not uniformly, but with deliberate pause, drift, jump. A model can appear to **deliberate** when it holds. It can **pivot** when it jumps across semantic space. It can **explore** when it drifts along an unexpected arc.
+**Thought as Temporal behaviour** In systems like LLMs, FPS-R can function as a **temporal pacing engine**, modulating how attention flows—not uniformly, but with deliberate pause, drift, jump. A model can appear to **deliberate** when it holds. It can **pivot** when it jumps across semantic space. It can **explore** when it drifts along an unexpected arc.
 
 This rhythm doesn't alter content. It alters how content **emerges**—allowing cognition to express itself not only in _what_ is said, but in _how_ the system moves through thought space.
 
@@ -309,16 +309,16 @@ Each waypoint along this arc reflects **conceptual drift** that is not random, b
 
 This is how creative minds truly think.
 
-A system modulated by FPS-R can exhibit behavior we associate with **cleverness, spontaneity, even brilliance**. A drifting thought that stumbles into metaphor. A tangent that loops back with a joke. A moment of hesitation that results in exactly the right phrasing.
+A system modulated by FPS-R can exhibit behaviour we associate with **cleverness, spontaneity, even brilliance**. A drifting thought that stumbles into metaphor. A tangent that loops back with a joke. A moment of hesitation that results in exactly the right phrasing.
 
 By embedding timing as meaning, FPS-R makes **personality tunable**. Some capsules create focus. Others simulate curiosity. And some—deliberately—introduce the kind of structured derailment that makes conversation sparkle.
 
 This is how synthetic thought becomes _creative_: not by predicting the next word, but by **moving through context with rhythm and intuition**. It's how an LLM stops sounding like a completion engine and starts sounding like someone you want to keep talking to and thinking with.
 
-> Not just a model of thought—but a choreography of cognition. Not a shortcut to intelligence—but the long way around, where the view is better. 🌀 Here, simulation becomes origination. Behavior becomes thought. And thought begins to phrase itself.
+> Not just a model of thought—but a choreography of cognition. Not a shortcut to intelligence—but the long way around, where the view is better. 🌀 Here, simulation becomes origination. behaviour becomes thought. And thought begins to phrase itself.
 
 
-Once a behavior can be captured and mapped into FPS-R space, it doesn’t just exist in isolation—it becomes an entry point into a modulatable reality.
+Once a behaviour can be captured and mapped into FPS-R space, it doesn’t just exist in isolation—it becomes an entry point into a modulatable reality.
 
 You're not just fitting motion—you're anchoring intent in a system that can extrapolate.
 
@@ -326,7 +326,7 @@ You're not just fitting motion—you're anchoring intent in a system that can ex
 ### 🕰️ Exploring Plausible Past and Future in Observable Phenomena
 This section offers a glimpse into how FPS-R can perform what is essentially *reconstructed time travel* through phrasing.
 
-**FPS-R is a deterministic and parameterized mathematical model** with its own internal logic. Its analytical power lies in its ability to model, express, and procedurally generate observed behavior using structured phrasing patterns.
+**FPS-R is a deterministic and parameterized mathematical model** with its own internal logic. Its analytical power lies in its ability to model, express, and procedurally generate observed behaviour using structured phrasing patterns.
 
 When researchers identify a behavioral pattern—its rhythm, tempo, or gestural contour—they can attempt to fit it to an FPS-R function. This involves describing the observed pacing and value changes, then seeking a matching FPS-R curve that echoes its motion, inflection, and intervals between holds and jumps.
 
@@ -343,7 +343,7 @@ This fit unlocks a profound capability: procedural *extension* in both temporal 
 - **Backward**: You can generate values preceding the observed clip. What led to the twitch? Was it preceded by drift or hesitation?
 - **Forward**: You can project what’s likely to follow. Does the gesture resolve into calm, or escalate toward further disturbance?
 
-The result is a **temporal grammar** of phrasing. You’re no longer modeling behavior alone—you’re capturing its *trajectory of becoming*.
+The result is a **temporal grammar** of phrasing. You’re no longer modeling behaviour alone—you’re capturing its *trajectory of becoming*.
 
 This doesn’t apply only to motion. It can be extended to any system with observable inflections:
 - The escalation or de-escalation of a crowd
@@ -359,7 +359,7 @@ FPS-R offers **procedural insight into system readiness**: How well is a process
 
 - **Narrative Completion**: Fill in missing moments from partial sequences, or extend them both backward and forward with phrasing continuity.
 - **Behavioral Interpolation**: Bridge missing data between moments through semantically plausible inferences.
-- **Agent Forecasting**: Extend a known behavior into its next probable phrasing, given its expressive momentum.
+- **Agent Forecasting**: Extend a known behaviour into its next probable phrasing, given its expressive momentum.
 - **Forensics & Memory Reconstruction**: Work backwards from outcomes to simulate a rhythmically plausible past.
 
 #### Use Cases
@@ -381,7 +381,7 @@ That’s **expressive reconstruction**.
 
 And because FPS-R generates phrasing deterministically from fixed seeds and settings, this reconstruction is fully reproducible, portable, and analyzable. Researchers, designers, or observers are free to *study the unfolding*, not just view it.
 
-> FPS-R transforms moments into modulation fields—spaces where behavior becomes explainable, extensible, and legible through phrasing alone.
+> FPS-R transforms moments into modulation fields—spaces where behaviour becomes explainable, extensible, and legible through phrasing alone.
 
 
 ---
@@ -409,7 +409,7 @@ In its most expanded form—with rich capsule libraries, intuitive tools, and a 
 These aren’t features—they’re foundations. FPS-R supplies:
 
 - 🧩 A **notation system** to describe phrased modulation with clarity  
-- ⚙️ A **set of algorithms** to generate, transform, and replay behavior with structure  
+- ⚙️ A **set of algorithms** to generate, transform, and replay behaviour with structure  
 - 🧠 A **framework for cognition and insight**, where thought and motion converge as modulated unfolding
 
 From game design to system forensics, expressive UI to cognitive simulation, FPS-R expands what procedural systems can *mean*. It invites a new grammar of emergence—not just a way to make things move, but a way to understand *how* and *why* they do.

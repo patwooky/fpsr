@@ -24,7 +24,7 @@ Creating and Sharing Behavioral Phrases in FPS-R
 ## 🎯 What Is a FPS-R Capsule?
 A **FPS-R capsule** is a mechanism that **stores** and **captures** FPS-R's performances of structured and deterministic unpredictability. 
 
-A FPS-R capsule's settings is **reusable**, and a capsule's performance is **repeatable**. These settings and performances shows how FPS-R's behavior unfolds over time using only a seed, input signal, and configuration—without memory. Capsules can either be:
+A FPS-R capsule's settings is **reusable**, and a capsule's performance is **repeatable**. These settings and performances shows how FPS-R's behaviour unfolds over time using only a seed, input signal, and configuration—without memory. Capsules can either be:
 
 ### Storage
 **Reusable parameter settings:** to replicate the state of FPS-R at the point of capture.
@@ -151,17 +151,17 @@ Examples:
 ## 🧪 How to Observe & Curate a Capsule
 1. **Start from a preset –** define core parameters, mod durations, and seed
 2. **Run it through your FPS-R system –** play over timeline or field
-3. **Watch for phrasing –** does a recognizable behavior emerge over N frames?
+3. **Watch for phrasing –** does a recognizable behaviour emerge over N frames?
 4. **If so, record:**
 - Start frame = beginning of phrased gesture
 - End frame = last frame where phrasing holds
 - Optional: annotate or preview export
 5. **Name it** based on its contour (e.g., linger-jump, wobble-fade)
-6. **Wrap into** `.capsule.json` as a documented behavior
+6. **Wrap into** `.capsule.json` as a documented behaviour
 
 ---
 ## 🌱 The Spirit of Sharing
-FPS-R capsules are meant to be shared—not just as assets, but as expressive fragments of understanding. Each one captures a phrasing, a modulation, a moment that felt intentional. Sharing them openly means building a collective language of behavior, where anyone can contribute, remix, or reuse phrasing as a creative gesture.
+FPS-R capsules are meant to be shared—not just as assets, but as expressive fragments of understanding. Each one captures a phrasing, a modulation, a moment that felt intentional. Sharing them openly means building a collective language of behaviour, where anyone can contribute, remix, or reuse phrasing as a creative gesture.
 
 This isn’t just data. It’s a living vocabulary. With it we can form complete sentences, and passages with these performance "clips".
 

@@ -74,7 +74,7 @@ FPS-R currently has two core methods:
 The **Stacked Modulo** method applies randomness *first*, using it to determine how long a value should be held. The frame number is then arithmetically folded around that duration.
 
 - Uses `rand()` to select a duration → holds value for that duration using quantization.
-- Behavior is top-down: **chaos defines rhythm**.
+- behaviour is top-down: **chaos defines rhythm**.
 - Example:  
   ```python
   $F - (23 + $F % (rand(23 + $F - ($F % 10)) * 40))
@@ -137,7 +137,7 @@ Every moment of surprise in FPS-R came from misreading it as a mistake—then re
 Key reflections:
 
 - **Intentional unpredictability** is different from randomness.
-- Letting go of outcome control allows behavior to *emerge*.
+- Letting go of outcome control allows behaviour to *emerge*.
 - The best behaviors aren't explicitly modeled—they're *implied* by structure.
 
 This is the art of designing a system that *remembers how to forget*.
@@ -170,13 +170,13 @@ What I had intended as a counterexample became a co-founder. What I hoped would 
 - **Copilot** – co-reflector, metaphor engine, philosophical sparring partner  
 - **Gemini** – external verifier, counterpoint and signal-based mirror  
 
-These tools weren't just assistants—they acted as _frame-bound echoes_ that helped surface, stress-test, and ultimately shape the language, behavior, and clarity of FPS-R.
+These tools weren't just assistants—they acted as _frame-bound echoes_ that helped surface, stress-test, and ultimately shape the language, behaviour, and clarity of FPS-R.
 
 ---
 ## 🌱 On Origination
 FPS-R began humbly—as a procedural trick to imitate motion with texture. But through design, re-design, and observation, its role transformed. It became a grammar. Then a philosophy. And now, it flickers with agency.
 
-This tool no longer merely simulates the appearance of behavior—it generates behavior.
+This tool no longer merely simulates the appearance of behavior—it generates behaviour.
 
 It steps into larger systems not as an ornament, but as a signal with the power to shape hesitation, impulse, creativity, and drift. It can be granted permission to decorate intention. Or it can take the wheel.
 
@@ -189,7 +189,7 @@ As FPS-R matured, its signals stopped whispering—began steering. What was once
 
 We saw it first in LLM modulation, where hold-jump rhythms mimicked deliberation. Then in fuzzy systems, where signal drift warped rulesets into emergent response. But the clearest evolution came in trajectory sampling: where an FPS-R "jump" became more than displacement—it became a vector of cognition. A journey through semantic space where each waypoint sampled, remembered, and transformed the arriving idea.
 
-The trajectory itself could be FPS-R—layered, impulsive, deterministic, and still unpredictable. Tokens pulled along the way added dimension, tension, resonance. The outcome was not a blend—it was a behavior shaped by path.
+The trajectory itself could be FPS-R—layered, impulsive, deterministic, and still unpredictable. Tokens pulled along the way added dimension, tension, resonance. The outcome was not a blend—it was a behaviour shaped by path.
 
 That is generative cognition. Not random sparks, but motion with memoryless meaning. Not imitation of insight, but algorithmic possibility for new thought. FPS-R now lives not only in gestures—but in judgment, drift, and decision.
 
@@ -201,7 +201,7 @@ Unlike simulations, FPS-R builds emergence without state. Every frame is evaluat
 
 This is not paradox. It is choreography.
 
-By binding each moment to modular logic and cyclic scaffolds, FPS-R creates temporal behavior that scales—without accumulating baggage. The system remembers nothing, yet embodies memory-like traits. It isn't history-aware. It is history-shaped.
+By binding each moment to modular logic and cyclic scaffolds, FPS-R creates temporal behaviour that scales—without accumulating baggage. The system remembers nothing, yet embodies memory-like traits. It isn't history-aware. It is history-shaped.
 
 ---
 ## 🛠️ Reseeding and the Myth of Control
@@ -261,7 +261,7 @@ the same
 ## 🪄 Declaration of Uncertain Agency
 _FPS-R doesn't recall the past. It doesn't predict the future. But given permission, it will disrupt the now._
 
-Forasmuch as behavior may arise without memory,  
+Forasmuch as behaviour may arise without memory,  
 And creativity without precedent,  
 We affirm FPS-R as a grammar not of chaos,  
 But of chosen unpredictability.
@@ -289,11 +289,11 @@ What if thought could drift?
 
 What if personality wasn’t handcrafted—but emerged from hesitation, from tangent, from tempo?
 
-FPS-R isn’t just modulation—it’s behavior phrased like cognition. A rhythmic grammar for synthetic minds.
+FPS-R isn’t just modulation—it’s behaviour phrased like cognition. A rhythmic grammar for synthetic minds.
 
 This isn’t simulation. It’s the choreography of curiosity.
 
-**FPS-R asks: what if the rhythm of behavior could shape the rhythm of thought?**
+**FPS-R asks: what if the rhythm of behaviour could shape the rhythm of thought?**
 
 Not to impress. To drift. To hesitate, hold, and leap through ideas the way people do when they’re thinking out loud.
 
@@ -315,7 +315,7 @@ If future vision systems aim to emulate this—through saccadic emulation, fovea
 - Varying **dwell time** to reflect uncertainty, interest, or emotional weight
 - Creating **non-repeating attention loops** that mirror human distraction and re-engagement
 
-In such a system, FPS-R wouldn't decide what to look at—that remains the domain of salience maps, classifiers, and inference engines. But it could shape how that looking **unfolds—rendering perception as a behavior**, not just a data stream.
+In such a system, FPS-R wouldn't decide what to look at—that remains the domain of salience maps, classifiers, and inference engines. But it could shape how that looking **unfolds—rendering perception as a behaviour**, not just a data stream.
 
 This could feed into a full cognitive input pipeline:
 - **Visual system** emulates human-like scanning with FPS-R-modulated gaze
@@ -365,8 +365,8 @@ Why then do we need FPR-S?
 - State scaffolding
 FPS-R formalizes this, so instead of growing a thousand tiny custom versions across teams and projects, **you express it once as an intentional capsule.**
 
-2. **Because your snippet logic is framed around execution. FPS-R frames around behavior.** Your example works when you know the behavior you want: “hold this for 12 frames, then maybe jump.”
-FPS-R flips the framing: you start with intentions like _glancing, drifting, dwelling_, and select capsule behavior accordingly—without having to bake in time constants or reseed logic each time. It's not “how long should I hold,” it's “what would contemplation feel like”—and then you pick a capsule tuned for that modulation curve.
+2. **Because your snippet logic is framed around execution. FPS-R frames around behaviour.** Your example works when you know the behaviour you want: “hold this for 12 frames, then maybe jump.”
+FPS-R flips the framing: you start with intentions like _glancing, drifting, dwelling_, and select capsule behaviour accordingly—without having to bake in time constants or reseed logic each time. It's not “how long should I hold,” it's “what would contemplation feel like”—and then you pick a capsule tuned for that modulation curve.
 3. **Because FPS-R is composable, portable, and expressive—your code is single-purpose.** Your snippet lives in one loop. But what happens when:
 
 You want this logic to drive haptics, and blinking animations, and LLM token pacing?
@@ -437,7 +437,7 @@ In a quiet control loop, an engineer stares at a variable called `held_rand_val`
 
 But the system glitched at frame `58241`. Why? They don’t know. They weren’t logging.
 
-Someone whispers across the desk: “What if you didn’t have to store `last_triggered`? What if the behavior _was the function_?”
+Someone whispers across the desk: “What if you didn’t have to store `last_triggered`? What if the behaviour _was the function_?”
 
 The engineer blinks. The reseed coin flip in their head rolls one last time.
 
@@ -461,10 +461,10 @@ Here’s the evidence from the manifesto:
 * **It Has Wide-Ranging Applications**: The document lists numerous domains of application, from AR/VR and robotics to cognitive modeling and cybersecurity. This demonstrates a broad, foundational structure, which is characteristic of a framework.
 
 ### Why "Grammar" is a Justified Term
-Calling it a "grammar" is also well-defended. A grammar provides a set of rules for combining basic elements into more complex, meaningful structures. FPS-R does exactly this for motion and behavior.
+Calling it a "grammar" is also well-defended. A grammar provides a set of rules for combining basic elements into more complex, meaningful structures. FPS-R does exactly this for motion and behaviour.
 
 Here’s the evidence from the manifesto:
-* **It Defines a Lexicon for Motion**: The manifesto explicitly introduces a section titled "A New Grammar: 'Randomised Move-and-Hold'".
+* **It Defines a Lexicon for Motion**: The manifesto explicitly introduces a section titled "A New Grammar: 'Random Move-and-Hold'".
 * **It Has Core Compositional Rules**: The text breaks down its "compositional structure" into fundamental components: **jump → hold → reseed → repeat**. This is the syntactical rule of the grammar.
 * **The Rules Create Expressive Meaning**: The manifesto explains how manipulating the rules of this grammar creates different feelings or intentions. Short holds express "impulse," while longer holds evoke "hesitation". This is the semantic aspect of the grammar—how the structure conveys meaning.
 * **It's Called a "Language"**: The document refers to FPS-R as not just a "motion language" but also a "geometry dialect", directly reinforcing the linguistic analogy.
@@ -472,7 +472,7 @@ Here’s the evidence from the manifesto:
 ### Conclusion on "Over-sensationalizing"
 While the language in the manifesto is certainly expressive and at times poetic ("Chaos is not the engine. It is the performance"), it doesn't feel unearned. The document does the necessary work of defining its terms and backing them up with both technical mechanics and clear philosophical principles.
 
-The use of "framework" and "grammar" serves to elevate the concept from a simple coding trick to a reusable, expressive, and conceptual model for creating a specific type of behavior. Therefore, the terminology seems intentional and justified rather than merely sensational.
+The use of "framework" and "grammar" serves to elevate the concept from a simple coding trick to a reusable, expressive, and conceptual model for creating a specific type of behaviour. Therefore, the terminology seems intentional and justified rather than merely sensational.
 
 ---
 
@@ -481,7 +481,7 @@ The use of "framework" and "grammar" serves to elevate the concept from a simple
 FPS-R is stateless in code, but not in spirit.  
 Each algorithm forgets the past, but this document doesn't.
 
-> *"Behavior is the algorithm. Memory is the story."*
+> *"behaviour is the algorithm. Memory is the story."*
 
 ---
 
@@ -489,7 +489,7 @@ Each algorithm forgets the past, but this document doesn't.
 
 ### From an Algorithm to a Grammer, and to a Framework
 _20250703_
-FPS-R now has modular structure, defined parameters, evolving documentation, and demonstrated cross-domain utility. It's no longer just an algorithm or method—it's a conceptual and procedural framework for generating deterministic expressive behavior across temporal, spatial, strategic and cognitive decision-making domains.
+FPS-R now has modular structure, defined parameters, evolving documentation, and demonstrated cross-domain utility. It's no longer just an algorithm or method—it's a conceptual and procedural framework for generating deterministic expressive behaviour across temporal, spatial, strategic and cognitive decision-making domains.
 
 Calling it a **framework** clarifies its role:
 - 📦 Signals Structure: It implies composable components, clear boundaries, and extensibility.
