@@ -107,27 +107,32 @@ An archive of nonlinear reflections, theoretical digressions, and design meditat
 ## 🎲 What is FPS-R?
 **_Stateless unpredictability with a structured soul._**
 
-**FPS-R** a domain-agnostic modulation framework, a signal phrasing grammar that expresses a motion archetype we call **"Randomized Move-and-Hold."**  
+**FPS-R** a domain-agnostic modulation framework, a signal phrasing grammar that expresses a motion archetype I call **"Random Move-and-Hold."**  
 This framework operates across time, space, and cognition when applied in the fields related to intelligence.
-
-Unlike traditional simulations, it sculpts discontinuity with structure—producing behavior that feels instinctual  
-and organic, yet requires no memory or state.
-
-This concept forms the bedrock of FPS-R's philosophy...
 
 ### 🪞 Introduction
 
-**FPS-R** stands for `Frame-Persistent Stateless Randomisation` (or `静态律动算法` in Chinese). It is a philosophy and framework behind a collection of lightweight algorithmic pattern and mathematical models for simulating persistent yet stateless randomness across a continuous timeline—ideal for procedural motion, glitch aesthetics, synthesised organic behaviour, and analogue artefact emulation. 
+**FPS-R** stands for **`Frame-Persistent Stateless Randomisation`** (or **`静态律动算法`** in Chinese). 
+FPS-R is a grammar and philosophy of motion born from a simple observation: in nature, human interaction and organisational behaviour, randomness is rarely pure noise. It has rhythm, it hesitates, it holds, and it jumps. It feels structured.
 
-Inspired by natural behaviours such as eye saccades, animal foraging, human hesitation, predatory stalking, and structured noise, FPS-R produces unpredictability without relying on memory of the previous-frame. It mirrors the rhythm of an explorer's torch as he explores a darkened cave—pausing, twitching, drifting with intent—or the room-clearing manoeuvre of a soldier's rifle: moving and holding from one strategic point to another, every new holding position disjointed from what came before.  
+This philosophy has been distilled into a set of lightweight, universal mathematical algorithms. These have been further developed into a framework of expressions and functions that are simple, portable, and can be easily adapted into a wide variety of languages (C, Python, VEX, GLSL), running on countless platforms, for an even larger number of applications.
+
+Inspired by these natural behaviors, FPS-R produces structured unpredictability. It describes natural behaviours such as human eye saccades (shifting and darting around), animal foraging, human hesitation, predatory stalking. It mirrors the rhythm of an explorer's torch in a darkened cave—pausing, twitching, drifting with intent—or the room-clearing maneuver of a soldier's rifle: moving and holding from one strategic point to another, with every new position disjointed from the last.
+
+I call it **the Random Move and Hold.**
+
 > _**FPS-R is a manipulator of values over time, sculpting values and temporal behavior**_
 
-When FPS-R is driven by space instead of time, it becomes something else entirely: a sculptor of forms, a builder of skylines. Its jump-hold logic becomes spatial patterning. Its rhythms become relief.  
-> _**FPS-R is not just a motion language—it is a geometry dialect.**_
+At its core, FPS-R is defined by three unique strengths:
+- **Stateless:** In computing, a "stateful" system needs memory of past events to decide its next action. **FPS-R is stateless**—it requires zero memory of the previous frame. Its behavior is calculated fresh every time, making it incredibly robust, efficient, and portable.
+- **Deterministic:** An algorithm is "deterministic" if the same input always produces the exact same output. FPS-R is fully deterministic, which is critical for reproducible results. You can scrub to any point in time and be 100% certain the output will be identical, every single time. This provides ultimate artistic control and simplifies debugging. With this deterministic nature, we can _extend the timeline indefinitely_ and _get a deterministic past and future_. This opens up _traceable futures and pasts_, which is great for analytical patterns and diagnostic footprints when used to test systems with vulnerabilities and studies on unpredictability.
+- **Organic & Tweakable:** Despite its mathematical precision, the framework is designed to be highly expressive. By tweaking a few core parameters, its output can be sculpted to match a wide variety of observable emotions and intentions—from the nervous, high-frequency twitch of an alert creature to the slow, deliberate hesitation of thought.
 
-It is **repeatable**, **tunable**, and **frame-specific**, making it a versatile tool for time-based content creation platforms (Houdini, Maya, 3D Studio Max, Nuke, Adobe After Effects), GLSL, P5.js, game engines (Unity, Unreal), and embedded environments. Thanks to its simplicity and efficiency, FPS-R can also be implemented in any 3D platform that supports expressions or scripting.
+This framework is not just for motion over time. FPS-R can be applied to any continuous, time-like axis, including spatial coordinates. This means it can be used to sculpt forms and generate geometry, turning its temporal rhythms into physical patterns. Extending further, it can operate in latent and cognitive spaces, contributing to naturalistic AI processes that enable more human-like traits such as focus drift, attention shifts, and even directed, creative "daydreaming."
 
-In the spatial domain, FPS-R can be implemented into shaders for vertex displacement or surface perturbation, with its effects expressed through normals, bumps, and parallax techniques. When integrated with procedural modeling workflows, it becomes a generator of richly detailed and recursively layered geometry—ideal for greebling, erosion maps, stylised terrain, and sci-fi paneling. While the nature of FPS-R is non-repeating, with appropriate use of tiling techniques it allows spatial patterns to tile seamlessly across UVs or wrap naturally around curved surfaces, offering control without constraint.
+> _**FPS-R is not just a motion language—it is a dialect of form and thought.**_
+
+Ultimately, FPS-R is a collaborator. It can be allowed to roam free for total, wild unpredictability, or it can be given clear boundaries to inject a rich, organic texture into otherwise predictable systems.
 
 ---
 ### 🎓 Principles and Philosophy
@@ -196,7 +201,7 @@ classDef darkRed fill:#8B0000,stroke:#5B0000,stroke-width:3px,rx:10,ry:10;
 classDef red fill:#FF0000,stroke:#AA0000,stroke-width:3px,rx:10,ry:10;
 ```
 
-We call this behavior **Randomised Move-and-Hold**.  
+I call this behavior **Random Move-and-Hold**.  
 
 It captures the quality of twitch, of deliberation, of pauses that feel like thought.
 
@@ -268,7 +273,7 @@ And that is...
 **FPS-R (Frame-Persistent Stateless Randomisation)**
 
 🗣️ *In everyday spoken English*:  
-**Randomised Move and Hold**
+**Random Move and Hold**
 
 ---
 
@@ -563,7 +568,7 @@ It does not decide. It phrases.
 
 What FPS-R contributes is **behavioral unfolding**: stateless, deterministic modulation that brings human-feeling variation to systems without introducing chaos. Its role is not to improvise beyond the system’s goals, but to render those goals with texture, rhythm, and restraint.
 
-Rather than categorizing its capabilities by industry, we present FPS-R’s expressive range through **three paradigms of integration**. Each reflects a different posture toward modulation:
+Rather than categorizing its capabilities by industry, I present FPS-R’s expressive range through **three paradigms of integration**. Each reflects a different posture toward modulation:
 - One uses phrasing to simulate **naturalistic behavior**
 - One uses it to pressure systems into revealing **robustness or failure**
 - One uses it to explore **intentional ambiguity and emergent possibility**
