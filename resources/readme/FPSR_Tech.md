@@ -224,11 +224,9 @@ Implementation of the algorithms in a variety of software and environments.
 
 ### Jupyter Notebook
 [**Code in Jupyter Notebook**](../code/python/fpsr_algorithms.ipynb) FPS-R SM and FPS-R QS Python code in notebook cells, in a visually pleasant layout. For the most intuitive and hands-on exploration, the Jupyter Notebook provides interactively scrollable graphs. This is the recommended way to visually understand the characteristics and "fingerprint" of each algorithm's output.  
-<img src="../readme/images/jpynotebookFpsrSmScroll.gif" alt="FPS-R-SM Timeline Graph Preview" width="350" height="150">
-FPS-R: Stacked Modulo Timeline Graph Preview  
+<img src="../readme/images/jpynotebookFpsrSmScroll.gif" alt="FPS-R-SM Timeline Graph Preview" width="350" height="150"> FPS-R: Stacked Modulo Timeline Graph Preview  
 
-<img src="../readme/images/jpynotebookFpsrQsScroll.gif" alt="FPS-R-QS Timeline Graph Preview" width="350" height="150">
-FPS-R: Quantised Switching Timeline Graph Preview
+<img src="../readme/images/jpynotebookFpsrQsScroll.gif" alt="FPS-R-QS Timeline Graph Preview" width="350" height="150"> FPS-R: Quantised Switching Timeline Graph Preview  
 
 > Note: Jupyter notebooks render only as static content on GitHub's web viewer. Interactive scrolling graphs for SM and QS will not show up. If you want to play around with the parameters and drive a different resulting curve, and inspect the scrolling graphs, please feel free to download the notebook and execute it on your local machine runnning Jupyter notebook on a Python 3.x kernal with the relevant dependencies (`Pandas` and `Matplotlib`). 
 
