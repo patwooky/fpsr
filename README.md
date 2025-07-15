@@ -398,7 +398,8 @@ Before FPS-R, developers often implemented behaviour modulation using **ad hoc s
 
 In a spatial context, a stateful method is path-dependent; to find the value at any given point, it must sequentially simulate the entire history of steps from the origin. This "run-up" process makes it computationally impractical for applications like shaders or procedural geometry that require instant, random access. In contrast, a stateless system like FPS-R provides this random access, evaluating any point directly in a single step. Furthermore, while a stateful pattern is unpredictably tied to its simulation step size, FPS-R's equivalent scale is a controllable, global parameter, ensuring predictable and efficient results.
 
-**So why does FPS-R exist?**
+**So why does FPS-R exist?**  
+
 FPS-R doesn’t replace stateful methods—it transcends it.  
 
 Because beyond simple systems lies a world of **stateless surfaces**, **reproducible timelines**, and **modular behaviours** that demand more than scattered logic and local memory. That’s where traditional state falters—and where FPS-R begins.
