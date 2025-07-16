@@ -78,6 +78,8 @@ At that time, in a sudden stroke of inspiration I arrived at a nested solution o
 
 I did not intend for it to be stateless and deterministic, but these properties surfaced from the way I shaped it. I think the biggest contributor of its statelessness was the fact that I kept refining and thinking about it in context to it being an expression that can be evaluated in an "one-line" expression field.
 
+I wasn't a fancy math genius, I was simply limited to the tools I know and have come to understand well. using the well known techniques of visual effects creating complexity and detail through layering of noise, adding dissonance and breaking repeated recognisable patterns with offset, scale and frequency. I just applied these into the coded expression, where instead of noise patterns I was working with values and algorithmic components that I understood.
+
 ### 📖 How Did FPR-S Come Into Existence?
 When I first proposed FPS-R as a "stateless random hold algorithm", I did my due diligence to research the internet and look around at exiting solutions to similar class of problems. I encountered the immediate response from Google Gemini:  
 _"Isn't that what Worley noise is for?"_
