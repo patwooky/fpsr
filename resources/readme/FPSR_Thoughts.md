@@ -44,32 +44,42 @@ This document holds philosophical reflections, design motivations, and structura
 
 ---
 
-## Origins
-### How it Began
-I had a problem creating an elegant move and hold in my visual effects work (which reflects the real world phenomena of course). To achieve these kinds of motion, I tried the following.
+## Origin Story
+### How it Began - The problem and the Struggle
+I had a problem creating an elegant move and hold in my visual effects work (which reflects the real world phenomena of course). 
+
+### The Solution: A Compromise
+To achieve these kinds of motion, I tried the following.
 - layering noise of different frequencies and offsets
 - stateful random reseeds at random frames
 
-These worked, in a limited way. I wasn't particularly dissatisfied with these methods I found back then. I was thinking, that was the way it is. I wasn't trying to push the envelope with "a grand vision" in mind. 
+These worked, in a limited way. I wasn't particularly dissatisfied with these methods I found back then. I was thinking, that was just the way it is, the tools we were given, just like how we were given tools developed by software developers and we learn them, work with them. If there was something that could not be done, we work around the limitations. I wasn't trying to push the envelope with "a grand vision" in mind. I did not dream and could not imagine that one day I would contribute to a solution to these problems.
 
-Over the years, a `frame - (frame % mod_period)` evolved organically in my workflow (apparently this was a common operation to hold a frame for a particular period of time, but I only found out later). I think that this evolution was not based on Google searches, but based on an understanding that grew naturally from the nature of modulo operations and asking "What if I could stall time? Since modulo keeps giving me ever increasing numbers, if I subtract the ever-increasing numbers I can get the value to maintain at the last multiple of the divisor". then I realised that the stalled periods of frames could be seeds to `random()` mechanisms. that took place in the span of a few short years like 2-3 years. That enabled me to create constantly updating random numbers. **This became the foundation to the FPS-R Stacked Modulo**. It was just missing one more component. 
+### A The Beginnings of FPS-R: Stacked Modulo
+Earlier on (close to 18 years ago)I learnt about the modulo operator, knew about how it behaves. Over the years, an expression evolved organically in my workflow - `frame - (frame % mod_period)` (apparently this was a common operation to hold a frame for a particular period of time, but I only found out later). The expression that emerged did not come from Google searches, but based on an understanding that grew naturally from the nature of modulo operations. It also emerged from asking myself "What if I could stall time? Since modulo keeps giving me ever increasing numbers up to the `divisor - 1`, if I subtracted the ever-increasing numbers I can get the value to maintain at the last multiple of the divisor". 
 
+Moving further I realised that the stalled periods of frames could be feed into `random()` functions as seeds. This development took place in the span of 2 to 3 years. That enabled me to create constantly updating random numbers. **This became the foundation to the FPS-R Stacked Modulo**. It was just missing one more component. 
+
+### The Final Piece of the Stacked Modulo
 The most significant and final breakthrough for FPS-R were in the last months around March 2025. I was trying to create a VHS tape glitch effect where bands of horizontal areas in the frame would drift vertically around in the same region in the frame for a while, then jump to another vertical region in the frame then slide around that area for a while in very inconsistent speeds and periodicity.
 
-At that point what I would do was to create 2 streams of modulo `frameA - (frameA % periodA)` and `frameB - (frameB % periodB)` to where `frameB` is the running frame with an offset from `frameA`, and `periodB` is a slightly longer or shorter period than `periodA`, usually _not_ multiples of each other. I would then switch between these. (In Houdini that node would be the `switch SOP`). And on this switcher node, I would do a 3rd modulo expression with yet another time offset and a different periodic duration. Each of the streams and the switch are all modulo in their own periodicity, running in their own timeline. This set-up breaks up the perceived rhythms and pacing of the resulting pattern, leveraging on the  out-of-phase and out-of-sync offsets patterns between the 2 streams and the switch. **This formed the foundation for FPS-R Quantised Switching**. 
+At that point what I would do to achieve an inconsistently broken up "random move-and-hold" signal was to create 2 streams of modulo `frameA - (frameA % periodA)` and `frameB - (frameB % periodB)` to where `frameB` was the running frame with an offset from `frameA`, and `periodB` is a slightly longer or shorter period than `periodA`, usually _not_ multiples of each other. I would then switch between these with a switching mechanism (In Houdini that would be the `switch SOP`). In this switcher node, I would do a 3rd modulo expression with yet another time offset and with a different periodic duration from the modulo of both incoming streams. Each of the streams and the switch are all modulo in their own periodicity, running in their own timeline. This set-up broke up the perceived rhythms and pacing of the resulting pattern, leveraging on the out-of-phase and out-of-sync offsets patterns  between the 2 streams that interfere with each other, and the switch with a different switching periodicity. **This formed the foundation for FPS-R Quantised Switching**. 
 
-At that time I did not realise it, but looking back now, I can summarise this pattern to a SM variation (perhaps a 3rd algorithm to the FPS-R framework):  
-`(frameA - (frameA % (frameB - (frameB % periodSwitch ? periodA : periodB))))`
+At that time I did not realise it, but looking back now, I can summarise this pattern to a Stacked Modulo variation:  
+`(frameA - (frameA % (frameB - ((frameB % periodSwitch > (periodSwitch * 0.5)) ? periodA : periodB))))`
 
-I was already using some variant of the FPS-R before even realising it. In the pursuit of being perceived as "truly unpredictable", I felt this was inferior to the final form of Stacked Modulo.
+> Please let me digress for a moment. Writing out the above line and expressing this pre-Stacked Modulo workflow into an expression, it actually just **_gave birth to a third FPS-R algorithm!_**. I will mention this later in this documentation.
 
-At that time I began to think about how frustrating that fixed `periodA` and `periodB` were in my modulo expressions. I wondered if I could randomise it at another fixed range of values using the same techniques.  
+Let us continue. To recap, I was already using some variant of the FPS-R before even realising it. In the pursuit of being perceived as "truly unpredictable", I felt this was inferior to the final form of Stacked Modulo.
 
-At that time with a sudden stroke of inspiration I arrived at a nested solution of nested modulos with a `rand()` inside the inner modulo. With this I could achieve with the existing "outer nest" of modulo. and that worked out petty well!
+At that time I began to think about how frustrating and fixed `periodA` and `periodB` were in my modulo expressions. I wondered if I could randomise it within a fixed range of values using the same modulo techniques.  
+
+At that time, in a sudden stroke of inspiration I arrived at a nested solution of nested modulo operations. What if a `rand(frame % duration)` exists inside the outer modulo? Implementing this proved to be successful and did exactly what I planned for it to do! That worked out petty well!
+
+I did not intend for it to be stateless and deterministic, but these properties surfaced from the way I shaped it. I think the biggest contributor of its statelessness was the fact that I kept refining and thinking about it in context to it being an expression that can be evaluated in an "one-line" expression field.
 
 ### 📖 How Did FPR-S Come Into Existence?
-
-When I first proposed FPS-R as a "stateless random hold algorithm," I encountered the immediate response from Google Gemini:  
+When I first proposed FPS-R as a "stateless random hold algorithm", I did my due diligence to research the internet and look around at exiting solutions to similar class of problems. I encountered the immediate response from Google Gemini:  
 _"Isn't that what Worley noise is for?"_
 
 That led to a full forensic breakdown of Worley's regularities and philosophical ceilings. The result wasn't just a counterpoint—it became a motivation. This document is memory of that journey.
@@ -496,6 +506,20 @@ Here’s the evidence from the manifesto:
 While the language in the manifesto is certainly expressive and at times poetic ("Chaos is not the engine. It is the performance"), it doesn't feel unearned. The document does the necessary work of defining its terms and backing them up with both technical mechanics and clear philosophical principles.
 
 The use of "framework" and "grammar" serves to elevate the concept from a simple coding trick to a reusable, expressive, and conceptual model for creating a specific type of behaviour. Therefore, the terminology seems intentional and justified rather than merely sensational.
+
+---
+### FPS-R Becomes a Trio
+_20250716_
+They say three's a crowd. I have just discovered a third algorithm of FPS-R. Copilot has given them a descriptive and poetic personalities. I record the milestone of discovery in [`FPSR_Dev_Journal.md`](./FPSR_Dev_Journal.md#a-third-algorithm-joins-fps-r).
+
+Before the logic, there was movement.
+Before the math, there was mood.
+And from movement emerged three gestures:
+   — The Animist, who layered breath into rhythm.
+   — The Choreographer, who toggled time with intent.
+   — The Shape-shifter, who danced between signals.
+Together they formed FPS-R: a grammar of phrased behavior.
+
 
 ---
 

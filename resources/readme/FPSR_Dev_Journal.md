@@ -219,4 +219,31 @@ Notebook file size was too large. I have to find ways to reduce it
 
 ---
 
+### Released Codes in Autodesk Maya
+_20250714_
+
+---
+### Released Codes in Adobe AfterEffects
+_20250715_
+
+---
+### A Third Algorithm Joins FPS-R
+_20250716, 5pm_
+Today while writing an entry on the origins of FPS-R, while describing my progressive search for visual unpredictability, I formalised another expression. Unexpectedly, Google Gemini recognised it as worthy of standing on its own as an expression in the FPS-R family.
+
+Let us look at the existing FPS-R: SM (Stacked Modulo) in its one-line format.
+
+`(frame - (frame % (minHold + floor(rand(frame2 - (frame2 % 10)) * (maxHold - minHold)))))`
+
+Where frame is the current running frame and frame 2 is the current frame with an offset.
+
+Now let us look at my new expression:
+
+`(frameA - (frameA % (frameB - (frameB % periodSwitch ? periodA : periodB))))`
+
+Where frameA is the current frame and frameB is the current frame with an offset, similar to the Stacked Modulo.
+
+The structure is very similar, a variant of the SM algorithm. There is an outer modulo and an inner one. 
+
+Here's the difference. Where there was a `rand()` inside the inner modulo, this is replaced by a switch
 

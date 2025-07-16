@@ -118,10 +118,10 @@ This quality makes FPS-R not only performant, but also **portable and resilient*
 With the same inputs—frame number, seed parameters, and method—FPS-R always produces the same output. This deterministic footprint enables:
 
 - 🧪 Reproducible behaviour across simulations, tests, or procedural evaluations
-- 🛠️ Reliable debugging and tuning—behavior is traceable and consistent
+- 🛠️ Reliable debugging and tuning—behaviour is traceable and consistent
 - 🎛️ Composable structure—multiple FPS-R layers can interact without uncertainty
 - 📈 Cross-domain applicability—whether in robotics, interaction design, motion synthesis, or data-driven generative tools, repeatability ensures trust
-- 🧠 Expressive layering: deterministic scaffolds enable deliberate rhythm clashes, controlled glitches, and predictable emergent timing behaviors between the signal systems
+- 🧠 Expressive layering: deterministic scaffolds enable deliberate rhythm clashes, controlled glitches, and predictable emergent timing behaviours between the signal systems
 
 ### FPS-R Plays Well with Others
 #### Playing Well with Everybody
@@ -189,7 +189,7 @@ These features can also serve as debugging or visualising tools to reveal the ch
 ---
 ## Combining FPS-R Algorithms
 ### FPS-R Algorithms Working Together
-FPS-R methods can be stacked, nested, or intertwined to unlock even richer phrasing behaviors.
+FPS-R methods can be stacked, nested, or intertwined to unlock even richer phrasing behaviours.
 - A Quantised Switching (QS) output can be fed into one or both frame inputs of a Stacked Modulo (SM) instance—overlaying unpredictable switching on top of rhythmic structure.
 - Algorithms can also be self-nesting: QS driving QS, SM shaping SM—allowing phrasing to modulate itself recursively.
 
@@ -263,7 +263,7 @@ The Stacked Modulo (SM) algorithm uses nested modulo operations to create a stab
 
 It is presented here in two forms: a compact one-liner for expression-based systems, and a more readable expanded function.
 
-### One-Line Compact
+### Stacked Modulo - One-Line Compact
 This version is a highly compact form of the SM logic, suitable for environments that only allow for simple expressions, like shader node graphs or embedded systems.
 ```c 
 frame - (23 + frame % (minHold + floor(rand(23 + frame - (frame % 10)) * (maxHold - minHold))))
@@ -409,7 +409,7 @@ float fpsr_sm(
 }
 ```
 
-#### A Sample call to the FPS-R:SM function
+#### A Sample Call to the FPS-R:SM Function
 ```c
 // Sample code to call the FPS-R:SM function
 // Parameters
@@ -539,6 +539,270 @@ Conversely, using large values for the modulo spans results in long cycle length
 
 **Rhythmic Interference (Emergent Logic)**
 The true complexity emerges from layering multiple modulo functions with non-harmonious periods (e.g., using prime numbers like 13, 31, 97). The cycles of these layers go in and out of phase at irregular intervals. A "jump" in the final output is triggered whenever any of the layers completes its cycle, creating a complex interference pattern. This composite rhythm produces state-like transitions that are not explicitly programmed, mimicking the emergent logic of a complex state machine without storing any state.
+
+---
+## Toggled Modulo (TM)
+The Toggled Modulo (TM) algorithm uses the same nested modulo structure as Stacked Modulo to create a stable value that persists for a set number of frames. It first determines the "hold duration" by deterministically switching between two predefined periods, creating a predictable and controllable rhythmic pattern. It then generates a consistent value that lasts for that toggled duration.
+
+### Toggled Modulo (TM) - Mathematical Model
+
+The Toggled Modulo algorithm generates a stable state by using a primary clock ($t_o$) and a hold duration $D(t)$ that is deterministically toggled between two fixed periods, $P_A$ and $P_B$, based on the rhythm of a secondary clock ($t_i$).
+
+The process can be described by the following set of equations:
+
+1.  **The Hold Duration Function, $D(t)$**
+
+    The hold duration $D(t)$ is determined by a piecewise function that switches based on the state of an inner clock, $t_i$.
+
+    $$
+    D(t) =
+    \begin{cases}
+    P_A & \text{if } (t_i \pmod{P_s}) < \frac{P_s}{2} \\
+    P_B & \text{if } (t_i \pmod{P_s}) \ge \frac{P_s}{2}
+    \end{cases}
+    $$
+
+    Where:
+    * $t_i = t + O_i$ (the inner clock, offset for de-syncing)
+    * $P_s$ is the `periodSwitch`, the interval at which the toggle occurs.
+    * $P_A$ and $P_B$ are the two fixed hold periods.
+
+2.  **The Stable State Function, $State(t)$**
+
+    The stable integer state is generated using the classic `value - (value mod duration)` pattern, driven by an outer clock, $t_o$.
+
+    $$
+    State(t) = t_o - (t_o \pmod{D(t)})
+    $$
+
+    Where:
+    * $t_o = t + O_o$ (the outer clock, offset for unique sequences)
+    * $D(t)$ is the toggled hold duration from the previous step.
+
+3.  **The Final Output Function, $f(t)_{tm}$**
+
+    The final output is a pseudo-random value generated by using the stable state as a seed.
+
+    $$
+    f(t)_{tm} = \text{rand}(State(t))
+    $$
+
+    Where `rand()` is the portable random hash function.
+
+### Toggled Modulo - One Line Compact
+This version is a highly compact form of the SM logic, suitable for environments that only allow for simple expressions, like shader node graphs or embedded systems.
+```c
+// Note: frameB is typically frameA + offset to de-sync the clocks
+(frameA - (frameA % (frameB - ((frameB % periodSwitch < (periodSwitch * 0.5)) ? periodA : periodB))))
+```
+
+#### 🧩 Component Breakdown
+Let's unpack this expression from the inside out:
+1. `(frameB % periodSwitch < (periodSwitch * 0.5))`
+    - **What it does:** This is the core **toggle condition**. It creates a cycle that runs for `periodSwitch` frames and checks if the current `frameB` is in the first or second half of that cycle.
+    - **Observable Outcome:** A boolean value (`true` or `false`) that flips predictably. It will be `true` for the first half of the `periodSwitch` duration, and `false` for the second half.
+    - **Intent**: To create a simple, reliable "metronome" or "pacemaker" that will drive the switch between the two hold durations.
+2. `... ? periodA : periodB`
+    - **What it does:** This is a **ternary operator**, which acts as a compact `if/else` statement. It uses the boolean result from the previous step to make a choice.
+    - **Observable Outcome:** An integer value that deterministically toggles between `periodA` and `periodB` at the rhythm defined by `periodSwitch`.
+    - **Intent:** This is the heart of the "Toggled" algorithm. It explicitly selects one of two predefined hold durations, giving the artist direct control over the rhythm.
+3. `frameA % (...)`
+    - **What it does:** The primary Modulo operation. The current `frameA` is divided by the hold duration chosen in the previous step (`periodA` or `periodB`), and the remainder is taken.
+    - **Observable Outcome:** A sawtooth wave that ramps from 0 up to the chosen period minus one, then resets. The length of this ramp will predictably alternate between `periodA` and `periodB`.
+    - **Intent:** To generate the core dynamic that resets or "jumps" when the frame count exceeds the currently active hold period.
+4. `frameA - (...)`
+    - **What it does:** Subtracts the entire ramping value from the current `frameA`.
+    - **Observable Outcome:** A value that remains constant for the duration of either `periodA` or `periodB`, and then jumps to a new constant value.
+    - **Intent:** This final step **locks the value**, creating the explicit "hold" state. The subtraction cancels out the frame's increment, resulting in a stable output until the modulo operation triggers a jump.
+
+#### The Core Mechanism: Hold vs. Jump in the One-Liner
+The expression's behavior is governed by the interplay between the "outer" hold clock (driven by `frameA`) and the "inner" toggle clock (driven by `frameB`).
+
+##### When does the value Hold?
+The final output value holds steady only when all rhythmic components are stable. This means the `frameA` clock must be in the in progress within its current hold period (`periodA` or `periodB`), AND the `frameB` clock must be in the progress within its `periodSwitch` cycle.
+
+##### When does the value JUMP?
+A jump in the final output occurs if any of the underlying clocks reset their cycle.
+
+1. **Outer Clock Jump (Natural Expiration):** The value jumps when the `frameA` counter completes its current hold duration (either `periodA` or `periodB`). This is the natural end of a hold period.
+2. **Inner Clock Jump (Forced Toggle):** The value also jumps whenever the `frameB` clock completes its `periodSwitch` cycle. This forces the ternary operator to re-evaluate and potentially toggle the hold duration. Because the system is stateless, this sudden change in the hold duration almost always forces an immediate jump in the final output value.
+
+##### When does the HOLD DURATION itself change?
+This is the "toggled" part of the algorithm. The length of the hold is determined by a deterministic switch (the ternary operator), not a `rand()` function. This switch is controlled by the inner clock (`frameB % periodSwitch`). This means the `hold_duration` explicitly toggles between `periodA` and `periodB` at a fixed, predictable interval. **This creates the signature FPS-R:TM rhythm**: the value jumps at one of two specific rates, and the rate itself switches back and forth like a metronome.
+
+### Summary of the "Rhythmic Move-and-Hold" Behaviour
+**Hold:** For a fixed number of frames (either `periodA` or `periodB`), the expression outputs a constant, unchanging integer. This is the "hold" phase.
+
+**Jump:** Once the current frame count surpasses the active hold duration, the `frameA % (duration)` operation resets, causing a sudden, discontinuous "jump" in the final output value.
+
+**Toggle:** The duration of the hold itself is switched between `periodA` and `periodB` at a predictable, fixed interval defined by `periodSwitch`.
+
+In essence, the expression uses a deterministic, rhythmic switch to control the duration of the classic "move-and-hold" pattern, resulting in a behaviour that feels like a deliberate, mechanical pulse rather than an organic hesitation.
+
+### Toggled Modulo - A Defined Function
+```c
+/**
+ * @file fpsr_algorithms.c
+ * @brief Portable C implementation of FPS-R algorithms.
+ * @details This file now contains the full FPS-R trinity:
+ * - Stacked Modulo (SM)
+ * - Toggled Modulo (TM)
+ * - Quantised Switching (QS)
+ */
+
+#include <math.h> // For sin() and floor()
+#include <stdio.h> // For NULL
+
+/**
+ * A simple, portable pseudo-random number generator.
+ * @brief Generates a deterministic float between 0.0 and 1.0 from an integer seed.
+ * @param seed An integer used to generate the random number.
+ * @return A pseudo-random float between 0.0 and 1.0.
+ */
+float portable_rand(int seed) {
+    // A common technique for a simple hash-like random number.
+    float result = sin((float)seed * 12.9898) * 43758.5453;
+    return result - floor(result);
+}
+
+
+/******************************************************************************/
+/* FPS-R: Toggled Modulo (TM)                                                 */
+/******************************************************************************/
+
+/**
+ * @brief Generates a persistent value that holds for a rhythmically toggled duration.
+ * @details This function uses a deterministic switch to toggle the hold duration
+ * between two fixed periods. This creates a predictable, rhythmic, or mechanical
+ * "move-and-hold" pattern, as opposed to the organic randomness of SM.
+ *
+ * int frame: The current frame or time input.
+ * int periodA: The first hold duration (in frames).
+ * int periodB: The second hold duration (in frames).
+ * int periodSwitch: The fixed interval at which the hold duration is toggled.
+ * int seedInner: An offset for the toggle clock to de-sync it from the main clock.
+ * int seedOuter: An offset for the main clock to create unique sequences.
+ * int finalRandSwitch: A flag that can turn off the final randomisation step.
+ * return 
+ * when finalRandSwitch is 0: 
+ * An integer value representing the currently held frame state.
+ * when finalRandSwitch is 1: 
+ * A float value between 0.0 and 1.0 that holds for the toggled duration.
+ */
+float fpsr_tm(
+    int frame, int periodA, int periodB,
+    int periodSwitch, int seedInner, int seedOuter,
+    int finalRandSwitch)
+{
+    // --- 1. Determine the hold duration by toggling between two periods ---
+    if (periodSwitch < 1) { periodSwitch = 1; } // Prevent division by zero.
+
+    // The "inner clock" is offset by seedInner to de-correlate it from the main frame.
+    int inner_clock_frame = seedInner + frame;
+    
+    int holdDuration;
+    // The ternary switch: toggle between periodA and periodB at a fixed rhythm.
+    if ((inner_clock_frame % periodSwitch) < (periodSwitch * 0.5)) {
+        holdDuration = periodA;
+    } else {
+        holdDuration = periodB;
+    }
+
+    if (holdDuration < 1) { holdDuration = 1; } // Prevent division by zero.
+
+    // --- 2. Generate the stable integer "state" for the hold period ---
+    // The "outer clock" is offset by seedOuter to create unique output sequences.
+    int outer_clock_frame = seedOuter + frame;
+    int held_integer_state = outer_clock_frame - (outer_clock_frame % holdDuration);
+
+    // --- 3. Use the stable state as a seed for the final random value (or bypass) ---
+    float fpsr_output;
+    if (finalRandSwitch) {
+        // If true, apply the final randomisation hash.
+        fpsr_output = portable_rand(held_integer_state);
+    } else {
+        // If false, return the raw integer state directly.
+        fpsr_output = (float)held_integer_state; 
+    }
+    return fpsr_output;
+}
+```
+
+#### A Sample Call to the FPS-R:TM Function
+```c
+// Sample code to call the FPS-R:TM function
+// Parameters
+int frame_tm = 100; // Replace with the current frame value
+int period_A = 10; // The first hold duration
+int period_B = 25; // The second hold duration
+int switch_duration = 30; // The toggle happens every 30 frames
+int offset_inner_tm = 15; // offsets the inner (toggle) clock
+int offset_outer_tm = 0; // offsets the outer (hold) clock
+int final_rand_switch_tm = 1; // 1 to apply the final randomisation step, 0 to skip it
+
+// Call the FPS-R:TM function
+float randVal_tm = 
+    fpsr_tm(
+        frame_tm, period_A, period_B, 
+        switch_duration, offset_inner_tm, offset_outer_tm, final_rand_switch_tm);
+float randVal_previous_tm = 
+    fpsr_tm(
+        frame_tm - 1, period_A, period_B, 
+        switch_duration, offset_inner_tm, offset_outer_tm, final_rand_switch_tm);
+int changed_tm = 0;
+if (randVal_tm != randVal_previous_tm) {
+    changed_tm = 1; // value has changed from the previous frame
+}
+```
+#### Toggled Modulo (TM) - Function Breakdown
+The fpsr_tm function provides a more readable and flexible implementation of the Toggled Modulo logic. It breaks the process into clear, understandable steps with named variables, giving the user direct control over the rhythmic behavior.
+
+#### 🧩 Component Breakdown
+Here’s how the function works, step-by-step:
+
+##### Part 1: Determine the Toggled Hold Duration
+1. `(inner_clock_frame % periodSwitch) < (periodSwitch * 0.5)`
+    - **What it does:** This is the core toggle condition. It uses the modulo operator to create a fixed cycle based on `periodSwitch` and checks if the `inner_clock_frame` (which is `frame + seedInner`) is in the first or second half of that cycle.
+    - **Observable Outcome:** A boolean (`true` or `false`) that flips predictably at a fixed rhythm.
+    - **Intent:** To create a reliable "metronome" that drives the deterministic switch between the two hold periods. The `seedInner` offset ensures this clock is out of phase with the main `frame` clock, preventing unwanted harmonic resonance.
+2. `if (...) { holdDuration = periodA; } else { holdDuration = periodB; }`
+    - **What it does:** This `if/else` block acts on the boolean result from the previous step to select one of two predefined integer values.
+    - **Observable Outcome:** The `holdDuration` variable is assigned the value of either `periodA` or `periodB`, toggling between them at the rate defined by `periodSwitch`.
+    - **Intent:** This is the heart of the "Toggled" algorithm. It explicitly sets the hold duration to one of two known values, giving the artist precise, direct control over the output rhythm.
+##### Part 2: Generate and Hold the Final Value
+3. `outer_clock_frame - (outer_clock_frame % holdDuration)`
+    - **What it does:** This is the primary "Modulo Hold" operation. The `outer_clock_frame` (`frame + seedOuter`) is divided by the `holdDuration` chosen in Part 1, and the remainder is taken. This result is then subtracted from the `outer_clock_frame`.
+    - **Observable Outcome:** An integer value (`held_integer_state`) that remains constant for the entire `holdDuration` (either `periodA` or `periodB`), and then jumps to a new constant value.
+    - **Intent:** This step **locks the value**, creating the explicit "hold" state. The subtraction cancels out the frame's continuous increment, resulting in a stable integer until either the hold expires naturally or the duration is toggled by the inner clock.
+
+#### Part 3: Final Output Selection
+4. `if (finalRandSwitch) { ... } else { ... }`
+- **What it does:** This is a bypass switch for the final randomisation step. It checks the boolean value of `finalRandSwitch`.
+- **Observable Outcome:**
+    - If `true`, the `held_integer_state` is used as a seed for `portable_rand()`, and the output is a pseudo-random float between 0.0 and 1.0.
+    - If `false`, the final hashing step is skipped, and the raw `held_integer_state` is returned directly (cast to a float). The output is a stepped, non-random integer value.
+- **Intent:** To provide direct access to the underlying stable integer signal. This is incredibly useful for debugging, visualisation, or for driving systems that require a predictable, stepped integer input rather than a randomised float. It allows you to "see" the raw rhythm of the hold mechanism.
+
+#### The Core Mechanism: Toggled Rhythms and Hashing
+The signature feel of the TM algorithm comes from its nested rhythmic structure, where one clock controls the behavior of another.
+- **The Toggle Clock:** This is a fixed, metronome-like rhythm controlled by `periodSwitch`. Its only job is to decide when to toggle the hold duration between `periodA` and `periodB`.
+- **The Hold Clock:** This is a deterministic, two-speed rhythm controlled by the toggled `holdDuration`. Its job is to determine how long the current value will persist.
+- **The Hashing:** The final step (if enabled) converts the stable integer state from the "Hold Clock" into a pseudo-random value.
+
+The final behaviour emerges from the predictable Toggle Clock forcing a change upon the Hold Clock, creating a deliberate, mechanical pulse.
+
+#### The Core Mechanism: When Does the Value Hold vs. Jump?
+The algorithm's rhythm is defined by two distinct types of "jump" events.
+
+##### When does the value HOLD?
+The final value remains constant only during the frames between jump events, when the `held_integer_state` is stable.
+
+##### When does the value JUMP?
+A jump occurs whenever the `held_integer_state` changes. This can be triggered in two ways:
+1. **Natural Jump (Hold Expiration):** The value jumps when the `outer_clock_frame` completes its current `holdDuration` cycle (either `periodA` or `periodB`).
+2. **Forced Jump (Toggle Event):** The value also jumps whenever the `inner_clock_frame` crosses the `periodSwitch` threshold. This forces the `holdDuration` to toggle, almost always causing an immediate jump in the final output.
+
+This two-tiered jump system creates the signature FPS-R:TM behavior: a value holds for one of two explicit durations, and the duration itself switches at a fixed, predictable interval.
 
 ---
 ## Quantised Switching (QS)
@@ -689,7 +953,7 @@ float fpsr_qs(
 }
 ```
 
-#### A Sample call to the FPS-R:QS function
+#### A Sample Call to the FPS-R:QS Function
 ```c
 // Sample code to call the FPS-R:QS function
 // Parameters
