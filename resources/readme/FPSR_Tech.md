@@ -67,7 +67,7 @@ In this document, we will unpack the FPS-R methods by deconstructing their code 
 ### 🧾 Code Snippets Provided in this Repository
 The code examples in this repository are **platform-conscious**, not platform-specific. Each snippet has been deliberately shaped for **clarity of intent**, avoiding language-dependent operators (like ternaries), environment-specific idioms, or dependency-bound functions. Where expressive quirks exist (e.g. modulus, quantisation rhythms), they are surfaced with **plain logic and comments that explain the phrasing**, not just the math.
 
-These implementations prioritize **readability, reproducibility, and minimal refactoring cost** across most C-family and expression-bound languages—including C++, Java, JavaScript, GLSL, HLSL, MEL, and Houdini VEX.
+These implementations prioritise **readability, reproducibility, and minimal refactoring cost** across most C-family and expression-bound languages—including C++, Java, JavaScript, GLSL, HLSL, MEL, and Houdini VEX.
 
 While some language-specific adjustment may still be necessary—such as:
 - Array declarations ([] vs {} syntax)
@@ -205,7 +205,7 @@ Below is a non-exhaustive list of common stateless functions and procedural sour
 | **Mathematical & Trigonometric** | `sin`, `cos`, `pow`, `sqrt`, `floor`, `ceil`, `round`, `min`, `max`, `clamp`, `abs`, `mod`, `frac`, `lerp`, `smoothstep` |
 | **Procedural Noise & Patterns** | `Perlin Noise`, `Simplex Noise`, `Worley Noise (Voronoi)`, `Value Noise`, `Fractal Brownian Motion (fBm)` |
 | **Hashing & Pseudo-Random** | `Seeded rand(seed)`, various hash functions that convert coordinates or seeds into repeatable numbers |
-| **Geometric & Coordinate-Based**| `dot`, `cross`, `normalize`, `distance`, `length`, `SDFs (Signed Distance Functions)`, `Texture Lookups` |
+| **Geometric & Coordinate-Based**| `dot`, `cross`, `normalise`, `distance`, `length`, `SDFs (Signed Distance Functions)`, `Texture Lookups` |
 | **Logic & Data Manipulation** | `step`, `mix`, `Bitwise Operations (AND, OR, XOR)` |
 
 > ⚠️ FPS-R can coexist with non-deterministic or stateful sources, but the resulting phrasing will not be traceable or reproducible. That may be an intentional choice—but it's a choice worth naming.
@@ -278,7 +278,7 @@ Here’s how the expression works, from the inside out:
    - **Intent:** This creates a short, rhythmic, 10-frame cycle that acts as the foundational "pacemaker" for the entire system. It defines the smallest unit of time before a _potential_ change can be evaluated.
 2. `(23 + frame - (frame % 10))`
    - **What it does:** It subtracts the 10-frame cycle from the current `frame` and adds a prime number offset (`23`).
-   - **Observable Outcome:** This calculation effectively quantizes time into 10-frame blocks. For frames 0 through 9, the output is 23. For frames 10 through 19, the output is 33, and so on. The value remains constant for 10-frame intervals.
+   - **Observable Outcome:** This calculation effectively quantises time into 10-frame blocks. For frames 0 through 9, the output is 23. For frames 10 through 19, the output is 33, and so on. The value remains constant for 10-frame intervals.
    - **Intent:** This is the core of the **reseeding mechanism**. By creating a stable value that only changes every 10 frames, it ensures that the random number generator produces the same result for that entire duration, establishing the "hold" phase. The `23` is a "magic number" used to create a unique starting point for the randomness. This ensures that the "outer" `frame` and the "inner" `frame` do not start off at the same time, minimising unexpected accumulated resonance and cancellation effects.
 3. `rand(...) * (maxHold - minHold)`
    - **What it does:**  It uses the 10-frame seed to generate a random number between 0.0 and 1.0, then multiplies it by the _range_ of possible hold durations.
@@ -445,7 +445,7 @@ Here’s how the function works, step-by-step:
 - **Observable Outcome:** An integer that remains constant for `reseedInterval` frames and then jumps. For a reseedInterval of 20, it would be 0 for frames 0-19, then 20 for frames 20-39, and so on.
 - **Intent:** This is the **reseeding mechanism**. It quantises time into fixed blocks, creating a stable value that will be used as the basis for the random seed. This ensures the `holdDuration` is only recalculated periodically, not every frame.
 2. `portable_rand(seedInner + ...)`
-- **What it does:** It calls the random number generator using the quantized time value from the previous step. `seedInner` is added to offset the sequence, preventing different instances from being synchronised.
+- **What it does:** It calls the random number generator using the quantised time value from the previous step. `seedInner` is added to offset the sequence, preventing different instances from being synchronised.
 - **Observable Outcome:** A pseudo-random float between 0.0 and 1.0 that is constant for `reseedInterval` frames.
 - **Intent:** To generate a stable random value that will determine the length of the next hold period.
 3. `minHold + rand_for_duration * (maxHold - minHold)`

@@ -44,9 +44,32 @@ This document holds philosophical reflections, design motivations, and structura
 
 ---
 
-## 📖 How Did FPR-S Come Into Existence?
+## Origins
+### How it Began
+I had a problem creating an elegant move and hold in my visual effects work (which reflects the real world phenomena of course). To achieve these kinds of motion, I tried the following.
+- layering noise of different frequencies and offsets
+- stateful random reseeds at random frames
 
-When I first proposed FPS-R as a "stateless random hold algorithm," I encountered the immediate response:  
+These worked, in a limited way. I wasn't particularly dissatisfied with these methods I found back then. I was thinking, that was the way it is. I wasn't trying to push the envelope with "a grand vision" in mind. 
+
+Over the years, a `frame - (frame % mod_period)` evolved organically in my workflow (apparently this was a common operation to hold a frame for a particular period of time, but I only found out later). I think that this evolution was not based on Google searches, but based on an understanding that grew naturally from the nature of modulo operations and asking "What if I could stall time? Since modulo keeps giving me ever increasing numbers, if I subtract the ever-increasing numbers I can get the value to maintain at the last multiple of the divisor". then I realised that the stalled periods of frames could be seeds to `random()` mechanisms. that took place in the span of a few short years like 2-3 years. That enabled me to create constantly updating random numbers. **This became the foundation to the FPS-R Stacked Modulo**. It was just missing one more component. 
+
+The most significant and final breakthrough for FPS-R were in the last months around March 2025. I was trying to create a VHS tape glitch effect where bands of horizontal areas in the frame would drift vertically around in the same region in the frame for a while, then jump to another vertical region in the frame then slide around that area for a while in very inconsistent speeds and periodicity.
+
+At that point what I would do was to create 2 streams of modulo `frameA - (frameA % periodA)` and `frameB - (frameB % periodB)` to where `frameB` is the running frame with an offset from `frameA`, and `periodB` is a slightly longer or shorter period than `periodA`, usually _not_ multiples of each other. I would then switch between these. (In Houdini that node would be the `switch SOP`). And on this switcher node, I would do a 3rd modulo expression with yet another time offset and a different periodic duration. Each of the streams and the switch are all modulo in their own periodicity, running in their own timeline. This set-up breaks up the perceived rhythms and pacing of the resulting pattern, leveraging on the  out-of-phase and out-of-sync offsets patterns between the 2 streams and the switch. **This formed the foundation for FPS-R Quantised Switching**. 
+
+At that time I did not realise it, but looking back now, I can summarise this pattern to a SM variation (perhaps a 3rd algorithm to the FPS-R framework):  
+`(frameA - (frameA % (frameB - (frameB % periodSwitch ? periodA : periodB))))`
+
+I was already using some variant of the FPS-R before even realising it. In the pursuit of being perceived as "truly unpredictable", I felt this was inferior to the final form of Stacked Modulo.
+
+At that time I began to think about how frustrating that fixed `periodA` and `periodB` were in my modulo expressions. I wondered if I could randomise it at another fixed range of values using the same techniques.  
+
+At that time with a sudden stroke of inspiration I arrived at a nested solution of nested modulos with a `rand()` inside the inner modulo. With this I could achieve with the existing "outer nest" of modulo. and that worked out petty well!
+
+### 📖 How Did FPR-S Come Into Existence?
+
+When I first proposed FPS-R as a "stateless random hold algorithm," I encountered the immediate response from Google Gemini:  
 _"Isn't that what Worley noise is for?"_
 
 That led to a full forensic breakdown of Worley's regularities and philosophical ceilings. The result wasn't just a counterpoint—it became a motivation. This document is memory of that journey.
@@ -306,7 +329,7 @@ _2025-07-03_
 
 If FPS-R has taught us anything, it’s that **timing is not just a byproduct of behavior—it’s a medium of meaning**. While its current applications focus on output—gesture, feedback, modulation—there may come a time when FPS-R plays a role in perception itself.
 
-In human vision, **salience is not just about what’s visible—it’s about what’s noticed**. Our eyes don’t scan the world uniformly. They drift, fixate, hesitate. They prioritize corners, contrast, motion. These rhythms of attention are deeply procedural, shaped by both bottom-up stimulus and top-down intent.
+In human vision, **salience is not just about what’s visible—it’s about what’s noticed**. Our eyes don’t scan the world uniformly. They drift, fixate, hesitate. They prioritise corners, contrast, motion. These rhythms of attention are deeply procedural, shaped by both bottom-up stimulus and top-down intent.
 
 If future vision systems aim to emulate this—through saccadic emulation, foveated rendering, or attention heatmaps—then FPS-R could serve as a **temporal scaffold** for that process:
 
@@ -358,12 +381,12 @@ Why then do we need FPR-S?
 
 ### Microsoft Copilot's Defence
 **🧨 So why would FPS-R take off, if people already have patterns like this?**
-1. **Because what you're doing is already FPS-R—just unnamed, unstandardized, and fragile in scaling.** Your code is a seed! It lives inside FPS-R, it’s a capsule stub. But as soon as you want more than “12 frames of hold” and “flip a coin at expiration,” you begin to accumulate:
+1. **Because what you're doing is already FPS-R—just unnamed, unstandardised, and fragile in scaling.** Your code is a seed! It lives inside FPS-R, it’s a capsule stub. But as soon as you want more than “12 frames of hold” and “flip a coin at expiration,” you begin to accumulate:
 - Custom thresholds
 - Hardcoded drift rules
 - Variation by module
 - State scaffolding
-FPS-R formalizes this, so instead of growing a thousand tiny custom versions across teams and projects, **you express it once as an intentional capsule.**
+FPS-R formalises this, so instead of growing a thousand tiny custom versions across teams and projects, **you express it once as an intentional capsule.**
 
 2. **Because your snippet logic is framed around execution. FPS-R frames around behaviour.** Your example works when you know the behaviour you want: “hold this for 12 frames, then maybe jump.”
 FPS-R flips the framing: you start with intentions like _glancing, drifting, dwelling_, and select capsule behaviour accordingly—without having to bake in time constants or reseed logic each time. It's not “how long should I hold,” it's “what would contemplation feel like”—and then you pick a capsule tuned for that modulation curve.
@@ -377,7 +400,7 @@ You want to preview or debug the rhythm across modalities?
 
 FPS-R treats modulation like a shader: **decoupled, swappable, previewable**, and described behaviorally. It becomes a _language_.
 
-4. **Because in a team environment, standardized capsules beat per-module tweaks.** In a collaborative stack—robotics, interface, LLM behavior—you want to say “load a ‘hesitate-and-hold’ modulation for this system” and have everyone understand _what that means_ without diffing five codebases for slightly different reseed strategies.
+4. **Because in a team environment, standardised capsules beat per-module tweaks.** In a collaborative stack—robotics, interface, LLM behavior—you want to say “load a ‘hesitate-and-hold’ modulation for this system” and have everyone understand _what that means_ without diffing five codebases for slightly different reseed strategies.
 
 5. **Because this pattern will always become divergent entropy without structure**. Let ten engineers write their own “hold and reseed” loops, and you’ll get ten versions—some off-by-one, some with weird coin flips, others using frame deltas. FPS-R is **not just a method—it’s a vocabulary with guarantees**.
 
@@ -493,7 +516,7 @@ FPS-R now has modular structure, defined parameters, evolving documentation, and
 
 Calling it a **framework** clarifies its role:
 - 📦 Signals Structure: It implies composable components, clear boundaries, and extensibility.
-- 🔁 Encourages Reuse and Adaptation: Others can build upon it, repurpose it, or even standardize around it.
+- 🔁 Encourages Reuse and Adaptation: Others can build upon it, repurpose it, or even standardise around it.
 - 🧠 Frames Intellectual Ambition: It places FPS-R in the same conceptual neighborhood as decision engines, constraint solvers, or generative grammars—not just animation tools.
 > 🫀 A framework with a pulse.
 
