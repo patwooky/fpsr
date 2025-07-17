@@ -7,6 +7,8 @@
   - [🈸 Readme — 宣言,理念描述 (Chinese)](#-readme--宣言理念描述-chinese)
   - [📐 The Mathematics and Mechanics](#-the-mathematics-and-mechanics)
   - [🍭 Applications](#-applications)
+  - [🧬 Origins](#-origins)
+  - [📓 Development Journal — The Chronicle](#-development-journal--the-chronicle)
   - [🧠 Thoughts — Reflections and Conceptual Notes](#-thoughts--reflections-and-conceptual-notes)
 - [🎲 What is FPS-R?](#-what-is-fps-r)
   - [🪞 Introduction](#-introduction)
@@ -91,8 +93,12 @@ The Chinese edition of the manifesto, presenting the philosophical and expressiv
 This extension document provides the structural foundation beneath the conceptual framing. It outlines the algorithms, expressions, parameters, and architectural elements that support and shape the behaviour of FPS-R. **_The code lives here._**
 
 ### 🍭 Applications 
-This document complements and extends the applications of FPS-R beyond the high-level summarised view provided in this ReadMe file. The document will dig deeper into each domain and provide larger number of use cases for each area of use. 
 [Click here: FPSR_Applications.md](resources/readme/FPSR_Applications.md)
+This document complements and extends the applications of FPS-R beyond the high-level summarised view provided in this ReadMe file. The document will dig deeper into each domain and provide larger number of use cases for each area of use. 
+
+### 🧬 Origins
+[Click here: FPSR_Origins.md](resources/readme/FPSR_Origins.md)
+This is the history and the story of FPS-R. It recounts the events that led to the discovery of each algorithm, and tells about the persistent pursue of the language of motion, about discovering meaning and refining the mechanics behind move and hold. It will also tell how each algorithm revealed itself, and how they come together to form the FPS-R framework. 
 
 ### 📓 Development Journal — The Chronicle
 [Click here: FPSR_Dev_Journal.md](resources/readme/FPSR_Dev_Journal.md)
