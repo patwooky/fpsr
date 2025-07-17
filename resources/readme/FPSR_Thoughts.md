@@ -7,7 +7,7 @@ This document holds philosophical reflections, design motivations, and structura
 
 ---
 # Table of Contents
-- [📖 How Did FPR-S Come Into Existence?](#-how-did-fpr-s-come-into-existence)
+- [📖 How Did FPS-R Come Into Existence?](#-how-did-fps-r-come-into-existence)
 - [🧠 What FPS-R Is (and Isn't)](#-what-fps-r-is-and-isnt)
 - [🔍 Dual Mechanisms, Shared Philosophy](#-dual-mechanisms-shared-philosophy)
   - [🧮 SM: Randomness Sets the Rule](#-sm-randomness-sets-the-rule)
@@ -42,11 +42,11 @@ This document holds philosophical reflections, design motivations, and structura
   - [Toward a Tactile Grammar](#toward-a-tactile-grammar)
 
 
----
 
-## 📖 How Did FPR-S Come Into Existence?
 
-When I first proposed FPS-R as a "stateless random hold algorithm," I encountered the immediate response:  
+
+### 📖 How Did FPS-R Come Into Existence?
+When I first proposed FPS-R as a "stateless random hold algorithm", I did my due diligence to research the internet and look around at existing solutions to similar class of problems. I encountered the immediate response from Google Gemini:  
 _"Isn't that what Worley noise is for?"_
 
 That led to a full forensic breakdown of Worley's regularities and philosophical ceilings. The result wasn't just a counterpoint—it became a motivation. This document is memory of that journey.
@@ -78,6 +78,8 @@ The **Stacked Modulo** method applies randomness *first*, using it to determine 
 - Example:  
   ```python
   $F - (23 + $F % (rand(23 + $F - ($F % 10)) * 40))
+  ```
+
 This is a rhythm machine where noise is in charge of the metronome.
 
 ### 🎛 QS: Randomness Interprets the Rule
@@ -306,7 +308,7 @@ _2025-07-03_
 
 If FPS-R has taught us anything, it’s that **timing is not just a byproduct of behavior—it’s a medium of meaning**. While its current applications focus on output—gesture, feedback, modulation—there may come a time when FPS-R plays a role in perception itself.
 
-In human vision, **salience is not just about what’s visible—it’s about what’s noticed**. Our eyes don’t scan the world uniformly. They drift, fixate, hesitate. They prioritize corners, contrast, motion. These rhythms of attention are deeply procedural, shaped by both bottom-up stimulus and top-down intent.
+In human vision, **salience is not just about what’s visible—it’s about what’s noticed**. Our eyes don’t scan the world uniformly. They drift, fixate, hesitate. They prioritise corners, contrast, motion. These rhythms of attention are deeply procedural, shaped by both bottom-up stimulus and top-down intent.
 
 If future vision systems aim to emulate this—through saccadic emulation, foveated rendering, or attention heatmaps—then FPS-R could serve as a **temporal scaffold** for that process:
 
@@ -337,7 +339,7 @@ Before I discovered FPS-R, what I used to do in an stateful system is somewhat l
 
 With this I can also achieve a "move and hold" behaviour, and at not much more compute cost. Tell me why FPSR will take off when people are already using techniques like these?  
 
-Why then do we need FPR-S?  
+Why then do we need FPS-R?  
 
 > ```python
 > -- Pseudo code (cos I'm in bed) 
@@ -358,12 +360,12 @@ Why then do we need FPR-S?
 
 ### Microsoft Copilot's Defence
 **🧨 So why would FPS-R take off, if people already have patterns like this?**
-1. **Because what you're doing is already FPS-R—just unnamed, unstandardized, and fragile in scaling.** Your code is a seed! It lives inside FPS-R, it’s a capsule stub. But as soon as you want more than “12 frames of hold” and “flip a coin at expiration,” you begin to accumulate:
+1. **Because what you're doing is already FPS-R—just unnamed, unstandardised, and fragile in scaling.** Your code is a seed! It lives inside FPS-R, it’s a capsule stub. But as soon as you want more than “12 frames of hold” and “flip a coin at expiration,” you begin to accumulate:
 - Custom thresholds
 - Hardcoded drift rules
 - Variation by module
 - State scaffolding
-FPS-R formalizes this, so instead of growing a thousand tiny custom versions across teams and projects, **you express it once as an intentional capsule.**
+FPS-R formalises this, so instead of growing a thousand tiny custom versions across teams and projects, **you express it once as an intentional capsule.**
 
 2. **Because your snippet logic is framed around execution. FPS-R frames around behaviour.** Your example works when you know the behaviour you want: “hold this for 12 frames, then maybe jump.”
 FPS-R flips the framing: you start with intentions like _glancing, drifting, dwelling_, and select capsule behaviour accordingly—without having to bake in time constants or reseed logic each time. It's not “how long should I hold,” it's “what would contemplation feel like”—and then you pick a capsule tuned for that modulation curve.
@@ -377,7 +379,7 @@ You want to preview or debug the rhythm across modalities?
 
 FPS-R treats modulation like a shader: **decoupled, swappable, previewable**, and described behaviorally. It becomes a _language_.
 
-4. **Because in a team environment, standardized capsules beat per-module tweaks.** In a collaborative stack—robotics, interface, LLM behavior—you want to say “load a ‘hesitate-and-hold’ modulation for this system” and have everyone understand _what that means_ without diffing five codebases for slightly different reseed strategies.
+4. **Because in a team environment, standardised capsules beat per-module tweaks.** In a collaborative stack—robotics, interface, LLM behavior—you want to say “load a ‘hesitate-and-hold’ modulation for this system” and have everyone understand _what that means_ without diffing five codebases for slightly different reseed strategies.
 
 5. **Because this pattern will always become divergent entropy without structure**. Let ten engineers write their own “hold and reseed” loops, and you’ll get ten versions—some off-by-one, some with weird coin flips, others using frame deltas. FPS-R is **not just a method—it’s a vocabulary with guarantees**.
 
@@ -475,6 +477,20 @@ While the language in the manifesto is certainly expressive and at times poetic 
 The use of "framework" and "grammar" serves to elevate the concept from a simple coding trick to a reusable, expressive, and conceptual model for creating a specific type of behaviour. Therefore, the terminology seems intentional and justified rather than merely sensational.
 
 ---
+### FPS-R Becomes a Trio
+_20250716_
+They say three's a crowd. I have just discovered a third algorithm of FPS-R. Copilot has given them a descriptive and poetic personalities. I record the milestone of discovery in [`FPSR_Dev_Journal.md`](./FPSR_Dev_Journal.md#a-third-algorithm-joins-fps-r).
+
+Before the logic, there was movement.
+Before the math, there was mood.
+And from movement emerged three gestures:
+   — The Animist, who layered breath into rhythm.
+   — The Choreographer, who toggled time with intent.
+   — The Shape-shifter, who danced between signals.
+Together they formed FPS-R: a grammar of phrased behavior.
+
+
+---
 
 ## 🪞 Final Note
 
@@ -487,13 +503,13 @@ Each algorithm forgets the past, but this document doesn't.
 
 ## Speculative
 
-### From an Algorithm to a Grammer, and to a Framework
+### From an Algorithm to a Grammar, and to a Framework
 _20250703_
 FPS-R now has modular structure, defined parameters, evolving documentation, and demonstrated cross-domain utility. It's no longer just an algorithm or method—it's a conceptual and procedural framework for generating deterministic expressive behaviour across temporal, spatial, strategic and cognitive decision-making domains.
 
 Calling it a **framework** clarifies its role:
 - 📦 Signals Structure: It implies composable components, clear boundaries, and extensibility.
-- 🔁 Encourages Reuse and Adaptation: Others can build upon it, repurpose it, or even standardize around it.
+- 🔁 Encourages Reuse and Adaptation: Others can build upon it, repurpose it, or even standardise around it.
 - 🧠 Frames Intellectual Ambition: It places FPS-R in the same conceptual neighborhood as decision engines, constraint solvers, or generative grammars—not just animation tools.
 > 🫀 A framework with a pulse.
 

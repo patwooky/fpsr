@@ -34,7 +34,7 @@ float portable_rand(int seed) {
  
  
 /******************************************************************************/
-/* FPS-R: Stacked Modulo (SM)                            */
+/* FPS-R: Stacked Modulo (SM)                                                 */
 /******************************************************************************/
 
 /**
@@ -112,7 +112,93 @@ if (randVal != randVal_previous) {
 
 
 /******************************************************************************/
-/* FPS-R: Quantised Switching (QS)                         */
+/* FPS-R: Toggled Modulo (TM)                                                 */
+/******************************************************************************/
+
+/**
+ * @brief Generates a persistent value that holds for a rhythmically toggled duration.
+ * @details This function uses a deterministic switch to toggle the hold duration
+ * between two fixed periods. This creates a predictable, rhythmic, or mechanical
+ * "move-and-hold" pattern, as opposed to the organic randomness of SM.
+ *
+ * int frame: The current frame or time input.
+ * int periodA: The first hold duration (in frames).
+ * int periodB: The second hold duration (in frames).
+ * int periodSwitch: The fixed interval at which the hold duration is toggled.
+ * int seedInner: An offset for the toggle clock to de-sync it from the main clock.
+ * int seedOuter: An offset for the main clock to create unique sequences.
+ * int finalRandSwitch: A flag that can turn off the final randomisation step.
+ * return 
+ * when finalRandSwitch is 0: 
+ * An integer value representing the currently held frame state.
+ * when finalRandSwitch is 1: 
+ * A float value between 0.0 and 1.0 that holds for the toggled duration.
+ */
+float fpsr_tm(
+    int frame, int periodA, int periodB,
+    int periodSwitch, int seedInner, int seedOuter,
+    int finalRandSwitch)
+{
+    // --- 1. Determine the hold duration by toggling between two periods ---
+    if (periodSwitch < 1) { periodSwitch = 1; } // Prevent division by zero.
+
+    // The "inner clock" is offset by seedInner to de-correlate it from the main frame.
+    int inner_clock_frame = seedInner + frame;
+    
+    int holdDuration;
+    // The ternary switch: toggle between periodA and periodB at a fixed rhythm.
+    if ((inner_clock_frame % periodSwitch) < (periodSwitch * 0.5)) {
+        holdDuration = periodA;
+    } else {
+        holdDuration = periodB;
+    }
+
+    if (holdDuration < 1) { holdDuration = 1; } // Prevent division by zero.
+
+    // --- 2. Generate the stable integer "state" for the hold period ---
+    // The "outer clock" is offset by seedOuter to create unique output sequences.
+    int outer_clock_frame = seedOuter + frame;
+    int held_integer_state = outer_clock_frame - (outer_clock_frame % holdDuration);
+
+    // --- 3. Use the stable state as a seed for the final random value (or bypass) ---
+    float fpsr_output;
+    if (finalRandSwitch) {
+        // If true, apply the final randomisation hash.
+        fpsr_output = portable_rand(held_integer_state);
+    } else {
+        // If false, return the raw integer state directly.
+        fpsr_output = (float)held_integer_state; 
+    }
+    return fpsr_output;
+}
+
+// Sample code to call the FPS-R:TM function
+// Parameters
+int frame_tm = 100; // Replace with the current frame value
+int period_A = 10; // The first hold duration
+int period_B = 25; // The second hold duration
+int switch_duration = 30; // The toggle happens every 30 frames
+int offset_inner_tm = 15; // offsets the inner (toggle) clock
+int offset_outer_tm = 0; // offsets the outer (hold) clock
+int final_rand_switch_tm = 1; // 1 to apply the final randomisation step, 0 to skip it
+
+// Call the FPS-R:TM function
+float randVal_tm = 
+    fpsr_tm(
+        frame_tm, period_A, period_B, 
+        switch_duration, offset_inner_tm, offset_outer_tm, final_rand_switch_tm);
+float randVal_previous_tm = 
+    fpsr_tm(
+        frame_tm - 1, period_A, period_B, 
+        switch_duration, offset_inner_tm, offset_outer_tm, final_rand_switch_tm);
+int changed_tm = 0;
+if (randVal_tm != randVal_previous_tm) {
+    changed_tm = 1; // value has changed from the previous frame
+}
+
+
+/******************************************************************************/
+/* FPS-R: Quantised Switching (QS)                                            */
 /******************************************************************************/
 
 /**

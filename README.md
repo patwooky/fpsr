@@ -7,6 +7,8 @@
   - [🈸 Readme — 宣言,理念描述 (Chinese)](#-readme--宣言理念描述-chinese)
   - [📐 The Mathematics and Mechanics](#-the-mathematics-and-mechanics)
   - [🍭 Applications](#-applications)
+  - [🧬 Origins](#-origins)
+  - [📓 Development Journal — The Chronicle](#-development-journal--the-chronicle)
   - [🧠 Thoughts — Reflections and Conceptual Notes](#-thoughts--reflections-and-conceptual-notes)
 - [🎲 What is FPS-R?](#-what-is-fps-r)
   - [🪞 Introduction](#-introduction)
@@ -26,7 +28,7 @@
   - [🧬 The Nature of "Held" Randomness](#-the-nature-of-held-randomness)
   - [🧱 Limitations of Conventional Techniques](#-limitations-of-conventional-techniques)
     - [The Current State of Computation and Calculations](#the-current-state-of-computation-and-calculations)
-    - [🧊 1. Spatialized Randomness (e.g. Worley Noise & Distance-Based Fields)](#-1-spatialized-randomness-eg-worley-noise--distance-based-fields)
+    - [🧊 1. Spatialised Randomness (e.g. Worley Noise & Distance-Based Fields)](#-1-spatialised-randomness-eg-worley-noise--distance-based-fields)
     - [🔁 2. Stateful behavioural Logic (e.g. Timers, Delays, Pauses, Walks)](#-2-stateful-behavioural-logic-eg-timers-delays-pauses-walks)
   - [⚙️ Why FPS-R is Different](#️-why-fps-r-is-different)
 - [❓ Why Not Just Use State?](#-why-not-just-use-state)
@@ -91,8 +93,12 @@ The Chinese edition of the manifesto, presenting the philosophical and expressiv
 This extension document provides the structural foundation beneath the conceptual framing. It outlines the algorithms, expressions, parameters, and architectural elements that support and shape the behaviour of FPS-R. **_The code lives here._**
 
 ### 🍭 Applications 
-This document complements and extends the applications of FPS-R beyond the high-level summarised view provided in this ReadMe file. The document will dig deeper into each domain and provide larger number of use cases for each area of use. 
 [Click here: FPSR_Applications.md](resources/readme/FPSR_Applications.md)
+This document complements and extends the applications of FPS-R beyond the high-level summarised view provided in this ReadMe file. The document will dig deeper into each domain and provide larger number of use cases for each area of use. 
+
+### 🧬 Origins
+[Click here: FPSR_Origins.md](resources/readme/FPSR_Origins.md)
+This is the history and the story of FPS-R. It recounts the events that led to the discovery of each algorithm, and tells about the persistent pursue of the language of motion, about discovering meaning and refining the mechanics behind move and hold. It will also tell how each algorithm revealed itself, and how they come together to form the FPS-R framework. 
 
 ### 📓 Development Journal — The Chronicle
 [Click here: FPSR_Dev_Journal.md](resources/readme/FPSR_Dev_Journal.md)
@@ -322,7 +328,7 @@ Works _with_ your system. Not to replace it.
 
 When systems attempt to simulate phrased irregularity—deviation, hesitation, unpredictability—they often reach for one of two broad approaches. Both are useful. Both are limited. And neither offers phrasing as its native dialect.
 
-##### 🧊 1. Spatialized Randomness (e.g. Worley Noise & Distance-Based Fields)
+##### 🧊 1. Spatialised Randomness (e.g. Worley Noise & Distance-Based Fields)
 These techniques rely on pre-seeded feature points—often jittered grids or hashed distributions—and compute behaviour by measuring distance to these anchors. Worley noise, Voronoi fields, and similar cellular approaches are powerful for generating structured randomness across surfaces.
 
 But their strengths are their constraints:
@@ -402,7 +408,7 @@ In a spatial context, a stateful method is path-dependent; to find the value at 
 
 FPS-R doesn’t replace stateful methods—it transcends it.  
 
-Because beyond simple systems lies a world of **stateless surfaces**, **reproducible timelines**, and **modular behaviours** that demand more than scattered logic and local memory. That’s where traditional state falters—and where FPS-R begins.
+Because beyond simple systems lie a world of **stateless surfaces**, **reproducible timelines**, and **modular behaviours** that demand more than scattered logic and local memory. That’s where traditional state falters—and where FPS-R begins.
 
 **Why Traditional State Falls Short**
 **🧳 State Doesn’t Travel** Your hold/reseed-jump loop works in a script—but it relies on persistent memory. That loop breaks in shaders, in stateless expression fields, in stream processors, GPU pipelines—anywhere **state doesn’t persist**. FPS-R? Stateless by design. It runs wherever functions do: in time, in space, in parallel.
@@ -520,7 +526,7 @@ When modulation itself becomes the substrate, FPS-R enters a recursive phase —
 
 This self-referential phrasing allows for:
 - **Multi-scale modulation**: macro pulses shaped by coarse phrasing, with micro flickers layered within
-- **Localized personality zones**: regions where phrasing regime shifts — one area hesitates, another twitches
+- **Localised personality zones**: regions where phrasing regime shifts — one area hesitates, another twitches
 - **Signal introspection**: behaviour that responds to its own modulation trace, creating feedback-driven emergence
 
 This nesting enables semantic navigation across modulation space — not just movement, but meaningful movement.The result is a *generative grammar*, not just a random script.
@@ -812,7 +818,7 @@ FPS-R is under active development and currently private during cleanup. Planned 
 #### What are capsules?
 Capsules parameterised modulation profiles. 
 
-Capsules are **parameterized modulation profiles** that record phrasing behaviour over time. Each capsule encapsulates both:
+Capsules are **parameterised modulation profiles** that record phrasing behaviour over time. Each capsule encapsulates both:
 
 - a sequence of observed output values — the _jumps_ and _holds_ within a time window (e.g. frames 200 to 250)
 - and the precise **settings** that generated them: algorithm type (SM or QS), signal frequencies, modulo durations, switching intervals, and reseed logic.

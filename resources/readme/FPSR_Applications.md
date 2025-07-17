@@ -27,7 +27,7 @@ This document serves as a detailed compendium of potential applications for the 
 ## 🎨 Part I — Generative Expression & Organic Simulation
 **FPS-R as a composer of lifelike timing and motion.**
 
-This theme explores FPS-R as a grammar of expressive modulation—used to animate behaviour that feels real, alive, and intentionally imprecise. Whether powering an avatar’s hesitant eye shift, a prosthetic’s subtle posture correction, or a synthesizer’s phrasing drift, FPS-R injects rhythm and irregularity with poise.
+This theme explores FPS-R as a grammar of expressive modulation—used to animate behaviour that feels real, alive, and intentionally imprecise. Whether powering an avatar’s hesitant eye shift, a prosthetic’s subtle posture correction, or a synthesiser’s phrasing drift, FPS-R injects rhythm and irregularity with poise.
 
 Here, randomness is not noise—it’s performance. Modulation becomes motion. Hesitation becomes presence.
 > FPS-R contributes phrasing logic that is deterministic yet organic—producing expressive behaviour across AR, robotics, wearables, and musical systems without scripting or simulation overhead.
@@ -57,7 +57,7 @@ As robotics moves from automation to articulation—from machines that complete 
 - Deliberation Simulation and Action Hesitation Modulates micro-pauses before actions—suggesting internal weighing of options or non-linear reasoning. FPS-R introduces subtle latency and signal modulation to simulate “thinking before acting.”
 - Non-Repetitive Attention Realignment Drives periodic visual, tactile, or postural scanning of the environment in non-looping patterns—ideal for adaptive agents in surveillance, caregiving, or co-working scenarios.
 - Empathetic Mirror behaviour in Social Robots Enables soft mimicry with delay and variance: when a human leans in, the robot adjusts after a beat—not in rigid sync, but with expressive drift—simulating shared attunement rather than programmed mimicry.
-- Procedural Training behaviour FPS-R can drive variation across repetitions in robot learning contexts—creating slightly different angles, approaches, or grip stiffnesses even when practicing the same routine. Ideal for physical learning environments that would otherwise overfit on memorized movement.
+- Procedural Training behaviour FPS-R can drive variation across repetitions in robot learning contexts—creating slightly different angles, approaches, or grip stiffnesses even when practicing the same routine. Ideal for physical learning environments that would otherwise overfit on memorised movement.
 
 **FPS-R Strengths Leveraged:**
 - Temporal modulation of actuation events with expressive intent
@@ -172,7 +172,7 @@ By locking into tempo grids and rhythmic thresholds, FPS-R enables non-repeating
 
 **👂 Sound Design and Affective Rhythm**
 - **Ambient Soundscape Evolution** Drive subtle shifts in environmental audio (wind, hum, rain) using beat-aware modulation. → Ensures ambient systems evolve musically, not randomly. Great for interactive installations, soundscape control in games programming.
-- **Foley & Stylized Movement Audio** Apply capsule-triggered EQ/reverb/tempo changes to footsteps or actions—floor transitions, gait pivots, etc. → Enhances immersion in games, AR, or VR.
+- **Foley & Stylised Movement Audio** Apply capsule-triggered EQ/reverb/tempo changes to footsteps or actions—floor transitions, gait pivots, etc. → Enhances immersion in games, AR, or VR.
 - **Speech Cadence & Expressive Timing** Modulate phrasing, timing, emphasis, or syllable delay based on rhythmic logic. → FPS-R introduces nuance to spoken delivery—especially for synthetic or AI-driven voices.
 
 **🔧 FPS-R Strengths Leveraged**
@@ -216,7 +216,7 @@ In environments sensitive to market volatility and sequence-dependent decision l
 - Seeded Timeline Replay: Reconstruct behavioral sequences for auditor reviews or post-analysis without historical data dependencies.
 
 **FPS-R Strengths Leveraged:**
-- Parameterized stress induction
+- Parameterised stress induction
 - Repeatable multi-phase simulation
 - Strategic modulation without historical traces
 
@@ -326,7 +326,7 @@ You're not just fitting motion—you're anchoring intent in a system that can ex
 ### 🕰️ Exploring Plausible Past and Future in Observable Phenomena
 This section offers a glimpse into how FPS-R can perform what is essentially *reconstructed time travel* through phrasing.
 
-**FPS-R is a deterministic and parameterized mathematical model** with its own internal logic. Its analytical power lies in its ability to model, express, and procedurally generate observed behaviour using structured phrasing patterns.
+**FPS-R is a deterministic and parameterised mathematical model** with its own internal logic. Its analytical power lies in its ability to model, express, and procedurally generate observed behaviour using structured phrasing patterns.
 
 When researchers identify a behavioral pattern—its rhythm, tempo, or gestural contour—they can attempt to fit it to an FPS-R function. This involves describing the observed pacing and value changes, then seeking a matching FPS-R curve that echoes its motion, inflection, and intervals between holds and jumps.
 
@@ -334,7 +334,7 @@ This matching process may include:
 - Brute-force search: iterating over combinations of type, seed, and modulation durations (SM and QS)
 - Library matching: browsing existing capsule archives containing predefined FPS-R parameter sets and “performance clips”
 - Manual profiling: fine-tuning modulation parameters until the phrasing structure aligns with the observed event
-- AI-Assisted Inference: Training a specialized FPS-R agent on a wide spectrum of parameter-output pairs to learn the inverse mapping. This enables the creation of a "Behavioral Spectrometer": an intelligent system capable of decomposing observed phenomena into their most likely FPS-R parameters, based on phrasing structure and modulation rhythm.
+- AI-Assisted Inference: Training a specialised FPS-R agent on a wide spectrum of parameter-output pairs to learn the inverse mapping. This enables the creation of a "Behavioral Spectrometer": an intelligent system capable of decomposing observed phenomena into their most likely FPS-R parameters, based on phrasing structure and modulation rhythm.
 
 The more aspects of phrasing that align—rhythmic cadence, modulation shape, move/hold balance—the higher the **model confidence**. A short match may be coincidence. A long match suggests behavioral resonance. Once the best fit is found, FPS-R acts as a **generative analog** of the observed phenomenon.
 
