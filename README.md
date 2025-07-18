@@ -71,7 +71,7 @@
 graph TD
   A[**README.md** 🏁<br>Manifesto & Overview] --> A2[Read-Me] 
   A2 --> A3[Technical]
-  A2 --> A4[Philosophical]
+  A2 --> A4[Thoughts, Philosophy,<br>and History]
   C[**README-CH.md** 🈸<br>Manifesto in Chinese] --> A2
   A3 --> B[**Tech.md** 📐<br>Maths & Code]
   A3 --> D[**Applications.md** 🍭<br>Cross-Domain<br>Use Cases]
