@@ -247,3 +247,12 @@ The structure is very similar, a variant of the SM algorithm. There is an outer 
 
 Here's the difference. Where there was a `rand()` inside the inner modulo, this is replaced by a switch
 
+This attribute causes the algorithm to switch only between 2 possible cycle periods, and will result in a more predictable and a slightly more mechanical feel in holding periods. There will still be unexpected jumps but this algorithm has more stability somewhat.
+
+---
+### A Third Algorithm - Toggled Modulo
+
+**Toggled** (from Toggled Modulo) refers to the way the algorithm switches between 2 predefined modulo periods that will affect the outer-modulo. This is the same concept of the switching in QS (Quantised Switching).
+
+**Modulo** (from Toggled Modulo) is the outer and final modulo step that the switched/toggled inner-modulo cycle duration feeds into. This gives Toggled Modulo (TM) its similarity that connects it to Stacked Modulo (SM).
+

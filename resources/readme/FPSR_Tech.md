@@ -93,6 +93,13 @@ This yields a surprising property: **discontinuities feel intentional**, and reg
 **perceived temporal coherence from purely evaluative logic.**
 
 ---
+## The 3 FPS-R Algorithms
+Here is a high level
+
+### FPS-R Algorithmic Characteristics and Personalities
+
+
+---
 
 ## ⚙️ Features of FPS-R
 
