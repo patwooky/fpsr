@@ -69,16 +69,25 @@
 ```mermaid
 %%{ init: { "theme": "neutral" } }%%
 graph TD
-  A[README.md 🏁<br>Manifesto & Overview] --> B[FPSR_Tech.md 📐<br>Mathematics & Mechanics]
-  A --> C[FPSR_Applications.md 🍭<br>Cross-Domain Use Cases]
-  A --> D[README-CH.md 🈸<br>Chinese Manifesto]
-  A --> E[Thoughts.md 🧠<br>Reflections & Conceptual Notes]
+  A[**README.md** 🏁<br>Manifesto & Overview] --> A2[Read-Me] 
+  A2 --> A3[Technical]
+  A2 --> A4[Philosophical]
+  C[**README-CH.md** 🈸<br>Manifesto in Chinese] --> A2
+  A3 --> B[**Tech.md** 📐<br>Maths & Code]
+  A3 --> D[**Applications.md** 🍭<br>Cross-Domain<br>Use Cases]
+  A4 --> E[**Dev_Journal.md** 📓<br>Developer's<br>Journal]
 
-  classDef fileStyle fill:#C2C2C2,stroke:#333,stroke-width:1px,color:#000,rx:6,ry:6,font-size:14px;
-  classDef thoughtHighlight fill:#CFC299,stroke:#444,stroke-width:1.5px,color:#000,rx:6,ry:6,font-size:14px,font-style:italic;
+  A4 --> F[**Origins.md** 🧬<br>Origin Story] 
+  A4 --> G[**Thoughts.md** 🧠<br>Reflections &<br> Conceptual Notes]
 
-  class A,B,C,D fileStyle
-  class E thoughtHighlight
+  classDef fileStyle fill:#A2A2A2,stroke:#333,stroke-width:1px,color:#000,rx:16,ry:16,font-size:15px;
+  classDef techHighlight fill:#799F92,stroke:#444,stroke-width:1.5px,color:#E8E8E8,rx:16,ry:16,font-size:15px,font-style:italic;
+  classDef thoughtsHighlight fill:#AFA279,stroke:#444,stroke-width:1.5px,color:#E8E8E8,rx:16,ry:16,font-size:15px,font-style:italic;
+  
+
+  class A,C,A2,A3 fileStyle
+  class B,D,A3 techHighlight
+  class A4,E,F,G thoughtsHighlight
   ``` 
 
 ### 📜 Readme — Manifesto (English)

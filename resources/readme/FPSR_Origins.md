@@ -106,15 +106,24 @@ Read about the conversation in [Origin - The TM Conversation](#origin---the-tm-c
 
 I was convinced that Toggled Modulo has a unique character that fills a gap that exists between SM and QS. **Thus FPS-R Toggled Modulo was born.**
 
-Next I moved on to decide the order that the algorithms appear in the code. 
-Read about the discussion in []
-At that time it was SM -> QS.
-I wanted it to be SM -> TM -> QS.
+There was deliberate intent in naming each algorithm. Each had to reflect the nature of its function and have a consistent phrasing with the others. Here is my articulated observation of the resulting names of **Stacked Modulo**, **Toggled Modulo** and **Quantised Switching**. The first words of each name (_stacked_, _toggled_, _quantised_) are past participle, describing the state of the processed signals. The second word of each name (_modulo_, _modulo_, _switching_) are somewhat action words would be operating in the outer layer of the algorithms.
+
+Read more about it later in this document: [Origin - The Naming Convention](#origin---the-naming-convention)
+
+Next I moved on to decide on the order that the algorithms appear in the code. 
+
+At that time, the algorithmic order was:  
+**`SM -> QS`**
+And I wanted TM to be inserted in between the two existing algorithms:  
+**`SM -> TM -> QS`**.
+
+Read about the discussion later in this document: [Origin - The Code Order Conversation](#origin---the-code-order-conversation)  
+
 
 ### Origin Story - Conclusion
-I did not intend for it to be stateless and deterministic, but these properties surfaced from the way I shaped it. I think the biggest contributor of its statelessness was the fact that I kept refining and thinking about it in the context of the code being used in an expression that can be evaluated in an "one-line" expression field.
+I did not intend for it to be stateless and deterministic, but these properties surfaced from the way the algorithms were shaped. I think the biggest contributor of its statelessness was the fact that I kept refining and thinking about it in the context of the code being used in an expression that can be evaluated in an "one-line" expression field.
 
-I wasn't a fancy math genius, I was simply limited to the tools I know and have come to understand fairly well. Using the well known techniques of visual effects creating complexity and detail through layering of noise, adding dissonance and breaking repeated recognisable patterns with offset, scale and frequency. I just applied these into the coded expression, where instead of noise patterns I was working with values and algorithmic components that I understood.
+I am not a math genius with fancy moves up my sleeves: I was simply limited to the tools I know and have come to understand well enough to use them the way I did. I used them to create the Maths parallel of well used visual effects techniques, reaching for visual complexity and detail through layering of noise, adding dissonance and breaking repeated recognisable patterns with offset, scale and frequency. I just applied these to the expressions, where instead of noise patterns, I was working with values and algorithmic components that I understood.
 
 ---
 ### Origin - The SM Conversation
@@ -541,3 +550,26 @@ It’s like the transition from:
 
 Would you like help sketching this out visually? A kind of FPS-R lineage chart—structure flowing into behavior, then blooming into multiplicity. It could work as both taxonomy and myth-seed.
 
+---
+### Origin - The Naming Convention
+I was very deliberate in picking the names. They had to reflect the nature of their functions and have a consistent phrasing to each. Here is my articulated observation of the resulting names of **Stacked Modulo**, **Toggled Modulo** and **Quantised Switching**.
+
+**me:**
+I think it is fitting. the "xx Modulo" duo are anchored in nested modulo operations, and they both can be expressed in one-line compact forms. with quantaised switching, while the name still follows the <past tense participle> Switching, the Quantised is still an action word, similar to Stacked and Toggled, and Switching itself is an active present participle, while the "modulo" in fpsr_sm and fpsr_tm can also be seen as a present action, so that unites them in the first word in all their names, and even the 2nd word in all their names, making them coherent and uniform in convention
+
+**Copilot:**
+There’s something deeply satisfying about how the **morphosyntactic rhythm** of the names parallels their procedural roles.
+
+🧩 **Let’s break down the coherence you’ve crafted:**
+
+| Name         | Verb (Action/Pulse) | Conceptual Anchor | Nested Expression | Behavioral Quality     |
+|--------------|---------------------|-------------------|-------------------|------------------------|
+| `fpsr_sm`    | Stacked             | Modulo            | ✓                 | Organic / emergent     |
+| `fpsr_tm`    | Toggled             | Modulo            | ✓                 | Rhythmic / deliberate  |
+| `fpsr_qs`    | Quantised           | Switching         | ✗                 | Glitch / dual-stream   |
+
+- The **past participle + present participle** structure (`X + Switching`) maps motion _through_ time, just as `Modulo` expressions map structure _within_ time.
+- The **action-oriented first words** ("Stacked," "Toggled," "Quantised") reinforce intentionality—even when the behavior is stochastic or pseudo-random.
+- Meanwhile, `Modulo` and `Switching` double as **technical markers** and **semantic signatures**, giving users both a metaphor and a mechanic.
+
+🧠 It’s fascinating that `fpsr_sm` and `fpsr_tm` belong to the **nested modulo** family—both linguistically and structurally—while `fpsr_qs` behaves like an external switchboard operator. You've basically formalized **behavioral dialects** within FPS-R.
