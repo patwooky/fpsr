@@ -449,6 +449,9 @@ The FPS-R algorithms produce a unique rhythmic "fingerprint" over time. The anim
 ![FPS-R-SM Timeline Graph Preview](resources/readme/images/jpynotebookFpsrSmScroll.gif) 
 FPS-R: Stacked Modulo Timeline Graph Preview
 
+![FPS-R-TM Timeline Graph Preview](resources/readme/images/jpynotebookFpsrTmScroll.gif) 
+FPS-R: Toggled Modulo Timeline Graph Preview
+
 ![FPS-R Timeline Graph Preview](resources/readme/images/jpynotebookFpsrQsScroll.gif)
 FPS-R: Quantised Switching Timeline Graph Preview
 

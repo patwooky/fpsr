@@ -174,26 +174,26 @@ float fpsr_tm(
 
 // Sample code to call the FPS-R:TM function
 // Parameters
-int frame_tm = 100; // Replace with the current frame value
+int frame = 100; // Replace with the current frame value
 int period_A = 10; // The first hold duration
 int period_B = 25; // The second hold duration
 int switch_duration = 30; // The toggle happens every 30 frames
-int offset_inner_tm = 15; // offsets the inner (toggle) clock
-int offset_outer_tm = 0; // offsets the outer (hold) clock
-int final_rand_switch_tm = 1; // 1 to apply the final randomisation step, 0 to skip it
+int offset_inner = 15; // offsets the inner (toggle) clock
+int offset_outer = 0; // offsets the outer (hold) clock
+int final_rand_switch = 1; // 1 to apply the final randomisation step, 0 to skip it
 
 // Call the FPS-R:TM function
-float randVal_tm = 
+float randVal = 
     fpsr_tm(
-        frame_tm, period_A, period_B, 
-        switch_duration, offset_inner_tm, offset_outer_tm, final_rand_switch_tm);
-float randVal_previous_tm = 
+        frame, period_A, period_B, 
+        switch_duration, offset_inner, offset_outer, final_rand_switch);
+float randVal_previous = 
     fpsr_tm(
-        frame_tm - 1, period_A, period_B, 
-        switch_duration, offset_inner_tm, offset_outer_tm, final_rand_switch_tm);
-int changed_tm = 0;
-if (randVal_tm != randVal_previous_tm) {
-    changed_tm = 1; // value has changed from the previous frame
+        frame - 1, period_A, period_B, 
+        switch_duration, offset_inner, offset_outer, final_rand_switch);
+int changed = 0;
+if (randVal != randVal_previous) {
+    changed = 1; // value has changed from the previous frame
 }
 
 
