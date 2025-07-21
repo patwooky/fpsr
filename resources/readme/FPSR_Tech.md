@@ -9,6 +9,7 @@
   - [👥 Who This Document Is For](#-who-this-document-is-for)
 - [Algorithmic Detail, Code Structure, Usage Notes](#algorithmic-detail-code-structure-usage-notes)
   - [🧾 Code Snippets Provided in this Repository](#-code-snippets-provided-in-this-repository)
+- [FPS-R Introduction](#fps-r-introduction)
 - [🔩 How FPS-R Works](#-how-fps-r-works)
 - [⚙️ Features of FPS-R](#️-features-of-fps-r)
   - [🧳 Stateless](#-stateless)
@@ -78,10 +79,17 @@ While some language-specific adjustment may still be necessary—such as:
 
 > These snippets are not drop-in libraries—they're reference phrasing kernels. Use them to reconstruct modulation logic in your language of choice, knowing that the behaviour should survive the translation.
 
-## FPS-R Re-Introduction
-First introduced in the `README.md` manifesto, I shall re-introduce it here again in a more objective manner.
+## FPS-R Introduction
+The FPS-R framework is designed to produce pseudo-random values that remain constant for a specific, but randomly determined, duration. This "frame persistence" is essential for applications with simulated organic behaviour, such as:
+- natural motion in robotics, 
+- human-like hesitation and feeling of intent in game theory and strategic planning and simulations, 
+- natural agents in games, animation, visual effects, 
+- natural occurrences and organic variation in procedural content generation
+- unpredictable, deterministic stateless output yet traceable and repeatable for stress testing (software, complex systems, cyber-security) for unpredictable situations and adaptability studies and analysis
+- natural attention shifts and focus drifts in intelligent cognitive systems.
+> For a full list of suggested applications please visit [FPSR_Applications](FPSR_Applications.md)
 
-The FPS-R framework is designed to produce pseudo-random values that remain constant for a specific, but randomly determined, duration. This "frame persistence" is essential for applications like animation, visual effects, and procedural content generation where randomness is desired, but it needs to be stable from one frame to the next to create coherent and visually pleasing results. The "stateless" nature means it doesn't need to store any values between frames; the result is calculated purely from the input parameters, making it highly portable and efficient.
+In these cases randomness in output is not the only desired component. _When_ these random outputs happen makes a huge difference, and these random values that hold for pseudo-random periods of time need to be stable from one frame to the next to create coherent and structured results. The "stateless" nature means it doesn't need to store any values between frames; the result is calculated purely from the input parameters, making it highly portable and efficient.
 
 ## 🔩 How FPS-R Works
 
@@ -94,9 +102,36 @@ This yields a surprising property: **discontinuities feel intentional**, and reg
 
 ---
 ## The 3 FPS-R Algorithms
-Here is a high level
+Given their common properties of stateless determinism, the 3 FPS-R algorithms have distinct personalities. Each algorithm offers a unique flavour of motion and randomness, providing a versatile toolkit for artists and developers. By understanding their individual characteristics, a user can select the perfect tool to bring their creative vision to life, whether it requires organic subtlety, mechanical precision, or chaotic energy.
 
 ### FPS-R Algorithmic Characteristics and Personalities
+Here is a memorable way to describe the algorithms and their characteristics.
+
+#### Stacked Modulo (SM) - The Animist
+_**Stacked Modulo** breathes organic life into things._
+
+This is the most natural and foundational expression of the FPS-R trio. By using interference between two asynchronous hold cycles, SM creates the **Random Move and Hold** pattern. One cycle, the "inner clock," uses randomness to decide _how long_ a value should be held. A separate "outer clock" then determines _what_ that held value should be. Because the duration of the hold is itself unpredictable, the resulting animation feels fluid and non-repetitive, like the subtle, shifting stillness of a living creature.
+
+> The Stacked Modulo is the result of my original intent when developing the FPS-R.
+
+#### Toggled Modulo (TM) - The Choreographer
+_**Toggled Modulo** creates deliberate, controlled, rhythmic motion._
+
+This algorithm achieves its character by switching between two specific, pre-defined hold durations (`periodA` and `periodB`). The switch itself also runs on its own fixed-period cycle. The result is a multi-layered tempo; it's like a metronome controlling another metronome. This produces a pattern that is still complex but has a fundamentally predictable and mechanical cadence. This makes TM the perfect choice for creating animations that feel intentional, rhythmic, or machine-like.
+
+> The Toggled Modulo is the first algorithm to emerge, yet it is the earliest form of technique I was already using in my work even before the discovery of the Stacked Modulo. Only when I tried to formalise it into an expression that I realised it was unique, and an even earlier predecessor of the SM. 
+
+#### Quantised Switching (QS) - The Mercurial Shape-Shifter
+_**Quantised Switching** changes identity and texture on the fly with eager spontaneity._
+
+This is the most flexible and configurable FPS-R algorithm, with the greatest potential for a wide variety of output characteristics. Its complexity is its strength. QS generates two independent, underlying sine waves and rapidly switches between them. But its true power comes from its ability to constantly alter the "texture" of each wave. At its own rhythmic interval, each stream randomly chooses a new quantisation level from within a user-defined range, fundamentally changing its shape. This constant evolution of form and identity makes QS ideal for creating glitchy, energetic, or highly textured effects that feel spontaneous and alive.
+
+### Possible Use Cases for These Personalities
+Given the distinct characteristics of these algorithms, they may lend themselves to use cases like these: 
+- Do I want a smoother, more flowing hold-and-release? Use **Stacked Modulo**.
+- Do I want a rhythmic, predictable, mechanical pulse? Use **Toggled Modulo**.
+- Do I want a glitchy, textured, more organic flicker? Use **Quantised Switching**.
+
 
 
 ---

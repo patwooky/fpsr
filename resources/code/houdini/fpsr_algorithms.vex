@@ -68,6 +68,7 @@ float fpsr_sm(int frame; int minHold; int maxHold; int reseedInterval; int offse
     return fpsr_output;
 }
 
+// --- Stacked Modulo (SM) Example ---
 // Parameters
 int minHoldFrames = 16; // probable minimum held period
 int maxHoldFrames = 24; // maximum held period before cycling
@@ -92,10 +93,90 @@ float randVal_previous =
     fpsr_sm(int(@Frame-1), minHoldFrames, maxHoldFrames, reseedFrames, offsetInner, offsetOuter, finalRandSwitch);
 
 // Example Usage: Drive the Y-position of a point
-@P.y = randVal;
-// Create an attribute to show when the value changes
-@changed = (randVal != randVal_previous) ? 1 : 0;
+@P.y = randVal; // Use the random value to drive the Y-position of a point
+@changed = (randVal != randVal_previous); // Create an attribute to show when the value changes
 
+
+/******************************************************************************/
+/* FPS-R: Toggled Modulo (TM)                                                 */
+/******************************************************************************/
+
+/**
+ * @brief Generates a persistent value that holds for a rhythmically toggled duration.
+ * @details This function uses a deterministic switch to toggle the hold duration
+ * between two fixed periods. This creates a predictable, rhythmic, or mechanical
+ * "move-and-hold" pattern.
+ *
+ * int frame: The current frame or time input.
+ * int periodA: The first hold duration (in frames).
+ * int periodB: The second hold duration (in frames).
+ * int periodSwitch: The fixed interval at which the hold duration is toggled.
+ * int offsetInner: An offset for the toggle clock to de-sync it from the main clock.
+ * int offsetOuter: An offset for the main clock to create unique sequences.
+ * int finalRandSwitch: A flag that can turn off the final randomisation step.
+ * return 
+ * when finalRandSwitch is 0: An integer value representing the currently held frame state.
+ * when finalRandSwitch is 1: A float value between 0.0 and 1.0 that holds for the toggled duration.
+ */
+float fpsr_tm(int frame; int periodA; int periodB; int periodSwitch; int offsetInner; int offsetOuter; int finalRandSwitch)
+{
+    // --- 1. Determine the hold duration by toggling between two periods ---
+    if (periodSwitch < 1) { periodSwitch = 1; } // Prevent division by zero.
+
+    // The "inner clock" is offset by offsetInner to de-correlate it from the main frame.
+    int inner_clock_frame = offsetInner + frame;
+    
+    int holdDuration;
+    // The ternary switch: toggle between periodA and periodB at a fixed rhythm.
+    if ((inner_clock_frame % periodSwitch) < (periodSwitch * 0.5)) {
+        holdDuration = periodA;
+    } else {
+        holdDuration = periodB;
+    }
+
+    if (holdDuration < 1) { holdDuration = 1; } // Prevent division by zero.
+
+    // --- 2. Generate the stable integer "state" for the hold period ---
+    // The "outer clock" is offset by offsetOuter to create unique output sequences.
+    int outer_clock_frame = offsetOuter + frame;
+    int held_integer_state = outer_clock_frame - (outer_clock_frame % holdDuration);
+
+    // --- 3. Use the stable state as a seed for the final random value (or bypass) ---
+    float fpsr_output;
+    if (finalRandSwitch == 1) {
+        // If true, apply the final randomisation hash.
+        fpsr_output = portable_rand(held_integer_state);
+    } else {
+        // If false, return the raw integer state directly.
+        fpsr_output = float(held_integer_state); 
+    }
+    return fpsr_output;
+}
+
+// --- Toggled Modulo (TM) Example ---
+// Parameters
+int periodA = 10; // First hold duration in frames
+int periodB = 25; // Second hold duration in frames
+int periodSwitch = 30; // Duration in frames for toggling between the two periods
+int offsetInner = 15; // Offset for the inner clock to de-sync it from the main clock
+int offsetOuter = 0; // Offset for the outer clock to create unique sequences
+int finalRandSwitch = 1; // 0 to bypass final rand, 1 to enable
+
+// Link parameters to Houdini channel controls
+periodA = chi('period_A');
+periodB = chi('period_B');
+periodSwitch = chi('switch_duration');
+offsetInner = chi('offset_inner');
+offsetOuter = chi('offset_outer');
+finalRandSwitch = chi('final_rand_switch');
+
+// Call the FPSR function
+float randVal = fpsr_tm(int(@Frame), periodA, periodB, periodSwitch, offsetInner, offsetOuter, finalRandSwitch);
+float randVal_previous = fpsr_tm(int(@Frame - 1), periodA, periodB, periodSwitch, offsetInner, offsetOuter, finalRandSwitch);
+
+// Example Usage
+@P.y = randVal; // Use the random value to drive the Y-position of a point
+@changed = (randVal != randVal_previous); // Create an attribute to show when the value changes
 
 
 /******************************************************************************/
@@ -104,98 +185,84 @@ float randVal_previous =
 
 /**
  * @brief Generates a flickering, quantised value by switching between two sine wave streams.
- * @details This function creates two separate, quantised sine waves and switches
- * between them at a fixed interval to create complex, glitch-like patterns.
+ * @details This function creates two separate, quantised sine waves. For each stream,
+ * a new random quantisation level is chosen from within the [min, max] range at a
+ * set interval. The function then switches between these two streams to create
+ * complex, glitch-like patterns.
  *
  * int frame: The current frame or time input.
  * float baseWaveFreq: The base frequency for the modulation wave of stream 1.
- * float stream2FreqMult: A multiplier for the second stream's frequency. If < 0, a default is used.
- * int quantLevelsMinMax: An array of two integers for the min and max quantisation levels.
- * int streamsOffset: An array of two integers to offset the frame for each stream.
- * int streamSwitchDur: The number of frames after which the streams switch. If < 1, a default is derived.
- * int stream1QuantDur: The duration for stream 1's quantisation switch. If < 1, a default is derived.
- * int stream2QuantDur: The duration for stream 2's quantisation switch. If < 1, a default is derived.
+ * float stream2FreqMult: A multiplier for the second stream's frequency.
+ * int quantLevelsMinMax[]: An array of two integers for the min and max quantisation levels.
+ * int streamsOffset[]: An array of two integers to offset the frame for each stream's sine wave.
+ * int quantOffsets[]: An array of two integers to offset the random quantisation selection for each stream.
+ * int streamSwitchDur: The number of frames after which the streams switch.
+ * int stream1QuantDur: The duration for which stream 1's random quantisation level is held.
+ * int stream2QuantDur: The duration for which stream 2's random quantisation level is held.
  * int finalRandSwitch: A flag that can turn off the final randomisation step.
- * return: A float value between 0.0 and 1.0 that remains constant for the hold duration.
+ * return: A float value between 0.0 and 1.0.
  */
-float fpsr_qs(int frame; float baseWaveFreq; float stream2freqMult; int quantLevelsMinMax[]; int streamsOffset[]; int streamSwitchDur; int stream1QuantDur; int stream2QuantDur; int finalRandSwitch)
+float fpsr_qs(int frame; float baseWaveFreq; float stream2freqMult; int quantLevelsMinMax[]; int streamsOffset[]; int quantOffsets[]; int streamSwitchDur; int stream1QuantDur; int stream2QuantDur; int finalRandSwitch)
 {
     // --- 1. Set default durations if not provided ---
-    if (streamSwitchDur < 1) {
-        streamSwitchDur = floor((1.0 / baseWaveFreq) * 0.76);
-    }
-    if (stream1QuantDur < 1) {
-        stream1QuantDur = floor((1.0 / baseWaveFreq) * 1.2);
-    }
-    if (stream2QuantDur < 1) {
-        stream2QuantDur = floor((1.0 / baseWaveFreq) * 0.9);
-    }
-    // Ensure durations are at least 1 frame to prevent division by zero.
-    if (streamSwitchDur < 1) { streamSwitchDur = 1; }
-    if (stream1QuantDur < 1) { stream1QuantDur = 1; }
-    if (stream2QuantDur < 1) { stream2QuantDur = 1; }
+    if (streamSwitchDur < 1) streamSwitchDur = floor((1.0 / baseWaveFreq) * 0.76);
+    if (stream1QuantDur < 1) stream1QuantDur = floor((1.0 / baseWaveFreq) * 1.2);
+    if (stream2QuantDur < 1) stream2QuantDur = floor((1.0 / baseWaveFreq) * 0.9);
+    
+    if (streamSwitchDur < 1) streamSwitchDur = 1;
+    if (stream1QuantDur < 1) stream1QuantDur = 1;
+    if (stream2QuantDur < 1) stream2QuantDur = 1;
 
-    // --- 2. Calculate quantisation levels for each stream ---
-    int s1_quant_level;
-    if ((streamsOffset[0] + frame) % stream1QuantDur < stream1QuantDur * 0.5) {
-        s1_quant_level = quantLevelsMinMax[0];
-    } else {
-        s1_quant_level = quantLevelsMinMax[1];
-    }
+    // --- 2. Calculate random quantisation levels for each stream ---
+    // Define the min, max, and range for the quantization levels for clarity.
+    int quant_min = quantLevelsMinMax[0];
+    int quant_max = quantLevelsMinMax[1];
+    int quant_range = quant_max - quant_min + 1;
 
-    int s2_quant_level;
-    // Magic numbers to create variation in the second stream's character.
-    float STREAM2_QUANT_RATIO_MIN = 1.24;
-    float STREAM2_QUANT_RATIO_MAX = 0.66;
-    if ((streamsOffset[1] + frame) % stream2QuantDur < stream2QuantDur * 0.5) {
-        s2_quant_level = floor(quantLevelsMinMax[0] * STREAM2_QUANT_RATIO_MIN);
-    } else {
-        s2_quant_level = floor(quantLevelsMinMax[1] * STREAM2_QUANT_RATIO_MAX);
-    }
-    // Ensure quantisation levels are at least 1.
-    if (s1_quant_level < 1) { s1_quant_level = 1; }
-    if (s2_quant_level < 1) { s2_quant_level = 1; }
+    // --- Stream 1 Quant Level ---
+    int s1_quant_seed = (streamsOffset[0] + quantOffsets[0] + frame) - ((streamsOffset[0] + quantOffsets[0] + frame) % stream1QuantDur);
+    float s1_rand_for_quant = portable_rand(s1_quant_seed);
+    // "Inflate" the random number to the desired range, then floor it to get an integer.
+    int s1_quant_level = quant_min + floor(s1_rand_for_quant * quant_range);
+
+    // --- Stream 2 Quant Level ---
+    int s2_quant_seed = (streamsOffset[1] + quantOffsets[1] + frame) - ((streamsOffset[1] + quantOffsets[1] + frame) % stream2QuantDur);
+    float s2_rand_for_quant = portable_rand(s2_quant_seed);
+    int s2_quant_level = quant_min + floor(s2_rand_for_quant * quant_range);
+
+    if (s1_quant_level < 1) s1_quant_level = 1;
+    if (s2_quant_level < 1) s2_quant_level = 1;
 
     // --- 3. Generate the two quantised sine wave streams ---
-    float STREAM2_DEFAULT_FREQ_MULT = 3.7;
-    if (stream2freqMult < 0) {
-        stream2freqMult = STREAM2_DEFAULT_FREQ_MULT;
-    }
+    if (stream2freqMult < 0) stream2freqMult = 3.7;
 
-    // The output of the floor(sin(...) * level) / level is in the range [-1, 1]
-    float stream1 = floor(sin(float(streamsOffset[0] + frame) * baseWaveFreq) * s1_quant_level) / s1_quant_level;
-    float stream2 = floor(sin(float(streamsOffset[1] + frame) * baseWaveFreq * stream2freqMult) * s2_quant_level) / s2_quant_level;
+    // Reverted to floor() as requested.
+    float stream1 = floor(sin(float(streamsOffset[0] + frame) * baseWaveFreq) * s1_quant_level) / float(s1_quant_level);
+    float stream2 = floor(sin(float(streamsOffset[1] + frame) * baseWaveFreq * stream2freqMult) * s2_quant_level) / float(s2_quant_level);
 
     // --- 4. Switch between the two streams ---
-    float active_stream_val;
-    if ((frame % streamSwitchDur) < streamSwitchDur / 2) {
-        active_stream_val = stream1;
-    } else {
-        active_stream_val = stream2;
-    }
+    float active_stream_val = ((frame % streamSwitchDur) < streamSwitchDur / 2) ? stream1 : stream2;
 
-    // --- 5. Hash the final output or bypass to return the raw signal ---
+    // --- 5. Hash the final output or bypass ---
     float fpsr_output;
     if (finalRandSwitch == 1) {
-        // If finalRandSwitch is true, apply the final randomisation step.
-        // The multiplication by a large number helps distribute the seed.
         fpsr_output = portable_rand(int(active_stream_val * 100000.0));
     } else {
-        // If finalRandSwitch is false, scale the [-1, 1] signal to the [0, 1] range.
-        fpsr_output = 0.5 * active_stream_val + 0.5;
+        fpsr_output = 0.5 * active_stream_val + 0.5; // Scale [-1, 1] to [0, 1]
     }
-
     return fpsr_output;
 }
 
+// --- Quantised Switching (QS) Example ---
 // Parameters
-float baseWaveFreq = 0.012;
-float stream2freqMult = 3.1;
-int quantLevelsMinMax[] = {12, 22};
-int streamsOffset[] = {0, 76};
-int streamSwitchDur = 24;
-int stream1QuantDur = 16;
-int stream2QuantDur = 20;
+float baseWaveFreq = 0.006; // Base frequency for the first sine wave stream
+float stream2freqMult = 3.1; // Multiplier for the second sine wave stream's frequency based on the first
+int quantLevelsMinMax[] = {4, 12}; // Min and max quantisation levels for the sine waves
+int streamsOffset[] = {0, 76}; // Offsets for the two sine wave streams
+int quantOffsets[] = {10, 81}; // Offsets for the quantisation selection of each stream
+int streamSwitchDur = 32; // Duration in frames for switching between the two streams
+int stream1QuantDur = 27; // Duration in frames for holding the quantisation level of stream 1
+int stream2QuantDur = 31; // Duration in frames for holding the quantisation level of stream 2
 int finalRandSwitch = 1; // 0 to bypass final rand, 1 to enable
 
 // Link parameters to Houdini channel controls
@@ -203,21 +270,17 @@ baseWaveFreq = chf('baseWaveFreq');
 stream2freqMult = chf('stream2freqMult');
 quantLevelsMinMax = array(chi('quantLevelsMin'), chi('quantLevelsMax'));
 streamsOffset = array(chi('streamsOffset1'), chi('streamsOffset2'));
+quantOffsets = array(chi('quantOffsets1'), chi('quantOffsets2'));
 streamSwitchDur = chi('streamSwitchDur');
 stream1QuantDur = chi('stream1QuantDur');
 stream2QuantDur = chi('stream2QuantDur');
 finalRandSwitch = chi('finalRandSwitch');
 
 // Call the FPSR function
-float randVal = fpsr_qs(
-    int(@Frame), baseWaveFreq, stream2freqMult, quantLevelsMinMax, 
-    streamsOffset, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch);
+float randVal = fpsr_qs(int(@Frame), baseWaveFreq, stream2freqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch);
+// Call the FPSR function for the previous frame
+float randVal_previous = fpsr_qs(int(@Frame - 1), baseWaveFreq, stream2freqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch);
 
-float randVal_previous = fpsr_qs(
-    int(@Frame - 1), baseWaveFreq, stream2freqMult, quantLevelsMinMax, 
-    streamsOffset, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch);
-
-// Example Usage: Drive the Y-position of a point
-@P.y = randVal;
-// Create an attribute to show when the value changes
-@changed = (randVal != randVal_previous) ? 1 : 0;
+// Example Usage
+@P.y = randVal; // Use the random value to drive the Y-position of a point
+@changed = (randVal != randVal_previous); // Create an attribute to show when the value changes
