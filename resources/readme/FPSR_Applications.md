@@ -317,7 +317,6 @@ This is how synthetic thought becomes _creative_: not by predicting the next wor
 
 > Not just a model of thought—but a choreography of cognition. Not a shortcut to intelligence—but the long way around, where the view is better. 🌀 Here, simulation becomes origination. behaviour becomes thought. And thought begins to phrase itself.
 
-
 Once a behaviour can be captured and mapped into FPS-R space, it doesn’t just exist in isolation—it becomes an entry point into a modulatable reality.
 
 You're not just fitting motion—you're anchoring intent in a system that can extrapolate.
