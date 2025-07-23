@@ -35,8 +35,12 @@
 - [📊 Explore the Algorithm's Fingerprint](#-explore-the-algorithms-fingerprint)
 - [🧬 Flavours of FPS-R](#-flavours-of-fps-r)
   - [🌀 Stacked Modulo (SM) or 叠模机制](#-stacked-modulo-sm-or-叠模机制)
+  - [🔁 Toggled Modulo (TM) or 切模机制](#-toggled-modulo-tm-or-切模机制)
   - [✴ Quantised Switching (QS) or 量跃机制](#-quantised-switching-qs-or-量跃机制)
 - [🏙 Spatial Extension: From Time to Space](#-spatial-extension-from-time-to-space)
+  - [🧬 FPS-R in the Spatial Context](#-fps-r-in-the-spatial-context)
+  - [🌀 Stacked Modulo in Space](#-stacked-modulo-in-space)
+  - [🔁 Toggled Modulo in Space](#-toggled-modulo-in-space)
   - [✴ Quantised Switching in Space](#-quantised-switching-in-space)
 - [🧠 Recursive Chaos: FPS-R as Higher-Order Modulator](#-recursive-chaos-fps-r-as-higher-order-modulator)
   - [🧪 Modulating Introspection](#-modulating-introspection)
@@ -464,6 +468,7 @@ The interactive scrolling graphs are the last 2 cells at the end of the notebook
 ## 🧬 Flavours of FPS-R
 FPS-R comprises two distinct mathematical algorithms — each offering a stateless, deterministic approach to phrased modulation:
 - 🌀 Stacked Modulo (SM)
+- 🔁 Toggled Modulo (TM)
 - ✴ Quantised Switching (QS)
 
 These form the primary **modulation operators** within the FPS-R framework, usable independently or composable into parallel blends and chained sequences. Together, they shape the expressive grammar of _randomised move-and-hold_ behaviour — tuned, layered, and always reproducible.
@@ -476,6 +481,8 @@ The signature feel of the SM algorithm comes from its "stacked" or nested rhythm
 - **Phrasing shaped by**: frequency, amplitude, offset phase
 - **Strengths**: highly composable, compact implementation
 
+> **SM gives the most natural and organic expression** of the Random Move and Hold phenomenon.
+
 **SM Features:**
 - Adjustable upper bound for values hold duration  
 - Adjustable lower bound influences the minimum possible hold duration between jumps.
@@ -483,40 +490,52 @@ The signature feel of the SM algorithm comes from its "stacked" or nested rhythm
 - Encodable as single-line expressions in toolkits like Houdini, VEX, GLSL
 
 ---
+### 🔁 Toggled Modulo (TM) or 切模机制
+TM modulates hold durations by toggling between two predefined time periods, producing rhythmic variation without introducing random noise. It retains the stateless determinism of FPS-R, but with explicit and controllable alternation — a midpoint between SM’s nested unpredictability and QS’s stream swapping.
+
+Where SM reshapes time using internal modulation and QS switches outputs across streams, TM adjusts duration logic itself — controlling the pace of phrased persistence through toggled timing.
+
+> Switching between the two configurable fixed-value cycle durations, while still organically and deterministic "unpredictability", **TM gives the most consistent and structured output pacing**  compared to SM and QS. There is a sense of mechanical stability behind the structure of unpredictiability.
+
+**TM Features:**
+- Stateless and structured cadence modulation via conditional selection between `periodA` and `periodB` resulting in discrete tempo shifts
+- Nested modulo structure similar to SM, but with deterministic switching logic
+- Offers a "gear-switch" model of phrased modulation — alternating between two rhythm profiles
+- Efficient and compact implementation, ideal for intentional timing control, offering high controllability
+
+---
 
 ### ✴ Quantised Switching (QS) or 量跃机制
-QS selects and switches between indexed value streams — flickering between discrete steps or smoothly interpolated paths. It simulates glitch-like transitions, logical flicker, and compositional jump behaviour through deterministic switching logic.
+Quantised Switching (QS) generates two independently modulated signal streams from sine-based functions, each quantised to a randomly selected level within a defined range. These quantisation levels are refreshed deterministically on separate timing cycles, with configurable durations and offsets per stream. A switching mechanism alternates between the streams, and the compound interplay between quantisation, reseed cycles, and switching cadence drives the final output.
 
-The expressive range of the Quantised Switching (QS) method is controlled by the interplay of its multiple core timing cycles. Its behaviour is inherently more volatile than SM's, as a change in any of its layered rhythms can trigger a jump in the final output.
+This behaviour is inherently more volatile than SM's and TM's, as a change in any of its layered rhythms can trigger a jump in the final output. 
+
+> QS is the most _"lively"_ and _"active"_ of the FPS-R algorithms. It only holds its random value when all the individual time cycles fall within their modulo periods. **QS wants to glitch and jump**.
 
 **QS Features:**
 - Deterministic pseudo-random stream selection
-- Supports custom value banks and indexed behaviours
+- Supports custom value banks and indexed behaviours. _The default sine wave engine that generates for each stream can be swapped out_ for any other periodic or non periodic signal generators or purely a supplied look-up table of values that cycle and repeat over time.
 - Optional quantisation for stepped or smooth interpolation
 - Configurable switching cadence with controlled reseed logic
 
 ---
 ## 🏙 Spatial Extension: From Time to Space
 
-**FPS-R doesn't just animate. It extrudes. It embosses. It *grows surfaces*.**
+**FPS-R doesn’t just animate motion—it builds form.** By substituting temporal input ($F, @Frame) with spatial coordinates (x, y, uv, position), FPS-R algorithms become surface-shaping operators: capable of driving heightfields, silhouette generation, panel logic, and procedural texturing. Each algorithm expresses its phrased modulation logic across spatial domains—ideal for modeling, tiling, and stylised segmentation.
 
-By replacing time (`$F`, `@Frame`, etc.) with space (`x`, `y`, `uv`, or `position`), FPS-R becomes a **procedural modeling toolkit**—ideal for generating blocky silhouettes, architectural detail, and sci-fi surface features.
+### 🧬 FPS-R in the Spatial Context
 
-### Spatial Modes
+- **1D → 2D Profiles** Apply FPS-R(x) along the horizontal axis:  
+  - Creates rhythmic jump-hold outlines, ideal for skyline profiles and barcode motifs
+  - Stylised segmentation for generative wall facades or abstract reliefs
 
-- **1D → 2D Profiles**  
-  Use a 1D FPS-R output along the `x`-axis:  
-  - Random *jump-hold* patterns mimic building silhouettes  
-  - Perfect for stylised skylines, barcode patterns, or abstract bas-reliefs
+- **2D → 3D Extrusions** Evaluate FPS-R(x, y) as displacement or extrusion drivers:  
+  - Useful for terrain, mechanical greebles, or grid-based paneling
+  - Pairs well with subdivision, beveling, and height masking workflows
 
-- **2D → 3D Extrusions**  
-  Feed FPS-R(x, y) into a heightfield or mesh extrusion driver:  
-  - Generates grid-based paneling, mechanical greebles, and terrain  
-  - Works seamlessly with subdivide/bevel workflows
-
-- **Curved Surfaces and Wrapping**  
-  Since FPS-R is stateless, spatial lookups can wrap around UV shells or cylindrical coordinates without visual seams  
-  - Enables pattern generation across spherical helmets, pipes, or organic topologies
+- **Topology Wrapping and UV Logic**  
+  FPS-R is stateless and coordinate-driven, making it compatible with wrapped domains, applicable to curved surfaces as well:
+  - Seamless tiling across cylindrical, spherical shells, or curved mesh surfaces
 
 <br>
 <p align="center">
@@ -524,12 +543,26 @@ By replacing time (`$F`, `@Frame`, etc.) with space (`x`, `y`, `uv`, or `positio
   <img src="https://img.shields.io/badge/🔢_Signal_as_Structure-blue?style=flat-square" alt="Signal-as-Structure">
 </p>
 
-### ✴ Quantised Switching in Space
+### 🌀 Stacked Modulo in Space
+SM generates nested interference from layered clocks—ideal for architectural repetition, facade tiling, and rhythmic modulation in detail density.
+- Use fpsr_sm(x, y) to control extrusion cadence, surface pattern pacing, or nested grain
+- Vary input periods to layer slow vs fast modulation effects
+- Enables compression of complex rhythmic behaviour into compact expressions
 
-QS becomes a **signal switcher** in the spatial domain:  
-- Swap randomisation engines (Perlin, Worley, texture samplers)  
-- Turn off quantisation for fluid transitions  
-- Amplify for brutalist modularity or broken repetition
+### 🔁 Toggled Modulo in Space
+TM introduces structured rhythm via toggled durations—useful for spatial alternation of components, extrusion heights, or element spacing.
+- Apply fpsr_tm(x, y) to alternate modulation profiles along rows or grid bands
+- Tune `periodA` and `periodB` for binary rhythm control
+- Useful for layouts where predictable but non-uniform repetition is desired
+
+### ✴ Quantised Switching in Space
+QS functions as a stream selector across space—switching between signal banks, texture generators, or quantisation modes based on coordinate rhythm.
+- Modulate sine-derived patterns, or completely replace them with any signal generator or lookup-table using fpsr_qs(x, y)
+- Stream 1 and 2 run independent frequency and quantisation cycles
+- Switch logic adds structured unpredictability via offset cadence
+- Ability to turn off quantisation to expose switched continuous from underlying signal streams  
+- Ideal for glitch-art surfaces, mixed tiling, and volatile material zones
+
 > "Just as QS modulates time by switching behavioural regimes, it can modulate space by switching surface logic—turning texture banks or heightmap engines on and off with structured unpredictability."
 
 ---
