@@ -39,6 +39,7 @@
   - [✴ Quantised Switching (QS) or 量跃机制](#-quantised-switching-qs-or-量跃机制)
 - [🏙 Spatial Extension: From Time to Space](#-spatial-extension-from-time-to-space)
   - [🧬 FPS-R in the Spatial Context](#-fps-r-in-the-spatial-context)
+    - [🪡 Topology Wrapping and Surface Application](#-topology-wrapping-and-surface-application)
   - [🌀 Stacked Modulo in Space](#-stacked-modulo-in-space)
   - [🔁 Toggled Modulo in Space](#-toggled-modulo-in-space)
   - [✴ Quantised Switching in Space](#-quantised-switching-in-space)
@@ -495,7 +496,7 @@ TM modulates hold durations by toggling between two predefined time periods, pro
 
 Where SM reshapes time using internal modulation and QS switches outputs across streams, TM adjusts duration logic itself — controlling the pace of phrased persistence through toggled timing.
 
-> Switching between the two configurable fixed-value cycle durations, while still organically and deterministic "unpredictability", **TM gives the most consistent and structured output pacing**  compared to SM and QS. There is a sense of mechanical stability behind the structure of unpredictiability.
+> Switching between the two configurable fixed-value cycle durations, while still organically and deterministically "unpredictable", **TM gives the most consistent and structured output pacing**  compared to SM and QS. There is a sense of mechanical stability underpinning the structure of unpredictability.
 
 **TM Features:**
 - Stateless and structured cadence modulation via conditional selection between `periodA` and `periodB` resulting in discrete tempo shifts
@@ -533,9 +534,13 @@ This behaviour is inherently more volatile than SM's and TM's, as a change in an
   - Useful for terrain, mechanical greebles, or grid-based paneling
   - Pairs well with subdivision, beveling, and height masking workflows
 
-- **Topology Wrapping and UV Logic**  
-  FPS-R is stateless and coordinate-driven, making it compatible with wrapped domains, applicable to curved surfaces as well:
-  - Seamless tiling across cylindrical, spherical shells, or curved mesh surfaces
+#### 🪡 Topology Wrapping and Surface Application
+FPS-R isn’t limited to flat grids or linear mappings. When evaluated over spatial coordinates like normals, UV shells, or surface position vectors, its stateless and deterministic nature makes it compatible with complex topology.
+- Suitable for driving displacement along undulating normals, producing natural surface variation
+- Effective on curved or organic meshes, enhancing non-planar geometry without artefacts
+- Can be mapped across UV domains, enabling coordinated modulation of texture, color, or surface features
+
+> FPS-R’s phrased logic transfers smoothly to surface behavior—enabling modulation on curved geometry without relying on periodic tiling. Edge blending, mirroring, or domain conditioning may be used for controlled repetition where needed.
 
 <br>
 <p align="center">
