@@ -256,21 +256,24 @@ The Stacked Modulo (SM) method generates its unique "move-and-hold" rhythm throu
 
 ---
 ## 🔀 How It Works: Toggled Modulo (TM)
-TM produces phrasing that is rhythmically deliberate and structurally predictable. Unlike SM’s organically adaptive hold durations, TM uses explicit rhythmic toggling—creating a modulation pattern that feels clocked, binary, and intentional. It holds values for two predefined durations, switching between them at regular intervals, while still remaining fully stateless and deterministic.
+Toggled Modulo introduces phrasing through an intricate dance of timing streams. While its output feels rhythmically coherent, there’s no single metronome. Instead, TM weaves its behaviour from three interplaying mechanisms: two timeline streams that each oscillate using distinct cycles, and a switching logic that chooses which stream is active. All are offset in time, subtly misaligned, and deterministically entangled.
+
+This design doesn’t aim for mechanical regularity—in fact, it avoids it. If one simply wanted a predictable loop, a single timing cycle would suffice. TM instead embraces layered modulation. The switching rhythm feels structured, but not rigid. The result: phrasing that flickers between stability and volatility.
 
 ### TM: Core Mechanism
-The Toggled Modulo (TM) method builds its “move-and-hold” rhythm through synchronized clocks, controlled toggling, and predictable modulo cycles.
-1. **Deterministic Hold Duration Switching** TM toggles between two fixed hold durations, periodA and periodB, using a rhythmically ticking switch clock. The switch happens every periodSwitch frames, driven by the modulo pattern: `frame % periodSwitch < periodSwitch * 0.5` This binary clock drives the hold phase selection—choosing which of the two durations to use for the current cycle.
-2. **Fixed-Length Modulo Cycle** Once the hold duration is selected, the current frame is divided by that duration, and the remainder taken via: `frame % holdDuration` This forms a simple sawtooth wave—counting from 0 up to holdDuration - 1, then resetting—without any procedural adaptation.
-3. **Subtractive Offset for Value Stability** To stabilize the output, the result of the modulo operation is subtracted from the frame index (with optional seeding offset). This ensures that for the full duration of a hold cycle, the output remains constant: `held_state = frame - (frame % holdDuration)` This integer seed is then fed into a pure hashing function (`rand()` or `portable_rand`) to generate the final held value.
+The behaviour of TM emerges from three interacting rhythms:
+1. **Dual Modulation Streams** TM maintains two independent signal flows, each pulsing with its own periodicity. Their cycle durations differ, and their timelines are offset—creating intentional phase misalignment. Each stream alone would produce a steady pattern, but when observed together, they offer richness through asynchronous interplay.
+2. **Timed Stream Switching** A third rhythm enters the mix—a deterministic switcher that evaluates which stream is active at any given moment. This switcher operates on its own cadence, also offset from the two streams it’s choosing between. At first glance, it seems simple: flip between stream A and stream B. But because each stream may be mid-cycle, and the switcher itself is phased, the transitions often catch the signal off-balance.
+3. **Hold Phase Conditions** A "hold"—that signature FPS-R moment where the output remains still—is achieved only when the active stream and the switcher both happen to be within a stable segment. This alignment is rare, emergent, and fleeting. TM doesn't force stillness—it waits for it to emerge from coincidental overlap.
+
+TM’s phrasing results from the consistent repetition of this structure—select a duration, hold it, switch to the next. This clocked logic produces predictable jumps and pauses, ideal for patterns that need to feel synchronized, mechanical, or digitally choreographed.
 
 ### TM: Behaviour
-- Short switch intervals → tight rhythmic alternation
-- Long switch intervals → pendulum-like swings between hold modes
-- Prime-numbered durations → rich interference patterns without repetition
-- Offset seeding → de-synchronised phrasing for layered complexity
+- At times, TM feels composed: values hover, transitions smooth, structure emerges.
+- Then a switch lands mid-cycle, one stream jumps while the other holds, and the output twitches unpredictably.
+- You’re never lost—but you’re not guided by a strict beat either. There’s phrasing, rhythm, and texture—but also tension and surprise.
 
-While SM builds emergent rhythm through nested instability, TM constructs deliberate cadence through binary regularity. TM's phrasing feels like a metronome conducting another metronome—ideal for machine-like gestures, syncopated toggles, and rhythmically choreographed transitions.
+While SM builds emergent rhythm through nested instability, TM offers a structured undercurrent amidst organic unpredictability. It doesn’t assert mechanical clockwork—it evokes it. There’s a ghost of regularity in the signal, hovering just beyond grasp. And that’s what makes TM unique: it channels determinism into volatility, and structure into expressive variability.
 
 ---
 
@@ -752,7 +755,7 @@ Let's unpack this expression from the inside out:
     - **Intent:** This final step **locks the value**, creating the explicit "hold" state. The subtraction cancels out the frame's increment, resulting in a stable output until the modulo operation triggers a jump.
 
 #### TM Mechanism: Hold vs. Jump in the One-Liner
-The expression's behavior is governed by the interplay between the "outer" hold clock (driven by `frameA`) and the "inner" toggle clock (driven by `frameB`).
+The expression's behaviour is governed by the interplay between the "outer" hold clock (driven by `frameA`) and the "inner" toggle clock (driven by `frameB`).
 
 ##### When does the value Hold?
 The final output value holds steady only when all rhythmic components are stable. This means the `frameA` clock must be in the in progress within its current hold period (`periodA` or `periodB`), AND the `frameB` clock must be in the progress within its `periodSwitch` cycle.
@@ -891,7 +894,7 @@ if (randVal != randVal_previous) {
 }
 ```
 #### Toggled Modulo (TM) - Function Breakdown
-The fpsr_tm function provides a more readable and flexible implementation of the Toggled Modulo logic. It breaks the process into clear, understandable steps with named variables, giving the user direct control over the rhythmic behavior.
+The fpsr_tm function provides a more readable and flexible implementation of the Toggled Modulo logic. It breaks the process into clear, understandable steps with named variables, giving the user direct control over the rhythmic behaviour.
 
 #### 🧩 TM Function - Component Breakdown
 Here’s how the function works, step-by-step:
@@ -920,7 +923,7 @@ Here’s how the function works, step-by-step:
 - **Intent:** To provide direct access to the underlying stable integer signal. This is incredibly useful for debugging, visualisation, or for driving systems that require a predictable, stepped integer input rather than a randomised float. It allows you to "see" the raw rhythm of the hold mechanism.
 
 #### TM Function: Toggled Rhythms and Hashing
-The signature feel of the TM algorithm comes from its nested rhythmic structure, where one clock controls the behavior of another.
+The signature feel of the TM algorithm comes from its nested rhythmic structure, where one clock controls the behaviour of another.
 - **The Toggle Clock:** This is a fixed, metronome-like rhythm controlled by `periodSwitch`. Its only job is to decide when to toggle the hold duration between `periodA` and `periodB`.
 - **The Hold Clock:** This is a deterministic, two-speed rhythm controlled by the toggled `holdDuration`. Its job is to determine how long the current value will persist.
 - **The Hashing:** The final step (if enabled) converts the stable integer state from the "Hold Clock" into a pseudo-random value.
@@ -938,7 +941,7 @@ A jump occurs whenever the `held_integer_state` changes. This can be triggered i
 1. **Natural Jump (Hold Expiration):** The value jumps when the `outer_clock_frame` completes its current `holdDuration` cycle (either `periodA` or `periodB`).
 2. **Forced Jump (Toggle Event):** The value also jumps whenever the `inner_clock_frame` crosses the `periodSwitch` threshold. This forces the `holdDuration` to toggle, almost always causing an immediate jump in the final output.
 
-This two-tiered jump system creates the signature FPS-R:TM behavior: a value holds for one of two explicit durations, and the duration itself switches at a fixed, predictable interval.
+This two-tiered jump system creates the signature FPS-R:TM behaviour: a value holds for one of two explicit durations, and the duration itself switches at a fixed, predictable interval.
 
 #### TM: The `portable_rand` Helper Function
 This has been covered in the SM algorithm, read it [here]()
@@ -1188,7 +1191,7 @@ The final random value holds **only when all three of the above factors are stab
 ##### QS: Using a Custom Random Number Generator
 All FPS-R algorithms include a `finalRandSwitch` parameter that controls how the final output is produced.
 - For FPS-R: QS, when `finalRandSwitch = true`, the algorithm sends the held frame to `portable_rand()` to generate a pseudo-random value (in the normalised range of [0, 1]).
-- For **FPS-R: QS**, when `finalRandSwitch = true`: The selected stream’s quantised output is passed to `portable_rand()` to produce a normalized pseudo-random value in `[0, 1]`.
+- For **FPS-R: QS**, when `finalRandSwitch = true`: The selected stream’s quantised output is passed to `portable_rand()` to produce a normalised pseudo-random value in `[0, 1]`.
 - When `finalRandSwitch = false`: This final randomization step is bypassed, and the raw quantised value from the currently selected stream is returned directly. By default, sine-based streams output in `[-1, 1]`, which FPS-R remaps to `[0, 1]`.
 
 This raw value can then be passed into any external random function—such as a cryptographic generator—allowing FPS-R to integrate cleanly with your own randomness layer while preserving phrasing structure. 
