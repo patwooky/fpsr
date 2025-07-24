@@ -1,4 +1,9 @@
 # ✨ FPS-R: Notes and Thoughts on Structured Randomness
+MIT License—[see LICENSE](../../LICENSE) for details.  
+Copyright (c) 2025 Woo Ker Yang (Patrick Woo) patrickwoo.1976@gmail.com
+If you reference or adapt this framework, please credit Patrick Woo and this repository.
+**This documentation is still in development.** 
+While every update strives to be more accurate, there will be parts that are incomplete or inaccurate. 
 
 This document holds philosophical reflections, design motivations, and structural comparisons that informed the development of FPS-R. It is not a spec sheet. It is a **side-channel**—a place to capture rhythm, contradiction, and intent that couldn't fit in code comments.
 

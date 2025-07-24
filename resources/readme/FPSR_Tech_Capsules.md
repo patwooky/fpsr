@@ -1,6 +1,9 @@
 # Capsules Documentation
-##### This documentation is still in development. While every update strives to be accurate, there will be parts that are incomplete or inaccurate.
-
+MIT License—[see LICENSE](../../LICENSE) for details.  
+Copyright (c) 2025 Woo Ker Yang (Patrick Woo) patrickwoo.1976@gmail.com
+If you reference or adapt this framework, please credit Patrick Woo and this repository.
+**This documentation is still in development.** 
+While every update strives to be more accurate, there will be parts that are incomplete or inaccurate. 
 
 
 ## Table of Contents

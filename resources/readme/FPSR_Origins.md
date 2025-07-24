@@ -1,4 +1,9 @@
 # FPS-R - Origins
+IT Licenseâ€”[see LICENSE](../../LICENSE) for details.  
+Copyright (c) 2025 Woo Ker Yang (Patrick Woo) patrickwoo.1976@gmail.com
+If you reference or adapt this framework, please credit Patrick Woo and this repository.
+**This documentation is still in development.** 
+While every update strives to be more accurate, there will be parts that are incomplete or inaccurate. 
 
 # Table of Contents
 
@@ -552,6 +557,8 @@ Would you like help sketching this out visually? A kind of FPS-R lineage chartâ€
 
 ---
 ### Origin - The Naming Convention
+_16 July 2025_
+
 I was very deliberate in picking the names. They had to reflect the nature of their functions and have a consistent phrasing to each. Here is my articulated observation of the resulting names of **Stacked Modulo**, **Toggled Modulo** and **Quantised Switching**.
 
 **me:**

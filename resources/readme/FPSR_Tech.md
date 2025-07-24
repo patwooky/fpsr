@@ -1,5 +1,10 @@
 # FPS-R Technical Documentation
-##### This documentation is still in development. While every update strives to be accurate, there will be parts that are incomplete or inaccurate. 
+MIT License—[see LICENSE](../../LICENSE) for details.  
+Copyright (c) 2025 Woo Ker Yang (Patrick Woo) patrickwoo.1976@gmail.com
+If you reference or adapt this framework, please credit Patrick Woo and this repository.
+**This documentation is still in development.** 
+While every update strives to be more accurate, there will be parts that are incomplete or inaccurate. 
+
 
 # Table of Contents
 
@@ -11,27 +16,68 @@
   - [🧾 Code Snippets Provided in this Repository](#-code-snippets-provided-in-this-repository)
 - [FPS-R Introduction](#fps-r-introduction)
 - [🔩 How FPS-R Works](#-how-fps-r-works)
+    - [🧮 FPS-R Functions are Mathematically Pure](#-fps-r-functions-are-mathematically-pure)
 - [⚙️ Features of FPS-R](#️-features-of-fps-r)
-  - [🧳 Stateless](#-stateless)
-  - [🧩 Deterministic](#-deterministic)
+  - [🧠 FPS-R Seems to Remember](#-fps-r-seems-to-remember)
+  - [🧳 FPS-R is Stateless](#-fps-r-is-stateless)
+  - [🧩 FPS-R is Deterministic](#-fps-r-is-deterministic)
+  - [⚖️ FPS-R Plays Well with Others](#️-fps-r-plays-well-with-others)
+    - [Playing Well with Everybody](#playing-well-with-everybody)
+    - [Playing Better with Stateless Operators](#playing-better-with-stateless-operators)
 - [🌀 How It Works: Stacked Modulo (SM)](#-how-it-works-stacked-modulo-sm)
   - [Core Mechanism](#core-mechanism)
   - [behaviour](#behaviour)
-- [✴ How It Works: Quantised Switching (QS)](#-how-it-works-quantised-switching-qs)
+- [🎚️ How It Works: Quantised Switching (QS)](#️-how-it-works-quantised-switching-qs)
   - [Core Mechanism](#core-mechanism-1)
   - [behaviour](#behaviour-1)
 - [Combining FPS-R Algorithms](#combining-fps-r-algorithms)
   - [FPS-R Algorithms Working Together](#fps-r-algorithms-working-together)
   - [FPS-R Algorithms Working with Other Algorithms](#fps-r-algorithms-working-with-other-algorithms)
 - [Show Me the Code!](#show-me-the-code)
+- [🧱 Stacked Modulo (SM)](#-stacked-modulo-sm)
 - [Stacked Modulo (SM) - Mathematical Model](#stacked-modulo-sm---mathematical-model)
 - [Stacked Modulo (SM) - Code](#stacked-modulo-sm---code)
-  - [One-Line Compact](#one-line-compact)
-  - [🧩 Component Breakdown](#-component-breakdown)
-  - [Stacked Modulo - A Defined Function](#stacked-modulo---a-defined-function)
-  - [behaviour of the Stacked Modulo Function](#behaviour-of-the-stacked-modulo-function)
+- [Stacked Modulo - One-Line Compact](#stacked-modulo---one-line-compact)
+    - [🧩 SM One-Line - Component Breakdown](#-sm-one-line---component-breakdown)
+    - [SM Mechanism: Hold vs. Jump in the One-Liner](#sm-mechanism-hold-vs-jump-in-the-one-liner)
+- [Stacked Modulo - A Defined Function](#stacked-modulo---a-defined-function)
+    - [A Sample Call to the FPS-R:SM Function](#a-sample-call-to-the-fps-rsm-function)
+    - [🧩 SM Function - Component Breakdown](#-sm-function---component-breakdown)
+    - [SM Function: Stacked Rhythms and Hashing](#sm-function-stacked-rhythms-and-hashing)
+    - [SM Function: When Does the Value Hold vs. Jump?](#sm-function-when-does-the-value-hold-vs-jump)
+      - [SM Function: When does the random value HOLD?](#sm-function-when-does-the-random-value-hold)
+      - [SM Function: When does the random value JUMP?](#sm-function-when-does-the-random-value-jump)
+    - [SM: The `portable_rand` Helper Function](#sm-the-portable_rand-helper-function)
+      - [SM: Using a Custom Random Number Generator](#sm-using-a-custom-random-number-generator)
+    - [SM - Note on Typical Application](#sm---note-on-typical-application)
+  - [SM Summary: Behaviour of the Stacked Modulo Function](#sm-summary-behaviour-of-the-stacked-modulo-function)
+- [🔀 Toggled Modulo (TM)](#-toggled-modulo-tm)
+- [Toggled Modulo (TM) - Mathematical Model](#toggled-modulo-tm---mathematical-model)
+- [Toggled Modulo - One Line Compact](#toggled-modulo---one-line-compact)
+  - [🧩 TM One-Line - Component Breakdown](#-tm-one-line---component-breakdown)
+  - [TM Mechanism: Hold vs. Jump in the One-Liner](#tm-mechanism-hold-vs-jump-in-the-one-liner)
+- [Toggled Modulo - A Defined Function](#toggled-modulo---a-defined-function)
+  - [A Sample Call to the FPS-R:TM Function](#a-sample-call-to-the-fps-rtm-function)
+  - [Toggled Modulo (TM) - Function Breakdown](#toggled-modulo-tm---function-breakdown)
+  - [🧩 TM Function - Component Breakdown](#-tm-function---component-breakdown)
+  - [TM Function: Toggled Rhythms and Hashing](#tm-function-toggled-rhythms-and-hashing)
+  - [TM Function: When Does the Value Hold vs. Jump?](#tm-function-when-does-the-value-hold-vs-jump)
+    - [TM Function: When does the value HOLD?](#tm-function-when-does-the-value-hold)
+    - [TM Function: When does the value JUMP?](#tm-function-when-does-the-value-jump)
+  - [TM: The `portable_rand` Helper Function](#tm-the-portable_rand-helper-function)
+    - [TM: Using a Custom Random Number Generator](#tm-using-a-custom-random-number-generator)
+  - [🔀 TM Summary: Behaviour of the Toggled Modulo Function](#-tm-summary-behaviour-of-the-toggled-modulo-function)
+- [🎚️ Quantised Switching (QS)](#️-quantised-switching-qs)
 - [Quantised Switching (QS) - Mathematical Model](#quantised-switching-qs---mathematical-model)
 - [Quantised Switching (QS) - Code](#quantised-switching-qs---code)
+  - [A Sample Call to the FPS-R:QS Function](#a-sample-call-to-the-fps-rqs-function)
+  - [🧩 QS Function - Component Breakdown](#-qs-function---component-breakdown)
+  - [QS Function: Layered Rhythms and Hashing](#qs-function-layered-rhythms-and-hashing)
+  - [QS Function: When Does the Value Hold vs. Jump?](#qs-function-when-does-the-value-hold-vs-jump)
+    - [QS Function: When does the random value HOLD?](#qs-function-when-does-the-random-value-hold)
+    - [QS Function: When does the random value JUMP?](#qs-function-when-does-the-random-value-jump)
+  - [QS - A Note on Typical Application](#qs---a-note-on-typical-application)
+- [🎚️ QS Summary: Behaviour of the Quantised Switching Function](#️-qs-summary-behaviour-of-the-quantised-switching-function)
 
 ---
 # The Purpose of This Document
@@ -66,7 +112,7 @@ Come as you are. Stay as long as you like. The phrasing engine is always running
 In this document, we will unpack the FPS-R methods by deconstructing their code into modular components. Each section examines how a fragment contributes to the resulting phrasing—allowing you to understand, modulate, and compose behaviour with precision.
 
 ### 🧾 Code Snippets Provided in this Repository
-The code examples in this repository are **platform-conscious**, not platform-specific. Each snippet has been deliberately shaped for **clarity of intent**, avoiding language-dependent operators (like ternaries), environment-specific idioms, or dependency-bound functions. Where expressive quirks exist (e.g. modulus, quantisation rhythms), they are surfaced with **plain logic and comments that explain the phrasing**, not just the math.
+The code examples in this repository are **platform-conscious**, not platform-specific. This is especially true for the C language implementation that has a diverse number of variants. Each snippet has been deliberately shaped for **clarity of intent**, avoiding language-dependent operators (like ternaries), environment-specific idioms, or dependency-bound functions. Where expressive quirks exist (e.g. modulus, quantisation rhythms), they are surfaced with **plain logic and comments that explain the phrasing**, not just the math.
 
 These implementations prioritise **readability, reproducibility, and minimal refactoring cost** across most C-family and expression-bound languages—including C++, Java, JavaScript, GLSL, HLSL, MEL, and Houdini VEX.
 
@@ -92,17 +138,69 @@ The FPS-R framework is designed to produce pseudo-random values that remain cons
 In these cases randomness in output is not the only desired component. _When_ these random outputs happen makes a huge difference, and these random values that hold for pseudo-random periods of time need to be stable from one frame to the next to create coherent and structured results. The "stateless" nature means it doesn't need to store any values between frames; the result is calculated purely from the input parameters, making it highly portable and efficient.
 
 ## 🔩 How FPS-R Works
+**The logic and structure behind phrased modulation**
 
-At its core, FPS-R operates through **coordinate-indexed determinism**. Whether evaluated over time (e.g., `$F`, `@Frame`) or space (`@P`, `uv`, `x`), it applies arithmetic logic—such as `mod()` cycles, `floor()` binning, and seeded `rand()` functions—to produce values that appear to hold, snap, or jump across defined intervals.
+At its core, FPS-R is built on **coordinate-indexed determinism**. Whether evaluated over time (`$F, @Frame`) or space (`@P, uv, x`), it applies a compact set of arithmetic operations—typically `mod()` cycles, `floor()` binning, and seeded `rand()` functions—to produce values that appear to **hold**, **snap**, or **jump** across predictable intervals.
 
-Despite its expressive output, FPS-R is strictly **stateless**. Each evaluation is contextually local: it derives its result solely from the current coordinate, without referencing previous frames or adjacent spatial samples.
+Each phrasing pattern is shaped by input parameters—such as modulation lengths, seeds, and offsets—but for any given coordinate, the output is **fully deterministic**. The same input yields the same output—every time, on every platform.
 
-This yields a surprising property: **discontinuities feel intentional**, and regions of apparent memory emerge—without any simulation or history tracking. It's a sleight of hand through math:  
-**perceived temporal coherence from purely evaluative logic.**
+FPS-R is also **stateless**. It doesn't track history or carry memory between evaluations. Instead, each result is derived solely from the current coordinate, making FPS-R highly portable across parallel systems, shader environments, and reactive pipelines.
+
+The result yields a surprising property, enabling a kind of expressive paradox: **discontinuities feel intentional, and apparent memory without simulation**. 
+
+It is a sleight of hand through math.
+
+> Perceived temporal coherence from purely evaluative logic
+
+### 🧮 FPS-R Functions are Mathematically Pure
+All core FPS-R functions are **pure mathematical algorithms**, meaning they obey two key rules:
+1. **Determinism** Given the same inputs—such as `frame`, modulation ranges, and seed—FPS-R will always produce the same output. For example: `fpsr_sm(frame: 100, ...)` will yield identical results whether computed today, tomorrow, or in another system entirely.
+2. **No Side Effects** FPS-R functions do not alter global state, write to disk, mutate inputs, or produce hidden changes. They perform calculations and return their result—nothing more.
+
+> Purity guarantees repeatability, composability, and safety. FPS-R’s phrasing outputs can be freely reused, nested, and analyzed—with complete confidence.
+
+---
+## ⚙️ Features of FPS-R
+
+Understanding how FPS-R achieves its behaviour requires a closer look at what we mean by "stateless" and "deterministic":
+
+### 🧠 FPS-R Seems to Remember
+Due to how the algorithms are formulated and constructed, FPS-R algorithms behave like they remember. This means that a random value is held for a number of frames before "moving on" to the next random value. Before FPS-R, this behaviour is usually achieved through stateful methods. If the result of FPS-R is shown to a programmer or technical artist for the first time, he or she would probably believe this to be coming from a stateful technique that involves remembering that random number from the previous frame and holding it the value with a counter until the next reseed.
+
+This is the foundation of what we've come to call:
+> **🪞 Memoryless Mimicry**
+> A simulation remembers so it can anticipate. FPS-R forgets, but still manages to feel like it remembers.
+
+### 🧳 FPS-R is Stateless
+
+Stateful systems rely on memory—they accumulate, simulate, or propagate values over time. In contrast, **FPS-R is stateless**: it evaluates in-place, without any dependency on past or future frames.
+
+A typical FPS-R expression evaluates a jump or hold using only the current frame index and seeded math functions. No buffers. No temporal recursion. Just present-tense logic that _feels_ retrospective.
+
+This quality makes FPS-R not only performant, but also **portable and resilient**. Its behaviour can be trusted in multi-threaded, parallel, or distributed contexts without simulation overhead.
+
+### 🧩 FPS-R is Deterministic
+
+With the same inputs—frame number, seed parameters, and method—FPS-R always produces the same output. This deterministic footprint enables:
+
+- 🧪 Reproducible behaviour across simulations, tests, or procedural evaluations
+- 🛠️ Reliable debugging and tuning—behaviour is traceable and consistent
+- 🎛️ Composable structure—multiple FPS-R layers can interact without uncertainty
+- 📈 Cross-domain applicability—whether in robotics, interaction design, motion synthesis, or data-driven generative tools, repeatability ensures trust
+- 🧠 Expressive layering: deterministic scaffolds enable deliberate rhythm clashes, controlled glitches, and predictable emergent timing behaviours between the signal systems
+
+### ⚖️ FPS-R Plays Well with Others
+#### Playing Well with Everybody
+As a modulation framework that adds to the behaviour of larger systems, it can create its deterministic move-and-hold behaviour in both stateful and stateless environments.
+
+#### Playing Better with Stateless Operators
+The true power of FPS-R’s stateless determinism emerges when paired with other stateless systems. In such a case, **the final result will be equally stateless**.
+
+> The section “**Combining FPS-R Algorithms**” explores how these principles can be layered, stacked, and merged with other systems to unlock deeper phrasing behaviour.
 
 ---
 ## The 3 FPS-R Algorithms
-Given their common properties of stateless determinism, the 3 FPS-R algorithms have distinct personalities. Each algorithm offers a unique flavour of motion and randomness, providing a versatile toolkit for artists and developers. By understanding their individual characteristics, a user can select the perfect tool to bring their creative vision to life, whether it requires organic subtlety, mechanical precision, or chaotic energy.
+Given their common properties of stateless determinism, the 3 FPS-R algorithms have distinct personalities. Each algorithm offers a unique flavour of motion and randomness, providing a versatile toolkit for artists and developers. By understanding their individual characteristics, users of the framework can select the perfect tool to bring their creative vision to life, whether it requires organic subtlety, mechanical precision, or chaotic energy.
 
 ### FPS-R Algorithmic Characteristics and Personalities
 Here is a memorable way to describe the algorithms and their characteristics.
@@ -132,50 +230,7 @@ Given the distinct characteristics of these algorithms, they may lend themselves
 - Do I want a rhythmic, predictable, mechanical pulse? Use **Toggled Modulo**.
 - Do I want a glitchy, textured, more organic flicker? Use **Quantised Switching**.
 
-
-
 ---
-
-## ⚙️ Features of FPS-R
-
-Understanding how FPS-R achieves its behaviour requires a closer look at what we mean by "stateless" and "deterministic":
-
-### FPS-R Seems to Remember
-Due to how the algorithms are formulated and constructed, FPS-R algorithms behave like they remember. This means that a random value is held for a number of frames before "moving on" to the next random value. Before FPS-R, this behaviour is usually achieved through stateful methods. If the result of FPS-R is shown to a programmer or technical artist for the first time, he or she would probably believe this to be coming from a stateful technique that involves remembering that random number from the previous frame and holding it the value with a counter until the next reseed.
-
-This is the foundation of what we've come to call:
-> **🪞 Memoryless Mimicry**
-> A simulation remembers so it can anticipate. FPS-R forgets, but still manages to feel like it remembers.
-
-### 🧳 FPS-R is Stateless
-
-Stateful systems rely on memory—they accumulate, simulate, or propagate values over time. In contrast, **FPS-R is stateless**: it evaluates in-place, without any dependency on past or future frames.
-
-A typical FPS-R expression evaluates a jump or hold using only the current frame index and seeded math functions. No buffers. No temporal recursion. Just present-tense logic that _feels_ retrospective.
-
-This quality makes FPS-R not only performant, but also **portable and resilient**. Its behaviour can be trusted in multi-threaded, parallel, or distributed contexts without simulation overhead.
-
-### 🧩 FPS-R is Deterministic
-
-With the same inputs—frame number, seed parameters, and method—FPS-R always produces the same output. This deterministic footprint enables:
-
-- 🧪 Reproducible behaviour across simulations, tests, or procedural evaluations
-- 🛠️ Reliable debugging and tuning—behaviour is traceable and consistent
-- 🎛️ Composable structure—multiple FPS-R layers can interact without uncertainty
-- 📈 Cross-domain applicability—whether in robotics, interaction design, motion synthesis, or data-driven generative tools, repeatability ensures trust
-- 🧠 Expressive layering: deterministic scaffolds enable deliberate rhythm clashes, controlled glitches, and predictable emergent timing behaviours between the signal systems
-
-### FPS-R Plays Well with Others
-#### Playing Well with Everybody
-As a modulation framework that adds to the behaviour of larger systems, it can create its deterministic move-and-hold behaviour in both stateful and stateless environments.
-
-#### Playing Better with Stateless Operators
-The true power of FPS-R’s stateless determinism emerges when paired with other stateless systems. In such a case, **the final result will be equally stateless**.
-
-> The section “**Combining FPS-R Algorithms**” explores how these principles can be layered, stacked, and merged with other systems to unlock deeper phrasing behaviour.
-
----
-
 ## 🌀 How It Works: Stacked Modulo (SM)
 SM uses **layered modulus operations** combined with shifting `rand()` seeds to create output that seems to "hold" values across multiple frames or spatial coordinates. The result: a pattern of persistent values interrupted by unexpected jumps.
 
@@ -196,7 +251,7 @@ The Stacked Modulo (SM) method generates its unique "move-and-hold" rhythm throu
 
 ---
 
-## ✴ How It Works: Quantised Switching (QS)
+## 🎚️ How It Works: Quantised Switching (QS)
 
 While SM focuses on **temporal rhythm**, QS enables **value switching** across discrete options—like glitch matrices, logic multiplexers, or stylistic gates. QS can use any input signal (not just random) and quantise it into hold states.
 
@@ -258,8 +313,15 @@ Implementation of the algorithms in a variety of software and environments.
 
 [**Code Implementations**](../code/) This high level directory in the repository contains the code implemented in several languages and platforms.
 
-### C
-[**Code in C**](../code/c/fpsr_algorithms.c) FPS-R SM and QS in portable C code that would run with minimal modifications in many c-style languages. 
+### 🧭 Source of Truth
+The **C implementation** serves as the canonical reference for FPS-R algorithms. All new features, refinements, and core logic will be developed and validated in C first—then ported to other languages and environments.
+
+If you encounter discrepancies between FPS-R outputs across platforms, or find that a feature isn’t yet supported in your language of choice, please consult the C code as the definitive source.
+
+> Found a mismatch or bug in a ported version? Let me know so I can align and update it. 
+
+### C (Source of Truth)
+[**Code in C**](../code/c_reference/fpsr_algorithms_reference.c) FPS-R SM and QS in portable C code that would run with minimal modifications in many c-style languages. 
 
 ### Python
 [**Code in Python**](../code/python/fpsr_algorithms.py) FPS-R SM and QS in a Python `.py` file.
@@ -287,7 +349,7 @@ The interactive scrolling graphs are the last 2 cells at the end of the notebook
 [**Maya `.ma` File**](../code/maya/fpsr_algorithms.ma) Maya file a group node. In its `attribute Editor -> notes section` there are the expressions for both `FPS-R: SM` and `FPS-R: QS`. There are also 2 boxes with expression-driven by the 2 FPS-R algorithms in their y- and z- position values.
 
 ---
-## Stacked Modulo (SM)
+## 🧱 Stacked Modulo (SM)
 The Stacked Modulo (SM) algorithm uses nested modulo operations to create a stable value that persists for a variable number of frames. It first determines a random "hold duration" and then generates a consistent value that lasts for that duration.
 
 ## Stacked Modulo (SM) - Mathematical Model
@@ -314,7 +376,7 @@ frame - (23 + frame % (minHold + floor(rand(23 + frame - (frame % 10)) * (maxHol
 ```
 At the heart, FPS-R:SM is a temporal modulation function, where the output adjusts the current frame value in a structured-random way. Let’s unpack it inside-out:
 
-#### 🧩 Component Breakdown
+#### 🧩 SM One-Line - Component Breakdown
 Here’s how the expression works, from the inside out:
 1. `(frame % 10)`
    - **What it does:** This calculates the remainder when the current `frame` number is divided by 10.
@@ -345,7 +407,7 @@ Here’s how the expression works, from the inside out:
    - **Observable Outcome:** A value that remains constant for the duration determined in step 5, and then jumps to a new constant value.
    - **Intent:** This final step **locks the value**, creating the explicit "hold" state. The subtraction cancels out the frame's increment, resulting in a stable output until the modulo operation triggers a jump.
 
-#### The Core Mechanism: Hold vs. Jump in the One-Liner
+#### SM Mechanism: Hold vs. Jump in the One-Liner
 The expression's behaviour is governed by the interplay between an "outer" and "inner" modulo operation.
 - **The Outer Modulo:** `frame % (hold_duration)` is the **primary engine for the jump**. It creates a ramping value that, when subtracted from `frame`, produces the stable "held" output.
 - **The Inner Modulo:** `frame % 10` is the engine for the **reseed**. It ensures the `hold_duration` itself only changes at a fixed interval.
@@ -479,7 +541,7 @@ if (randVal != randVal_previous) {
     changed = 1; // value has changed from the previous frame
 }
 ```
-#### 🧩 Component Breakdown
+#### 🧩 SM Function - Component Breakdown
 Here’s how the function works, step-by-step:
 
 **Part 1:** Calculate the Random Hold Duration
@@ -524,7 +586,7 @@ Here’s how the function works, step-by-step:
     - To produce the final, frame-persistent random output. Because its seed is stable, the value itself is stable. To provide direct access to the underlying stable integer signal. 
     - The bypass feature of `finalRandSwitch` is incredibly useful for debugging, visualisation, or for driving systems that require a predictable, stepped integer input rather than a randomised float. It allows you to "see" the raw rhythm of the hold mechanism.
 
-#### The Core Mechanism: Stacked Rhythms and Hashing
+#### SM Function: Stacked Rhythms and Hashing
 The signature feel of the SM algorithm comes from its "stacked" or nested rhythmic structure. It's an interference pattern created by two different clocks running at the same time.
 - **The Reseed Clock:** This is a fixed, metronome-like rhythm controlled by `reseedInterval`. Its only job is to decide _when_ to pick a new random hold duration.
 - **The Hold Clock:** This is a chaotic, variable-length rhythm controlled by the `holdDuration`. Its job is to determine _how_ long the current value will actually persist.
@@ -532,27 +594,34 @@ The signature feel of the SM algorithm comes from its "stacked" or nested rhythm
 
 The final behaviour emerges from the interplay of these two clocks. The predictable Reseed Clock periodically forces a change upon the unpredictable Hold Clock, creating a unique rhythm of structured chaos.
 
-#### The Core Mechanism: When Does the Value Hold vs. Jump?
+#### SM Function: When Does the Value Hold vs. Jump?
 The algorithm's rhythm is defined by two distinct types of "jump" events.
 
-##### When does the random value HOLD?
+##### SM Function: When does the random value HOLD?
 The final random value remains **constant** only during the frames between jump events. For the value to be stable, the underlying `held_integer_state` must also be stable.
 
-##### When does the random value JUMP?
+##### SM Function: When does the random value JUMP?
 A jump occurs whenever the `held_integer_state` changes. This can be triggered in two ways:
 1. **Natural Jump (Hold Expiration):** The value jumps when the `frame` counter completes the current `holdDuration` cycle. This is the "natural" end of a hold, happening when `(frame) % holdDuration` resets.
 2. **Forced Jump (Reseed Event):** The value also jumps whenever the `reseedInterval` is crossed (e.g., every 20 frames). At this moment, a new `holdDuration` is calculated. Because the system is stateless, the `frame` enters this new duration cycle at an arbitrary point, which almost always changes the `held_integer_state` and forces an immediate jump in the final output, regardless of whether the previous hold period had finished.
 
 This two-tiered jump system is what creates the signature FPS-R behaviour: a value holds for a variable period, but the length of that period is itself reassessed at a fixed, rhythmic interval.
 
-##### The `portable_rand` Helper Function
-This is a simple, deterministic pseudo-random number generator. It's not cryptographically secure, but it's perfect for graphics.
+#### SM: The `portable_rand` Helper Function
+This is a simple, deterministic pseudo-random number generator. It's not cryptographically secure, but it's perfect for all other applications that do not require cryptographic levels of security.
+
 - **Deterministic:** For the same `seed`, it will always produce the same output. This is the key to the entire FPS-R framework.
 - **`sin(...) * large_number`**: This is a classic technique to create a chaotic, hash-like function. The sine function provides a non-linear distribution, and multiplying by large prime numbers helps to spread the results out, making them appear random.
 - **`result - floor(result)`**: This is a mathematical trick to get the fractional part of a number (equivalent to `fmod(result, 1.0)`). It ensures the final output is always a float between 0.0 and 1.0.
 
+##### SM: Using a Custom Random Number Generator
+All FPS-R algorithms include a `finalRandSwitch` parameter that controls how the final output is produced.
+- When `finalRandSwitch = true`, the algorithm sends the held frame to `portable_rand()` to generate a pseudo-random value.
+- For FPS-R: SM, when `finalRandSwitch = false`, this step is skipped and the raw held frame value is returned instead.
 
-#### A Note on Typical Application: Controlling the Rhythm
+This raw value can then be passed into any external random function—such as a cryptographic generator—allowing FPS-R to integrate cleanly with your own randomness layer while preserving phrasing structure.
+
+#### SM - Note on Typical Application
 The final rhythm of the algorithm is dictated by whichever cycle is shorter: the fixed `reseedInterval` or the variable `holdDuration`. You can leverage this interplay to create different rhythmic feels.
 
 **Approach 1:** The Metronome (More Predictable Rhythm)
@@ -585,7 +654,7 @@ Conversely, using large values for the modulo spans results in long cycle length
 The true complexity emerges from layering multiple modulo functions with non-harmonious periods (e.g., using prime numbers like 13, 31, 97). The cycles of these layers go in and out of phase at irregular intervals. A "jump" in the final output is triggered whenever any of the layers completes its cycle, creating a complex interference pattern. This composite rhythm produces state-like transitions that are not explicitly programmed, mimicking the emergent logic of a complex state machine without storing any state.
 
 ---
-## Toggled Modulo (TM)
+## 🔀 Toggled Modulo (TM)
 The Toggled Modulo (TM) algorithm uses the same nested modulo structure as Stacked Modulo to create a stable value that persists for a set number of frames. It first determines the "hold duration" by deterministically switching between two predefined periods, creating a predictable and controllable rhythmic pattern. It then generates a consistent value that lasts for that toggled duration.
 
 ### Toggled Modulo (TM) - Mathematical Model
@@ -640,7 +709,7 @@ This version is a highly compact form of the SM logic, suitable for environments
 (frameA - (frameA % (frameB - ((frameB % periodSwitch < (periodSwitch * 0.5)) ? periodA : periodB))))
 ```
 
-#### 🧩 Component Breakdown
+#### 🧩 TM One-Line - Component Breakdown
 Let's unpack this expression from the inside out:
 1. `(frameB % periodSwitch < (periodSwitch * 0.5))`
     - **What it does:** This is the core **toggle condition**. It creates a cycle that runs for `periodSwitch` frames and checks if the current `frameB` is in the first or second half of that cycle.
@@ -659,7 +728,7 @@ Let's unpack this expression from the inside out:
     - **Observable Outcome:** A value that remains constant for the duration of either `periodA` or `periodB`, and then jumps to a new constant value.
     - **Intent:** This final step **locks the value**, creating the explicit "hold" state. The subtraction cancels out the frame's increment, resulting in a stable output until the modulo operation triggers a jump.
 
-#### The Core Mechanism: Hold vs. Jump in the One-Liner
+#### TM Mechanism: Hold vs. Jump in the One-Liner
 The expression's behavior is governed by the interplay between the "outer" hold clock (driven by `frameA`) and the "inner" toggle clock (driven by `frameB`).
 
 ##### When does the value Hold?
@@ -801,7 +870,7 @@ if (randVal != randVal_previous) {
 #### Toggled Modulo (TM) - Function Breakdown
 The fpsr_tm function provides a more readable and flexible implementation of the Toggled Modulo logic. It breaks the process into clear, understandable steps with named variables, giving the user direct control over the rhythmic behavior.
 
-#### 🧩 Component Breakdown
+#### 🧩 TM Function - Component Breakdown
 Here’s how the function works, step-by-step:
 
 ##### Part 1: Determine the Toggled Hold Duration
@@ -827,7 +896,7 @@ Here’s how the function works, step-by-step:
     - If `false`, the final hashing step is skipped, and the raw `held_integer_state` is returned directly (cast to a float). The output is a stepped, non-random integer value.
 - **Intent:** To provide direct access to the underlying stable integer signal. This is incredibly useful for debugging, visualisation, or for driving systems that require a predictable, stepped integer input rather than a randomised float. It allows you to "see" the raw rhythm of the hold mechanism.
 
-#### The Core Mechanism: Toggled Rhythms and Hashing
+#### TM Function: Toggled Rhythms and Hashing
 The signature feel of the TM algorithm comes from its nested rhythmic structure, where one clock controls the behavior of another.
 - **The Toggle Clock:** This is a fixed, metronome-like rhythm controlled by `periodSwitch`. Its only job is to decide when to toggle the hold duration between `periodA` and `periodB`.
 - **The Hold Clock:** This is a deterministic, two-speed rhythm controlled by the toggled `holdDuration`. Its job is to determine how long the current value will persist.
@@ -835,21 +904,58 @@ The signature feel of the TM algorithm comes from its nested rhythmic structure,
 
 The final behaviour emerges from the predictable Toggle Clock forcing a change upon the Hold Clock, creating a deliberate, mechanical pulse.
 
-#### The Core Mechanism: When Does the Value Hold vs. Jump?
+#### TM Function: When Does the Value Hold vs. Jump?
 The algorithm's rhythm is defined by two distinct types of "jump" events.
 
-##### When does the value HOLD?
+##### TM Function: When does the value HOLD?
 The final value remains constant only during the frames between jump events, when the `held_integer_state` is stable.
 
-##### When does the value JUMP?
+##### TM Function: When does the value JUMP?
 A jump occurs whenever the `held_integer_state` changes. This can be triggered in two ways:
 1. **Natural Jump (Hold Expiration):** The value jumps when the `outer_clock_frame` completes its current `holdDuration` cycle (either `periodA` or `periodB`).
 2. **Forced Jump (Toggle Event):** The value also jumps whenever the `inner_clock_frame` crosses the `periodSwitch` threshold. This forces the `holdDuration` to toggle, almost always causing an immediate jump in the final output.
 
 This two-tiered jump system creates the signature FPS-R:TM behavior: a value holds for one of two explicit durations, and the duration itself switches at a fixed, predictable interval.
 
+#### TM: The `portable_rand` Helper Function
+This has been covered in the SM algorithm, read it [here]()
+This is a simple, deterministic pseudo-random number generator. 
+
+It is **deterministic.** For the same `seed`, it will always produce the same output. This is the key to the entire FPS-R framework.
+
+It's not cryptographically secure, but it's perfect for applications that do not require cryptographic levels of security.
+
+##### TM: Using a Custom Random Number Generator
+All FPS-R algorithms include a `finalRandSwitch` parameter that controls how the final output is produced.
+- When `finalRandSwitch = true`, the algorithm sends the held frame to `portable_rand()` to generate a pseudo-random value.
+- For FPS-R: TM, when `finalRandSwitch = false`, this step is skipped and the raw held frame value is returned instead.
+
+This raw value can then be passed into any external random function—such as a cryptographic generator—allowing FPS-R to integrate cleanly with your own randomness layer while preserving phrasing structure.
+
+### 🔀 TM Summary: Behaviour of the Toggled Modulo Function
+The behaviour of the Toggled Modulo (TM) method is shaped by its internal **binary rhythm**—a deterministic switching between two distinct hold periods. Unlike SM or QS, TM produces phrasing that feels mechanically predictable but remains expressively rich when tuned correctly.
+
+#### Rhythmic Stability (Clocked Alternation)
+At its core, TM toggles between two durations (`periodA`, `periodB`) at a fixed rhythm (`periodSwitch`). This switch is stateless and deterministic—creating a stable, repeated alternation between two expressive states. The result resembles a binary machine rhythm: flick, hold, flick, hold.
+
+When the switch interval is short, the output feels tight and mechanical, suitable for grid-locked modulation, staggered motion, or rhythmic gating. There's no drift or organic variability—the phrasing is clocked and reliable.
+
+#### Long Hold Cycles (Pendulum Behaviour)
+When `periodSwitch` is increased, TM produces extended durations where each mode dominates for multiple frames. This introduces a pendulum-like behaviour: long swings between two value regimes. One regime may represent stillness, the other movement. One may flicker, the other pause.
+
+This setup feels stateful and deliberate—even though TM has no internal memory. It allows for transitions that appear narrative, but are mathematically pure.
+
+#### Offset De-Synchronisation (Subtle Expressivity)
+Expressive depth arises when seedInner and seedOuter are used to de-phase the switching and modulation clocks.
+- `seedInner` shifts the toggle rhythm
+- `seedOuter` shifts the hold value pattern
+
+When used together, TM can produce phrasing that feels shifted or syncopated—emulating attention shifts, gesture fatigue, or intermittent engagement. The values still alternate predictably, but the transitions feel _timed_, not random.
+
+> TM is ideal when expressive behaviour needs to feel mechanical, binary, or clock-driven—yet still capable of nuanced timing and personality.
+
 ---
-## Quantised Switching (QS)
+## 🎚️ Quantised Switching (QS)
 The Quantised Switching (QS) algorithm generates complex, rhythmic, and often "glitchy" patterns. It does this by creating two independent, quantised (or "stepped") sine waves and rapidly switching between them. The final stepped value is then used as a seed to produce a frame-persistent random number, converting the predictable wave into an unpredictable but stable output.
 
 Unlike Stacked Modulo, QS does not have a compact one-liner form due to its structural complexity.
@@ -1002,7 +1108,7 @@ if (randVal != randVal_previous) {
 } 
 ```
 
-### 🧩 Component Breakdown
+#### 🧩 QS Function - Component Breakdown
 Here’s how the function works, step-by-step:
 
 **Part 1:** Setting Default Durations
@@ -1034,13 +1140,7 @@ Here’s how the function works, step-by-step:
     - To convert the predictable, stepped wave into an unpredictable, frame-persistent random value. This is the final step that fulfills the FPS-R philosophy: it takes a deterministic, rhythmic pattern and uses it to drive a chaotic but stable output.
     - The bypass feature of `finalRandSwitch` provides direct access to the underlying rhythmic signal created by the switching streams. This is invaluable for debugging, for creating predictable glitch effects, creative variations, or for driving systems that require a stepped, deterministic input rather than a randomised one.
 
-##### The `portable_rand` Helper Function
-This is a simple, deterministic pseudo-random number generator. It's not cryptographically secure, but it's perfect for graphics.
-- **Deterministic:** For the same `seed`, it will always produce the same output. This is the key to the entire FPS-R framework.
-- **`sin(...) * large_number`**: This is a classic technique to create a chaotic, hash-like function. The sine function provides a non-linear distribution, and multiplying by large prime numbers helps to spread the results out, making them appear random.
-- **`result - floor(result)`**: This is a mathematical trick to get the fractional part of a number (equivalent to `fmod(result, 1.0)`). It ensures the final output is always a float between 0.0 and 1.0.
-
-#### The Core Mechanism: Layered Rhythms and Hashing
+#### QS Function: Layered Rhythms and Hashing
 The unique feel of the QS algorithm comes from its layers of nested, rhythmic switching.
 
 - **The Primary Switch:** The output signal jumps between `stream1` and `stream2` at a fixed interval defined by `streamSwitchDur`. This creates the most noticeable, top-level flicker.
@@ -1050,19 +1150,29 @@ The unique feel of the QS algorithm comes from its layers of nested, rhythmic sw
 
 This combination of layered, deterministic switching, followed by a final random hash, creates results that feel both structured and chaotic at the same time.
 
-#### The Core Mechanism: When Does the Value Hold vs. Jump?
+#### QS Function: When Does the Value Hold vs. Jump?
 The unique feel of the QS algorithm comes from its layers of nested, rhythmic switching. Because there are many moving parts, the final value is more volatile than in the SM algorithm. For a value to remain stable, more "stars must align."
 
-##### When does the random value JUMP?
+##### QS Function: When does the random value JUMP?
 A jump in the final output occurs if any of the following events happen:
 1. **The Primary Stream Switch:** The value jumps when `(frame % streamSwitchDur)` crosses its halfway point, causing the active stream to flip from `stream1` to `stream2` or vice-versa.
 2. **A Quantisation Level Switch:** The value jumps if either `stream1QuantDur` or `stream2QuantDur` completes its half-cycle, changing the number of steps in the underlying sine wave.
 3. **A Natural Step Change:** Even if all timers are stable, the value will jump if the active sine wave naturally progresses to its next quantised step.
 
-##### When does the random value HOLD?
+##### QS Function: When does the random value HOLD?
 The final random value holds **only when all three of the above factors are stable simultaneously**. The primary stream switch timer must not be at its halfway point, both quantisation timers must be stable, and the active sine wave must remain on the same quantised step.
 
-#### A Note on Typical Application
+##### QS: Using a Custom Random Number Generator
+All FPS-R algorithms include a `finalRandSwitch` parameter that controls how the final output is produced.
+- For FPS-R: QS, when `finalRandSwitch = true`, the algorithm sends the held frame to `portable_rand()` to generate a pseudo-random value (in the normalised range of [0, 1]).
+- For **FPS-R: QS**, when `finalRandSwitch = true`: The selected stream’s quantised output is passed to `portable_rand()` to produce a normalized pseudo-random value in `[0, 1]`.
+- When `finalRandSwitch = false`: This final randomization step is bypassed, and the raw quantised value from the currently selected stream is returned directly. By default, sine-based streams output in `[-1, 1]`, which FPS-R remaps to `[0, 1]`.
+
+This raw value can then be passed into any external random function—such as a cryptographic generator—allowing FPS-R to integrate cleanly with your own randomness layer while preserving phrasing structure. 
+
+If the default normalised range of [0, 1] is too small for a seed in your Random Number Generator (RNG), you may have to transform the normalised output into the range that your RNG expects.
+
+#### QS - A Note on Typical Application
 ##### 1. Taming the Chaos
 The QS algorithm has many sensitive, interacting parameters. To avoid being overwhelmed by chaotic output when first using it, a methodical approach is recommended.
 1. **Start Slow and Stable:** Begin with a very low `baseWaveFreq` (e.g., in the range of `0.005` to `0.012` for a 24fps system) and a long `streamSwitchDur` (e.g., 30 frames or more). This slows down all the moving parts.
@@ -1079,14 +1189,22 @@ The algorithm includes two "bypass" mechanisms that let you peel back the layers
 By using both bypasses at once, FPS-R: QS transforms into a simple, versatile signal switcher, toggling between two smooth waves at a regular interval.
 
 ##### 3. Advanced Customisation with Custom Signals
-For ultimate flexibility, the internal signal generators can be replaced entirely. The `sin()` functions are merely defaults. You can modify the function to use any signal-generating algorithm you choose, such as:
-- Other mathematical waves (triangle, square, sawtooth).
-- Noise functions (Perlin, Simplex, Worley).
-- Pre-defined arrays or lookup tables for specific animation curves.
+For ultimate flexibility, the internal signal generators can be replaced entirely. The default `sin()` functions are simply well-behaved examples. You may implement any stateless signal-generating function, such as:
+- **Mathematical waveforms** (triangle, square, sawtooth).
+- **Noise functions** (Perlin, Simplex, Worley).
+- **Precomputed curves or lookup tables**
 
-The only requirement is that the chosen signal generator must be stateless—its output should depend only on the `frame` and its parameters, not on previous results. This ensures that the entire FPS-R: QS function remains true to its stateless philosophy.
+The only design constraint: each generator must remain **pure and stateless**—its output must depend solely on the frame and its declared parameters, with no memory or side effects. This preserves the integrity and predictability of phrasing modulation across platforms.
 
-### QS Summary: Behaviour of the Quantised Switching Function
+If you choose to disable `finalRandSwitch`, FPS-R: QS will bypass the final `portable_rand()` call and return the raw, quantised stream value instead. By default, FPS-R remaps the stream’s output from the [-1, 1] sine range to [0, 1] before returning it. However:
+
+> If you're using a custom generator and turning off `finalRandSwitch`, you must handle output normalization yourself. The built-in [–1, 1] → [0, 1] remap assumes sine input. Any other signal range (e.g. [0, 2], [–10, 10], {0,1}) may produce incorrect phrasing results unless manually scaled.
+
+If you intend to pass the raw value to an external random function, this scaling may not matter—most RNGs care only about seed variation. But if you're using the signal as-is (for visualization, modulation, further computation), ensuring correct normalization is crucial.
+
+This feature allows phrasing and stream-switching logic to remain expressively pure, while enabling deep integration with your own signal vocabulary and signal processing pipeline.
+
+### 🎚️ QS Summary: Behaviour of the Quantised Switching Function
 The expressive range of the Quantised Switching (QS) method is controlled by the interplay of its multiple core timing cycles. Its behaviour is inherently more volatile than SM's, as a change in any of its layered rhythms can trigger a jump in the final output.
 
 #### High-Frequency Modulation (Glitch & Flicker)
