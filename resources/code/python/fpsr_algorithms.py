@@ -5,12 +5,12 @@
 
 '''
 file: fpsr_algorithms.py
-brief: Python implementation of FPS-R algorithms: Stacked Modulo (SM) and Quantised Switching (QS).
+brief: Python implementation of FPS-R algorithms: 
+    Stacked Modulo (SM), Toggled Modulo (TM) and Quantised Switching (QS).
 details: 
-    FPS-R (Frame-Persistent Stateless Randomisation) is a set of algorithms that
+    FPS-R (Frame-Persistent Stateless Randomisation) is a set of three algorithms that
     generate frame-persistent and stateless random values. 
-    This file contains two stateless, frame-persistent randomization algorithms.
-    This file contains two stateless, frame-persistent randomization algorithms.
+    This file contains three stateless, frame-persistent randomization algorithms.
     It uses a custom portable_rand() function to ensure deterministic and consistent results across any platform.
 '''
 
@@ -160,7 +160,7 @@ def fpsr_tm(frame, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRa
     # --- 3. Use the stable state as a seed for the final random value (or bypass) ---
     if finalRandSwitch:
         # If true, apply the final randomisation hash.
-        fpsr_output = portable_rand(held_integer_state)
+        fpsr_output = portable_rand(held_integer_state * 100000.0)
     else:
         # If false, return the raw integer state directly.
         fpsr_output = float(held_integer_state)

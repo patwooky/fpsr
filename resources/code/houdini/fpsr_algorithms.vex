@@ -3,7 +3,8 @@
 // This file is part of the FPS-R (Frame-Persistent Stateless Randomisation) project.
 // https://github.com/patwooky/FPSR_Algorithm
 
-// Frame-Persistent Stateless Randomisation (FPS-R): Stacked Modulo (SM)
+// Frame-Persistent Stateless Randomisation (FPS-R) algorithms: 
+// Stacked Modulo (SM), Toggled Modulo (TM) and Quantised Switching (QS).
 // Designed for portability across GLSL, JS, C, and VEX-style environments
 
 // A simple, portable pseudo-random number generator that takes an integer seed.
@@ -145,7 +146,7 @@ float fpsr_tm(int frame; int periodA; int periodB; int periodSwitch; int offsetI
     float fpsr_output;
     if (finalRandSwitch == 1) {
         // If true, apply the final randomisation hash.
-        fpsr_output = portable_rand(held_integer_state);
+        fpsr_output = portable_rand(held_integer_state * 100000.0);
     } else {
         // If false, return the raw integer state directly.
         fpsr_output = float(held_integer_state); 

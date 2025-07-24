@@ -3,10 +3,15 @@
 // This file is part of the FPS-R (Frame-Persistent Stateless Randomisation) project.
 // https://github.com/patwooky/FPSR_Algorithm
 
+// ⚠️ This C version of FPS-R is the canonical reference implementation.
+// All language bindings and variants should conform to this behavior.
+// Do not alter without updating downstream bindings or reference docs.
+
 /**
  * @file fpsr_algorithms.c
- * @brief Portable C implementation of FPS-R algorithms: Stacked Modulo (SM) and Quantised Switching (QS).
- * @details This file contains two stateless, frame-persistent randomization algorithms.
+ * @brief Portable C implementation of FPS-R algorithms: 
+ * Stacked Modulo (SM), Toggled Modulo (TM) and Quantised Switching (QS).
+ * @details This file contains three stateless, frame-persistent randomisation algorithms.
  * It uses a custom portable_rand() function to ensure deterministic and
  * consistent results across any platform.
  */
@@ -164,7 +169,7 @@ float fpsr_tm(
     float fpsr_output;
     if (finalRandSwitch) {
         // If true, apply the final randomisation hash.
-        fpsr_output = portable_rand(held_integer_state);
+        fpsr_output = portable_rand(held_integer_state * 100000.0);
     } else {
         // If false, return the raw integer state directly.
         fpsr_output = (float)held_integer_state; 

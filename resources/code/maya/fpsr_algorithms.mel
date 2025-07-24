@@ -10,13 +10,13 @@
 // ============================================================================
 // FPS-R (Frame-Persistent Stateless Randomisation) is a set of algorithms that
 // generate frame-persistent and stateless random values. 
-// This file contains two stateless, frame-persistent randomization algorithms.
+// This file contains three stateless, frame-persistent randomization algorithms.
 // It uses a custom portable_rand() function to ensure deterministic and
 // consistent results across any platform.
 //
 //  INSTRUCTIONS:
-//  1. Choose either the "Stacked Modulo (SM)" or "Quantised Switching (QS)"
-//     expression block below.
+//  1. Choose either the "Stacked Modulo (SM)", "Toggled Modulo (TM)" 
+//     or "Quantised Switching (QS)" expression block below.
 //  2. Copy the ENTIRE block of code for your chosen algorithm.
 //  3. Paste it directly into the Maya Expression Editor for an attribute
 //     (e.g., pCube1.translateX).
@@ -91,7 +91,7 @@ proc float fpsr_sm(
     // --- 3. Use the stable state as a seed for the final random value ---
     float $fpsr_output = 0.0;
     if ($finalRandSwitch) {
-        $fpsr_output = portable_rand($held_integer_state);
+        $fpsr_output = portable_rand($held_integer_state * 100000.0);
     } else {
         $fpsr_output = $held_integer_state;
     }
@@ -199,7 +199,7 @@ proc float fpsr_tm(
     float $fpsr_output;
     if ($finalRandSwitch) {
         // If true, apply the final randomisation hash.
-        $fpsr_output = portable_rand_tm($held_integer_state);
+        $fpsr_output = portable_rand_tm($held_integer_state * 100000.0);
     } else {
         // If false, return the raw integer state directly.
         $fpsr_output = (float)$held_integer_state; 
@@ -319,7 +319,7 @@ proc float fpsr_qs(
     if ($finalRandSwitch == 1) {
         $fpsr_output = portable_rand((int)($active_stream_val * 100000.0));
     } else {
-        $fpsr_output = 0.5 * $active_stream_val + 0.5;
+        $fpsr_output = 0.5 * $active_stream_val + 0.5; // Scale from [-1, 1] to [0, 1]
     }
     return $fpsr_output;
 }
