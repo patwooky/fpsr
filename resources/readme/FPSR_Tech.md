@@ -25,11 +25,15 @@ While every update strives to be more accurate, there will be parts that are inc
     - [Playing Well with Everybody](#playing-well-with-everybody)
     - [Playing Better with Stateless Operators](#playing-better-with-stateless-operators)
 - [🌀 How It Works: Stacked Modulo (SM)](#-how-it-works-stacked-modulo-sm)
-  - [Core Mechanism](#core-mechanism)
-  - [behaviour](#behaviour)
+  - [SM: Core Mechanism](#sm-core-mechanism)
+  - [SM Behaviour](#sm-behaviour)
+- [🔀 How It Works: Toggled Modulo (TM)](#-how-it-works-toggled-modulo-tm)
+  - [TM: Core Mechanism](#tm-core-mechanism)
+  - [TM: Behaviour](#tm-behaviour)
 - [🎚️ How It Works: Quantised Switching (QS)](#️-how-it-works-quantised-switching-qs)
-  - [Core Mechanism](#core-mechanism-1)
-  - [behaviour](#behaviour-1)
+  - [QS: Core Mechanism](#qs-core-mechanism)
+  - [QS: Behaviour](#qs-behaviour)
+  - [QS: Advanced Forms and Features](#qs-advanced-forms-and-features)
 - [Combining FPS-R Algorithms](#combining-fps-r-algorithms)
   - [FPS-R Algorithms Working Together](#fps-r-algorithms-working-together)
   - [FPS-R Algorithms Working with Other Algorithms](#fps-r-algorithms-working-with-other-algorithms)
@@ -152,17 +156,11 @@ It is a sleight of hand through math.
 
 > Perceived temporal coherence from purely evaluative logic
 
-### 🧮 FPS-R Functions are Mathematically Pure
-All core FPS-R functions are **pure mathematical algorithms**, meaning they obey two key rules:
-1. **Determinism** Given the same inputs—such as `frame`, modulation ranges, and seed—FPS-R will always produce the same output. For example: `fpsr_sm(frame: 100, ...)` will yield identical results whether computed today, tomorrow, or in another system entirely.
-2. **No Side Effects** FPS-R functions do not alter global state, write to disk, mutate inputs, or produce hidden changes. They perform calculations and return their result—nothing more.
-
-> Purity guarantees repeatability, composability, and safety. FPS-R’s phrasing outputs can be freely reused, nested, and analyzed—with complete confidence.
-
 ---
 ## ⚙️ Features of FPS-R
+This section will elaborate on the following unique feature that makes FPS-R algorithms so optimised and efficient at achieving the move and hold behaviour.
 
-Understanding how FPS-R achieves its behaviour requires a closer look at what we mean by "stateless" and "deterministic":
+Understanding how FPS-R is uniquely different from existing techniques and solutions requires a closer look at what we mean by "stateless" and "deterministic":
 
 ### 🧠 FPS-R Seems to Remember
 Due to how the algorithms are formulated and constructed, FPS-R algorithms behave like they remember. This means that a random value is held for a number of frames before "moving on" to the next random value. Before FPS-R, this behaviour is usually achieved through stateful methods. If the result of FPS-R is shown to a programmer or technical artist for the first time, he or she would probably believe this to be coming from a stateful technique that involves remembering that random number from the previous frame and holding it the value with a counter until the next reseed.
@@ -175,7 +173,7 @@ This is the foundation of what we've come to call:
 
 Stateful systems rely on memory—they accumulate, simulate, or propagate values over time. In contrast, **FPS-R is stateless**: it evaluates in-place, without any dependency on past or future frames.
 
-A typical FPS-R expression evaluates a jump or hold using only the current frame index and seeded math functions. No buffers. No temporal recursion. Just present-tense logic that _feels_ retrospective.
+A typical FPS-R expression evaluates a jump or hold using only the _current frame index_ and _seeded, basic math functions_. No buffers. No temporal recursion. Just present-tense logic that _feels_ retrospective.
 
 This quality makes FPS-R not only performant, but also **portable and resilient**. Its behaviour can be trusted in multi-threaded, parallel, or distributed contexts without simulation overhead.
 
@@ -188,6 +186,13 @@ With the same inputs—frame number, seed parameters, and method—FPS-R always 
 - 🎛️ Composable structure—multiple FPS-R layers can interact without uncertainty
 - 📈 Cross-domain applicability—whether in robotics, interaction design, motion synthesis, or data-driven generative tools, repeatability ensures trust
 - 🧠 Expressive layering: deterministic scaffolds enable deliberate rhythm clashes, controlled glitches, and predictable emergent timing behaviours between the signal systems
+
+### 🧮 FPS-R Functions are Mathematically Pure
+All core FPS-R functions are **pure mathematical algorithms**, meaning they obey two key rules:
+1. **Determinism** Given the same inputs—such as `frame`, modulation ranges, and seed—FPS-R will always produce the same output. For example: `fpsr_sm(frame: 100, ...)` will yield identical results whether computed today, tomorrow, or in another system entirely.
+2. **No Side Effects** FPS-R functions do not alter global state, write to disk, mutate inputs, or produce hidden changes. They perform calculations and return their result—nothing more.
+
+> Purity guarantees repeatability, composability, and safety. FPS-R’s phrasing outputs can be freely reused, nested, and analyzed—with complete confidence.
 
 ### ⚖️ FPS-R Plays Well with Others
 #### Playing Well with Everybody
@@ -234,7 +239,7 @@ Given the distinct characteristics of these algorithms, they may lend themselves
 ## 🌀 How It Works: Stacked Modulo (SM)
 SM uses **layered modulus operations** combined with shifting `rand()` seeds to create output that seems to "hold" values across multiple frames or spatial coordinates. The result: a pattern of persistent values interrupted by unexpected jumps.
 
-### Core Mechanism
+### SM: Core Mechanism
 The Stacked Modulo (SM) method generates its unique "move-and-hold" rhythm through a nested, procedural process. Instead of using fixed holding zones, it creates a variable-length rhythm where the duration of each hold is itself determined by a nested FPS-R pattern.
 1. **Procedural Hold Duration**  
    At the core of the function, a simple, high-frequency FPS-R pattern generates a random value. This value is then used to calculate an adaptive hold duration, H, that falls between a defined `minHold` and `maxHold`. This `H` value itself holds steady for a short period before being re-randomised.
@@ -244,10 +249,28 @@ The Stacked Modulo (SM) method generates its unique "move-and-hold" rhythm throu
 3. **Phase-Shifted Seeding**
    The result of this variable-length modulo is used to create a phase-shifted offset. This offset is subtracted from the main `frame` counter to produce a final, complex seed. It is this constantly shifting, rhythmically inconsistent seed that is fed into the final `rand()` function to produce the output.
 
-### behaviour
+### SM: Behaviour
 - Short mod spans → twitchy impulse
 - Long mod spans → hesitant deliberation
 - Layered mods → emergent switching logic, without simulation
+
+---
+## 🔀 How It Works: Toggled Modulo (TM)
+TM produces phrasing that is rhythmically deliberate and structurally predictable. Unlike SM’s organically adaptive hold durations, TM uses explicit rhythmic toggling—creating a modulation pattern that feels clocked, binary, and intentional. It holds values for two predefined durations, switching between them at regular intervals, while still remaining fully stateless and deterministic.
+
+### TM: Core Mechanism
+The Toggled Modulo (TM) method builds its “move-and-hold” rhythm through synchronized clocks, controlled toggling, and predictable modulo cycles.
+1. **Deterministic Hold Duration Switching** TM toggles between two fixed hold durations, periodA and periodB, using a rhythmically ticking switch clock. The switch happens every periodSwitch frames, driven by the modulo pattern: `frame % periodSwitch < periodSwitch * 0.5` This binary clock drives the hold phase selection—choosing which of the two durations to use for the current cycle.
+2. **Fixed-Length Modulo Cycle** Once the hold duration is selected, the current frame is divided by that duration, and the remainder taken via: `frame % holdDuration` This forms a simple sawtooth wave—counting from 0 up to holdDuration - 1, then resetting—without any procedural adaptation.
+3. **Subtractive Offset for Value Stability** To stabilize the output, the result of the modulo operation is subtracted from the frame index (with optional seeding offset). This ensures that for the full duration of a hold cycle, the output remains constant: `held_state = frame - (frame % holdDuration)` This integer seed is then fed into a pure hashing function (`rand()` or `portable_rand`) to generate the final held value.
+
+### TM: Behaviour
+- Short switch intervals → tight rhythmic alternation
+- Long switch intervals → pendulum-like swings between hold modes
+- Prime-numbered durations → rich interference patterns without repetition
+- Offset seeding → de-synchronised phrasing for layered complexity
+
+While SM builds emergent rhythm through nested instability, TM constructs deliberate cadence through binary regularity. TM's phrasing feels like a metronome conducting another metronome—ideal for machine-like gestures, syncopated toggles, and rhythmically choreographed transitions.
 
 ---
 
@@ -255,7 +278,7 @@ The Stacked Modulo (SM) method generates its unique "move-and-hold" rhythm throu
 
 While SM focuses on **temporal rhythm**, QS enables **value switching** across discrete options—like glitch matrices, logic multiplexers, or stylistic gates. QS can use any input signal (not just random) and quantise it into hold states.
 
-### Core Mechanism
+### QS: Core Mechanism
 
 1. **Value Bank**  
    Define a set of discrete outcomes—values, palettes, animation states, functions.
@@ -268,12 +291,12 @@ While SM focuses on **temporal rhythm**, QS enables **value switching** across d
 3. **Optional Quantisation**  
    Apply stepped or smoothed quantisation to the input signal to make transitions feel chunky, abrupt, or smooth.
 
-### Behaviour
+### QS: Behaviour
 - Acts like a **switcher**: swaps logic branches, colour palettes, or procedural regimes  
 - (Time) Ideal for glitch logic, state machines, or recursive style variation
 - (Space) Ideal for creating procedural geometrical structures.
 
-### Advanced Forms and Features
+### QS: Advanced Forms and Features
 The form of the supplied QS function is only one of the possible forms it can take on. QS approaches stateless randomness differently—by layering continuous signal streams. When quantising and randomising stages are removed, it unlocks richly varied and often surprising behaviours. 
 
 These features can also serve as debugging or visualising tools to reveal the characteristics of the streams of signals underneath to observe how it works before turning them off again for more controlled sculpting.
@@ -305,7 +328,7 @@ Below is a non-exhaustive list of common stateless functions and procedural sour
 | **Geometric & Coordinate-Based**| `dot`, `cross`, `normalise`, `distance`, `length`, `SDFs (Signed Distance Functions)`, `Texture Lookups` |
 | **Logic & Data Manipulation** | `step`, `mix`, `Bitwise Operations (AND, OR, XOR)` |
 
-> ⚠️ FPS-R can coexist with non-deterministic or stateful sources, but the resulting phrasing will not be traceable or reproducible. That may be an intentional choice—but it's a choice worth naming.
+> ⚠️ When FPS-R algorithms are used alongside non-deterministic or stateful signal sources and operations, the resulting modulation history will not be traceable or reproducible. That may be an intentional choice—but it is worth mentioning here.
 
 ---
 ## Show Me the Code!
