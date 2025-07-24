@@ -250,9 +250,24 @@ Here's the difference. Where there was a `rand()` inside the inner modulo, this 
 This attribute causes the algorithm to switch only between 2 possible cycle periods, and will result in a more predictable and a slightly more mechanical feel in holding periods. There will still be unexpected jumps but this algorithm has more stability somewhat.
 
 ---
-### A Third Algorithm - Toggled Modulo
+### A Third Algorithm in FPS-R - Toggled Modulo
+_16 July 2025_
 
 **Toggled** (from Toggled Modulo) refers to the way the algorithm switches between 2 predefined modulo periods that will affect the outer-modulo. This is the same concept of the switching in QS (Quantised Switching).
 
 **Modulo** (from Toggled Modulo) is the outer and final modulo step that the switched/toggled inner-modulo cycle duration feeds into. This gives Toggled Modulo (TM) its similarity that connects it to Stacked Modulo (SM).
+
+---
+### FPS-R as a Set of Pure Mathematical Functions
+_24 July 2025_
+
+This morning I was contemplating FPS-R as a stateless deterministic function, and I remembered mathematical functions were called "pure". I wondered if FPS-R was pure in a mathematical and software development context. I was thinking of pure maths functions like `sine()`, `cosine()`, where I can just supply the input parameters and it evaluates to an output. When I thought of pure, I thought of a "direct look-up" on a "simple function". I know I am wrong on so many levels, but that was what went through my mind.
+
+What is meant by _pure_ in both contexts:
+- **They are Deterministic:** A pure function will always return the same output for the same set of inputs. FPS-R functions do exactly this. fpsr_sm(frame: 100, ...) will produce the identical result today, tomorrow, or a year from now. This is a core feature I have built into the system.
+- **They Have No Side Effects:** A pure function does not change any state outside of its own scope. It doesn't modify global variables, write to a file, or change its input parameters. FPS-R functions take values, perform calculations, and return results. That's it. Their only interaction with the outside world is through their inputs and their return value.
+
+> FPS-R is a pure mathematical algorithm — deterministic, stateless, and free from side effects.
+
+---
 

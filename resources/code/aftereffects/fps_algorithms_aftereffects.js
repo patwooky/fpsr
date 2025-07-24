@@ -3,17 +3,22 @@
 // This file is part of the FPS-R (Frame-Persistent Stateless Randomisation) project.
 // https://github.com/patwooky/FPSR_Algorithm
 
-// FPS-R (Frame-Persistent Stateless Randomisation) for Adobe After Effects
-// This expression contains both the Stacked Modulo (SM) and Quantised Switching (QS) algorithms.
+// Frame-Persistent Stateless Randomisation (FPS-R) for Adobe After Effects
+// FPS-R is a set of three algorithms that generate
+//     frame-persistent and stateless random values. 
+// This file contains three stateless, frame-persistent randomization algorithms:
+//     Stacked Modulo (SM), Toggled Modulo (TM) and Quantised Switching (QS).
+// It uses a custom portable_rand() function to ensure
+// deterministic and consistent results across any platform.
 //
 // --- HOW TO USE ---
 // 1. Create a Null Object named "FPSR_Controls".
 // 2. Add Expression Controls (Sliders, Checkboxes) to the "FPSR_Controls" layer for each parameter you want to tweak.
 // 3. Copy and paste this entire script into the expression editor of the property you want to animate (e.g., Position, Rotation, a Slider).
-// 4. At the bottom of the script, choose which algorithm to run (fpsr_sm or fpsr_qs) and assign its output to your property.
+// 4. At the bottom of the script, choose which algorithm to run (fpsr_sm, fpsr_tm, or fpsr_qs) and assign its output to your property.
 
 // ===================================================================================
-// ==  PORTABLE RAND FUNCTION (Used by both SM and QS)                            ==
+// ==  PORTABLE RAND FUNCTION (Used by SM, TM and QS)                               ==
 // ===================================================================================
 
 function portable_rand(seed) {
@@ -25,7 +30,7 @@ function portable_rand(seed) {
 
 
 // ===================================================================================
-// ==  ALGORITHM 1: STACKED MODULO (SM)                                           ==
+// ==  ALGORITHM 1: STACKED MODULO (SM)                                             ==
 // ===================================================================================
 
 /**
@@ -34,39 +39,40 @@ function portable_rand(seed) {
  * "hold duration". Second, it generates a stable integer for that duration,
  * which is then used as a seed to produce the final, held random value.
  *
- * int frame: The current frame or time input.
- * int minHold: The minimum duration (in frames) for a value to hold.
- * int maxHold: The maximum duration (in frames) for a value to hold.
- * int reseedInterval: The fixed interval at which a new hold duration is calculated.
- * int seedInner: An offset for the random duration calculation to create unique sequences.
- * int seedOuter: An offset for the final value calculation to create unique sequences.
- * int finalRandSwitch: A flag that can turn off the final randomisation step.
- * return 
- *     when finalRandSwitch is 0: 
- *         An integer value representing the currently held frame 
- *         that remains constant for the hold duration.
- *     when finalRandSwitch is 1: 
- *         A float value between 0.0 and 1.0 that remains constant for the hold duration.
+ * @param {number} frame The current frame or time input.
+ * @param {number} minHold The minimum duration (in frames) for a value to hold.
+ * @param {number} maxHold The maximum duration (in frames) for a value to hold.
+ * @param {number} reseedInterval The fixed interval at which a new hold duration is calculated.
+ * @param {number} seedInner An offset for the random duration calculation to create unique sequences.
+ * @param {number} seedOuter An offset for the final value calculation to create unique sequences.
+ * @param {boolean} finalRandSwitch A flag that can turn off the final randomisation step.
+ * @returns {number} 
+ * when finalRandSwitch is false: 
+ * An integer value representing the currently held frame state.
+ * when finalRandSwitch is true: 
+ * A float value between 0.0 and 1.0 that remains constant for the hold duration.
  */
 function fpsr_sm(frame, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch) {
     // --- 1. Calculate the random hold duration ---
-    if (reseedInterval < 1) { reseedInterval = 1; }
+    if (reseedInterval < 1) { reseedInterval = 1; } // Prevent division by zero.
 
     var rand_for_duration = portable_rand(seedInner + frame - (frame % reseedInterval));
     var holdDuration = Math.floor(minHold + rand_for_duration * (maxHold - minHold));
 
-    if (holdDuration < 1) { holdDuration = 1; }
+    if (holdDuration < 1) { holdDuration = 1; } // Prevent division by zero.
 
     // --- 2. Generate the stable integer "state" for the hold period ---
+    // This value is constant for the entire duration of the hold.
     var held_integer_state = (seedOuter + frame) - ((seedOuter + frame) % holdDuration);
 
     // --- 3. Use the stable state as a seed for the final random value (or bypass) ---
+    // Because the seed is stable, the final value is also stable.
     var fpsr_output;
     if (finalRandSwitch) {
-        // If true, apply the final randomisation hash.
+        // If finalRandSwitch is true, we apply the final randomisation step.
         fpsr_output = portable_rand(held_integer_state * 100000.0);
     } else {
-        // If false, return the raw integer state directly.
+        // If finalRandSwitch is false, we return the raw integer state directly.
         fpsr_output = held_integer_state;
     }
     return fpsr_output;
@@ -74,111 +80,154 @@ function fpsr_sm(frame, minHold, maxHold, reseedInterval, seedInner, seedOuter, 
 
 
 // ===================================================================================
-// ==  ALGORITHM 2: QUANTISED SWITCHING (QS)                                      ==
+// ==  ALGORITHM 2: TOGGLED MODULO (TM)                                             ==
 // ===================================================================================
 
 /**
- * @brief Generates a flickering, quantised value by switching between two sine wave streams.
- * @details This function creates two separate, quantised sine waves and switches
- * between them at a fixed interval to create complex, glitch-like patterns.
+ * @brief Generates a persistent value that holds for a rhythmically toggled duration.
+ * @details This function uses a deterministic switch to toggle the hold duration
+ * between two fixed periods. This creates a predictable, rhythmic, or mechanical
+ * "move-and-hold" pattern, as opposed to the organic randomness of SM.
  *
- * int frame: The current frame or time input.
- * float baseWaveFreq: The base frequency for the modulation wave of stream 1.
- * float stream2FreqMult: A multiplier for the second stream's frequency. If < 0, a default is used.
- * int quantLevelsMinMax: An array of two integers for the min and max quantisation levels.
- * int streamsOffset: An array of two integers to offset the frame for each stream.
- * int streamSwitchDur: The number of frames after which the streams switch. If < 1, a default is derived.
- * int stream1QuantDur: The duration for stream 1's quantisation switch. If < 1, a default is derived.
- * int stream2QuantDur: The duration for stream 2's quantisation switch. If < 1, a default is derived.
- * int finalRandSwitch: A flag that can turn off the final randomisation step.
- * return: A float value between 0.0 and 1.0 that remains constant for the hold duration.
+ * @param {number} frame The current frame or time input.
+ * @param {number} periodA The first hold duration (in frames).
+ * @param {number} periodB The second hold duration (in frames).
+ * @param {number} periodSwitch The fixed interval at which the hold duration is toggled.
+ * @param {number} seedInner An offset for the toggle clock to de-sync it from the main clock.
+ * @param {number} seedOuter An offset for the main clock to create unique sequences.
+ * @param {boolean} finalRandSwitch A flag that can turn off the final randomisation step.
+ * @returns {number}
+ * when finalRandSwitch is false: 
+ * An integer value representing the currently held frame state.
+ * when finalRandSwitch is true: 
+ * A float value between 0.0 and 1.0 that holds for the toggled duration.
  */
-function fpsr_qs(frame, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch) {
-    // --- 1. Set default durations if not provided ---
-    if (streamSwitchDur < 1) {
-        streamSwitchDur = Math.floor((1.0 / baseWaveFreq) * 0.76);
-    }
-    if (stream1QuantDur < 1) {
-        stream1QuantDur = Math.floor((1.0 / baseWaveFreq) * 1.2);
-    }
-    if (stream2QuantDur < 1) {
-        stream2QuantDur = Math.floor((1.0 / baseWaveFreq) * 0.9);
-    }
-    // Ensure durations are at least 1 frame
-    if (streamSwitchDur < 1) { streamSwitchDur = 1; }
-    if (stream1QuantDur < 1) { stream1QuantDur = 1; }
-    if (stream2QuantDur < 1) { stream2QuantDur = 1; }
+function fpsr_tm(frame, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch) {
+    // --- 1. Determine the hold duration by toggling between two periods ---
+    if (periodSwitch < 1) { periodSwitch = 1; } // Prevent division by zero.
 
-    // --- 2. Calculate quantisation levels for each stream ---
-    var s1_quant_level;
-    if ((streamsOffset[0] + frame) % stream1QuantDur < stream1QuantDur * 0.5) {
-        s1_quant_level = quantLevelsMinMax[0];
-    } else {
-        s1_quant_level = quantLevelsMinMax[1];
-    }
-
-    var s2_quant_level;
-    var STREAM2_QUANT_RATIO_MIN = 1.24;
-    var STREAM2_QUANT_RATIO_MAX = 0.66;
-    if ((streamsOffset[1] + frame) % stream2QuantDur < stream2QuantDur * 0.5) {
-        s2_quant_level = Math.floor(quantLevelsMinMax[0] * STREAM2_QUANT_RATIO_MIN);
-    } else {
-        s2_quant_level = Math.floor(quantLevelsMinMax[1] * STREAM2_QUANT_RATIO_MAX);
-    }
-    // Ensure quantisation levels are at least 1
-    if (s1_quant_level < 1) { s1_quant_level = 1; }
-    if (s2_quant_level < 1) { s2_quant_level = 1; }
-
-    // --- 3. Generate the two quantised sine wave streams ---
-    var STREAM2_DEFAULT_FREQ_MULT = 3.7;
-    if (stream2FreqMult < 0) {
-        stream2FreqMult = STREAM2_DEFAULT_FREQ_MULT;
-    }
+    // The "inner clock" is offset by seedInner to de-correlate it from the main frame.
+    var inner_clock_frame = seedInner + frame;
     
-    // The output of floor(sin(...) * level) / level is in the range [-1, 1]
-    var stream1 = Math.floor(Math.sin((streamsOffset[0] + frame) * baseWaveFreq) * s1_quant_level) / s1_quant_level;
-    var stream2 = Math.floor(Math.sin((streamsOffset[1] + frame) * baseWaveFreq * stream2FreqMult) * s2_quant_level) / s2_quant_level;
-
-    // --- 4. Switch between the two streams ---
-    var active_stream_val;
-    if ((frame % streamSwitchDur) < streamSwitchDur / 2) {
-        active_stream_val = stream1;
+    var holdDuration;
+    // The ternary switch: toggle between periodA and periodB at a fixed rhythm.
+    if ((inner_clock_frame % periodSwitch) < (periodSwitch * 0.5)) {
+        holdDuration = periodA;
     } else {
-        active_stream_val = stream2;
+        holdDuration = periodB;
     }
 
-    // --- 5. Hash the final output or bypass to return the raw signal ---
+    if (holdDuration < 1) { holdDuration = 1; } // Prevent division by zero.
+
+    // --- 2. Generate the stable integer "state" for the hold period ---
+    // The "outer clock" is offset by seedOuter to create unique output sequences.
+    var outer_clock_frame = seedOuter + frame;
+    var held_integer_state = outer_clock_frame - (outer_clock_frame % holdDuration);
+
+    // --- 3. Use the stable state as a seed for the final random value (or bypass) ---
     var fpsr_output;
     if (finalRandSwitch) {
-        // If true, apply the final randomisation step.
-        fpsr_output = portable_rand(active_stream_val * 100000.0);
+        // If true, apply the final randomisation hash.
+        fpsr_output = portable_rand(held_integer_state);
     } else {
-        // If false, scale the [-1, 1] signal to the [0, 1] range.
-        fpsr_output = 0.5 * active_stream_val + 0.5;
+        // If false, return the raw integer state directly.
+        fpsr_output = held_integer_state; 
     }
     return fpsr_output;
 }
 
 
 // ===================================================================================
-// ==  EXECUTION AND PARAMETER SETUP                                              ==
+// ==  ALGORITHM 3: QUANTISED SWITCHING (QS)                                        ==
+// ===================================================================================
+
+/**
+ * @brief Generates a flickering, quantised value by switching between two sine wave streams.
+ * @details This function creates two separate, quantised sine waves. For each stream,
+ * a new random quantisation level is chosen from within the [min, max] range at a
+ * set interval. The function then switches between these two streams to create
+ * complex, glitch-like patterns.
+ *
+ * @param {number} frame The current frame or time input.
+ * @param {number} baseWaveFreq The base frequency for the modulation wave of stream 1.
+ * @param {number} stream2FreqMult A multiplier for the second stream's frequency.
+ * @param {Array<number>} quantLevelsMinMax An array of two integers for the min and max quantisation levels.
+ * @param {Array<number>} streamsOffset An array of two integers to offset the frame for each stream's sine wave.
+ * @param {Array<number>} quantOffsets An array of two integers to offset the random quantisation selection for each stream.
+ * @param {number} streamSwitchDur The number of frames after which the streams switch.
+ * @param {number} stream1QuantDur The duration for which stream 1's random quantisation level is held.
+ * @param {number} stream2QuantDur The duration for which stream 2's random quantisation level is held.
+ * @param {boolean} finalRandSwitch A flag that can turn off the final randomisation step.
+ * @returns {number} A float value between 0.0 and 1.0.
+ */
+function fpsr_qs(
+    frame, baseWaveFreq, stream2FreqMult,
+    quantLevelsMinMax, streamsOffset, quantOffsets,
+    streamSwitchDur, stream1QuantDur, stream2QuantDur,
+    finalRandSwitch)
+{
+    // --- 1. Set default durations if not provided ---
+    if (streamSwitchDur < 1) { streamSwitchDur = Math.floor((1.0 / baseWaveFreq) * 0.76); }
+    if (stream1QuantDur < 1) { stream1QuantDur = Math.floor((1.0 / baseWaveFreq) * 1.2); }
+    if (stream2QuantDur < 1) { stream2QuantDur = Math.floor((1.0 / baseWaveFreq) * 0.9); }
+    
+    if (streamSwitchDur < 1) { streamSwitchDur = 1; }
+    if (stream1QuantDur < 1) { stream1QuantDur = 1; }
+    if (stream2QuantDur < 1) { stream2QuantDur = 1; }
+
+    // --- 2. Calculate random quantisation levels for each stream ---
+    var quant_min = quantLevelsMinMax[0];
+    var quant_max = quantLevelsMinMax[1];
+    var quant_range = quant_max - quant_min + 1;
+
+    // --- Stream 1 Quant Level ---
+    var s1_quant_seed = (quantOffsets[0] + frame) - ((quantOffsets[0] + frame) % stream1QuantDur);
+    var s1_rand_for_quant = portable_rand(s1_quant_seed);
+    var s1_quant_level = quant_min + Math.floor(s1_rand_for_quant * quant_range);
+
+    // --- Stream 2 Quant Level ---
+    var s2_quant_seed = (quantOffsets[1] + frame) - ((quantOffsets[1] + frame) % stream2QuantDur);
+    var s2_rand_for_quant = portable_rand(s2_quant_seed);
+    var s2_quant_level = quant_min + Math.floor(s2_rand_for_quant * quant_range);
+
+    if (s1_quant_level < 1) { s1_quant_level = 1; }
+    if (s2_quant_level < 1) { s2_quant_level = 1; }
+
+    // --- 3. Generate the two quantised sine wave streams ---
+    if (stream2FreqMult < 0) { stream2FreqMult = 3.7; }
+
+    var stream1 = Math.floor(Math.sin((streamsOffset[0] + frame) * baseWaveFreq) * s1_quant_level) / s1_quant_level;
+    var stream2 = Math.floor(Math.sin((streamsOffset[1] + frame) * baseWaveFreq * stream2FreqMult) * s2_quant_level) / s2_quant_level;
+
+    // --- 4. Switch between the two streams ---
+    var active_stream_val = ((frame % streamSwitchDur) < streamSwitchDur / 2) ? stream1 : stream2;
+
+    // --- 5. Hash the final output or bypass ---
+    var fpsr_output;
+    if (finalRandSwitch) {
+        fpsr_output = portable_rand(Math.floor(active_stream_val * 100000.0));
+    } else {
+        fpsr_output = 0.5 * active_stream_val + 0.5; // Scale from [-1, 1] to [0, 1]
+    }
+    return fpsr_output;
+}
+
+
+// ===================================================================================
+// ==  EXECUTION AND PARAMETER SETUP                                                ==
 // ===================================================================================
 
 // --- Common Parameters ---
-// Common params SM - comment out if not using
-// frame offset slider
-// try { var frameOffset = thisComp.layer("FPSR_Controls").effect("SM frameOffset")("Slider"); } catch(e) { var smFrameOffset = 0; }
-
-// Common params QS - comment out if not using
-// frame offset slider
-try { var frameOffset = thisComp.layer("FPSR_Controls").effect("QS frameOffset")("Slider"); } catch(e) { var smFrameOffset = 0; }
-
-// do not coment out
+// Link to a master frame offset slider to easily shift the entire animation in time.
+try { 
+    var frameOffset = thisComp.layer("FPSR_Controls").effect("Master frameOffset")("Slider"); 
+} catch(e) { 
+    var frameOffset = 0; 
+}
 var currentFrame = Math.round(time / thisComp.frameDuration) + frameOffset;
 
 // --- Link to Expression Controls on your "FPSR_Controls" Null Layer ---
-// Example: var minHold = thisComp.layer("FPSR_Controls").effect("minHold")("Slider");
-// If a control doesn't exist, a default value is used.
+// If a control doesn't exist on the layer, a default value is used.
 
 // SM Parameters
 try { var p_sm_minHold = thisComp.layer("FPSR_Controls").effect("SM minHold")("Slider"); } catch(e) { var p_sm_minHold = 16; }
@@ -186,30 +235,88 @@ try { var p_sm_maxHold = thisComp.layer("FPSR_Controls").effect("SM maxHold")("S
 try { var p_sm_reseed = thisComp.layer("FPSR_Controls").effect("SM reseedInterval")("Slider"); } catch(e) { var p_sm_reseed = 9; }
 try { var p_sm_seedIn = thisComp.layer("FPSR_Controls").effect("SM seedInner")("Slider"); } catch(e) { var p_sm_seedIn = -41; }
 try { var p_sm_seedOut = thisComp.layer("FPSR_Controls").effect("SM seedOuter")("Slider"); } catch(e) { var p_sm_seedOut = 23; }
-try { var p_sm_bypass = thisComp.layer("FPSR_Controls").effect("SM Bypass Rand")("Checkbox") == 1 ? false : true; } catch(e) { var p_sm_bypass = true; }
+try { var p_sm_bypass = thisComp.layer("FPSR_Controls").effect("SM Bypass Rand")("Checkbox").value ? false : true; } catch(e) { var p_sm_bypass = true; }
+
+// TM Parameters
+try { var p_tm_periodA = thisComp.layer("FPSR_Controls").effect("TM periodA")("Slider"); } catch(e) { var p_tm_periodA = 10; }
+try { var p_tm_periodB = thisComp.layer("FPSR_Controls").effect("TM periodB")("Slider"); } catch(e) { var p_tm_periodB = 25; }
+try { var p_tm_switchDur = thisComp.layer("FPSR_Controls").effect("TM switch_duration")("Slider"); } catch(e) { var p_tm_switchDur = 30; }
+try { var p_tm_seedIn = thisComp.layer("FPSR_Controls").effect("TM seedInner")("Slider"); } catch(e) { var p_tm_seedIn = 15; }
+try { var p_tm_seedOut = thisComp.layer("FPSR_Controls").effect("TM seedOuter")("Slider"); } catch(e) { var p_tm_seedOut = 0; }
+try { var p_tm_bypass = thisComp.layer("FPSR_Controls").effect("TM Bypass Rand")("Checkbox").value ? false : true; } catch(e) { var p_tm_bypass = true; }
 
 // QS Parameters
 try { var p_qs_baseFreq = thisComp.layer("FPSR_Controls").effect("QS baseWaveFreq")("Slider"); } catch(e) { var p_qs_baseFreq = 0.012; }
 try { var p_qs_freqMult = thisComp.layer("FPSR_Controls").effect("QS stream2FreqMult")("Slider"); } catch(e) { var p_qs_freqMult = 3.1; }
-try { var p_qs_qMin = thisComp.layer("FPSR_Controls").effect("QS quantMin")("Slider"); } catch(e) { var p_qs_qMin = 12; }
-try { var p_qs_qMax = thisComp.layer("FPSR_Controls").effect("QS quantMax")("Slider"); } catch(e) { var p_qs_qMax = 22; }
-try { var p_qs_off1 = thisComp.layer("FPSR_Controls").effect("QS offset1")("Slider"); } catch(e) { var p_qs_off1 = 0; }
-try { var p_qs_off2 = thisComp.layer("FPSR_Controls").effect("QS offset2")("Slider"); } catch(e) { var p_qs_off2 = 76; }
+try { var p_qs_qMin = thisComp.layer("FPSR_Controls").effect("QS quantMin")("Slider"); } catch(e) { var p_qs_qMin = 4; }
+try { var p_qs_qMax = thisComp.layer("FPSR_Controls").effect("QS quantMax")("Slider"); } catch(e) { var p_qs_qMax = 12; }
+try { var p_qs_off1 = thisComp.layer("FPSR_Controls").effect("QS streamOffset1")("Slider"); } catch(e) { var p_qs_off1 = 0; }
+try { var p_qs_off2 = thisComp.layer("FPSR_Controls").effect("QS streamOffset2")("Slider"); } catch(e) { var p_qs_off2 = 76; }
+try { var p_qs_qOff1 = thisComp.layer("FPSR_Controls").effect("QS quantOffset1")("Slider"); } catch(e) { var p_qs_qOff1 = 10; }
+try { var p_qs_qOff2 = thisComp.layer("FPSR_Controls").effect("QS quantOffset2")("Slider"); } catch(e) { var p_qs_qOff2 = 81; }
 try { var p_qs_switchDur = thisComp.layer("FPSR_Controls").effect("QS streamSwitchDur")("Slider"); } catch(e) { var p_qs_switchDur = 24; }
 try { var p_qs_qDur1 = thisComp.layer("FPSR_Controls").effect("QS quantDur1")("Slider"); } catch(e) { var p_qs_qDur1 = 16; }
 try { var p_qs_qDur2 = thisComp.layer("FPSR_Controls").effect("QS quantDur2")("Slider"); } catch(e) { var p_qs_qDur2 = 20; }
-try { var p_qs_bypass = thisComp.layer("FPSR_Controls").effect("QS Bypass Rand")("Checkbox") == 1 ? false : true; } catch(e) { var p_qs_bypass = true; }
+try { var p_qs_bypass = thisComp.layer("FPSR_Controls").effect("QS Bypass Rand")("Checkbox").value ? false : true; } catch(e) { var p_qs_bypass = true; }
 
 
 // --- CHOOSE WHICH ALGORITHM TO RUN ---
-// Uncomment the algorithm you want to use.
+// Uncomment the algorithm you want to use and comment out the others.
+
+var finalValue;
 
 // Run Stacked Modulo (SM)
-// var finalValue = fpsr_sm(currentFrame, p_sm_minHold, p_sm_maxHold, p_sm_reseed, p_sm_seedIn, p_sm_seedOut, p_sm_bypass);
+/*
+// Sample calling code for SM
+var frame = currentFrame;
+var minHoldFrames = p_sm_minHold;
+var maxHoldFrames = p_sm_maxHold;
+var reseedFrames = p_sm_reseed;
+var offsetInner = p_sm_seedIn;
+var offsetOuter = p_sm_seedOut;
+var finalRandSwitch = p_sm_bypass;
+
+finalValue = fpsr_sm(frame, minHoldFrames, maxHoldFrames, reseedFrames, offsetInner, offsetOuter, finalRandSwitch);
+var randVal_previous = fpsr_sm(frame - 1, minHoldFrames, maxHoldFrames, reseedFrames, offsetInner, offsetOuter, finalRandSwitch);
+var changed = (finalValue != randVal_previous); // 'changed' is true if the value changed from the previous frame
+*/
+
+// Run Toggled Modulo (TM)
+/*
+// Sample calling code for TM
+var frame = currentFrame;
+var period_A = p_tm_periodA;
+var period_B = p_tm_periodB;
+var switch_duration = p_tm_switchDur;
+var offset_inner = p_tm_seedIn;
+var offset_outer = p_tm_seedOut;
+var final_rand_switch = p_tm_bypass;
+
+finalValue = fpsr_tm(frame, period_A, period_B, switch_duration, offset_inner, offset_outer, final_rand_switch);
+var randVal_previous = fpsr_tm(frame - 1, period_A, period_B, switch_duration, offset_inner, offset_outer, final_rand_switch);
+var changed = (finalValue != randVal_previous); // 'changed' is true if the value changed from the previous frame
+*/
 
 // Run Quantised Switching (QS)
-var finalValue = fpsr_qs(currentFrame, p_qs_baseFreq, p_qs_freqMult, [p_qs_qMin, p_qs_qMax], [p_qs_off1, p_qs_off2], p_qs_switchDur, p_qs_qDur1, p_qs_qDur2, p_qs_bypass);
+// Sample calling code for QS
+var frame = currentFrame;
+var baseWaveFreq = p_qs_baseFreq;
+var stream2freqMult = p_qs_freqMult;
+var quantLevelsMinMax = [p_qs_qMin, p_qs_qMax];
+var streamsOffset = [p_qs_off1, p_qs_off2];
+var quantOffsets = [p_qs_qOff1, p_qs_qOff2];
+var streamSwitchDur = p_qs_switchDur;
+var stream1QuantDur = p_qs_qDur1;
+var stream2QuantDur = p_qs_qDur2;
+var finalRandSwitch = p_qs_bypass;
 
+finalValue = fpsr_qs(
+    frame, baseWaveFreq, stream2freqMult, quantLevelsMinMax, 
+    streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch);
+var randVal_previous = fpsr_qs(
+    frame - 1, baseWaveFreq, stream2freqMult, quantLevelsMinMax, 
+    streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch);
+var changed = (finalValue != randVal_previous); // 'changed' is true if the value changed from the previous frame
 
 // --- APPLY THE FINAL VALUE TO THE PROPERTY ---
 
@@ -217,7 +324,7 @@ var finalValue = fpsr_qs(currentFrame, p_qs_baseFreq, p_qs_freqMult, [p_qs_qMin,
 finalValue;
 
 // For a 2D property (like 2D Position)
-// [value[0], finalValue]; // Example: drives Y position only
+// [value[0], finalValue * 100]; // Example: drives Y position only, scaled by 100
 
 // For a 3D property (like 3D Position)
-// [value[0], finalValue, value[2]]; // Example: drives Y position only
+// [value[0], finalValue * 100, value[2]]; // Example: drives Y position only, scaled by 100
