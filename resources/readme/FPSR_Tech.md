@@ -1,5 +1,10 @@
 # FPS-R Technical Documentation
-##### This documentation is still in development. While every update strives to be accurate, there will be parts that are incomplete or inaccurate. 
+MIT License—[see LICENSE](../../LICENSE) for details.  
+Copyright (c) 2025 Woo Ker Yang (Patrick Woo) patrickwoo.1976@gmail.com
+If you reference or adapt this framework, please credit Patrick Woo and this repository.
+**This documentation is still in development.** 
+While every update strives to be more accurate, there will be parts that are incomplete or inaccurate. 
+
 
 # Table of Contents
 
@@ -66,7 +71,7 @@ Come as you are. Stay as long as you like. The phrasing engine is always running
 In this document, we will unpack the FPS-R methods by deconstructing their code into modular components. Each section examines how a fragment contributes to the resulting phrasing—allowing you to understand, modulate, and compose behaviour with precision.
 
 ### 🧾 Code Snippets Provided in this Repository
-The code examples in this repository are **platform-conscious**, not platform-specific. Each snippet has been deliberately shaped for **clarity of intent**, avoiding language-dependent operators (like ternaries), environment-specific idioms, or dependency-bound functions. Where expressive quirks exist (e.g. modulus, quantisation rhythms), they are surfaced with **plain logic and comments that explain the phrasing**, not just the math.
+The code examples in this repository are **platform-conscious**, not platform-specific. This is especially true for the C language implementation that has a diverse number of variants. Each snippet has been deliberately shaped for **clarity of intent**, avoiding language-dependent operators (like ternaries), environment-specific idioms, or dependency-bound functions. Where expressive quirks exist (e.g. modulus, quantisation rhythms), they are surfaced with **plain logic and comments that explain the phrasing**, not just the math.
 
 These implementations prioritise **readability, reproducibility, and minimal refactoring cost** across most C-family and expression-bound languages—including C++, Java, JavaScript, GLSL, HLSL, MEL, and Houdini VEX.
 
@@ -92,17 +97,30 @@ The FPS-R framework is designed to produce pseudo-random values that remain cons
 In these cases randomness in output is not the only desired component. _When_ these random outputs happen makes a huge difference, and these random values that hold for pseudo-random periods of time need to be stable from one frame to the next to create coherent and structured results. The "stateless" nature means it doesn't need to store any values between frames; the result is calculated purely from the input parameters, making it highly portable and efficient.
 
 ## 🔩 How FPS-R Works
+**The logic and structure behind phrased modulation**
 
-At its core, FPS-R operates through **coordinate-indexed determinism**. Whether evaluated over time (e.g., `$F`, `@Frame`) or space (`@P`, `uv`, `x`), it applies arithmetic logic—such as `mod()` cycles, `floor()` binning, and seeded `rand()` functions—to produce values that appear to hold, snap, or jump across defined intervals.
+At its core, FPS-R is built on **coordinate-indexed determinism**. Whether evaluated over time (`$F, @Frame`) or space (`@P, uv, x`), it applies a compact set of arithmetic operations—typically `mod()` cycles, `floor()` binning, and seeded `rand()` functions—to produce values that appear to **hold**, **snap**, or **jump** across predictable intervals.
 
-Despite its expressive output, FPS-R is strictly **stateless**. Each evaluation is contextually local: it derives its result solely from the current coordinate, without referencing previous frames or adjacent spatial samples.
+Each phrasing pattern is shaped by input parameters—such as modulation lengths, seeds, and offsets—but for any given coordinate, the output is **fully deterministic**. The same input yields the same output—every time, on every platform.
 
-This yields a surprising property: **discontinuities feel intentional**, and regions of apparent memory emerge—without any simulation or history tracking. It's a sleight of hand through math:  
-**perceived temporal coherence from purely evaluative logic.**
+FPS-R is also **stateless**. It doesn't track history or carry memory between evaluations. Instead, each result is derived solely from the current coordinate, making FPS-R highly portable across parallel systems, shader environments, and reactive pipelines.
+
+The result yields a surprising property, enabling a kind of expressive paradox: **discontinuities feel intentional, and apparent memory without simulation**. 
+
+It is a sleight of hand through math.
+
+> Perceived temporal coherence from purely evaluative logic
+
+### FPS-R Functions are "Mathematically Pure"
+All core FPS-R functions are **pure mathematical algorithms**, meaning they obey two key rules:
+1. **Determinism** Given the same inputs—such as `frame`, modulation ranges, and seed—FPS-R will always produce the same output. For example: `fpsr_sm(frame: 100, ...)` will yield identical results whether computed today, tomorrow, or in another system entirely.
+2. **No Side Effects** FPS-R functions do not alter global state, write to disk, mutate inputs, or produce hidden changes. They perform calculations and return their result—nothing more.
+
+> Purity guarantees repeatability, composability, and safety. FPS-R’s phrasing outputs can be freely reused, nested, and analyzed—with complete confidence.
 
 ---
 ## The 3 FPS-R Algorithms
-Given their common properties of stateless determinism, the 3 FPS-R algorithms have distinct personalities. Each algorithm offers a unique flavour of motion and randomness, providing a versatile toolkit for artists and developers. By understanding their individual characteristics, a user can select the perfect tool to bring their creative vision to life, whether it requires organic subtlety, mechanical precision, or chaotic energy.
+Given their common properties of stateless determinism, the 3 FPS-R algorithms have distinct personalities. Each algorithm offers a unique flavour of motion and randomness, providing a versatile toolkit for artists and developers. By understanding their individual characteristics, users of the framework can select the perfect tool to bring their creative vision to life, whether it requires organic subtlety, mechanical precision, or chaotic energy.
 
 ### FPS-R Algorithmic Characteristics and Personalities
 Here is a memorable way to describe the algorithms and their characteristics.
@@ -258,8 +276,15 @@ Implementation of the algorithms in a variety of software and environments.
 
 [**Code Implementations**](../code/) This high level directory in the repository contains the code implemented in several languages and platforms.
 
-### C
-[**Code in C**](../code/c/fpsr_algorithms.c) FPS-R SM and QS in portable C code that would run with minimal modifications in many c-style languages. 
+### 🧭 Source of Truth
+The **C implementation** serves as the canonical reference for FPS-R algorithms. All new features, refinements, and core logic will be developed and validated in C first—then ported to other languages and environments.
+
+If you encounter discrepancies between FPS-R outputs across platforms, or find that a feature isn’t yet supported in your language of choice, please consult the C code as the definitive source.
+
+> Found a mismatch or bug in a ported version? Let me know so I can align and update it. 
+
+### C (Source of Truth)
+[**Code in C**](../code/c_reference/fpsr_algorithms_reference.c) FPS-R SM and QS in portable C code that would run with minimal modifications in many c-style languages. 
 
 ### Python
 [**Code in Python**](../code/python/fpsr_algorithms.py) FPS-R SM and QS in a Python `.py` file.

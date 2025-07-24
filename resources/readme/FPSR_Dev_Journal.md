@@ -1,5 +1,11 @@
 # Development Reflections
-## _The Biology of an Idea_
+IT License—[see LICENSE](../../LICENSE) for details.  
+Copyright (c) 2025 Woo Ker Yang (Patrick Woo) patrickwoo.1976@gmail.com
+If you reference or adapt this framework, please credit Patrick Woo and this repository.
+**This documentation is still in development.** 
+While every update strives to be more accurate, there will be parts that are incomplete or inaccurate. 
+
+**_The Biology of an Idea_**
 
 # Table of Contents
 
@@ -263,8 +269,9 @@ _24 July 2025_
 
 This morning I was contemplating FPS-R as a stateless deterministic function, and I remembered mathematical functions were called "pure". I wondered if FPS-R was pure in a mathematical and software development context. I was thinking of pure maths functions like `sine()`, `cosine()`, where I can just supply the input parameters and it evaluates to an output. When I thought of pure, I thought of a "direct look-up" on a "simple function". I know I am wrong on so many levels, but that was what went through my mind.
 
-What is meant by _pure_ in both contexts:
-- **They are Deterministic:** A pure function will always return the same output for the same set of inputs. FPS-R functions do exactly this. fpsr_sm(frame: 100, ...) will produce the identical result today, tomorrow, or a year from now. This is a core feature I have built into the system.
+from Gemini:
+What is meant by _pure_ in both maths and software development:
+- **They are Deterministic:** A pure function will always return the same output for the same set of inputs. Your FPS-R functions do exactly this. `fpsr_sm(frame: 100, ...)` will produce the identical result today, tomorrow, or a year from now. This is a core feature you have built into the system.
 - **They Have No Side Effects:** A pure function does not change any state outside of its own scope. It doesn't modify global variables, write to a file, or change its input parameters. FPS-R functions take values, perform calculations, and return results. That's it. Their only interaction with the outside world is through their inputs and their return value.
 
 > FPS-R is a pure mathematical algorithm — deterministic, stateless, and free from side effects.
