@@ -955,7 +955,7 @@ You tell FPS-R which frame (or position) it's in, and it sculpts a value based o
 modular rhythms, seeded randomness, layered transitions.  
 From that alone, it creates the illusion of thought—without ever thinking.
 
-FPS-R unfolds through two intertwined methods.  
+FPS-R unfolds through three intertwined methods.  
 Each one offers a unique lens—structured pulses that unlock different facets of unpredictability.
   
 
