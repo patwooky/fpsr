@@ -15,13 +15,13 @@ While every update strives to be more accurate, there will be parts that are inc
 - [Algorithmic Detail, Code Structure, Usage Notes](#algorithmic-detail-code-structure-usage-notes)
   - [🧾 Code Snippets Provided in this Repository](#-code-snippets-provided-in-this-repository)
 - [FPS-R Introduction](#fps-r-introduction)
-- [🔩 How FPS-R Works](#-how-fps-r-works)
+- [🔩 How FPS-R Works: The Core Principles](#-how-fps-r-works-the-core-principles)
     - [🧮 FPS-R Functions are Mathematically Pure](#-fps-r-functions-are-mathematically-pure)
-- [⚙️ Features of FPS-R](#️-features-of-fps-r)
-  - [🧠 FPS-R Seems to Remember](#-fps-r-seems-to-remember)
-  - [🧳 FPS-R is Stateless](#-fps-r-is-stateless)
-  - [🧩 FPS-R is Deterministic](#-fps-r-is-deterministic)
-  - [⚖️ FPS-R Plays Well with Others](#️-fps-r-plays-well-with-others)
+- [⚙️ Key Features & Benefits](#️-key-features--benefits)
+  - [🧠 Implicit Memory: The Illusion of Intent](#-implicit-memory-the-illusion-of-intent)
+  - [🌐 Portable by Design: Cross-Platform Integrity](#-portable-by-design-cross-platform-integrity)
+  - [⚡ Extremely Lightweight: Computationally Frugal](#-extremely-lightweight-computationally-frugal)
+  - [⚖️ FPS-R Plays Well with Others: Safe Composability](#️-fps-r-plays-well-with-others-safe-composability)
     - [Playing Well with Everybody](#playing-well-with-everybody)
     - [Playing Better with Stateless Operators](#playing-better-with-stateless-operators)
 - [🌀 How It Works: Stacked Modulo (SM)](#-how-it-works-stacked-modulo-sm)
@@ -130,6 +130,28 @@ While some language-specific adjustment may still be necessary—such as:
 > These snippets are not drop-in libraries—they're reference phrasing kernels. Use them to reconstruct modulation logic in your language of choice, knowing that the behaviour should survive the translation.
 
 ## FPS-R Introduction
+### What is FPS-R?
+FPS-R is Frame-Persistent Stateless Randomisation. 
+
+- **A grammar** describing an observed phenomenon of motion and timing in nature. This universal rhythm expands to human activity, social interaction, and organisational behaviour in growth and interaction with the larger world.
+- **A framework** of tools to enable mathematical models and software applications to articulate in this grammatical space, to describe the observed phenomenon of Move and Hold.
+- A collection of **pure mathematical algorithms** and **programming functions** that enables the expression of this phenomenon through maths and computation. 
+
+FPS-R is all of the above.
+
+FPS-R expresses this phenomenon through the numerical grammar of random values that hold and jump with natural freedom. 
+
+The tools feature parameters that allows for the intentional control and shaping of their output signals. Through these controls, FPS-R is able replicate and create a wide gamut of modulation phrasing behaviours, expressing movement and modulation of states in scenarios across wide-ranging time-frames:
+- micro-seconds: the bursts and holds of human eye saccades, "instantaneous" change of positions and flight paths in small insects like mosquitoes and flies
+- real-time: expression of decisions and hesitations in a chess game by players.
+- weeks/months: animal migration patterns that are non linear in direction and progression.
+- decades: simulating the progressive growth of organic vegetation reclaiming abandoned structures, or the weathering and erosion of geographic formations.
+- centuries: tectonic shifts of the Earth's crust or volcanic activities. 
+
+In all these cases, the FPS-R signals can configured to trigger and select from a variety of discrete states across a variety of intensities. These can then simulate, emulate observed and recorded phenomenon, and even create new situations to study what-if scenarios.
+
+In fact, the FPS-R framework comprises of 3 characteristically distinct algorithms that achieve the Random Move and Hold phenomenon while preserving a set of core algorithmic properties — **stateless**, **deterministic** and **traceable**.
+
 The FPS-R framework is designed to produce pseudo-random values that remain constant for a specific, but randomly determined, duration. This "frame persistence" is essential for applications with simulated organic behaviour, such as:
 - natural motion in robotics, 
 - human-like hesitation and feeling of intent in game theory and strategic planning and simulations, 
@@ -139,62 +161,49 @@ The FPS-R framework is designed to produce pseudo-random values that remain cons
 - natural attention shifts and focus drifts in intelligent cognitive systems.
 > For a full list of suggested applications please visit [FPSR_Applications](FPSR_Applications.md)
 
-In these cases randomness in output is not the only desired component. _When_ these random outputs happen makes a huge difference, and these random values that hold for pseudo-random periods of time need to be stable from one frame to the next to create coherent and structured results. The "stateless" nature means it doesn't need to store any values between frames; the result is calculated purely from the input parameters, making it highly portable and efficient.
+In these cases, randomness in output is not the only desired component.
 
-## 🔩 How FPS-R Works
-**The logic and structure behind phrased modulation**
+_When_ these random outputs change their values also makes a huge difference. These random values that hold for pseudo-random periods of time need to be stable from one frame to the next during their holding periods to create coherent and structured results. 
 
-At its core, FPS-R is built on **coordinate-indexed determinism**. Whether evaluated over time (`$F, @Frame`) or space (`@P, uv, x`), it applies a compact set of arithmetic operations—typically `mod()` cycles, `floor()` binning, and seeded `rand()` functions—to produce values that appear to **hold**, **snap**, or **jump** across predictable intervals.
+## 🔩 How FPS-R Works: The Core Principles
+At their centre, FPS-R algorithms are designed and built around these core principles.
 
-Each phrasing pattern is shaped by input parameters—such as modulation lengths, seeds, and offsets—but for any given coordinate, the output is **fully deterministic**. The same input yields the same output—every time, on every platform.
+### 🧩 Deterministic: Perfect Repeatability
+With the same inputs—such as frame, modulation ranges, and seed—FPS-R will always produce the exact same output. This ensures reproducible behavior across simulations, systems and operating platforms. It also enables reliable debugging, and composable structure.
 
-FPS-R is also **stateless**. It doesn't track history or carry memory between evaluations. Instead, each result is derived solely from the current coordinate, making FPS-R highly portable across parallel systems, shader environments, and reactive pipelines.
+### 🧳 Stateless: No Memory Required
+FPS-R evaluates in-place, without any dependency on past or future frames. It doesn't track history, carry memory between evaluations, or require temporal recursion. Each result is derived solely from the current coordinate and parameters. This makes FPS-R highly portable across parallel systems, shader environments, and reactive pipelines.
 
-The result yields a surprising property, enabling a kind of expressive paradox: **discontinuities feel intentional, and apparent memory without simulation**. 
+### 🧮 Mathematically Pure: Safe and Predictable
+All core FPS-R functions are pure mathematical algorithms. They are deterministic and have no side effects, meaning they do not alter global state, write to disk, or mutate their inputs. This purity guarantees repeatability, composability, and safety in any environment.
 
-It is a sleight of hand through math.
+The result yields a surprising property, enabling a kind of expressive paradox: **discontinuities feel intentional**, and **apparent memory without simulation**. 
 
 > Perceived temporal coherence from purely evaluative logic
 
 ---
-## ⚙️ Features of FPS-R
-This section will elaborate on the following unique feature that makes FPS-R algorithms so optimised and efficient at achieving the move and hold behaviour.
+## ⚙️ Key Features & Benefits
+The core principles behind FPS-R algorithms unlock powerful and unique uses cases that emerge from them.
 
-Understanding how FPS-R is uniquely different from existing techniques and solutions requires a closer look at what we mean by "stateless" and "deterministic":
+### 🧠 Implicit Memory: The Illusion of Intent
+The emergence of "memory" is implicit and inherently encoded into the algorithm's output. This creates the effect of **Memoryless Mimicry**—a system that feels like it remembers and holds values for a duration, all without using any stateful techniques or simulation buffers.
 
-### 🧠 FPS-R Seems to Remember
-Due to how the algorithms are formulated and constructed, FPS-R algorithms behave like they remember. This means that a random value is held for a number of frames before "moving on" to the next random value. Before FPS-R, this behaviour is usually achieved through stateful methods. If the result of FPS-R is shown to a programmer or technical artist for the first time, he or she would probably believe this to be coming from a stateful technique that involves remembering that random number from the previous frame and holding it the value with a counter until the next reseed.
+### 🌐 Portable by Design: Cross-Platform Integrity
+The framework was developed to be compatible with a wide number of languages and platforms. The code is intentionally "platform-conscious, not platform-specific," using plain logic and fundamental operations to ensure the core phrasing ports cleanly to C++, JavaScript, GLSL, VEX, MEL, and more.
 
-This is the foundation of what we've come to call:
-> **🪞 Memoryless Mimicry**
-> A simulation remembers so it can anticipate. FPS-R forgets, but still manages to feel like it remembers.
+### ⚡ Extremely Lightweight: Computationally Frugal
+The framework is highly efficient by design, making it suitable for real-time applications and performance-critical environments. This is achieved through:
+- **Integer-Based Core:** An intentional use of integer math for core timing and state logic avoids common floating-point inaccuracies and is computationally efficient.
+- **Simple Functions:** It relies on pure, uncomplicated math functions (`sin`, `floor`, `%`(modulo)) with no heavy dependencies or external libraries.
 
-### 🧳 FPS-R is Stateless
+### 📈 Scalable Functionality: Power on Demand
+The framework is designed to be scalable, offering advanced features with additional, optimised computation overheads. A **Level of Detail (LOD)** parameter allows users to request deeper analysis only when needed, giving them direct control over the performance/power trade-off. This unlocks powerful features such as:
+- **`has_changed` awareness** to indicate when the value has changed from the previous frame.
+- **Normalised hold-cycle progress awareness** a value of (0.0 to 1.0) to indicate the progress of the current frame through the current holding period. _(yet to implement)_
+- **Last-changed and next-change frame awareness** to be able to give explicit frame numbers for the start and end of the current hold cycle. _(yet to implement)_
+- **Last and Next Segment look-back and look-ahead** an even deeper insight (more compute overheads) into the previous hold segment and the next hold segment. _(yet to implement)_
 
-Stateful systems rely on memory—they accumulate, simulate, or propagate values over time. In contrast, **FPS-R is stateless**: it evaluates in-place, without any dependency on past or future frames.
-
-A typical FPS-R expression evaluates a jump or hold using only the _current frame index_ and _seeded, basic math functions_. No buffers. No temporal recursion. Just present-tense logic that _feels_ retrospective.
-
-This quality makes FPS-R not only performant, but also **portable and resilient**. Its behaviour can be trusted in multi-threaded, parallel, or distributed contexts without simulation overhead.
-
-### 🧩 FPS-R is Deterministic
-
-With the same inputs—frame number, seed parameters, and method—FPS-R always produces the same output. This deterministic footprint enables:
-
-- 🧪 Reproducible behaviour across simulations, tests, or procedural evaluations
-- 🛠️ Reliable debugging and tuning—behaviour is traceable and consistent
-- 🎛️ Composable structure—multiple FPS-R layers can interact without uncertainty
-- 📈 Cross-domain applicability—whether in robotics, interaction design, motion synthesis, or data-driven generative tools, repeatability ensures trust
-- 🧠 Expressive layering: deterministic scaffolds enable deliberate rhythm clashes, controlled glitches, and predictable emergent timing behaviours between the signal systems
-
-### 🧮 FPS-R Functions are Mathematically Pure
-All core FPS-R functions are **pure mathematical algorithms**, meaning they obey two key rules:
-1. **Determinism** Given the same inputs—such as `frame`, modulation ranges, and seed—FPS-R will always produce the same output. For example: `fpsr_sm(frame: 100, ...)` will yield identical results whether computed today, tomorrow, or in another system entirely.
-2. **No Side Effects** FPS-R functions do not alter global state, write to disk, mutate inputs, or produce hidden changes. They perform calculations and return their result—nothing more.
-
-> Purity guarantees repeatability, composability, and safety. FPS-R’s phrasing outputs can be freely reused, nested, and analyzed—with complete confidence.
-
-### ⚖️ FPS-R Plays Well with Others
+### ⚖️ FPS-R Plays Well with Others: Safe Composability
 #### Playing Well with Everybody
 As a modulation framework that adds to the behaviour of larger systems, it can create its deterministic move-and-hold behaviour in both stateful and stateless environments.
 
