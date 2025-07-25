@@ -133,7 +133,13 @@ While some language-specific adjustment may still be necessary—such as:
 ### What is FPS-R?
 FPS-R is Frame-Persistent Stateless Randomisation. 
 
-- **A grammar** describing an observed phenomenon of motion and timing in nature. This universal rhythm expands to human activity, social interaction, and organisational behaviour in growth and interaction with the larger world.
+It relates to the observed universal phenomenon of non-linear motion in living organisms (plants, vegetation, people, animals) These behaviours and rhythms are also observed in group dynamics—such as animals, insects, or human clusters that persist for a while then disperse, a flock of animals collectively displaying this non-linear motion. This phenomenon is also present from the microscopic levels of cellular motion to the planetary level of tectonic motion. 
+
+In each of these scenarios, we observe alternating periods of movement, progress, and activity, followed by periods of "holds", held states that persist, "pausing" with "hesitation", for a non-consistent and undeterminable periods of time, before further activity begin to happen again followed by a holding period of reduced action or motion again. 
+
+This repeating structure—the unpredictably timed shift between action and pause—is what I call the **Random Move and Hold**.
+
+- **A grammar**, giving a language to describing this observed phenomenon of motion and timing in nature. This universal rhythm expands to human activity, social interaction, and organisational behaviour in growth and interaction with the larger world. **FPS-R** is the formal system that encodes this **"Random Move and Hold"** phenomenon into a programmable structure that can be described by mathematics.
 - **A framework** of tools to enable mathematical models and software applications to articulate in this grammatical space, to describe the observed phenomenon of Move and Hold.
 - A collection of **pure mathematical algorithms** and **programming functions** that enables the expression of this phenomenon through maths and computation. 
 
@@ -147,6 +153,11 @@ The tools feature parameters that allows for the intentional control and shaping
 - weeks/months: animal migration patterns that are non linear in direction and progression.
 - decades: simulating the progressive growth of organic vegetation reclaiming abandoned structures, or the weathering and erosion of geographic formations.
 - centuries: tectonic shifts of the Earth's crust or volcanic activities. 
+
+This modulated cadence and non-linearity is also expressed across spatial scales:
+- Quantum and Molecular scales: quantum particles exhibit unpredictable movements and molecular interactions 
+
+> On Universality: FPS-R doesn’t invent the “Random Move and Hold” pattern—it formalizes it. Across nature, cognition, and synthetic systems, this rhythm appears again and again. FPS-R provides the mathematical and programmatic lens to describe it—faithfully, portably, and at any scale.
 
 In all these cases, the FPS-R signals can configured to trigger and select from a variety of discrete states across a variety of intensities. These can then simulate, emulate observed and recorded phenomenon, and even create new situations to study what-if scenarios.
 
