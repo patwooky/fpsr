@@ -277,4 +277,28 @@ What is meant by _pure_ in both maths and software development:
 > FPS-R is a pure mathematical algorithm — deterministic, stateless, and free from side effects.
 
 ---
+### Increased the number of features
+_25 July 2025_
 
+I felt that the features were too repetitive in both the README.md and fpsr_Tech.md
+
+I added to the list of features. these include:
+- Stateless
+- Deterministic
+- The emergence of "memory" is implicit and inherently encoded into its output.
+- Developed to be compatible with a wide number of languages and platforms
+- Extremely Lightweight
+- Intentional use of integers where possible, avoiding floating point accuracy and computational pitfalls.
+- Using pure uncomplicated math functions
+- Scalable to include advanced features with additional (optimised) computation overheads:
+  - `has_changed` awareness
+  - normalised hold-cycle progress awareness
+  - last changed frame, next changed frame awareness
+
+At first I had only the first 3 for "notable features of the framework". I felt the narrative to be repetitive circling around the few core features. They are powerful and foundational but I felt I was overselling them. 
+
+Then I thought about how I have been developing and shaping up the framework around integers, using integer frame numbers instead of `time` as a float, using a lot of integer divisions, floors and basic math functions like sine. So that avoids inaccuracy of floats, and adds to the robustness of my functions in a wide range of operating environments.
+
+With all these I'm ready to make some revision to how I introduce the FPS-R framework.
+
+---
