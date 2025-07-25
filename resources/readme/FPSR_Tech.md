@@ -23,6 +23,8 @@ While every update strives to be more accurate, there will be parts that are inc
   - [⚡ Extremely Lightweight: Computationally Frugal](#-extremely-lightweight-computationally-frugal)
   - [⚖️ FPS-R Plays Well with Others: Safe Composability](#️-fps-r-plays-well-with-others-safe-composability)
     - [Playing Well with Everybody](#playing-well-with-everybody)
+    - [The Stateful Wrapper: Achieving Determinism with Memory](#the-stateful-wrapper-achieving-determinism-with-memory)
+    - [Deterministic Rules, Even When They Change](#deterministic-rules-even-when-they-change)
     - [Playing Better with Stateless Operators](#playing-better-with-stateless-operators)
 - [🌀 How It Works: Stacked Modulo (SM)](#-how-it-works-stacked-modulo-sm)
   - [SM: Core Mechanism](#sm-core-mechanism)
@@ -217,6 +219,67 @@ The framework is designed to be scalable, offering advanced features with additi
 ### ⚖️ FPS-R Plays Well with Others: Safe Composability
 #### Playing Well with Everybody
 As a modulation framework that adds to the behaviour of larger systems, it can create its deterministic move-and-hold behaviour in both stateful and stateless environments.
+
+#### The Stateful Wrapper: Achieving Determinism with Memory
+A common and powerful pattern is to use FPS-R as a "suggestion engine" inside a larger, stateful system that holds memory and enforces rules. Even though the parent system is stateful, the entire process remains **100% deterministic and reproducible** if the rules are consistent.
+
+Consider a system modelling a phenomenon that can only progress forward, like erosion depth or resource accumulation. The parent system remembers the previous value and uses it to validate FPS-R's suggestion.
+
+```c
+// State stored by the parent system
+float previous_value = get_previous_state();
+
+// 1. Get the raw, stateless suggestion from FPS-R
+float suggested_value = fpsr_sm(frame, ...);
+
+// 2. The parent system applies its deterministic rule
+float final_value;
+if (suggested_value < previous_value) {
+    // Rule: "This phenomenon can only progress forward."
+    // Decision: Ignore the suggestion and hold the state.
+    final_value = previous_value;
+} else {
+    // Rule: "Forward progress is allowed."
+    // Decision: Accept the new state.
+    final_value = suggested_value;
+}
+
+// 3. Deterministically update the state for the next frame
+store_current_state(final_value);
+
+```
+This combined system is guaranteed to be reproducible because every step in the causal chain is deterministic: the source (FPS-R), the rules (the `if` statement), and the state update.
+
+#### Deterministic Rules, Even When They Change
+This principle of reproducibility extends even further. The rules within the stateful wrapper do not have to be fixed; they can be dynamic and variable, and the entire system will `still` remain deterministic, as long as the process driving the rule changes is also deterministic.
+
+For example, the threshold for accepting a new value could be modulated by a second, independent FPS-R function.
+```c
+// State stored by the parent system
+float previous_value = get_previous_state();
+
+// 1. Get the raw, stateless suggestion from FPS-R:SM
+float suggested_value = fpsr_sm(frame, ...);
+
+// 2. Get a dynamic threshold from another FPS-R function
+float dynamic_threshold = fpsr_tm(frame, ...); // This rule now changes over time
+
+// 3. The parent system applies its DYNAMIC but DETERMINISTIC rule
+float final_value;
+if (suggested_value < dynamic_threshold) {
+    // Rule: "The suggestion is below our current modulated threshold."
+    // Decision: Ignore the suggestion.
+    final_value = previous_value;
+} else {
+    // Rule: "The suggestion is acceptable."
+    // Decision: Accept the new state.
+    final_value = suggested_value;
+}
+
+// 4. Deterministically update the state for the next frame
+store_current_state(final_value);
+```
+This entire system, with its nested modulations and stateful memory, remains perfectly reproducible. Determinism is preserved across the entire chain because every component—the initial suggestion, the dynamic rule, and the state update—is itself deterministic. This demonstrates the profound composability of the framework, allowing for incredibly complex and layered behaviours that are still fully traceable and repeatable.
 
 #### Playing Better with Stateless Operators
 The true power of FPS-R’s stateless determinism emerges when paired with other stateless systems. In such a case, **the final result will be equally stateless**.
