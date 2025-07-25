@@ -552,7 +552,7 @@ The interactive scrolling graphs are the last 2 cells at the end of the notebook
 
 ---
 ## 🧬 Flavours of FPS-R
-FPS-R comprises two distinct mathematical algorithms — each offering a stateless, deterministic approach to phrased modulation:
+FPS-R comprises three distinct mathematical algorithms — each offering a stateless, deterministic approach to phrased modulation:
 - 🌀 Stacked Modulo (SM)
 - 🔁 Toggled Modulo (TM)
 - ✴ Quantised Switching (QS)
