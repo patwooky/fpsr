@@ -135,7 +135,7 @@ While some language-specific adjustment may still be necessary—such as:
 ### What is FPS-R?
 FPS-R is Frame-Persistent Stateless Randomisation. 
 
-It relates to the observed universal phenomenon of non-linear motion in living organisms (plants, vegetation, people, animals) These behaviours and rhythms are also observed in group dynamics—such as animals, insects, or human clusters that persist for a while then disperse, a flock of animals collectively displaying this non-linear motion. This phenomenon is also present from the microscopic levels of cellular motion to the planetary level of tectonic motion. 
+The inspiration for FPS-R comes from a widely observed pattern of non-linear motion. This pattern, which I call the 'random move-and-hold,' appears to be remarkably scale-invariant. We can identify its signature across a vast spectrum of systems: from the microscopic level of cellular motion, to the group dynamics of animal flocks, all the way to the planetary scale of tectonic motion. 
 
 In each of these scenarios, we observe alternating periods of movement, progress, and activity, followed by periods of "holds", held states that persist, "pausing" with "hesitation", for a non-consistent and undeterminable periods of time, before further activity begin to happen again followed by a holding period of reduced action or motion again. 
 
