@@ -3,7 +3,7 @@ MIT License—[see LICENSE](../../LICENSE) for details.
 Copyright (c) 2025 Woo Ker Yang (Patrick Woo) patrickwoo.1976@gmail.com
 If you reference or adapt this framework, please credit Patrick Woo and this repository.
 **This documentation is still in development.** 
-While every update strives to be more accurate, there will be parts that are incomplete or inaccurate. 
+While every update strives for accuracy, some parts may be incomplete or inaccurate.
 
 # Table of Contents
 - [The Purpose of This Document](#the-purpose-of-this-document)
@@ -12,21 +12,21 @@ While every update strives to be more accurate, there will be parts that are inc
 ---
 
 # The Purpose of This Document
-This document aims to put forth the compelling research to show how the Random Move and Hold pattern observed across domains is correlated to a deeper and prevalent nature mechanical dynamics behaviour that results in the observed move and hold.
+This document aims to present compelling research showing how the Random Move and Hold pattern, observed across various domains, is correlated with deeper and prevalent mechanical dynamics in nature. These underlying dynamics result in the observed move and hold behaviour.
 
 # The Philosophy of Structured Surprise: A Unifying Theory of FPS-R
-This document synthesises the core philosophical and mechanical principles that unify the FPS-R framework. It moves beyond individual algorithms to define the fundamental pattern of change that FPS-R is designed to model, and explains why this pattern is critical for understanding complex systems.
+This document synthesizes the core philosophical and mechanical principles that unify the FPS-R framework. It goes beyond individual algorithms to define the fundamental pattern of change that FPS-R is designed to model, and explains why understanding this pattern is critical for complex systems.
 
 ## The Core Dynamic: A Universal Pattern of Change
-At its heart, FPS-R is not just a tool for creating motion; it is a model for a pattern of change that can be observed across countless natural and artificial systems. The dynamic is a familiar one, described in many scientific fields through concepts like "**tipping points**", "**critical mass**," "**phase transitions**", and "**self-organised criticality**".
+At its heart, FPS-R is not just a tool for creating motion; it is a model for a pattern of change that can be observed across countless natural and artificial systems. The dynamic is a familiar one, and it is described in many scientific fields through concepts like "**tipping points**", "**critical mass**," "**phase transitions**", and "**self-organised criticality**".
 
-The mechanic consistently involves two phases:
-1. **A system in a state of relative stability (a "hold")**. This is a body at rest, a dormant volcano, a stable market, a tense ceasefire. During this phase, forces and pressures accumulate, often in a non-linear fashion.
+This dynamic consistently unfolds in two phases:
+1. **A system in a state of relative stability (a "hold")**. This is a body at rest; a dormant volcano; a stable market; a tense ceasefire. During this phase, forces and pressures accumulate, often in a non-linear fashion.
 2. **A sudden, non-linear state change (a "jump" or "cascade")**. This is triggered when the accumulating forces cross a critical threshold. A single, often minor event pushes the system over its breaking point, causing an abrupt and disproportionate shift in its state. The avalanche is triggered, the volcano erupts, the market crashes.
 
-This **"hold-then-break"** dynamic is the signature of complex systems. If these processes were linear, they would be predictable. Calamities could be easily sidestepped, and "Acts of God" would be simple entries on a calendar. It is their non-linear, threshold-based nature that makes them surprising, dangerous, and difficult to model.
+This **"hold-then-break"** dynamic is the signature of complex systems. If these processes were linear, they would be predictable. Calamities could be easily sidestepped, and "Acts of God" would be simple entries on a calendar. Instead, the non-linear, threshold-based nature makes these events surprising, dangerous, and difficult to model.
 
-> While we will most frequently use the term **"hold-then-break"** to describe this mechanic, it is not meant to be a rigid special term. We may use more contextually appropriate forms like **"hold-then-action"** or **"hold-then-shift"** where they better describe the specific situation.
+> While we will use **"hold-then-break"** as the default term to describe this mechanic, it is not meant to be a rigid or a special technical term. We may use more proper forms like **"hold-then-action"** or **"hold-then-shift"** where they better describe the specific situation.
 
 ## Linearity as an Artifact: Modelling the Default Mode of Reality
 This leads to a profound insight: the non-linear, "hold-then-break" dynamic is not an exception to the rule; it is the rule itself. It is the default mode of progress, growth, and locomotion in the universe.
@@ -40,7 +40,7 @@ Humans are good at high level abstraction and extracting meaning from noise. It 
 
 This simplifying and linearising is our way of survival and self-preservation. We prioritise, figuring out what is important and urgent (immediately threatening to our existence), and what is "probably just noise". Our brains employ various cognitive strategies to simplify and categorise information. 
 
-Incidentally, a parallel of this behaviour can be seen in machine learning.
+Incidentally, machine learning exhibits a parallel to this behaviour.
 
 #### Human Perception and Dimensionality Reduction in Machine Learning
 
@@ -49,14 +49,14 @@ In machine learning, this process can be likened to dimensionality reduction, wh
 For example, when observing a long, curvy branch, our brains might abstract it into a simpler representation—a straight stick. This abstraction allows us to quickly understand the branch's general direction and purpose without getting bogged down by its intricate details.
 
 #### Parallel Between Linear Regression and Human Perception
-This process of linearisation and the process of dimension reduction is very similar to _linear regression_ in machine learning and data science. Linear regression simplifies data with complex shapes into a basic form that can fit into a linear model. It captures the essential trend while ignoring noise and outliers. The trained model can then be used to make predictions based on new data, similar to how we use our simplified mental models to navigate and make decisions in the real world.
+This process of linearisation and the process of dimension reduction is like _linear regression_ in machine learning and data science. Linear regression simplifies data with complex shapes into a basic form that can fit into a linear model. It captures the essential trend while ignoring noise and outliers. The trained model can then be used to make predictions based on new data, like how we use our simplified mental models to navigate and make decisions in the real world.
 
 We linearise because the nuances and tiny crooked details _hold no useful significance_ for the tasks we commonly use those things for, hence we discard them, pushing them to the back of our minds. 
 
 #### Real World Situations are Complex
-In real-world situations, we want to get very close to reality in order to study and understand underlying principles by observing outcomes. With distilled knowledge and insights we can then make predictions, anticipate the pitfalls and avoid them.
+In real-world situations, we aim to model reality as closely as possible. By observing outcomes, we can study and understand the underlying principles. With distilled knowledge and insights, we can make predictions, anticipate pitfalls, and avoid them.
 
-In studying complex systems, seemingly useless details contribute significantly to accumulated outcomes. We now know that the small details play a part, but being enshrouded and entrenched in our linearised and simplified perception of a complex reality, we often perceive simplicity to be reality itself. At that point we don't know which of those complexities significantly affect the outcome and which do not. That is why we study and analyse complex systems to try to understand them.
+When studying complex systems, we often dismiss certain details as insignificant. However, these small details can contribute to the outcomes in a big way. Because our perception of reality is shaped by simplification and linearisation, we may mistake simplicity for reality itself. This makes it difficult to determine which complexities truly affect the outcome. Therefore, we study and analyse complex systems to better understand which factors are significant.
 
 In this respect, FPS-R is not just a tool for simulating organic behaviour. It is a grammar for modelling the **default texture of reality**. It provides a language for the crooked branch, not the straight rod, treating structured, non-linear phrasing as the fundamental starting point, not a complex effect to be added on top of an artificially simple system.
 
@@ -67,45 +67,46 @@ Our brains are wired to accept the non-linear as natural:
 - We see a **crooked branch** and recognise it as organic. We see a **perfectly straight** rod and know it must be machined and manufactured.
 - We see an **animal** travel in bursts of different speeds and zig-zagging paths. We see a **vehicle** travelling at a sustained, constant speed in a straight line and know it is a human invention.
 
-The "random-move-and-hold" pattern is hidden in plain sight, present in the mechanistic rhythms of systems at every scale:
+We can observe the "random-move-and-hold" pattern in plain sight, as it appears in the mechanistic rhythms of systems at every scale:
 | Domain            | Burst-Hold Pattern Example                          |
 |-------------------|-----------------------------------------------------|
 | **Biology**       | Neuronal firing (action potential → refractory)     |
-| **Ecology**       | Predator-prey dynamics (boom → collapse → regrow)   |
+| **Ecology**       | Predator-prey dynamics (boom → collapse → recovery) |
 | **Geology**       | Earthquakes (stress build-up → sudden release)      |
 | **Astronomy**     | Star formation (gas accumulation → ignition)        |
 | **Cognition**     | Insight generation (incubation → aha moment)        |
 | **Social systems**| Revolutions (tension → rupture → reorganization)    |
 | **Economics**     | Market cycles (growth → crash → recovery)           |
 
-FPS-R's purpose is to make this intuitive, universal rhythm legible, traceable, and structurally undeniable. It provides the formal grammar to describe what we have always instinctively known.
+FPS-R's purpose is to make this intuitive, to make this rhythm legible, and traceable. It provides the formal grammar to describe what we have always instinctively known.
 
 ## The Illusion of Linearity: Why Calamities are Surprising
 The world is inherently non-linear, but our minds, for the sake of safety and efficiency, often build simplified, linear models to predict the immediate future. We expect tomorrow to be much like today. We expect the ground to be solid, the market to trend upwards, and the river to stay within its banks. This is the **illusion of linearity**—a useful cognitive shortcut that allows us to function without being overwhelmed by the infinite complexity of reality.
 
-A **calamity**—a natural disaster, a market crash, a sudden outbreak—is the moment when the underlying non-linear reality violently shatters our simplified linear expectations.
-- The ground holds its tension for centuries, creating a powerful expectation of stability. The earthquake is the sudden, catastrophic "break" that violates that expectation.
+A **calamity**—such as a natural disaster, a market crash, or a sudden outbreak—occurs when the underlying non-linear reality violently shatters our simplified linear expectations. 
+This abrupt event exposes the limitations of our linear models and forces us to confront the true complexity of the world.
+- The ground can hold tension for centuries, which creates a strong expectation of stability. When an earthquake occurs, it is a sudden and catastrophic "break" that shatters that expectation.
 - A financial system experiences a long period of growth, creating an expectation of continued prosperity. The crash is the non-linear cascade that shatters that model.
 
 The unexpectedness of these events is a direct measure of the gap between our linear mental model and the world's true, non-linear nature. The "surprise" of a catastrophe is the painful, emotional response to a fundamental prediction error.
 
 ## The Element of Surprise: Why Non-Linearity is the Key
-The human experience is defined by our relationship with the unexpected. We build systems, create strategies, and learn from the past in an attempt to survive and thrive in a world that is not always predictable.
+The human experience is defined by our relationship with the unexpected. To survive in an often unpredictable world, we build systems, create strategies, and learn from the past.
 
-The core reason for our vulnerability and our successes lies in the non-linear unfolding of events.
-- **Linearity is predictable**. If a threat approaches in a straight line at a constant speed, we can easily calculate its trajectory and avoid it.
+Our vulnerabilities and successes are fundamentally shaped by how events unfold in non-linear ways.
+- **Linearity is predictable**. If a threat approaches in a straight line at a constant speed, it would be a relatively straightforward to calculate its trajectory and avoid it.
 - **Non-linearity creates surprise**. The snake that waits, coiled and still, and then strikes in an instantaneous, unpredictable moment, is a perfect model of this. We are caught unaware not by the snake's speed, but by the timing of its state change from "hold" to "move."
 
 This is the essence of the "random-move-and-hold" pattern. It is a model for surprise itself. We fail, or are harmed, or lose the game, when a system we are interacting with makes a sudden, non-linear jump that we did not anticipate.
 
 ## Defining Surprise: From Subjective Emotion to Objective Trigger
-At first glance, it may seem that "surprise" cannot be directly correlated to a scientific phenomenon. The word describes an emotional state, which is inherently subjective. However, modern cognitive science makes a critical distinction between the subjective _feeling_ of surprise and the objective _event_ that triggers it.
+At first glance, it may seem that "surprise" cannot be directly correlated to a scientific phenomenon. The word describes an emotional state, which is inherently subjective. But modern cognitive science makes a critical distinction between the subjective _feeling_ of surprise and the objective _event_ that triggers it.
 
 The feeling of surprise is an emotional and physiological reaction. The trigger for that reaction, however, is an objective, measurable, information-based event: a **violation of expectation**. This is not just a colloquial term; it is a central concept in established scientific paradigms, from the **Violation-of-Expectation (VoE)** method used to study infant cognition to the **Mismatch Negativity (MMN)** brainwave signal measured in neuroscience.
 
 Any predictive system—whether a human brain, an animal, or an AI—constantly builds an internal model of its environment to anticipate the immediate future. The "hold" phase of any process feeds this model, creating and reinforcing an expectation of stability and continuity. The longer the hold, the stronger the expectation becomes. The "break" or "jump" is a sudden influx of new information that fundamentally violates the model's prediction. This **prediction error** is the objective, scientific phenomenon that triggers the subjective emotion of surprise.
 
-Therefore, FPS-R is not a model of the _emotion_ of surprise. It is a deterministic engine for generating the _objective_ trigger of surprise: **expectation-violating, non-linear events**. The "surprise" and "shock" to the system is the emergent result of that accurate modelling of the structure of unpredictability.
+Thus, FPS-R is not a model of the _emotion_ of surprise. It is a deterministic engine for generating the _objectively observed_ trigger that evokes the feeling of surprise: **expectation-violating, non-linear events**. The "surprise" and "shock" to the system is the emergent result of that accurate modelling of the structure of unpredictability.
 
 > FPS-R does not aim to generate surprise, it generates the **objective events** and **conditions** that result in surprise.
 
@@ -128,20 +129,20 @@ When the unfolding events confirm the pattern in our mental model, it gets reinf
 #### Pre-emptive Violations
 Resulting effect: **Startling, energetic, syncopated.**  
 
-These will happen and be immediately met with shock, perhaps a longer paralysis of our cognitive system as they work harder to unravel to correlate the unexpected outcome and the mental model that has been built. "What just happened?", "Is that totally unrelated to what I was anticipating or is it related to the anticipated event?", and perhaps finally "Ah, it is that thing I was anticipating but it came earlier."
+When the unexpected event happens we will experience shock, and perhaps a longer paralysis while our cognitive systems work harder to unravel and correlate the unexpected outcome of our mental model that have been built. Our state of mind and internal questions might be, "What just happened?", "Is that totally unrelated to what I was anticipating or is it related to the anticipated event?", and perhaps finally "Ah, it is that thing I was anticipating but it came earlier."
 
 #### Delayed Violations
 Resulting effect: **Dramatic, suspenseful, profound.** 
 
-In this case, the mind has the opportunity to think about the missed timing, to ruminate and speculate about the implications and possible reasons why the expected event has not happened. Perhaps the mind will even the bandwidth to formulate and propose alternative explanations and mental models if the current thinking has to be refined or discarded.
+In this case, the mind has the opportunity to think about the missed timing, to ruminate and speculate about the implications and possible reasons why the expected event has not happened. Perhaps the mind will even the bandwidth to plan and propose alternative explanations and mental models if the current thinking has to be refined or discarded.
 
 ## Can Unexpected Surprise be Simulated in a Reliable Way?
 Now that we have a definition and understand the fundamental basics of the psychology of surprise, can we model it, break it down, and study it in a variety of domains and scenarios in a dependable, predictable (read unsurprising) way?
 
 ### A Single Contributor to Predictability
-With a single-value parameter it is straightforward to study and understand our anticipation and expectations of cause and effect around that single component. It will be relatively straightforward to map out how when these events happen, how the occurances gradually build up a model of normalcy, and form a ruleset of how the underlying set of principles appear to operate. 
+With a single-value parameter, it is straightforward to study and understand our anticipation and expectations of cause and effect related to that single component. It is relatively easy to map out how these events occur, how their occurrences gradually build up a model of normalcy, and how they form a ruleset that reflects the underlying principles at work.
 
-When these policies are broken and expectations get violated, we get unpredictability, errors in our mental predictions and expectations, and we get surprise as an emotional outcome.
+When these policies are broken and expectations get violated, we discover errors in our mental predictions and expectations, and we experience surprise as an emotional outcome.
 
 ### Predictability in a Complex Multi-Parameter System
 Unfortunately, with most cases in real-world situations, the emergence of unpredictability is the result of complex and layered causal chains of decision and "random" events that hold and change states, springing up on us, disrupting our mental models of the situation. 
@@ -153,22 +154,22 @@ We can only see so far. Thus we build simplistic models in our minds to make sen
 ## FPS-R: An Engine for Modelling Structured Surprise
 This brings us to the ultimate purpose of the FPS-R framework. It is a unique and powerful tool because it is a **stateless, deterministic engine for generating events that follow this universal "tipping point" dynamic**.
 
-With FPS-R, _we can get very close to the nuanced, complex and layered reality_. We can now model these events with **unpredictability that can be controlled** in an mathematically elegant way - controllable, traceable, repeatable, and deterministic. 
+With FPS-R, _we can closely approximate nuanced, complex, and layered reality_. We can now model these events with **controllable unpredictability** in a mathematically elegant, traceable, repeatable, and deterministic way.
 
-For each decision in the causal stack, we can visualise the holds and jumps of these individual signals as visually plotted out graphs, lay them out side by side to see the interfering effect they have on the final result as a whole. Working together with the parent system that holds the domain logic, these graphs can be visualised alongside the other domain-specific events. This enables deep and detailed analysis towards the understanding of causes and effects.
+For each decision in the causal stack, we can visualise the holds and jumps of individual signals as plotted graphs, arranging them side by side to observe how they interact and influence the final result. By working together with the parent system that contains the domain logic, these graphs can be displayed alongside other domain-specific events. This enables deep and detailed analysis for understanding causes and effects.
 
 This reframes its application in critical domains:
-- **Cybersecurity & Penetration Testing**: It's not just about sending random data. It's about simulating an attacker who waits ("holds") and then exploits a vulnerability with a sudden, coordinated burst of activity ("jumps") to create maximum surprise and damage.
-- **Game Theory & Strategic Modelling**: It allows for the modelling of an opponent who follows a period of predictable behaviour with a sudden, game-changing move that subverts expectations.
+- **Cybersecurity & Penetration Testing**: It is not about sending random data. It's about simulating an attacker who waits ("holds") and then exploits a vulnerability with a sudden, coordinated burst of activity ("jumps") to create the greatest surprise and damage.
+- **Game Theory & Strategic Modelling**: It allows for modelling an opponent who behaves predictably for a period. Then, the opponent makes a sudden, game-changing move that subverts expectations.
 - **Sociology & Economic Modelling**: It provides a way to simulate the slow build-up of social or economic pressure that culminates in a sudden, cascading event like a market panic or a social movement.
 
 In all these cases, FPS-R works with the logic of the parent system. The parent system provides the domain ruleset and knowledge. In this setup, FPS-R acts as a specialised tool that works within the scope given by the parent system. This includes setting the parameters that shape the FPS-R output signals. Furthermore, the parent system also holds the control to transform the output signal's range and type into a meaningful signals that make sense to be consumed by the domain logic.
 
-It is true that the parent system provides the control boundaries, but FPS-R is not just adding "natural randomness." It is not an additional "effect layer" or "processing stage" on top of a simulator—it is the phrasing engine that generates traceable emergence. 
+True, the parent system provides the control boundaries, but FPS-R is not just adding "natural randomness." It is not an additional "effect layer" or "processing stage" on top of a simulator—it is the phrasing engine that generates traceable emergence. 
 
-In this configuration, FPS-R provides the critical element of **structured surprise**, and it does so in a way that is fully traceable, repeatable, and understandable. This allows us to build laboratories to study the very nature of surprise itself.
+In this configuration, FPS-R provides the critical element of **structured surprise**, and it does so in a way that is fully traceable, repeatable, and understandable. This allows us to build laboratories to study the nature of surprise itself.
 
 This concept of a "computational laboratory" transforms the study of chaotic, emergent behaviour from a guessing game into a repeatable scientific process. Because FPS-R is deterministic, it provides a controlled environment where a researcher can:
-- **Isolate and Repeat:** Run a simulation of a complex event, like a market crash, a thousand times and get the identical result every single time. The "surprise" is no longer a random accident; it's a dependable event that can be studied.
+- **Isolate and Repeat:** Run a simulation of a complex event, like a market crash, a thousand times and get identical results every single time. The "surprise" is no longer a random accident; it's a dependable event that can be studied.
 - **Trace and Prove:** Perform a forensic analysis of the moments leading up to a "break." Because the entire history of the event is generated from a formula, findings about cause and effect within the model become provable.
 - **Modify and Discover:** Act as true experimenters by asking "what if?" and modifying the phrasing patterns. By changing one parameter at a time, they can discover new emergent behaviours and understand the underlying rules of surprise within their model.
