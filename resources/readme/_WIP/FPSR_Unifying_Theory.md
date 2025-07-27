@@ -31,18 +31,32 @@ This **"hold-then-break"** dynamic is the signature of complex systems. If these
 ## Linearity as an Artifact: Modelling the Default Mode of Reality
 This leads to a profound insight: the non-linear, "hold-then-break" dynamic is not an exception to the rule; it is the rule itself. It is the default mode of progress, growth, and locomotion in the universe.
 - **Organic systems are inherently non-linear.** A tree branch grows in complex, crooked curves, reacting to countless competing forces like sun, wind, and gravity. An animal forages in bursts and pauses. This is the signature of organic emergence.
-- **Linear systems are an artificial construct.** A machined or man-crafted rod is precise geometrical cylinder, a factory process runs at a constant speed. Linearity is the result of imposing immense control to simplify a system down to a single, dominant rule. It is an artifact of human intervention, an exception to the natural state of things.
+- **Linear systems are an artificial construct.** A machined or man-crafted rod is a precise geometrical cylinder, a factory process runs at a constant speed. Linearity is the result of imposing immense control to simplify a system down to a single, dominant rule. It is an artifact of human intervention, an exception to the natural state of things.
 
 This flips the burden of proof. The question is not "Is the 'random-move-and-hold' pattern universal?" but rather, "Why would any natural system not exhibit this kind of phrasing?" Perfect linearity is what requires explanation.
 
 ### Why do we Simplify and Linearise?
 Humans are good at high level abstraction and extracting meaning from noise. It will overload and overwhelm our minds to jump at every shadow and moving leaf. Parsing complexity is taxing on our cognition.
 
-This simplifying and linearising is our way of survival and self-preservation. We prioritise, figuring out what is important and urgent (immediately threatening to our existence), and what is "probably just noise". 
+This simplifying and linearising is our way of survival and self-preservation. We prioritise, figuring out what is important and urgent (immediately threatening to our existence), and what is "probably just noise". Our brains employ various cognitive strategies to simplify and categorise information. 
 
-Incidentally, this process is literally _linear regression_ in machine learning and data science, where many techniques are emulations of processes in our biological brains. We extract and abstract complex data in higher dimensions to a representation (that carries meaning) in our mental model in lower dimensions.
+Incidently, a parallel of this behaviour can be seen in machine learning.
 
-We linearise because the nuances and tiny crooked details _hold no useful significance_ for the tasks we commonly use those things for, hence we discard them, pushing them to the back of our minds. But real-world situations where we want to get very close to reality in order to study observed outcomes or to predict plausible outcomes. Suddenly these seemingly useless detail contribute significantly to accumulated outcomes. We now know that the small things play a part, but being enshrouded and entrenched in our linearised and simplified perception of a complex reality, we often perceive simplicity to be reality itself. At that point we don't know which of those complexity significantly correlate to the outcome. That is why we study and analyse complex systems to try to understand them.
+#### Human Perception and Dimensionality Reduction in Machine Learning
+
+In machine learning, this process can be likened to dimensionality reduction, where we filter out unnecessary details to focus on the most relevant features.
+
+For example, when observing a long, curvy branch, our brains might abstract it into a simpler representation—a straight stick. This abstraction allows us to quickly understand the branch's general direction and purpose without getting bogged down by its intricate details.
+
+#### Parallel Between Linear Regression
+This process of linearisation and the process of dimension reduction is very similar to _linear regression_ in machine learning and data science. Linear regression simplifies data with complex shapes into a basic form that can fit into a linear model. It captures the essential trend while ignoring noise and outliers. The trained model can then be used to make predictions based on new data, similar to how we use our simplified mental models to navigate and make decisions in the real world.
+
+We linearise because the nuances and tiny crooked details _hold no useful significance_ for the tasks we commonly use those things for, hence we discard them, pushing them to the back of our minds. 
+
+#### Real World Situations are Complex
+In real-world situations, we want to get very close to reality in order to study understand underlying principles by observing outcomes. With distilled knowledge and insights we can then make predictions, anticipate the pitfalls and avoid them.
+
+In studying complex systems, seemingly useless detail contribute significantly to accumulated outcomes. We now know that the small details play a part, but being enshrouded and entrenched in our linearised and simplified perception of a complex reality, we often perceive simplicity to be reality itself. At that point we don't know which of those complexity significantly affect the outcome and which are not. That is why we study and analyse complex systems to try to understand them.
 
 In this respect, FPS-R is not just a tool for simulating organic behaviour. It is a grammar for modelling the **default texture of reality**. It provides a language for the crooked branch, not the straight rod, treating structured, non-linear phrasing as the fundamental starting point, not a complex effect to be added on top of an artificially simple system.
 
@@ -103,9 +117,9 @@ By modelling the objectively observable pacing and rhythm of these events, the s
 Our minds are powerful pattern-matching engines. This ability to extrapolate from limited data is a core component of the **Predictive Processing** theory of brain function. It only takes something to occur twice before our minds are able to grasp and pick up a pattern. When something happens twice, our minds can subconsciously anticipate and predict when and where the third event will occur. That is the power of two.
 
 #### Waiting for the Other Shoe to Drop
-Have you heard the phrase "Waiting for the other shoe to drop"? We know it is an idiom about anticipating negative events that are almost sure to follow, one after another. [Read about the origin here](https://www.thehistoryofenglish.com/waiting-for-the-other-shoe-to-drop). 
+A common phrase "Waiting for the other shoe to drop" is an idiom about anticipating negative events that are almost sure to follow, one after another. [Read about the origin here](https://www.thehistoryofenglish.com/waiting-for-the-other-shoe-to-drop). 
 
-But the origin story shows how effective (or ineffective) our minds are in anticipating events that happen once. We know shoes come in pairs. When one drops, we have only one data point, we know there is a probability that the other shoe will also drop, but we don't know _when_, or whether it will happen or not. That is a frustrating situation where the mind cannot get the minimum information it requires to form a basic pattern to confidently extrapolate.
+From another perspective, the origin story reveals a nature for humans to anticipate, form patterns. It also shows how effective (or ineffective) our minds are in anticipating events that happen once. We know shoes come in pairs. When one drops, we have only one data point, we know there is a probability that the other shoe will also drop, but we don't know _when_, or whether it will happen or not. That is a frustrating situation where the mind cannot get the minimum information it requires to form a basic pattern to confidently extrapolate.
 
 ### The "What" - What Constitutes a Surprise?
 When the unfolding events confirm the pattern in our mental model, it gets reinforced. The stronger the reinforced pattern, the stronger the surprise when it gets violated when reality does not pan out to match our strongly-held mental patterns.
