@@ -40,7 +40,7 @@ Humans are good at high level abstraction and extracting meaning from noise. It 
 
 This simplifying and linearising is our way of survival and self-preservation. We prioritise, figuring out what is important and urgent (immediately threatening to our existence), and what is "probably just noise". Our brains employ various cognitive strategies to simplify and categorise information. 
 
-Incidently, a parallel of this behaviour can be seen in machine learning.
+Incidentally, a parallel of this behaviour can be seen in machine learning.
 
 #### Human Perception and Dimensionality Reduction in Machine Learning
 
@@ -48,15 +48,15 @@ In machine learning, this process can be likened to dimensionality reduction, wh
 
 For example, when observing a long, curvy branch, our brains might abstract it into a simpler representation—a straight stick. This abstraction allows us to quickly understand the branch's general direction and purpose without getting bogged down by its intricate details.
 
-#### Parallel Between Linear Regression
+#### Parallel Between Linear Regression and Human Perception
 This process of linearisation and the process of dimension reduction is very similar to _linear regression_ in machine learning and data science. Linear regression simplifies data with complex shapes into a basic form that can fit into a linear model. It captures the essential trend while ignoring noise and outliers. The trained model can then be used to make predictions based on new data, similar to how we use our simplified mental models to navigate and make decisions in the real world.
 
 We linearise because the nuances and tiny crooked details _hold no useful significance_ for the tasks we commonly use those things for, hence we discard them, pushing them to the back of our minds. 
 
 #### Real World Situations are Complex
-In real-world situations, we want to get very close to reality in order to study understand underlying principles by observing outcomes. With distilled knowledge and insights we can then make predictions, anticipate the pitfalls and avoid them.
+In real-world situations, we want to get very close to reality in order to study and understand underlying principles by observing outcomes. With distilled knowledge and insights we can then make predictions, anticipate the pitfalls and avoid them.
 
-In studying complex systems, seemingly useless detail contribute significantly to accumulated outcomes. We now know that the small details play a part, but being enshrouded and entrenched in our linearised and simplified perception of a complex reality, we often perceive simplicity to be reality itself. At that point we don't know which of those complexity significantly affect the outcome and which are not. That is why we study and analyse complex systems to try to understand them.
+In studying complex systems, seemingly useless details contribute significantly to accumulated outcomes. We now know that the small details play a part, but being enshrouded and entrenched in our linearised and simplified perception of a complex reality, we often perceive simplicity to be reality itself. At that point we don't know which of those complexities significantly affect the outcome and which do not. That is why we study and analyse complex systems to try to understand them.
 
 In this respect, FPS-R is not just a tool for simulating organic behaviour. It is a grammar for modelling the **default texture of reality**. It provides a language for the crooked branch, not the straight rod, treating structured, non-linear phrasing as the fundamental starting point, not a complex effect to be added on top of an artificially simple system.
 
@@ -119,7 +119,7 @@ Our minds are powerful pattern-matching engines. This ability to extrapolate fro
 #### Waiting for the Other Shoe to Drop
 A common phrase "Waiting for the other shoe to drop" is an idiom about anticipating negative events that are almost sure to follow, one after another. [Read about the origin here](https://www.thehistoryofenglish.com/waiting-for-the-other-shoe-to-drop). 
 
-From another perspective, the origin story reveals a nature for humans to anticipate, form patterns. It also shows how effective (or ineffective) our minds are in anticipating events that happen once. We know shoes come in pairs. When one drops, we have only one data point, we know there is a probability that the other shoe will also drop, but we don't know _when_, or whether it will happen or not. That is a frustrating situation where the mind cannot get the minimum information it requires to form a basic pattern to confidently extrapolate.
+From another perspective, the origin story reveals our human nature to anticipate, form patterns. It also shows how effective (or ineffective) our minds are in anticipating events that happen once. We know shoes come in pairs. When one drops, we have only one data point, we know there is a probability that the other shoe will also drop, but we don't know _when_, or whether it will happen or not. That is a frustrating situation where the mind cannot get the minimum information it requires to form a basic pattern to confidently extrapolate.
 
 ### The "What" - What Constitutes a Surprise?
 When the unfolding events confirm the pattern in our mental model, it gets reinforced. The stronger the reinforced pattern, the stronger the surprise when it gets violated when reality does not pan out to match our strongly-held mental patterns.

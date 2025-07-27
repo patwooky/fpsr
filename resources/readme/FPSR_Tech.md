@@ -135,11 +135,13 @@ While some language-specific adjustment may still be necessary—such as:
 ### What is FPS-R?
 FPS-R is Frame-Persistent Stateless Randomisation. 
 
-The inspiration for FPS-R comes from a widely observed pattern of non-linear motion. This pattern, which I call the 'random move-and-hold,' appears to be remarkably scale-invariant. We can identify its signature across a vast spectrum of systems: from the microscopic level of cellular motion, to the group dynamics of animal flocks, all the way to the planetary scale of tectonic motion. 
+The inspiration for FPS-R comes from a widely observed pattern of non-linear motion. This pattern, which I call the 'random move-and-hold,' appears to be remarkably scale-invariant. We can identify its signature across a vast spectrum of systems: from the microscopic level of cellular motion, to the group dynamics of animal flocks, all the way to the planetary scale of tectonic motion; from miniscule timescales of near-instantaneous jumps of quantum quarks, to hesitation and bursts of decisions in humans, to yearly indeterminate patterns of weather occurances, to continental reshaping across centuries, and planetary collapse, stars diminishment across billions of years. 
 
 In each of these scenarios, we observe alternating periods of movement, progress, and activity, followed by periods of "holds", held states that persist, "pausing" with "hesitation", for a non-consistent and undeterminable periods of time, before further activity begin to happen again followed by a holding period of reduced action or motion again. 
 
 This repeating structure—the unpredictably timed shift between action and pause—is what I call the **Random Move and Hold**.
+
+> While FPS-R is not yet a fully formalized theory of emergent motion, its grammar reflects a recurring structural motif—a phrasing dynamic that appears to underlie diverse systems from quarks to collapses.
 
 - **A grammar**, giving a language to describing this observed phenomenon of motion and timing in nature. This universal rhythm expands to human activity, social interaction, and organisational behaviour in growth and interaction with the larger world. **FPS-R** is the formal system that encodes this **"Random Move and Hold"** phenomenon into a programmable structure that can be described by mathematics.
 - **A framework** of tools to enable mathematical models and software applications to articulate in this grammatical space, to describe the observed phenomenon of Move and Hold.
