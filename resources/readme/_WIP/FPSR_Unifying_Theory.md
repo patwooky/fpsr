@@ -110,7 +110,7 @@ Thus, FPS-R is not a model of the _emotion_ of surprise. It is a deterministic e
 
 > FPS-R does not aim to generate surprise, it generates the **objective events** and **conditions** that result in surprise.
 
-By modelling the objectively observable pacing and rhythm of these events, the study of surprise becomes a scientifically and computationally tractable problem.
+By modelling the observable pacing and rhythm of these events, we make the study of surprise both scientifically and computationally manageable.
 
 ## The Psychology of Composing and Building a Surprise
 
