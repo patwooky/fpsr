@@ -226,7 +226,7 @@ proc float fpsr_tm(
     float $fpsr_output;
     if ($finalRandSwitch) {
         // If true, apply the final randomisation hash.
-        $fpsr_output = portable_rand_tm($held_integer_state * 100000.0);
+        $fpsr_output = portable_rand($held_integer_state * 100000.0);
     } else {
         // If false, return the raw integer state directly.
         $fpsr_output = (float)$held_integer_state; 
@@ -292,7 +292,12 @@ if ($randVal != $randVal_previous) {
  */
 // --- Start of Quantised Switching (QS) Expression ---
 
-// A simple, portable pseudo-random number generator.
+/**
+ * A simple, portable pseudo-random number generator.
+ * @brief Generates a deterministic float between 0.0 and 1.0 from an integer seed.
+ * @param $seed An integer used to generate the random number.
+ * @return A pseudo-random float between 0.0 and 1.0.
+ */
 proc float portable_rand(int $seed) {
     // A common technique for a simple hash-like random number.
     // The large prime numbers are used to create a chaotic, unpredictable result.
