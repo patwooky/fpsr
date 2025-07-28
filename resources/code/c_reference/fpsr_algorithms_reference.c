@@ -32,8 +32,20 @@
 float portable_rand(int seed) {
     // A common technique for a simple hash-like random number.
     // The large prime numbers are used to create a chaotic, unpredictable result.
-    // The frac() part (or fmod(x, 1.0)) ensures the result is in the [0, 1) range.
-    float result = sin((float)seed * 12.9898) * 43758.5453;
+    float val = (float)seed * 12.9898;
+
+    // --- FIX for float precision on GPUs and other platforms ---
+    // On many platforms, sin() loses precision or returns 0 for large inputs.
+    // This causes the random value to "saturate" and become constant over time.
+    // By using the mathematical property sin(x) = sin(x mod 2π), we can wrap the
+    // input to sin() into a high-precision range [0, 2π], ensuring the result
+    // remains stable and correct indefinitely.
+    const float TWO_PI = 6.28318530718f;
+    val = fmod(val, TWO_PI);
+
+    float result = sin(val) * 43758.5453f;
+    
+    // The fmod(result, 1.0) or (result - floor(result)) emulates GLSL's fract().
     return result - floor(result);
 }
  

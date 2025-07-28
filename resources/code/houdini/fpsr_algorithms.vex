@@ -10,11 +10,26 @@
 // A simple, portable pseudo-random number generator that takes an integer seed.
 // Different languages have different rand() implementations, so using a custom
 // one like this ensures identical results on any platform.
-float portable_rand(int seed) {
+function float portable_rand(int seed) {
     // A common technique for a simple hash-like random number.
-    // The large number can be any arbitrary large float.
-    return frac(sin(float(seed) * 12.9898) * 43758.5453);
+    // The large prime numbers are used to create a chaotic, unpredictable result.
+    float val = float(seed) * 12.9898;
+
+    // --- FIX for float precision on GPUs and other platforms ---
+    // On many platforms, sin() loses precision or returns 0 for large inputs.
+    // This causes the random value to "saturate" and become constant over time.
+    // By using the mathematical property sin(x) = sin(x mod 2π), we can wrap the
+    // input to sin() into a high-precision range [0, 2π], ensuring the result
+    // remains stable and correct indefinitely. VEX provides M_TWO_PI for this.
+    val = val % M_TWO_PI;
+
+    float result = sin(val) * 43758.5453;
+    
+    // VEX has a native frac() function.
+    return frac(result);
 }
+
+
 
 /******************************************************************************/
 /* FPS-R: Stacked Modulo (SM)                                                 */

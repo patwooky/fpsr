@@ -66,9 +66,18 @@
 proc float portable_rand(int $seed) {
     // A common technique for a simple hash-like random number.
     // The large prime numbers are used to create a chaotic, unpredictable result.
-    float $result = sin((float)$seed * 12.9898) * 43758.5453;
-    // Use `$result - floor($result)` as a replacement for frac() for older Maya versions.
-    // This ensures the result is always a positive value in the [0, 1) range.
+    float $val = (float)$seed * 12.9898;
+    
+    // --- FIX for float precision on GPUs and other platforms ---
+    // By using the mathematical property sin(x) = sin(x mod 2π), we can wrap the
+    // input to sin() into a high-precision range, ensuring the result
+    // remains stable and correct indefinitely.
+    float $twoPi = 6.28318530718;
+    $val = $val % $twoPi;
+
+    float $result = sin($val) * 43758.5453;
+    
+    // MEL's equivalent of frac()
     return $result - floor($result);
 }
 
@@ -162,9 +171,27 @@ if ($randVal != $randVal_previous) {
  */
 // --- Start of Toggled Modulo (TM) Expression ---
 
-// A simple, portable pseudo-random number generator that takes an integer seed.
-proc float portable_rand_tm(int $seed) {
-    float $result = sin((float)$seed * 12.9898) * 43758.5453;
+/**
+ * A simple, portable pseudo-random number generator.
+ * @brief Generates a deterministic float between 0.0 and 1.0 from an integer seed.
+ * @param $seed An integer used to generate the random number.
+ * @return A pseudo-random float between 0.0 and 1.0.
+ */
+proc float portable_rand(int $seed) {
+    // A common technique for a simple hash-like random number.
+    // The large prime numbers are used to create a chaotic, unpredictable result.
+    float $val = (float)$seed * 12.9898;
+    
+    // --- FIX for float precision on GPUs and other platforms ---
+    // By using the mathematical property sin(x) = sin(x mod 2π), we can wrap the
+    // input to sin() into a high-precision range, ensuring the result
+    // remains stable and correct indefinitely.
+    float $twoPi = 6.28318530718;
+    $val = $val % $twoPi;
+
+    float $result = sin($val) * 43758.5453;
+    
+    // MEL's equivalent of frac()
     return $result - floor($result);
 }
 
@@ -267,9 +294,20 @@ if ($randVal != $randVal_previous) {
 
 // A simple, portable pseudo-random number generator.
 proc float portable_rand(int $seed) {
-    float $result = sin((float)$seed * 12.9898) * 43758.5453;
-    // Use `$result - floor($result)` as a replacement for frac() for older Maya versions.
-    // This ensures the result is always a positive value in the [0, 1) range.
+    // A common technique for a simple hash-like random number.
+    // The large prime numbers are used to create a chaotic, unpredictable result.
+    float $val = (float)$seed * 12.9898;
+    
+    // --- FIX for float precision on GPUs and other platforms ---
+    // By using the mathematical property sin(x) = sin(x mod 2π), we can wrap the
+    // input to sin() into a high-precision range, ensuring the result
+    // remains stable and correct indefinitely.
+    float $twoPi = 6.28318530718;
+    $val = $val % $twoPi;
+
+    float $result = sin($val) * 43758.5453;
+    
+    // MEL's equivalent of frac()
     return $result - floor($result);
 }
 
