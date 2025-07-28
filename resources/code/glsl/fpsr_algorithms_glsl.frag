@@ -3,6 +3,7 @@
 // This file is part of the FPS-R (Frame-Persistent Stateless Randomisation) project.
 // https://github.com/patwooky/FPSR_Algorithm
 //
+
 // ⚠️ This C version of FPS-R is the canonical reference implementation.
 // All language bindings and variants should conform to this behavior.
 // Do not alter without updating downstream bindings or reference docs.
@@ -28,8 +29,19 @@
 float portable_rand(in int seed) {
     // A common technique for a simple hash-like random number.
     // The large prime numbers are used to create a chaotic, unpredictable result.
-    // The fract() part ensures the result is in the [0, 1) range.
-    return fract(sin(float(seed) * 12.9898) * 43758.5453);
+    float val = float(seed) * 12.9898;
+
+    // --- FIX for GPU float precision ---
+    // On many GPUs/GLSL versions, sin() loses precision or returns 0 for large inputs.
+    // This causes the random value to "saturate" and become constant over time.
+    // By using the mathematical property sin(x) = sin(x mod 2π), we can wrap the
+    // input to sin() into a high-precision range [0, 2π], ensuring the result
+    // remains stable and correct indefinitely.
+    const float TWO_PI = 6.28318530718;
+    val = mod(val, TWO_PI);
+
+    float result = sin(val) * 43758.5453;
+    return fract(result);
 }
 
 
@@ -237,13 +249,12 @@ float fpsr_qs(
 // 1 = Stacked Modulo (SM)
 // 2 = Toggled Modulo (TM)
 // 3 = Quantised Switching (QS)
-#define DEMO 3
+#define DEMO 1
 
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
-    // running at 60 fps
     // Use iFrame for frame-perfect stepping
-    int frame = int(float(iFrame) * 0.6f);
+    int frame = iFrame;
 
     float randVal = 0.0;
     float randVal_previous = 0.0;
@@ -276,14 +287,14 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     
     // --- DEMO 3: Quantised Switching (QS) ---
     #if DEMO == 3
-    float baseWaveFreq = 0.006;     // Base frequency for the modulation wave of stream 1
-    float stream2freqMult = 2.1;      // Multiplier for the second stream's frequency
+    float baseWaveFreq = 0.012;     // Base frequency for the modulation wave of stream 1
+    float stream2freqMult = 3.1;      // Multiplier for the second stream's frequency
     ivec2 quantLevelsMinMax = ivec2(4, 12); // Min, Max quantisation levels for the two streams
-    ivec2 streamsOffset = ivec2(0, -76);     // Offset for the two streams
-    ivec2 quantOffsets = ivec2(10, -81);   // Offset for the random quantisation selection
-    int streamSwitchDur = 31;         // Duration for switching streams in frames
-    int stream1QuantDur = 33;         // Duration for the first stream's quantisation switch cycle in frames
-    int stream2QuantDur = 34;         // Duration for the second stream's quantisation switch cycle in frames
+    ivec2 streamsOffset = ivec2(0, 76);     // Offset for the two streams
+    ivec2 quantOffsets = ivec2(10, 81);   // Offset for the random quantisation selection
+    int streamSwitchDur = 24;         // Duration for switching streams in frames
+    int stream1QuantDur = 16;         // Duration for the first stream's quantisation switch cycle in frames
+    int stream2QuantDur = 20;         // Duration for the second stream's quantisation switch cycle in frames
     bool finalRandSwitchQS = true;    // true to apply the final randomisation step, false to skip it
     
     randVal = fpsr_qs(frame, baseWaveFreq, stream2freqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitchQS);

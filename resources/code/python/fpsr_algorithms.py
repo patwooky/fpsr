@@ -19,6 +19,8 @@ import math
 # A simple, portable pseudo-random number generator that takes an integer seed.
 # Different languages have different rand() implementations, so using a custom
 # one like this ensures identical results on any platform.
+import math
+
 def portable_rand(seed):
     """
     A simple, portable pseudo-random number generator.
@@ -30,7 +32,20 @@ def portable_rand(seed):
     Returns:
         float: A pseudo-random float between 0.0 and 1.0.
     """
-    result = math.sin(seed * 12.9898) * 43758.5453
+    # A common technique for a simple hash-like random number.
+    # The large prime numbers are used to create a chaotic, unpredictable result.
+    val = float(seed) * 12.9898
+    
+    # --- FIX for float precision on GPUs and other platforms ---
+    # By using the mathematical property sin(x) = sin(x mod 2π), we can wrap the
+    # input to sin() into a high-precision range, ensuring the result
+    # remains stable and correct indefinitely.
+    # Python's math.fmod is the C equivalent, and math.pi is available.
+    val = math.fmod(val, 2 * math.pi)
+
+    result = math.sin(val) * 43758.5453
+    
+    # Python's equivalent of frac()
     return result - math.floor(result)
 
 

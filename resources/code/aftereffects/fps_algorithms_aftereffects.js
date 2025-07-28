@@ -21,10 +21,24 @@
 // ==  PORTABLE RAND FUNCTION (Used by SM, TM and QS)                               ==
 // ===================================================================================
 
+// ===================================================================================
+// ==  PORTABLE RAND FUNCTION (Used by SM, TM and QS)                               ==
+// ===================================================================================
+
 function portable_rand(seed) {
     // A simple, portable pseudo-random number generator.
     // Ensures identical results on any platform.
-    var result = Math.sin(seed * 12.9898) * 43758.5453;
+    var val = seed * 12.9898;
+
+    // --- FIX for float precision on GPUs and other platforms ---
+    // By using the mathematical property sin(x) = sin(x mod 2π), we can wrap the
+    // input to sin() into a high-precision range, ensuring the result
+    // remains stable and correct indefinitely. JavaScript's '%' operator works on floats.
+    val = val % (2 * Math.PI);
+
+    var result = Math.sin(val) * 43758.5453;
+    
+    // JavaScript's equivalent of frac()
     return result - Math.floor(result);
 }
 
