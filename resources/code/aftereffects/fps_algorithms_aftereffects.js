@@ -21,10 +21,6 @@
 // ==  PORTABLE RAND FUNCTION (Used by SM, TM and QS)                               ==
 // ===================================================================================
 
-// ===================================================================================
-// ==  PORTABLE RAND FUNCTION (Used by SM, TM and QS)                               ==
-// ===================================================================================
-
 function portable_rand(seed) {
     // A simple, portable pseudo-random number generator.
     // Ensures identical results on any platform.

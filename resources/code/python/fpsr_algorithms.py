@@ -16,15 +16,12 @@ details:
 
 import math
 
-# A simple, portable pseudo-random number generator that takes an integer seed.
-# Different languages have different rand() implementations, so using a custom
-# one like this ensures identical results on any platform.
-import math
-
 def portable_rand(seed):
     """
     A simple, portable pseudo-random number generator.
     Generates a deterministic float between 0.0 and 1.0 from an integer seed.
+    Different languages have different rand() implementations, so using a custom
+    one like this ensures identical results on any platform.
 
     Args:
         seed (int): An integer used to generate the random number.
