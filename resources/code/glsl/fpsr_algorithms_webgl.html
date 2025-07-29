@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive FPS-R GLSL Visualizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #1a202c;
+            color: #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        #canvas-container {
+            width: 90vw;
+            max-width: 800px;
+            aspect-ratio: 16 / 9;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            background-color: #000;
+        }
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        #controls {
+            margin-top: 1.5rem;
+            padding: 1rem 1.5rem;
+            background-color: #2d3748;
+            border-radius: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.25rem;
+            min-width: 350px;
+        }
+        .control-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+        .button-group {
+             display: flex;
+             gap: 0.5rem;
+        }
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 150px;
+            height: 8px;
+            background: #4a5568;
+            border-radius: 5px;
+            outline: none;
+            transition: opacity .2s;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #6366f1;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #6366f1;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        button {
+            background-color: #4a5568;
+            color: #e2e8f0;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            min-width: 90px;
+        }
+        button:hover {
+            background-color: #6366f1;
+        }
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            font-size: 0.75rem;
+            color: #a0aec0;
+            padding: 0 5px;
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div id="canvas-container">
+        <canvas id="glsl-canvas"></canvas>
+    </div>
+
+    <div id="controls">
+        <div class="control-group">
+            <span class="font-semibold">Algorithm:</span>
+            <div class="flex flex-col items-center">
+                <input type="range" id="mode-slider" min="1" max="3" step="1" value="3">
+                 <div class="slider-labels" style="width: 160px;">
+                    <span>SM</span>
+                    <span>TM</span>
+                    <span>QS</span>
+                </div>
+            </div>
+        </div>
+        <div class="control-group">
+             <span class="font-semibold">Shape:</span>
+            <div class="flex items-center gap-2">
+                <label for="shape-slider">Square</label>
+                <input type="range" id="shape-slider" min="0" max="1" step="1" value="0">
+                <label for="shape-slider">Circle</label>
+            </div>
+        </div>
+        <div class="control-group">
+            <span class="font-semibold">Playback:</span>
+            <div class="button-group">
+                <button id="pause-button">Pause</button>
+                <button id="reset-button">Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- The GLSL Fragment Shader -->
+    <script id="fragment-shader" type="x-shader/x-fragment">
+        precision highp float;
+
+        // SPDX-License-Identifier: MIT — See LICENSE for full terms
+        // Created by Patrick Woo, 2025.
+        // This file is part of the FPS-R (Frame-Persistent Stateless Randomisation) project.
+        // https://github.com/patwooky/FPSR_Algorithm
+        
+        /**
+         * @file fpsr_algorithms.glsl
+         * @brief GLSL implementation of FPS-R algorithms: 
+         * Stacked Modulo (SM), Toggled Modulo (TM) and Quantised Switching (QS).
+         * @details This file contains three stateless, frame-persistent randomisation algorithms.
+         * It uses a custom portable_rand() function to ensure deterministic and
+         * consistent results across any platform.
+         */
+
+        // Uniforms passed from JavaScript
+        uniform vec2 iResolution;
+        uniform float iTime;
+        uniform int iFrame;
+        uniform int demoMode;    // 1=SM, 2=TM, 3=QS
+        uniform float shapeType; // 0.0 for square, 1.0 for circle
+
+        // Helper for integer modulo, as '%' is not supported for ints in GLSL ES 1.0
+        int intMod(int x, int y) {
+            return int(mod(float(x), float(y)));
+        }
+
+        /**
+         * A simple, portable pseudo-random number generator.
+         * @brief Generates a deterministic float between 0.0 and 1.0 from an integer seed.
+         * @param int seed An integer used to generate the random number.
+         * @return A pseudo-random float between 0.0 and 1.0.
+         */
+        float portable_rand(in int seed) {
+            // A common technique for a simple hash-like random number.
+            // The large prime numbers are used to create a chaotic, unpredictable result.
+            float val = float(seed) * 12.9898;
+
+            // --- FIX for GPU float precision ---
+            // On many GPUs/GLSL versions, sin() loses precision or returns 0 for large inputs.
+            // This causes the random value to "saturate" and become constant over time.
+            // By using the mathematical property sin(x) = sin(x mod 2π), we can wrap the
+            // input to sin() into a high-precision range [0, 2π], ensuring the result
+            // remains stable and correct indefinitely.
+            const float TWO_PI = 6.28318530718;
+            val = mod(val, TWO_PI);
+
+            float result = sin(val) * 43758.5453;
+            return fract(result);
+        }
+
+        /**
+         * @brief Generates a persistent random value that holds for a calculated duration.
+         * @details This function uses a two-step process. First, it determines a random
+         * "hold duration". Second, it generates a stable integer for that duration,
+         * which is then used as a seed to produce the final, held random value.
+         * @param int frame The current frame or time input.
+         * @param int minHold The minimum duration (in frames) for a value to hold.
+         * @param int maxHold The maximum duration (in frames) for a value to hold.
+         * @param int reseedInterval The fixed interval at which a new hold duration is calculated.
+         * @param int seedInner An offset for the random duration calculation to create unique sequences.
+         * @param int seedOuter An offset for the final value calculation to create unique sequences.
+         * @param bool finalRandSwitch A flag that can turn off the final randomisation step.
+         */
+        float fpsr_sm(in int frame, in int minHold, in int maxHold, in int reseedInterval, in int seedInner, in int seedOuter, in bool finalRandSwitch) {
+            if (reseedInterval < 1) { reseedInterval = 1; }
+            float rand_for_duration = portable_rand(seedInner + frame - intMod(frame, reseedInterval));
+            int holdDuration = int(floor(float(minHold) + rand_for_duration * float(maxHold - minHold)));
+            if (holdDuration < 1) { holdDuration = 1; }
+            int held_integer_state = (seedOuter + frame) - intMod((seedOuter + frame), holdDuration);
+            if (finalRandSwitch) {
+                return portable_rand(int(float(held_integer_state) * 100000.0));
+            }
+            return float(held_integer_state);
+        }
+
+        /**
+         * @brief Generates a persistent value that holds for a rhythmically toggled duration.
+         * @details This function uses a deterministic switch to toggle the hold duration
+         * between two fixed periods. This creates a predictable, rhythmic, or mechanical
+         * "move-and-hold" pattern, as opposed to the organic randomness of SM.
+         * @param int frame The current frame or time input.
+         * @param int periodA The first hold duration (in frames).
+         * @param int periodB The second hold duration (in frames).
+         * @param int periodSwitch The fixed interval at which the hold duration is toggled.
+         * @param int seedInner An offset for the toggle clock to de-sync it from the main clock.
+         * @param int seedOuter An offset for the main clock to create unique sequences.
+         * @param bool finalRandSwitch A flag that can turn off the final randomisation step.
+         */
+        float fpsr_tm(in int frame, in int periodA, in int periodB, in int periodSwitch, in int seedInner, in int seedOuter, in bool finalRandSwitch) {
+            if (periodSwitch < 1) { periodSwitch = 1; }
+            int inner_clock_frame = seedInner + frame;
+            int holdDuration;
+            if (intMod(inner_clock_frame, periodSwitch) < (periodSwitch / 2)) {
+                holdDuration = periodA;
+            } else {
+                holdDuration = periodB;
+            }
+            if (holdDuration < 1) { holdDuration = 1; }
+            int outer_clock_frame = seedOuter + frame;
+            int held_integer_state = outer_clock_frame - intMod(outer_clock_frame, holdDuration);
+            if (finalRandSwitch) {
+                return portable_rand(int(float(held_integer_state) * 100000.0));
+            }
+            return float(held_integer_state);
+        }
+
+        /**
+         * @brief Generates a flickering, quantised value by switching between two sine wave streams.
+         * @details This function creates two separate, quantised sine waves. For each stream,
+         * a new random quantisation level is chosen from within the [min, max] range at a
+         * set interval. The function then switches between these two streams to create
+         * complex, glitch-like patterns.
+         * @param int frame The current frame or time input.
+         * @param float baseWaveFreq The base frequency for the modulation wave of stream 1.
+         * @param float stream2FreqMult A multiplier for the second stream's frequency.
+         * @param ivec2 quantLevelsMinMax An ivec2 for the min and max quantisation levels.
+         * @param ivec2 streamsOffset An ivec2 to offset the frame for each stream's sine wave.
+         * @param ivec2 quantOffsets An ivec2 to offset the random quantisation selection for each stream.
+         * @param int streamSwitchDur The number of frames after which the streams switch.
+         * @param int stream1QuantDur The duration for which stream 1's random quantisation level is held.
+         * @param int stream2QuantDur The duration for which stream 2's random quantisation level is held.
+         * @param bool finalRandSwitch A flag that can turn off the final randomisation step.
+         */
+        float fpsr_qs(in int frame, in float baseWaveFreq, in float stream2FreqMult, in ivec2 quantLevelsMinMax, in ivec2 streamsOffset, in ivec2 quantOffsets, in int streamSwitchDur, in int stream1QuantDur, in int stream2QuantDur, in bool finalRandSwitch) {
+            if (streamSwitchDur < 1) { streamSwitchDur = int(floor((1.0 / baseWaveFreq) * 0.76)); }
+            if (stream1QuantDur < 1) { stream1QuantDur = int(floor((1.0 / baseWaveFreq) * 1.2)); }
+            if (stream2QuantDur < 1) { stream2QuantDur = int(floor((1.0 / baseWaveFreq) * 0.9)); }
+            if (streamSwitchDur < 1) { streamSwitchDur = 1; }
+            if (stream1QuantDur < 1) { stream1QuantDur = 1; }
+            if (stream2QuantDur < 1) { stream2QuantDur = 1; }
+            int quant_min = quantLevelsMinMax.x;
+            int quant_max = quantLevelsMinMax.y;
+            int quant_range = quant_max - quant_min + 1;
+            int s1_quant_seed = (quantOffsets.x + frame) - intMod((quantOffsets.x + frame), stream1QuantDur);
+            float s1_rand_for_quant = portable_rand(s1_quant_seed);
+            int s1_quant_level = quant_min + int(floor(s1_rand_for_quant * float(quant_range)));
+            int s2_quant_seed = (quantOffsets.y + frame) - intMod((quantOffsets.y + frame), stream2QuantDur);
+            float s2_rand_for_quant = portable_rand(s2_quant_seed);
+            int s2_quant_level = quant_min + int(floor(s2_rand_for_quant * float(quant_range)));
+            if (s1_quant_level < 1) { s1_quant_level = 1; }
+            if (s2_quant_level < 1) { s2_quant_level = 1; }
+            if (stream2FreqMult < 0.0) { stream2FreqMult = 3.7; }
+            float stream1 = floor(sin(float(streamsOffset.x + frame) * baseWaveFreq) * float(s1_quant_level)) / float(s1_quant_level);
+            float stream2 = floor(sin(float(streamsOffset.y + frame) * baseWaveFreq * stream2FreqMult) * float(s2_quant_level)) / float(s2_quant_level);
+            float active_stream_val = (intMod(frame, streamSwitchDur) < (streamSwitchDur / 2)) ? stream1 : stream2;
+            if (finalRandSwitch) {
+                return portable_rand(int(active_stream_val * 100000.0));
+            }
+            return 0.5 * active_stream_val + 0.5;
+        }
+
+        // =======================================================================
+        // Main visualization logic
+        // =======================================================================
+
+        float getShape(vec2 uv, float size) {
+            float square = (max(abs(uv.x), abs(uv.y)) < size) ? 1.0 : 0.0;
+            float circle = (length(uv) < size) ? 1.0 : 0.0;
+            return mix(square, circle, shapeType);
+        }
+
+        void main() {
+            float randVal = 0.0;
+            float randVal_previous = 0.0;
+
+            if (demoMode == 1) {
+                // --- DEMO 1: Stacked Modulo (SM) ---
+                int minHoldFrames = 36;     // probable minimum held period
+                int maxHoldFrames = 65;     // maximum held period before cycling
+                int reseedFrames = 52;      // inner mod cycle timing
+                int offsetInner = -41;      // offsets the inner frame
+                int offsetOuter = 23;       // offsets the outer frame
+                bool finalRandSwitch = true;// true to apply the final randomisation step, false to skip it
+                randVal = fpsr_sm(iFrame, minHoldFrames, maxHoldFrames, reseedFrames, offsetInner, offsetOuter, finalRandSwitch);
+                randVal_previous = fpsr_sm(iFrame - 1, minHoldFrames, maxHoldFrames, reseedFrames, offsetInner, offsetOuter, finalRandSwitch);
+            } else if (demoMode == 2) {
+                // --- DEMO 2: Toggled Modulo (TM) ---
+                int period_A = 60;          // The first hold duration
+                int period_B = 25;          // The second hold duration
+                int switch_duration = 72;   // The toggle happens every 30 frames
+                int offset_inner = 15;      // offsets the inner (toggle) clock
+                int offset_outer = 0;       // offsets the outer (hold) clock
+                bool final_rand_switch = true; // true to apply the final randomisation step, false to skip it
+                randVal = fpsr_tm(iFrame, period_A, period_B, switch_duration, offset_inner, offset_outer, final_rand_switch);
+                randVal_previous = fpsr_tm(iFrame - 1, period_A, period_B, switch_duration, offset_inner, offset_outer, final_rand_switch);
+            } else if (demoMode == 3) {
+                // --- DEMO 3: Quantised Switching (QS) ---
+                float baseWaveFreq = 0.0004;     // Base frequency for the modulation wave of stream 1
+                float stream2freqMult = 1.7;      // Multiplier for the second stream's frequency
+                ivec2 quantLevelsMinMax = ivec2(3, 15); // Min, Max quantisation levels for the two streams
+                ivec2 streamsOffset = ivec2(0, 76);     // Offset for the two streams
+                ivec2 quantOffsets = ivec2(0, 81);   // Offset for the random quantisation selection
+                int streamSwitchDur = 50;         // Duration for switching streams in frames
+                int stream1QuantDur = 39;         // Duration for the first stream's quantisation switch cycle in frames
+                int stream2QuantDur = 41;         // Duration for the second stream's quantisation switch cycle in frames
+                bool finalRandSwitchQS = true;    // true to apply the final randomisation step, false to skip it
+                randVal = fpsr_qs(iFrame, baseWaveFreq, stream2freqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitchQS);
+                randVal_previous = fpsr_qs(iFrame - 1, baseWaveFreq, stream2freqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitchQS);
+            }
+
+            vec3 backgroundColor = vec3(randVal);
+            vec3 flashColor = vec3(1.0, 0.0, 0.0);
+            vec2 uv = (2.0 * gl_FragCoord.xy - iResolution.xy) / iResolution.y;
+            float shapeSize = 0.1; 
+            float shapeMask = getShape(uv, shapeSize);
+            vec3 finalColor = backgroundColor;
+            if (randVal != randVal_previous) {
+                finalColor = mix(backgroundColor, flashColor, shapeMask);
+            }
+            gl_FragColor = vec4(finalColor, 1.0);
+        }
+    </script>
+
+    <!-- WebGL Boilerplate JavaScript -->
+    <script>
+        const canvas = document.getElementById('glsl-canvas');
+        const gl = canvas.getContext('webgl', { antialias: true });
+        
+        const shapeSlider = document.getElementById('shape-slider');
+        const modeSlider = document.getElementById('mode-slider');
+        const resetButton = document.getElementById('reset-button');
+        const pauseButton = document.getElementById('pause-button');
+
+        if (!gl) {
+            document.getElementById('canvas-container').innerHTML = '<p class="text-red-400 p-4">WebGL not supported! Please use a modern browser.</p>';
+        } else {
+            const vertexShaderSource = `
+                attribute vec4 a_position;
+                void main() {
+                    gl_Position = a_position;
+                }
+            `;
+            const fragmentShaderSource = document.getElementById('fragment-shader').textContent;
+
+            function createShader(gl, type, source) {
+                const shader = gl.createShader(type);
+                gl.shaderSource(shader, source);
+                gl.compileShader(shader);
+                if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                    console.error('Shader compile error:', gl.getShaderInfoLog(shader));
+                    gl.deleteShader(shader);
+                    return null;
+                }
+                return shader;
+            }
+
+            const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+            const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+            
+            function createProgram(gl, vertexShader, fragmentShader) {
+                if (!vertexShader || !fragmentShader) {
+                    return null;
+                }
+                const program = gl.createProgram();
+                gl.attachShader(program, vertexShader);
+                gl.attachShader(program, fragmentShader);
+                gl.linkProgram(program);
+                if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+                    console.error('Program link error:', gl.getProgramInfoLog(program));
+                    gl.deleteProgram(program);
+                    return null;
+                }
+                return program;
+            }
+
+            const program = createProgram(gl, vertexShader, fragmentShader);
+            
+            if (program) {
+                const positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
+                const resolutionUniformLocation = gl.getUniformLocation(program, 'iResolution');
+                const timeUniformLocation = gl.getUniformLocation(program, 'iTime');
+                const frameUniformLocation = gl.getUniformLocation(program, 'iFrame');
+                const shapeTypeUniformLocation = gl.getUniformLocation(program, 'shapeType');
+                const demoModeUniformLocation = gl.getUniformLocation(program, 'demoMode');
+
+                const positionBuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+                const positions = [-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1];
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+
+                gl.useProgram(program);
+                gl.enableVertexAttribArray(positionAttributeLocation);
+                gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
+
+                let frame = 0;
+                let isPlaying = true;
+
+                resetButton.addEventListener('click', () => {
+                    frame = 0;
+                });
+
+                pauseButton.addEventListener('click', () => {
+                    isPlaying = !isPlaying;
+                    pauseButton.textContent = isPlaying ? 'Pause' : 'Play';
+                });
+
+                function render(time) {
+                    time *= 0.001; 
+
+                    const displayWidth  = canvas.clientWidth;
+                    const displayHeight = canvas.clientHeight;
+                    if (canvas.width !== displayWidth || canvas.height !== displayHeight) {
+                        canvas.width = displayWidth;
+                        canvas.height = displayHeight;
+                        gl.viewport(0, 0, canvas.width, canvas.height);
+                    }
+                    
+                    gl.uniform2f(resolutionUniformLocation, canvas.width, canvas.height);
+                    gl.uniform1f(timeUniformLocation, time);
+                    gl.uniform1i(frameUniformLocation, frame);
+                    gl.uniform1f(shapeTypeUniformLocation, parseFloat(shapeSlider.value));
+                    gl.uniform1i(demoModeUniformLocation, parseInt(modeSlider.value));
+
+                    gl.drawArrays(gl.TRIANGLES, 0, 6);
+                    
+                    if (isPlaying) {
+                        frame++;
+                    }
+                    requestAnimationFrame(render);
+                }
+                requestAnimationFrame(render);
+            }
+        }
+    </script>
+</body>
+</html>
