@@ -50,6 +50,10 @@
             justify-content: space-between;
             width: 100%;
         }
+        .button-group {
+             display: flex;
+             gap: 0.5rem;
+        }
         input[type="range"] {
             -webkit-appearance: none;
             appearance: none;
@@ -85,6 +89,7 @@
             font-weight: 600;
             cursor: pointer;
             transition: background-color 0.2s;
+            min-width: 90px;
         }
         button:hover {
             background-color: #6366f1;
@@ -130,7 +135,10 @@
         </div>
         <div class="control-group">
             <span class="font-semibold">Playback:</span>
-            <button id="reset-button">Reset Frame</button>
+            <div class="button-group">
+                <button id="pause-button">Pause</button>
+                <button id="reset-button">Reset</button>
+            </div>
         </div>
     </div>
 
@@ -359,6 +367,7 @@
         const shapeSlider = document.getElementById('shape-slider');
         const modeSlider = document.getElementById('mode-slider');
         const resetButton = document.getElementById('reset-button');
+        const pauseButton = document.getElementById('pause-button');
 
         if (!gl) {
             document.getElementById('canvas-container').innerHTML = '<p class="text-red-400 p-4">WebGL not supported! Please use a modern browser.</p>';
@@ -422,8 +431,15 @@
                 gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
 
                 let frame = 0;
+                let isPlaying = true;
+
                 resetButton.addEventListener('click', () => {
                     frame = 0;
+                });
+
+                pauseButton.addEventListener('click', () => {
+                    isPlaying = !isPlaying;
+                    pauseButton.textContent = isPlaying ? 'Pause' : 'Play';
                 });
 
                 function render(time) {
@@ -445,7 +461,9 @@
 
                     gl.drawArrays(gl.TRIANGLES, 0, 6);
                     
-                    frame++;
+                    if (isPlaying) {
+                        frame++;
+                    }
                     requestAnimationFrame(render);
                 }
                 requestAnimationFrame(render);
