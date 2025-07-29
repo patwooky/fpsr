@@ -73,17 +73,20 @@ float fpsr_sm(
     in int frame, in int minHold, in int maxHold,
     in int reseedInterval, in int seedInner, in int seedOuter, in bool finalRandSwitch)
 {
+    // Helper for integer modulo, as '%' is not supported for ints in GLSL ES 1.0
+    int intMod = int(mod(float(frame), float(reseedInterval)));
+    
     // --- 1. Calculate the random hold duration ---
     if (reseedInterval < 1) { reseedInterval = 1; } // Prevent division by zero.
 
-    float rand_for_duration = portable_rand(seedInner + frame - (frame % reseedInterval));
+    float rand_for_duration = portable_rand(seedInner + frame - intMod);
     int holdDuration = int(floor(float(minHold) + rand_for_duration * float(maxHold - minHold)));
 
     if (holdDuration < 1) { holdDuration = 1; } // Prevent division by zero.
 
     // --- 2. Generate the stable integer "state" for the hold period ---
     // This value is constant for the entire duration of the hold.
-    int held_integer_state = (seedOuter + frame) - ((seedOuter + frame) % holdDuration);
+    int held_integer_state = (seedOuter + frame) - int(mod(float(seedOuter + frame), float(holdDuration)));
 
     // --- 3. Use the stable state as a seed for the final random value ---
     // Because the seed is stable, the final value is also stable.
@@ -137,7 +140,7 @@ float fpsr_tm(
     
     int holdDuration;
     // The ternary switch: toggle between periodA and periodB at a fixed rhythm.
-    if ((inner_clock_frame % periodSwitch) < (periodSwitch / 2)) {
+    if (int(mod(float(inner_clock_frame), float(periodSwitch))) < (periodSwitch / 2)) {
         holdDuration = periodA;
     } else {
         holdDuration = periodB;
@@ -148,7 +151,7 @@ float fpsr_tm(
     // --- 2. Generate the stable integer "state" for the hold period ---
     // The "outer clock" is offset by seedOuter to create unique output sequences.
     int outer_clock_frame = seedOuter + frame;
-    int held_integer_state = outer_clock_frame - (outer_clock_frame % holdDuration);
+    int held_integer_state = outer_clock_frame - int(mod(float(outer_clock_frame), float(holdDuration)));
 
     // --- 3. Use the stable state as a seed for the final random value (or bypass) ---
     float fpsr_output;
@@ -208,12 +211,12 @@ float fpsr_qs(
     int quant_range = quant_max - quant_min + 1;
 
     // --- Stream 1 Quant Level ---
-    int s1_quant_seed = (quantOffsets.x + frame) - ((quantOffsets.x + frame) % stream1QuantDur);
+    int s1_quant_seed = (quantOffsets.x + frame) - int(mod(float(quantOffsets.x + frame), float(stream1QuantDur)));
     float s1_rand_for_quant = portable_rand(s1_quant_seed);
     int s1_quant_level = quant_min + int(floor(s1_rand_for_quant * float(quant_range)));
 
     // --- Stream 2 Quant Level ---
-    int s2_quant_seed = (quantOffsets.y + frame) - ((quantOffsets.y + frame) % stream2QuantDur);
+    int s2_quant_seed = (quantOffsets.y + frame) - int(mod(float(quantOffsets.y + frame), float(stream2QuantDur)));
     float s2_rand_for_quant = portable_rand(s2_quant_seed);
     int s2_quant_level = quant_min + int(floor(s2_rand_for_quant * float(quant_range)));
 
@@ -227,7 +230,7 @@ float fpsr_qs(
     float stream2 = floor(sin(float(streamsOffset.y + frame) * baseWaveFreq * stream2FreqMult) * float(s2_quant_level)) / float(s2_quant_level);
 
     // --- 4. Switch between the two streams ---
-    float active_stream_val = ((frame % streamSwitchDur) < (streamSwitchDur / 2)) ? stream1 : stream2;
+    float active_stream_val = (int(mod(float(frame), float(streamSwitchDur))) < streamSwitchDur / 2) ? stream1 : stream2;
 
     // --- 5. Hash the final output or bypass ---
     float fpsr_output;
@@ -244,77 +247,76 @@ float fpsr_qs(
 /* Shadertoy Main Image Function                                              */
 /******************************************************************************/
 
-// This function demonstrates how to use the FPS-R algorithms.
-// You can switch between the demos by changing the value of DEMO.
-// 1 = Stacked Modulo (SM)
-// 2 = Toggled Modulo (TM)
-// 3 = Quantised Switching (QS)
-#define DEMO 1
-
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
+    // Use a const to select the demo mode.
+    // 1 = Stacked Modulo (SM)
+    // 2 = Toggled Modulo (TM)
+    // 3 = Quantised Switching (QS)
+    const int demoMode = 1;
+
     // Use iFrame for frame-perfect stepping
     int frame = iFrame;
 
     float randVal = 0.0;
     float randVal_previous = 0.0;
     
-    // --- DEMO 1: Stacked Modulo (SM) ---
-    #if DEMO == 1
-    int minHoldFrames = 16;     // probable minimum held period
-    int maxHoldFrames = 24;     // maximum held period before cycling
-    int reseedFrames = 9;       // inner mod cycle timing
-    int offsetInner = -41;      // offsets the inner frame
-    int offsetOuter = 23;       // offsets the outer frame
-    bool finalRandSwitch = true;// true to apply the final randomisation step, false to skip it
+    if (demoMode == 1) {
+        // --- DEMO 1: Stacked Modulo (SM) ---
+        int minHoldFrames = 16;     // probable minimum held period
+        int maxHoldFrames = 24;     // maximum held period before cycling
+        int reseedFrames = 9;       // inner mod cycle timing
+        int offsetInner = -41;      // offsets the inner frame
+        int offsetOuter = 23;       // offsets the outer frame
+        bool finalRandSwitch = true;// true to apply the final randomisation step, false to skip it
 
-    randVal = fpsr_sm(frame, minHoldFrames, maxHoldFrames, reseedFrames, offsetInner, offsetOuter, finalRandSwitch);
-    randVal_previous = fpsr_sm(frame - 1, minHoldFrames, maxHoldFrames, reseedFrames, offsetInner, offsetOuter, finalRandSwitch);
-    #endif
+        randVal = fpsr_sm(frame, minHoldFrames, maxHoldFrames, reseedFrames, offsetInner, offsetOuter, finalRandSwitch);
+        randVal_previous = fpsr_sm(frame - 1, minHoldFrames, maxHoldFrames, reseedFrames, offsetInner, offsetOuter, finalRandSwitch);
+    } else if (demoMode == 2) {
+        // --- DEMO 2: Toggled Modulo (TM) ---
+        int period_A = 10;          // The first hold duration
+        int period_B = 25;          // The second hold duration
+        int switch_duration = 30;   // The toggle happens every 30 frames
+        int offset_inner = 15;      // offsets the inner (toggle) clock
+        int offset_outer = 0;       // offsets the outer (hold) clock
+        bool final_rand_switch = true; // true to apply the final randomisation step, false to skip it
 
-    // --- DEMO 2: Toggled Modulo (TM) ---
-    #if DEMO == 2
-    int period_A = 10;          // The first hold duration
-    int period_B = 25;          // The second hold duration
-    int switch_duration = 30;   // The toggle happens every 30 frames
-    int offset_inner = 15;      // offsets the inner (toggle) clock
-    int offset_outer = 0;       // offsets the outer (hold) clock
-    bool final_rand_switch = true; // true to apply the final randomisation step, false to skip it
-
-    randVal = fpsr_tm(frame, period_A, period_B, switch_duration, offset_inner, offset_outer, final_rand_switch);
-    randVal_previous = fpsr_tm(frame - 1, period_A, period_B, switch_duration, offset_inner, offset_outer, final_rand_switch);
-    #endif
-    
-    // --- DEMO 3: Quantised Switching (QS) ---
-    #if DEMO == 3
-    float baseWaveFreq = 0.012;     // Base frequency for the modulation wave of stream 1
-    float stream2freqMult = 3.1;      // Multiplier for the second stream's frequency
-    ivec2 quantLevelsMinMax = ivec2(4, 12); // Min, Max quantisation levels for the two streams
-    ivec2 streamsOffset = ivec2(0, 76);     // Offset for the two streams
-    ivec2 quantOffsets = ivec2(10, 81);   // Offset for the random quantisation selection
-    int streamSwitchDur = 24;         // Duration for switching streams in frames
-    int stream1QuantDur = 16;         // Duration for the first stream's quantisation switch cycle in frames
-    int stream2QuantDur = 20;         // Duration for the second stream's quantisation switch cycle in frames
-    bool finalRandSwitchQS = true;    // true to apply the final randomisation step, false to skip it
-    
-    randVal = fpsr_qs(frame, baseWaveFreq, stream2freqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitchQS);
-    randVal_previous = fpsr_qs(frame - 1, baseWaveFreq, stream2freqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitchQS);
-    #endif
+        randVal = fpsr_tm(frame, period_A, period_B, switch_duration, offset_inner, offset_outer, final_rand_switch);
+        randVal_previous = fpsr_tm(frame - 1, period_A, period_B, switch_duration, offset_inner, offset_outer, final_rand_switch);
+    } else if (demoMode == 3) {
+        // --- DEMO 3: Quantised Switching (QS) ---
+        float baseWaveFreq = 0.012;     // Base frequency for the modulation wave of stream 1
+        float stream2freqMult = 3.1;      // Multiplier for the second stream's frequency
+        ivec2 quantLevelsMinMax = ivec2(4, 12); // Min, Max quantisation levels for the two streams
+        ivec2 streamsOffset = ivec2(0, 76);     // Offset for the two streams
+        ivec2 quantOffsets = ivec2(10, 81);   // Offset for the random quantisation selection
+        int streamSwitchDur = 24;         // Duration for switching streams in frames
+        int stream1QuantDur = 16;         // Duration for the first stream's quantisation switch cycle in frames
+        int stream2QuantDur = 20;         // Duration for the second stream's quantisation switch cycle in frames
+        bool finalRandSwitchQS = true;    // true to apply the final randomisation step, false to skip it
+        
+        randVal = fpsr_qs(frame, baseWaveFreq, stream2freqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitchQS);
+        randVal_previous = fpsr_qs(frame - 1, baseWaveFreq, stream2freqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitchQS);
+    }
 
 
     // --- Visualization ---
     // Base color is a grayscale value from the random number
-    vec3 col = vec3(randVal);
+    vec3 backgroundColor = vec3(randVal);
+    vec3 flashColor = vec3(1.0, 0.0, 0.0); // Red
 
-    // If the value changed from the previous frame, make the pixel red
+    // Normalize coordinates and center them, correcting for aspect ratio
+    vec2 uv = (2.0 * fragCoord.xy - iResolution.xy) / iResolution.y;
+    
+    // Define circle size (1/10th of the canvas height)
+    float circleRadius = 0.1; 
+    float circleMask = (length(uv) < circleRadius) ? 1.0 : 0.0;
+
+    vec3 finalColor = backgroundColor;
+    // If the value changed from the previous frame, flash the circle
     if (randVal != randVal_previous) {
-        col = vec3(1.0, 0.0, 0.0);
+        finalColor = mix(backgroundColor, flashColor, circleMask);
     }
 
-    // Add a grid to visualize individual pixels if you zoom in
-    if (mod(fragCoord.x, 2.0) < 1.0 || mod(fragCoord.y, 2.0) < 1.0) {
-        col *= 0.95;
-    }
-
-    fragColor = vec4(col, 1.0);
+    fragColor = vec4(finalColor, 1.0);
 }
