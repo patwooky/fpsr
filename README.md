@@ -536,19 +536,24 @@ FPS-R functions, being pure and stateless, compose cleanly and safely. You can l
 ## 📊 Explore the Algorithm's Fingerprint
 The FPS-R algorithms produce a unique rhythmic "fingerprint" over time. The animated preview below shows the scrollable timeline graph from the included Jupyter Notebook, which allows you to explore this behaviour visually.
 
+### Jupyter FPS-R Notebook Interactive Timeline
+To try it yourself, you can [explore the interactive timeline in a Jupyter notebook on `nbviewer`](https://nbviewer.org/github/patwooky/FPSR_Algorithm/blob/main/resources/code/python/fpsr_algorithms.ipynb)
+The interactive scrolling graphs are the last 3 cells at the end of the notebook.
+
+> Note: Jupyter notebooks render only as static content on GitHub's web viewer. Interactive scrolling graphs for SM and QS will not show up. If you want to play around with the parameters and drive a different resulting curve, and inspect the scrolling graphs, please feel free to download the notebook and execute it on your local machine runnning Jupyter notebook on a `Python 3.x` kernel with the relevant dependencies (`Pandas` and `Matplotlib`). 
 ![FPS-R-SM Timeline Graph Preview](resources/readme/images/jpynotebookFpsrSmScroll.gif) 
 FPS-R: Stacked Modulo Timeline Graph Preview
-
 ![FPS-R-TM Timeline Graph Preview](resources/readme/images/jpynotebookFpsrTmScroll.gif) 
 FPS-R: Toggled Modulo Timeline Graph Preview
-
 ![FPS-R Timeline Graph Preview](resources/readme/images/jpynotebookFpsrQsScroll.gif)
 FPS-R: Quantised Switching Timeline Graph Preview
 
-To try it yourself, you can [explore the interactive timeline in a Jupyter notebook on `nbviewer`](https://nbviewer.org/github/patwooky/FPSR_Algorithm/blob/main/resources/code/python/fpsr_algorithms.ipynb)
-The interactive scrolling graphs are the last 2 cells at the end of the notebook.
 
-> Note: Jupyter notebooks render only as static content on GitHub's web viewer. Interactive scrolling graphs for SM and QS will not show up. If you want to play around with the parameters and drive a different resulting curve, and inspect the scrolling graphs, please feel free to download the notebook and execute it on your local machine runnning Jupyter notebook on a `Python 3.x` kernel with the relevant dependencies (`Pandas` and `Matplotlib`). 
+### Interactive FPS-R WebGL Visualizer
+A live, interactive demo of the FPS-R algorithms is available.
+
+**[Click here to launch the visualizer](https://patwooky.github.io/FPSR_Algorithm/resources/code/glsl/fpsr_algorithms_webgl.html)**
+![img](./resources/readme/images/webGl_visualiser_preview.gif)
 
 ---
 ## 🧬 Flavours of FPS-R
