@@ -1,0 +1,25 @@
+---
+---
+
+@import "{{ site.theme }}";
+
+/* Your custom CSS rules go here */
+body {
+  background-color: #1a1a1a !important; /* A dark gray background */
+  color: #f0f0f0 !important;            /* A light gray text color */
+}
+
+a {
+  color: #00bfff !important; /* A bright blue for links */
+}
+
+/*
+    Explanation:
+
+---: These two lines of three dashes are called front matter. They must be at the very top of the file. This tells Jekyll to process the file.
+
+@import "{{ site.theme }}";: This line imports all the original CSS from the theme you selected in your repository settings. This way, you're adding to the theme, not replacing it entirely.
+
+Your Custom CSS: Below the import line, you can add any CSS rules you want. The rules you add here will override the theme's default styles. The !important tag helps ensure your style takes precedence, though it's best used sparingly.
+
+*/
