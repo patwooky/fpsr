@@ -1,5 +1,5 @@
 # 🎲 FPS-R Algorithm: Frame-Persistent Stateless Randomisation
-MIT License—[see LICENSE](https://patwooky.github.io/FPSR_Algorithm/LICENSE) for details.  
+MIT License—[see LICENSE](https://patwooky.github.io/FPSR_Algorithm/LICENSE.md) for details.  
 Copyright (c) 2025 Woo Ker Yang (Patrick Woo) patrickwoo.1976@gmail.com
 If you reference or adapt this framework, please credit Patrick Woo and this repository.
 **This documentation is still in development.** 
