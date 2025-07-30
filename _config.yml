@@ -1,0 +1,3 @@
+# Tells Jekyll to include the LICENSE file in the site build
+include:
+  - LICENSE
