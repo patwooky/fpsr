@@ -461,56 +461,44 @@ The interactive scrolling graphs are the last 2 cells at the end of the notebook
 
 ---
 ## 🧱 Stacked Modulo (SM)
-The Stacked Modulo (SM) algorithm generates a stable, persistent value by nesting two modulo operations. An inner modulo calculates a random "hold duration" at a fixed interval. An outer modulo then uses this duration to generate a stable integer value that persists for that entire period. This two-level interaction, where the inner process periodically changes the behavior of the outer one, results in an organic and unpredictable pattern.
-
-## Stacked Modulo (SM) - Mathematical Model
-The output is a function of a composite seed, which is the sum of multiple layered rhythm functions.
-### Mathematical Formula
-<!-- latex markdown -->
-$$
-D(t) = \lfloor H_{min} + \text{rand}(O_i + \lfloor \frac{t}{P_r} \rfloor \cdot P_r) \cdot (H_{max} - H_{min}) \rfloor
-$$
-$$
-S_H(t) = \lfloor \frac{t + O_o}{D(t)} \rfloor \cdot D(t)
-$$
-$$
-f(t)_{\text{SM}} =
-\begin{cases}
-\text{rand}(S_H(t)) & \text{if finalRandSwitch} = 1 \\
-S_H(t) & \text{if finalRandSwitch} = 0
-\end{cases}
-$$
-
-Where:
-- $t$ is the current time or frame number (`frame`).
-- $\text{rand}(seed)$ is the random number generator (`portable_rand()`).
-- $H_{min}, H_{max}$ are the min/max hold durations (`minHold`, `maxHold`).
-- $P_r$ is the reseed interval (`reseedInterval`).
-- $O_i$ is the inner seed offset (`seedInner`).
-- $O_o$ is the outer seed offset (`seedOuter`).
-- $D(t)$ is the calculated hold duration.
-- $S_H(t)$ is the stable integer state that is held.
-
-## Stacked Modulo (SM) - Code
 The Stacked Modulo (SM) algorithm generates a stable, persistent value by nesting two modulo operations. First, it calculates a random "hold duration" at a set interval. It then uses this duration to generate a stable integer value that persists for that period, resulting in an organic, unpredictable pattern.
 
-It is presented here in two forms: a compact one-liner for expression-based systems, and a more readable expanded function.
+It is presented here in two forms: a compact one-liner for expression-based systems, and an expanded function for readability and flexibility.
+
+## Stacked Modulo (SM) One-Line Compact Form
+### Stacked Modulo (SM) One-Line Mathematical Model
+The output is a function of a composite seed, which is the sum of multiple layered rhythm functions.
 
 ### Stacked Modulo - One-Line Compact
 This version is a highly compact form of the SM logic, suitable for environments that only allow for simple expressions, like shader node graphs or embedded systems.
+#### SM One-Line Compact Mathematical Model
+$$
+S_H(t) = (t + O_o) - \left( (t + O_o) \pmod{ \lfloor H_{min} + \text{rand}(O_i + \lfloor \frac{t}{P_r} \rfloor \cdot P_r) \cdot (H_{max} - H_{min}) \rfloor } \right)
+$$
+
+Where:
+- $S_H(t)$ is the stable integer state that is held.
+- $t$ is the current time or frame number (`frame`).
+- $O_o$ is the outer seed offset (`seedOuter`).
+- $H_{min}, H_{max}$ are the min/max hold durations (`minHold`, `maxHold`).
+- $\text{rand}(seed)$ is the random number generator (`portable_rand()`).
+- $O_i$ is the inner seed offset (`seedInner`).
+- $P_r$ is the reseed interval (`reseedInterval`).
+
+#### SM One Line Code in C
 ```c 
-frame - (23 + frame % (minHold + floor(rand(23 + frame - (frame % 10)) * (maxHold - minHold))))
+(seedOuter + frame) - ( (seedOuter + frame) % (minHold + floor( rand( (seedInner + frame) - ( (seedInner + frame) % reseed_interval) ) * (maxHold - minHold) ) ) )
 ```
 At the heart, FPS-R:SM is a temporal modulation function, where the output adjusts the current frame value in a structured-random way. Let’s unpack it inside-out:
 
 #### 🧩 SM One-Line - Component Breakdown
 Here’s how the expression works, from the inside out:
-1. `(frame % 10)`
-   - **What it does:** This calculates the remainder when the current `frame` number is divided by 10.
+1. `(frame % reseed_interval)`
+   - **What it does:** This calculates the remainder when the current `frame` number is divided by `reseed_interval`.
    - **Observable Outcome:** It produces a simple, repeating sequence of integers: `0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3...`.
-   - **Intent:** This creates a short, rhythmic, 10-frame cycle that acts as the foundational "pacemaker" for the entire system. It defines the smallest unit of time before a _potential_ change can be evaluated.
+   - **Intent:** This creates a short, rhythmic, `reseed_interval`-frame cycle that acts as the foundational "pacemaker" for the entire system. It defines the smallest unit of time before a _potential_ change can be evaluated.
 2. `(23 + frame - (frame % 10))`
-   - **What it does:** It subtracts the 10-frame cycle from the current `frame` and adds a prime number offset (`23`).
+   - **What it does:** It subtracts the 10-frame cycle from the current `frame` and adds a prime number offset (`23`).+
    - **Observable Outcome:** This calculation effectively quantises time into 10-frame blocks. For frames 0 through 9, the output is 23. For frames 10 through 19, the output is 33, and so on. The value remains constant for 10-frame intervals.
    - **Intent:** This is the core of the **reseeding mechanism**. By creating a stable value that only changes every 10 frames, it ensures that the random number generator produces the same result for that entire duration, establishing the "hold" phase. The `23` is a "magic number" used to create a unique starting point for the randomness. This ensures that the "outer" `frame` and the "inner" `frame` do not start off at the same time, minimising unexpected accumulated resonance and cancellation effects.
 3. `rand(...) * (maxHold - minHold)`
@@ -557,7 +545,34 @@ This is the "stacked" part of the algorithm. The length of the hold is determine
 
 In essence, the expression uses nested, deterministic cycles to create a larger, seemingly random behaviour without ever storing information from one frame to the next. By incorporating `minHold` and `maxHold`, it provides direct control over the rhythm of this behaviour, perfectly embodying the FPS-R philosophy of generating structured, stateless unpredictability.
 
-### Stacked Modulo - A Defined Function
+## Stacked Modulo (SM) Expanded Form
+### SM Expanded Mathematical Model
+<!-- latex markdown -->
+$$
+D(t) = \lfloor H_{min} + \text{rand}(O_i + \lfloor \frac{t}{P_r} \rfloor \cdot P_r) \cdot (H_{max} - H_{min}) \rfloor
+$$
+$$
+S_H(t) = \lfloor \frac{t + O_o}{D(t)} \rfloor \cdot D(t)
+$$
+$$
+f(t)_{\text{SM}} =
+\begin{cases}
+\text{rand}(S_H(t)) & \text{if finalRandSwitch} = 1 \\
+S_H(t) & \text{if finalRandSwitch} = 0
+\end{cases}
+$$
+
+Where:
+- $t$ is the current time or frame number (`frame`).
+- $\text{rand}(seed)$ is the random number generator (`portable_rand()`).
+- $H_{min}, H_{max}$ are the min/max hold durations (`minHold`, `maxHold`).
+- $P_r$ is the reseed interval (`reseedInterval`).
+- $O_i$ is the inner seed offset (`seedInner`).
+- $O_o$ is the outer seed offset (`seedOuter`).
+- $D(t)$ is the calculated hold duration.
+- $S_H(t)$ is the stable integer state that is held.
+
+### Stacked Modulo (SM) - A Defined Function
 This is a more readable and flexible implementation of the same core logic. It breaks the process into clear, understandable steps with named variables and parameters for greater control.
 
 The function is defined in C and should be portable across languages and platforms.
@@ -784,8 +799,39 @@ The true complexity emerges from layering multiple modulo functions with non-har
 ## 🔀 Toggled Modulo (TM)
 The Toggled Modulo (TM) algorithm uses a nested modulo structure to create a stable, persistent value. It determines its "hold duration" by deterministically switching between two predefined periods at a regular interval. While this switching process is perfectly predictable, the interplay between the three independent timers—the two hold durations and the switching interval—creates a complex, layered rhythm that can feel organic and unpredictable, while still being fully controllable.
 
-### Toggled Modulo (TM) - Mathematical Model
+It is presented here in two forms: a compact one-liner for expression-based systems, and an expanded function for readability and flexibility.
 
+## Stacked Modulo (TM) One-Line Compact Form
+### Stacked Modulo (TM) One-Line Compact Mathematical Model
+$$
+f(t)_{\text{TM}} = \text{rand}\left( (t + O_o) - \left( (t + O_o) \pmod{ D(t) } \right) \right)
+$$
+where $D(t)$ is defined as:
+$$
+D(t) =
+\begin{cases}
+P_A & \text{if } (t + O_i) \pmod{P_s} < P_s / 2 \\
+P_B & \text{otherwise}
+\end{cases}
+$$
+
+Where:
+- $f(t)_{\text{TM}}$ is the final random output value.
+- $t$ is the current time or frame number (`frame`).
+- $\text{rand}(seed)$ is the random number generator (`portable_rand()`).
+- $O_o$ is the outer seed offset (`seedOuter`).
+- $O_i$ is the inner seed offset (`seedInner`).
+- $P_A, P_B$ are the two fixed hold durations (`periodA`, `periodB`).
+- $P_s$ is the toggle interval (`periodSwitch`).
+
+#### TM One-Line Code in C
+```c
+// Note: frameB is typically frameA + offset to de-sync the clocks
+rand( (seedOuter + frame) - ( (seedOuter + frame) % ( ((seedInner + frame) % periodSwitch < periodSwitch * 0.5) ? periodA : periodB ) ) )
+```
+
+## Stacked Modulo (SM) Expanded Form
+### Toggled Modulo (TM) - Expanded Mathematical Model
 The Toggled Modulo (TM) algorithm creates a rhythmic, mechanical pattern by switching between two fixed hold durations at a regular interval.
 
 The process can be described by the following set of equations:
@@ -819,10 +865,6 @@ Where:
 
 ### Toggled Modulo - One Line Compact
 This version is a highly compact form of the SM logic, suitable for environments that only allow for simple expressions, like shader node graphs or embedded systems.
-```c
-// Note: frameB is typically frameA + offset to de-sync the clocks
-(frameA - (frameA % (frameB - ((frameB % periodSwitch < (periodSwitch * 0.5)) ? periodA : periodB))))
-```
 
 #### 🧩 TM One-Line - Component Breakdown
 Let's unpack this expression from the inside out:
