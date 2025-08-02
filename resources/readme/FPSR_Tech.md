@@ -461,11 +461,70 @@ The interactive scrolling graphs are the last 2 cells at the end of the notebook
 
 ---
 ## 🧱 Stacked Modulo (SM)
-The Stacked Modulo (SM) algorithm generates a stable, persistent value by nesting two modulo operations. An inner modulo calculates a random "hold duration" at a fixed interval. An outer modulo then uses this duration to generate a stable integer value that persists for that entire period. This two-level interaction, where the inner process periodically changes the behavior of the outer one, results in an organic and unpredictable pattern.
+The Stacked Modulo (SM) algorithm generates a stable, persistent value by nesting two modulo operations. First, it calculates a random "hold duration" at a set interval. It then uses this duration to generate a stable integer value that persists for that period, resulting in an organic, unpredictable pattern.
 
-## Stacked Modulo (SM) - Mathematical Model
 The output is a function of a composite seed, which is the sum of multiple layered rhythm functions.
-### Mathematical Formula
+
+FPS-R:SM is presented here in two forms: a compact one-liner for expression-based systems, and an expanded function for readability and flexibility.
+
+## Stacked Modulo (SM) One-Line Compact Form
+### Stacked Modulo - One-Line Compact
+This version is a highly compact form of the SM logic, suitable for environments that only allow for simple expressions, like shader node graphs or embedded systems.
+
+### Stacked Modulo (SM) One-Line Compact Mathematical Model
+$$
+S_H(t) = (t + O_o) - \left( (t + O_o) \pmod{ \lfloor H_{min} + \text{rand}(O_i + \lfloor \frac{t}{P_r} \rfloor \cdot P_r) \cdot (H_{max} - H_{min}) \rfloor } \right)
+$$
+
+Where:
+- $S_H(t)$ is the stable integer state that is held.
+- $t$ is the current time or frame number (`frame`).
+- $O_o$ is the outer seed offset (`seedOuter`).
+- $H_{min}, H_{max}$ are the min/max hold durations (`minHold`, `maxHold`).
+- $\text{rand}(seed)$ is the random number generator (`portable_rand()`).
+- $O_i$ is the inner seed offset (`seedInner`).
+- $P_r$ is the reseed interval (`reseedInterval`).
+
+#### SM One Line Code in C
+```c 
+(seedOuter + frame) - ( (seedOuter + frame) % (minHold + floor( rand( (seedInner + frame) - ( (seedInner + frame) % reseedInterval) ) * (maxHold - minHold) ) ) )
+```
+At the heart, FPS-R:SM is a temporal modulation function, where the output adjusts the current frame value in a structured-random way. Let’s unpack it inside-out:
+
+#### 🧩 SM One-Line - Component Breakdown
+##### High-Level Breakdown
+The one-line expression achieves its "move-and-hold" behaviour by nesting several operations. 
+1. From the inside out, it first establishes a rhythmic reseeding mechanism that determines when to calculate a new random hold duration. 
+2. This duration is then used as the divisor in an outer modulo operation that creates the final stable, "held" value. 
+3. The interference between these two nested rhythms is what produces the algorithm's signature organic pattern.
+
+For a detailed, step-by-step analysis of how each mathematical component contributes to the final behaviour, please see the Component Breakdown section under the Expanded Form below.
+
+#### SM Mechanism: Hold vs. Jump in the One-Liner
+The expression's behaviour is governed by the interplay between an "outer" and "inner" modulo operation.
+- **The Outer Modulo:** `(seedOuter + frame) - ( (seedOuter + frame) % ...)` is the **primary engine for the jump**. It creates a ramping value that, when subtracted from `frame`, produces the stable "held" output.
+- **The Inner Modulo:** `( (seedInner + frame) % reseedInterval) )` is the engine for the **reseed**. It ensures the `hold_duration` itself only changes at a fixed interval.
+
+##### When does the value HOLD?
+The final output value holds steady only when **both** the inner and outer modulo operations are in a stable state. This occurs during the frames between jump events.
+
+##### When does the value JUMP?
+A jump in the final output occurs if **either** the inner or outer modulo resets its cycle.
+1. **Outer Modulo Jump (Natural Expiration):** The value jumps when the `frame` counter completes the current `hold_duration` cycle. This is the natural end of a hold period.
+2. **Inner Modulo Jump (Forced Reseed):** The value also jumps every 10 frames when the inner modulo (frame % 10) resets. This forces a recalculation of the hold_duration. Because the system is stateless, the frame enters this new hold cycle at an arbitrary point, almost always resulting in an immediate change to the final output value.
+
+##### When does the HOLD DURATION itself change?
+This is the "stacked" part of the algorithm. The length of the hold is determined by the `rand()` function. The seed for this function is controlled by the inner modulo (`frame % 10`). This means a new `hold_duration` is only calculated every 10 frames. **This creates the signature FPS-R rhythm**: the value jumps at a variable rate, and the rate of that variation itself changes at a fixed, slower interval.
+
+**Summary of the "Randomised Move-and-Hold" behaviour**
+   - **Hold:** For a random number of frames, the expression outputs a constant, unchanging integer. This duration is controlled by `minHold` and `maxHold` parameters, guaranteeing the hold period falls within a specific, use-defined range. This is the "hold" phase, which creates the illusion of a system that is deliberately pausing or waiting.
+   - **Jump:** Once the current frame count surpasses the randomly generated hold duration, the `frame % (duration)` operation resets. This causes a sudden, discontinuous "jump" in the final output value.
+   - **Reseed:** The seed for the random hold duration is itself updated every 10 frames. This ensures that the system doesn't fall into a simple, repeating loop and that the lengths of the "hold" periods feel unpredictable and organic.
+
+In essence, the expression uses nested, deterministic cycles to create a larger, seemingly random behaviour without ever storing information from one frame to the next. By incorporating `minHold` and `maxHold`, it provides direct control over the rhythm of this behaviour, perfectly embodying the FPS-R philosophy of generating structured, stateless unpredictability.
+
+## Stacked Modulo (SM) Expanded Form
+### SM Expanded Mathematical Model
 <!-- latex markdown -->
 $$
 D(t) = \lfloor H_{min} + \text{rand}(O_i + \lfloor \frac{t}{P_r} \rfloor \cdot P_r) \cdot (H_{max} - H_{min}) \rfloor
@@ -491,73 +550,7 @@ Where:
 - $D(t)$ is the calculated hold duration.
 - $S_H(t)$ is the stable integer state that is held.
 
-## Stacked Modulo (SM) - Code
-The Stacked Modulo (SM) algorithm generates a stable, persistent value by nesting two modulo operations. First, it calculates a random "hold duration" at a set interval. It then uses this duration to generate a stable integer value that persists for that period, resulting in an organic, unpredictable pattern.
-
-It is presented here in two forms: a compact one-liner for expression-based systems, and a more readable expanded function.
-
-### Stacked Modulo - One-Line Compact
-This version is a highly compact form of the SM logic, suitable for environments that only allow for simple expressions, like shader node graphs or embedded systems.
-```c 
-frame - (23 + frame % (minHold + floor(rand(23 + frame - (frame % 10)) * (maxHold - minHold))))
-```
-At the heart, FPS-R:SM is a temporal modulation function, where the output adjusts the current frame value in a structured-random way. Let’s unpack it inside-out:
-
-#### 🧩 SM One-Line - Component Breakdown
-Here’s how the expression works, from the inside out:
-1. `(frame % 10)`
-   - **What it does:** This calculates the remainder when the current `frame` number is divided by 10.
-   - **Observable Outcome:** It produces a simple, repeating sequence of integers: `0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3...`.
-   - **Intent:** This creates a short, rhythmic, 10-frame cycle that acts as the foundational "pacemaker" for the entire system. It defines the smallest unit of time before a _potential_ change can be evaluated.
-2. `(23 + frame - (frame % 10))`
-   - **What it does:** It subtracts the 10-frame cycle from the current `frame` and adds a prime number offset (`23`).
-   - **Observable Outcome:** This calculation effectively quantises time into 10-frame blocks. For frames 0 through 9, the output is 23. For frames 10 through 19, the output is 33, and so on. The value remains constant for 10-frame intervals.
-   - **Intent:** This is the core of the **reseeding mechanism**. By creating a stable value that only changes every 10 frames, it ensures that the random number generator produces the same result for that entire duration, establishing the "hold" phase. The `23` is a "magic number" used to create a unique starting point for the randomness. This ensures that the "outer" `frame` and the "inner" `frame` do not start off at the same time, minimising unexpected accumulated resonance and cancellation effects.
-3. `rand(...) * (maxHold - minHold)`
-   - **What it does:**  It uses the 10-frame seed to generate a random number between 0.0 and 1.0, then multiplies it by the _range_ of possible hold durations.
-   - **Observable Outcome:** A random floating-point number between 0 and (`maxHold` - `minHold`). Because the seed is stable for 10 frames, this value is also stable for that duration.
-   - **Intent:** This step calculates a random duration within your specified range.
-4. `floor(...)`
-   - **What it does:** It truncates the floating-point result from the previous step, converting it into an integer.
-   - **Observable Outcome:** A random integer between 0 and (`maxHold - minHold - 1`).
-   - **Intent:** This ensures the duration is a whole number, which is cleaner for frame-based calculations.
-5. `minHold + floor(...)`
-   - **What it does:** It adds the `minHold` value to the random integer.
-   - **Observable Outcome:** A final random integer that is guaranteed to be between `minHold` and `maxHold - 1`.
-   - **Intent:** It establishes the final, random hold duration. By adding minHold, you enforce a minimum holding time and, most importantly, prevent the duration from ever being zero, which would cause a "divide by zero" error in the outer modulo operation.
-6. `frame % (minHold + ...)`
-   - **What it does:** The primary **"Stacked Modulo"** operation. The current `frame` is divided by the final, clamped random hold duration, and the remainder is taken.
-   - **Observable Outcome:** A sawtooth wave that ramps from 0 up to the hold duration minus one, then resets to 0.
-   - **Intent:** This generates the core dynamic that resets or "jumps" when the frame count exceeds the calculated hold period.
-7. `frame - (...)`
-   - **What it does:** Subtracts the entire ramping value from the current `frame`.
-   - **Observable Outcome:** A value that remains constant for the duration determined in step 5, and then jumps to a new constant value.
-   - **Intent:** This final step **locks the value**, creating the explicit "hold" state. The subtraction cancels out the frame's increment, resulting in a stable output until the modulo operation triggers a jump.
-
-#### SM Mechanism: Hold vs. Jump in the One-Liner
-The expression's behaviour is governed by the interplay between an "outer" and "inner" modulo operation.
-- **The Outer Modulo:** `frame % (hold_duration)` is the **primary engine for the jump**. It creates a ramping value that, when subtracted from `frame`, produces the stable "held" output.
-- **The Inner Modulo:** `frame % 10` is the engine for the **reseed**. It ensures the `hold_duration` itself only changes at a fixed interval.
-
-##### When does the value HOLD?
-The final output value holds steady only when **both** the inner and outer modulo operations are in a stable state. This occurs during the frames between jump events.
-
-##### When does the value JUMP?
-A jump in the final output occurs if **either** the inner or outer modulo resets its cycle.
-1. **Outer Modulo Jump (Natural Expiration):** The value jumps when the `frame` counter completes the current `hold_duration` cycle. This is the natural end of a hold period.
-2. **Inner Modulo Jump (Forced Reseed):** The value also jumps every 10 frames when the inner modulo (frame % 10) resets. This forces a recalculation of the hold_duration. Because the system is stateless, the frame enters this new hold cycle at an arbitrary point, almost always resulting in an immediate change to the final output value.
-
-##### When does the HOLD DURATION itself change?
-This is the "stacked" part of the algorithm. The length of the hold is determined by the `rand()` function. The seed for this function is controlled by the inner modulo (`frame % 10`). This means a new `hold_duration` is only calculated every 10 frames. **This creates the signature FPS-R rhythm**: the value jumps at a variable rate, and the rate of that variation itself changes at a fixed, slower interval.
-
-**Summary of the "Randomised Move-and-Hold" behaviour**
-   - **Hold:** For a random number of frames, the expression outputs a constant, unchanging integer. This duration is controlled by `minHold` and `maxHold` parameters, guaranteeing the hold period falls within a specific, use-defined range. This is the "hold" phase, which creates the illusion of a system that is deliberately pausing or waiting.
-   - **Jump:** Once the current frame count surpasses the randomly generated hold duration, the `frame % (duration)` operation resets. This causes a sudden, discontinuous "jump" in the final output value.
-   - **Reseed:** The seed for the random hold duration is itself updated every 10 frames. This ensures that the system doesn't fall into a simple, repeating loop and that the lengths of the "hold" periods feel unpredictable and organic.
-
-In essence, the expression uses nested, deterministic cycles to create a larger, seemingly random behaviour without ever storing information from one frame to the next. By incorporating `minHold` and `maxHold`, it provides direct control over the rhythm of this behaviour, perfectly embodying the FPS-R philosophy of generating structured, stateless unpredictability.
-
-### Stacked Modulo - A Defined Function
+### Stacked Modulo (SM) - A Defined Function
 This is a more readable and flexible implementation of the same core logic. It breaks the process into clear, understandable steps with named variables and parameters for greater control.
 
 The function is defined in C and should be portable across languages and platforms.
@@ -784,8 +777,49 @@ The true complexity emerges from layering multiple modulo functions with non-har
 ## 🔀 Toggled Modulo (TM)
 The Toggled Modulo (TM) algorithm uses a nested modulo structure to create a stable, persistent value. It determines its "hold duration" by deterministically switching between two predefined periods at a regular interval. While this switching process is perfectly predictable, the interplay between the three independent timers—the two hold durations and the switching interval—creates a complex, layered rhythm that can feel organic and unpredictable, while still being fully controllable.
 
-### Toggled Modulo (TM) - Mathematical Model
+It is presented here in two forms: a compact one-liner for expression-based systems, and an expanded function for readability and flexibility.
 
+## Stacked Modulo (TM) One-Line Compact Form
+This version is a highly compact form of the SM logic, suitable for environments that only allow for simple expressions, like shader node graphs or embedded systems.
+### Stacked Modulo (TM) One-Line Compact Mathematical Model
+$$
+f(t)_{\text{TM}} = \text{rand}\left( (t + O_o) - \left( (t + O_o) \pmod{ D(t) } \right) \right)
+$$
+where $D(t)$ is defined as:
+$$
+D(t) =
+\begin{cases}
+P_A & \text{if } (t + O_i) \pmod{P_s} < P_s / 2 \\
+P_B & \text{otherwise}
+\end{cases}
+$$
+
+Where:
+- $f(t)_{\text{TM}}$ is the final random output value.
+- $t$ is the current time or frame number (`frame`).
+- $\text{rand}(seed)$ is the random number generator (`portable_rand()`).
+- $O_o$ is the outer seed offset (`seedOuter`).
+- $O_i$ is the inner seed offset (`seedInner`).
+- $P_A, P_B$ are the two fixed hold durations (`periodA`, `periodB`).
+- $P_s$ is the toggle interval (`periodSwitch`).
+
+#### TM One-Line Code in C
+```c
+// Note: frameB is typically frameA + offset to de-sync the clocks
+rand( (seedOuter + frame) - ( (seedOuter + frame) % ( ((seedInner + frame) % periodSwitch < periodSwitch * 0.5) ? periodA : periodB ) ) )
+```
+#### 🧩 TM One-Line - Component Breakdown
+##### High-Level Breakdown
+The one-line expression for TM operates on a two-level clock system.
+1. The inner toggle clock uses a simple conditional check to deterministically select one of two predefined hold durations.
+2. This selected duration is then immediately used as the divisor in the outer hold clock's modulo operation, which generates the final stable value.
+3. The result is a predictable, rhythmic pattern where the duration of the "hold" itself is toggled at a regular interval.
+
+For a detailed, step-by-step analysis of how each mathematical component contributes to the final behaviour, please see the Component Breakdown section under the Expanded Form below.
+
+
+## Toggled Modulo (TM) Expanded Form
+### Toggled Modulo (TM) - Expanded Mathematical Model
 The Toggled Modulo (TM) algorithm creates a rhythmic, mechanical pattern by switching between two fixed hold durations at a regular interval.
 
 The process can be described by the following set of equations:
@@ -817,31 +851,7 @@ Where:
 - $D(t)$ is the active hold duration.
 - $S_H(t)$ is the stable integer state that is held.
 
-### Toggled Modulo - One Line Compact
-This version is a highly compact form of the SM logic, suitable for environments that only allow for simple expressions, like shader node graphs or embedded systems.
-```c
-// Note: frameB is typically frameA + offset to de-sync the clocks
-(frameA - (frameA % (frameB - ((frameB % periodSwitch < (periodSwitch * 0.5)) ? periodA : periodB))))
-```
 
-#### 🧩 TM One-Line - Component Breakdown
-Let's unpack this expression from the inside out:
-1. `(frameB % periodSwitch < (periodSwitch * 0.5))`
-    - **What it does:** This is the core **toggle condition**. It creates a cycle that runs for `periodSwitch` frames and checks if the current `frameB` is in the first or second half of that cycle.
-    - **Observable Outcome:** A boolean value (`true` or `false`) that flips predictably. It will be `true` for the first half of the `periodSwitch` duration, and `false` for the second half.
-    - **Intent**: To create a simple, reliable "metronome" or "pacemaker" that will drive the switch between the two hold durations.
-2. `... ? periodA : periodB`
-    - **What it does:** This is a **ternary operator**, which acts as a compact `if/else` statement. It uses the boolean result from the previous step to make a choice.
-    - **Observable Outcome:** An integer value that deterministically toggles between `periodA` and `periodB` at the rhythm defined by `periodSwitch`.
-    - **Intent:** This is the heart of the "Toggled" algorithm. It explicitly selects one of two predefined hold durations, giving the artist direct control over the rhythm.
-3. `frameA % (...)`
-    - **What it does:** The primary Modulo operation. The current `frameA` is divided by the hold duration chosen in the previous step (`periodA` or `periodB`), and the remainder is taken.
-    - **Observable Outcome:** A sawtooth wave that ramps from 0 up to the chosen period minus one, then resets. The length of this ramp will predictably alternate between `periodA` and `periodB`.
-    - **Intent:** To generate the core dynamic that resets or "jumps" when the frame count exceeds the currently active hold period.
-4. `frameA - (...)`
-    - **What it does:** Subtracts the entire ramping value from the current `frameA`.
-    - **Observable Outcome:** A value that remains constant for the duration of either `periodA` or `periodB`, and then jumps to a new constant value.
-    - **Intent:** This final step **locks the value**, creating the explicit "hold" state. The subtraction cancels out the frame's increment, resulting in a stable output until the modulo operation triggers a jump.
 
 #### TM Mechanism: Hold vs. Jump in the One-Liner
 The expression's behaviour is governed by the interplay between the "outer" hold clock (driven by `frameA`) and the "inner" toggle clock (driven by `frameB`).
