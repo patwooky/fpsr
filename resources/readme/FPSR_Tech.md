@@ -461,22 +461,38 @@ The interactive scrolling graphs are the last 2 cells at the end of the notebook
 
 ---
 ## 🧱 Stacked Modulo (SM)
-The Stacked Modulo (SM) algorithm uses nested modulo operations to create a stable value that persists for a variable number of frames. It first determines a random "hold duration" and then generates a consistent value that lasts for that duration.
+The Stacked Modulo (SM) algorithm generates a stable, persistent value by nesting two modulo operations. An inner modulo calculates a random "hold duration" at a fixed interval. An outer modulo then uses this duration to generate a stable integer value that persists for that entire period. This two-level interaction, where the inner process periodically changes the behavior of the outer one, results in an organic and unpredictable pattern.
 
 ## Stacked Modulo (SM) - Mathematical Model
 The output is a function of a composite seed, which is the sum of multiple layered rhythm functions.
+### Mathematical Formula
 <!-- latex markdown -->
 $$
-Seed(t) = \sum_{i=1}^{n} \left\lfloor \frac{t}{P_i} + O_i \right\rfloor
+D(t) = \lfloor H_{min} + \text{rand}(O_i + \lfloor \frac{t}{P_r} \rfloor \cdot P_r) \cdot (H_{max} - H_{min}) \rfloor
 $$
 $$
-f(t)_{\text{SM}} = \text{rand}\left(Seed(t)\right)
+S_H(t) = \lfloor \frac{t + O_o}{D(t)} \rfloor \cdot D(t)
 $$
-**$f(t)$** is the final output of FPS-R:SM.
-Where $P\_i$ is the period and $O\_i$ is the phase offset for the $i$-th rhythm layer.
+$$
+f(t)_{\text{SM}} =
+\begin{cases}
+\text{rand}(S_H(t)) & \text{if finalRandSwitch} = 1 \\
+S_H(t) & \text{if finalRandSwitch} = 0
+\end{cases}
+$$
+
+Where:
+- $t$ is the current time or frame number (`frame`).
+- $\text{rand}(seed)$ is the random number generator (`portable_rand()`).
+- $H_{min}, H_{max}$ are the min/max hold durations (`minHold`, `maxHold`).
+- $P_r$ is the reseed interval (`reseedInterval`).
+- $O_i$ is the inner seed offset (`seedInner`).
+- $O_o$ is the outer seed offset (`seedOuter`).
+- $D(t)$ is the calculated hold duration.
+- $S_H(t)$ is the stable integer state that is held.
 
 ## Stacked Modulo (SM) - Code
-The Stacked Modulo (SM) algorithm uses nested modulo operations to create a stable value that persists for a variable number of frames. It first determines a random "hold duration" and then generates a consistent value that lasts for that duration.
+The Stacked Modulo (SM) algorithm generates a stable, persistent value by nesting two modulo operations. First, it calculates a random "hold duration" at a set interval. It then uses this duration to generate a stable integer value that persists for that period, resulting in an organic, unpredictable pattern.
 
 It is presented here in two forms: a compact one-liner for expression-based systems, and a more readable expanded function.
 
@@ -766,52 +782,40 @@ The true complexity emerges from layering multiple modulo functions with non-har
 
 ---
 ## 🔀 Toggled Modulo (TM)
-The Toggled Modulo (TM) algorithm uses the same nested modulo structure as Stacked Modulo to create a stable value that persists for a set number of frames. It first determines the "hold duration" by deterministically switching between two predefined periods, creating a predictable and controllable rhythmic pattern. It then generates a consistent value that lasts for that toggled duration.
+The Toggled Modulo (TM) algorithm uses a nested modulo structure to create a stable, persistent value. It determines its "hold duration" by deterministically switching between two predefined periods at a regular interval. While this switching process is perfectly predictable, the interplay between the three independent timers—the two hold durations and the switching interval—creates a complex, layered rhythm that can feel organic and unpredictable, while still being fully controllable.
 
 ### Toggled Modulo (TM) - Mathematical Model
 
-The Toggled Modulo algorithm generates a stable state by using a primary clock ($t_o$) and a hold duration $D(t)$ that is deterministically toggled between two fixed periods, $P_A$ and $P_B$, based on the rhythm of a secondary clock ($t_i$).
+The Toggled Modulo (TM) algorithm creates a rhythmic, mechanical pattern by switching between two fixed hold durations at a regular interval.
 
 The process can be described by the following set of equations:
 
-1.  **The Hold Duration Function, $D(t)$**
+$$
+D(t) =
+\begin{cases}
+P_A & \text{if } (t + O_i) \pmod{P_s} < P_s / 2 \\
+P_B & \text{otherwise}
+\end{cases}
+$$
+$$
+S_H(t) = \lfloor \frac{t + O_o}{D(t)} \rfloor \cdot D(t)
+$$
+$$
+f(t)_{\text{TM}} =
+\begin{cases}
+\text{rand}(S_H(t)) & \text{if finalRandSwitch} = 1 \\
+S_H(t) & \text{if finalRandSwitch} = 0
+\end{cases}
+$$
 
-    The hold duration $D(t)$ is determined by a piecewise function that switches based on the state of an inner clock, $t_i$.
-
-    $$
-    D(t) =
-    \begin{cases}
-    P_A & \text{if } (t_i \pmod{P_s}) < \frac{P_s}{2} \\
-    P_B & \text{if } (t_i \pmod{P_s}) \ge \frac{P_s}{2}
-    \end{cases}
-    $$
-
-    Where:
-    * $t_i = t + O_i$ (the inner clock, offset for de-syncing)
-    * $P_s$ is the `periodSwitch`, the interval at which the toggle occurs.
-    * $P_A$ and $P_B$ are the two fixed hold periods.
-
-2.  **The Stable State Function, $State(t)$**
-
-    The stable integer state is generated using the classic `value - (value mod duration)` pattern, driven by an outer clock, $t_o$.
-
-    $$
-    State(t) = t_o - (t_o \pmod{D(t)})
-    $$
-
-    Where:
-    * $t_o = t + O_o$ (the outer clock, offset for unique sequences)
-    * $D(t)$ is the toggled hold duration from the previous step.
-
-3.  **The Final Output Function, $f(t)_{tm}$**
-
-    The final output is a pseudo-random value generated by using the stable state as a seed.
-
-    $$
-    f(t)_{tm} = \text{rand}(State(t))
-    $$
-
-    Where `rand()` is the portable random hash function.
+Where:
+- $t$ is the current time or frame number (`frame`).
+- $P_A, P_B$ are the two fixed hold durations (`periodA`, `periodB`).
+- $P_s$ is the toggle interval (`periodSwitch`).
+- $O_i$ is the inner seed offset (`seedInner`).
+- $O_o$ is the outer seed offset (`seedOuter`).
+- $D(t)$ is the active hold duration.
+- $S_H(t)$ is the stable integer state that is held.
 
 ### Toggled Modulo - One Line Compact
 This version is a highly compact form of the SM logic, suitable for environments that only allow for simple expressions, like shader node graphs or embedded systems.
@@ -1067,7 +1071,7 @@ When used together, TM can produce phrasing that feels shifted or syncopated—e
 
 ---
 ## 🎚️ Quantised Switching (QS)
-The Quantised Switching (QS) algorithm generates complex, rhythmic, and often "glitchy" patterns. It does this by creating two independent, quantised (or "stepped") sine waves and rapidly switching between them. The final stepped value is then used as a seed to produce a frame-persistent random number, converting the predictable wave into an unpredictable but stable output.
+The Quantised Switching (QS) algorithm generates complex, rhythmic, and often "glitchy" patterns. It does this by creating two independent, quantised (or "stepped") sine waves and switching between them, creating a discontinuous and unpredictable waveform. The resulting stepped and switched value are then used as a seed to produce a frame-persistent random number, converting the already  scrambled results further into an unpredictable but stable output.
 
 Unlike Stacked Modulo, QS does not have a compact one-liner form due to its structural complexity.
 
@@ -1075,12 +1079,41 @@ Unlike Stacked Modulo, QS does not have a compact one-liner form due to its stru
 The output is determined by a selector function choosing from a set of source functions.
 <!-- latex markdown -->
 $$
-Selector(t) = \left\lfloor \frac{t}{P_s} \right\rfloor \pmod{N}
+Q_k(t) = Q_{min} + \lfloor \text{rand}\left(\lfloor \frac{t + O_{qk}}{P_{qk}} \rfloor \cdot P_{qk}\right) \cdot (Q_{max} - Q_{min} + 1) \rfloor
 $$
 $$
-f(t)_{\text{QS}} = \text{Source}_{Selector(t)}(t)
+V_1(t) = \frac{\lfloor Q_1(t) \cdot \sin((t + O_{s1}) \cdot \omega_1) \rfloor}{Q_1(t)}
+\quad , \quad
+V_2(t) = \frac{\lfloor Q_2(t) \cdot \sin((t + O_{s2}) \cdot \omega_1 \cdot m_2) \rfloor}{Q_2(t)}
 $$
-Where $P\_s$ is the period of the selector and N is the number of available sources.
+$$
+V_A(t) =
+\begin{cases}
+V_1(t) & \text{if } t \pmod{P_{sw}} < P_{sw} / 2 \\
+V_2(t) & \text{otherwise}
+\end{cases}
+$$
+$$
+f(t)_{\text{QS}} =
+\begin{cases}
+\text{rand}(\lfloor V_A(t) \cdot C \rfloor) & \text{if finalRandSwitch} = 1 \\
+0.5 \cdot V_A(t) + 0.5 & \text{if finalRandSwitch} = 0
+\end{cases}
+$$
+
+Where:
+- $t$ is the current time or frame number (`frame`).
+- $Q_{min}, Q_{max}$ are the min/max quantization steps (`quantLevelsMinMax`).
+- $P_{qk}$ is the quantization hold duration for stream k (`stream1QuantDur`, `stream2QuantDur`).
+- $O_{qk}$ is the quantization offset for stream k (`quantOffsets`).
+- $\omega_1$ is the base frequency (`baseWaveFreq`).
+- $m_2$ is the frequency multiplier for stream 2 (`stream2FreqMult`).
+- $O_{sk}$ is the phase offset for stream k's sine wave (`streamsOffset`).
+- $P_{sw}$ is the stream switching interval (`streamSwitchDur`).
+- $V_k(t)$ is the output of quantized sine wave stream k.
+- $V_A(t)$ is the currently active stream value.
+- $C$ is a large constant (`100000.0`).
+
 
 ## Quantised Switching (QS) - Code
 This is the full implementation of the QS logic, with parameters for controlling the frequencies, quantisation levels, and switching speeds of the two internal streams.
