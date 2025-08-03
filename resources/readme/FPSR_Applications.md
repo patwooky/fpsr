@@ -1,3 +1,7 @@
+---
+layout: default
+title: FPS-R Applications
+---
 # FPS-R Applications
 MIT License—[see LICENSE](../../LICENSE) for details.  
 Copyright (c) 2025 Woo Ker Yang (Patrick Woo) patrickwoo.1976@gmail.com
