@@ -12,7 +12,33 @@ While every update strives to be more accurate, there will be parts that are inc
 #### This document details potential use cases of the **Frame-Persistent Stateless Randomisation (FPS-R)** framework 
 
 # Table of Contents
-<TOC goes here>
+- [Introduction](#introduction)
+- [Application Paradigms](#application-paradigms)
+- [🎨 Part I — Generative Expression & Organic Simulation](#-part-i--generative-expression--organic-simulation)
+  - [🕶️ AR/VR and Human-Centered Interaction](#️-arvr-and-human-centered-interaction)
+  - [🤖 Robotics and Embodied Systems](#-robotics-and-embodied-systems)
+  - [🧤 Wearables and Assistive Technologies](#-wearables-and-assistive-technologies)
+  - [🧬 Biofeedback and Adaptive Expression](#-biofeedback-and-adaptive-expression)
+  - [🛰 Swarms, Drones, and Spatial Coverage Systems](#-swarms-drones-and-spatial-coverage-systems)
+  - [💡 Embedded Systems and Ambient Interfaces](#-embedded-systems-and-ambient-interfaces)
+  - [🎼 Domains of Application in Audio and Composition](#-domains-of-application-in-audio-and-composition)
+- [🧪 Part II — Systemic Resilience & Analysis](#-part-ii--systemic-resilience--analysis)
+  - [🛡️ Cybersecurity and Adversarial Simulation](#️-cybersecurity-and-adversarial-simulation)
+  - [💸 Financial Systems and Economic Simulation](#-financial-systems-and-economic-simulation)
+  - [🧪 Software Testing and Fuzzing](#-software-testing-and-fuzzing)
+  - [🧵 Systems-Level OSI Testing and Infrastructure Simulation](#-systems-level-osi-testing-and-infrastructure-simulation)
+- [🧠 Part III — Generative Scenario Planning & Speculative Design](#-part-iii--generative-scenario-planning--speculative-design)
+  - [⚔️ Game Theory, Politics, and Strategic Modeling](#️-game-theory-politics-and-strategic-modeling)
+  - [🧭 Business Planning, Contingency Modeling, and Process Engineering](#-business-planning-contingency-modeling-and-process-engineering)
+  - [🧠 Cognitive Modeling and Generative Thought](#-cognitive-modeling-and-generative-thought)
+  - [🕰️ Exploring Plausible Past and Future in Observable Phenomena](#️-exploring-plausible-past-and-future-in-observable-phenomena)
+- [🔬 Part IV — Scientific Modeling & Emergent Systems Research](#-part-iv--scientific-modeling--emergent-systems-research)
+  - [⚛️ Quantum Mechanics & Subatomic Simulations](#️-quantum-mechanics--subatomic-simulations)
+  - [🌌 Astrophysics & Cosmic Events](#-astrophysics--cosmic-events)
+  - [🧬 Computational Biology & Bioinformatics](#-computational-biology--bioinformatics)
+  - [🌍 Climatology & Fluid Dynamics](#-climatology--fluid-dynamics)
+  - [👥 Sociology & Agent-Based Economic Modelling](#-sociology--agent-based-economic-modelling)
+- [🔚 Epilogue: From Phrasing to Possibility](#-epilogue-from-phrasing-to-possibility)
 
 ---
 
