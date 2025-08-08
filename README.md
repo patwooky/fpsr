@@ -94,9 +94,9 @@ While every update strives to be more accurate, there will be parts that are inc
 - [🔩 How FPS-R Works (A Gentle Primer)](#-how-fps-r-works-a-gentle-primer)
   - [🎼 Stacked Modulo (SM)](#-stacked-modulo-sm)
   - [✴️ Quantised Switching (QS)](#️-quantised-switching-qs)
-- [⚠️ Tiling Note: Seamlessness in Spatial FPS-R](#️-tiling-note-seamlessness-in-spatial-fps-r)
-  - [🪡 Techniques for Seam-Aware behaviour](#-techniques-for-seam-aware-behaviour)
+- [🌐 Closing: An Invitation](#-closing-an-invitation)
 - [🚧 Current Status](#-current-status)
+- [⚠️Future Developments](#️future-developments)
 - [🗒️ Additional Development Notes](#️-additional-development-notes)
   - [🧠 FPSR Thoughts](#-fpsr-thoughts)
   - [📔 Development Reflections](#-development-reflections)
@@ -1003,32 +1003,11 @@ And yet, the result feels strangely alive.
 👉 *Want to unpack the full mechanism, token by token? Dive into the technical breakdown here:*  
 **[Read FPSR_Tech.md →](resources/readme/FPSR_Tech.md)**
 
-
 ---
-## ⚠️ Tiling Note: Seamlessness in Spatial FPS-R
+## 🌐 Closing: An Invitation
+Ultimately, FPS-R does not claim to be a perfect mirror of reality. It is a dim reflection, a lens crafted to point towards the larger beauty of imperfection and unpredictability we see in the natural world.
 
-By default, FPS-R generates *non-repeating, stateless randomness*, which means it does **not** seamlessly tile across UV space or fixed spatial domains out of the box. This unpredictability is part of its power—but for workflows requiring smooth tiling or seamless textures (e.g. UDIM-based materials, game-ready UV atlases), FPS-R can be gently adapted to behave.
-
-### 🪡 Techniques for Seam-Aware behaviour
-
-Here are strategies to coax FPS-R into cooperating across tile boundaries:
-
-- **Modulus-Based Tiling**  
-  Wrap UVs explicitly using `mod(uv, tileSize)`. This forces periodicity while keeping the jump-hold quality within each tile.
-
-- **Mirrored Wrapping**  
-  Use a reflected modulus: `abs(mod(uv, 2.0) - 1.0)` for soft continuity at edges—great for symmetric patterns or organic wrapping.
-
-- **Quantised Phase Locking**  
-  Divide UV space into quantised cells and derive a consistent `rand()` seed per cell. This syncs pattern phases across borders.
-
-- **Edge Crossfade (Mask Blending)**  
-  Blend FPS-R lookups with slight UV offsets near seam edges. Use `smoothstep()` masks to interpolate between directions.
-
-- **Layered Distraction**  
-  Accept tiling at a coarse base layer, then modulate with finer FPS-R overlays. Even if the base repeats, the compound result feels rich and unresolved.
-
-> 🧵 Seamlessness is not default—but it is *composable*. By embracing layering, offset masking, and structured quantisation, FPS-R can be shaped into tileable, patch-based, or wrapped surface logic without losing its essence.
+It is an invitation to look closer, to appreciate the nuance in every hesitation and jump, and to come and discover more for yourself.
 
 ---
 
@@ -1041,7 +1020,7 @@ FPS-R is under active development and currently private during cleanup. Planned 
 - Ready-made presets and chaos profiles
 
 ---
-## Future Developments
+## ⚠️Future Developments
 
 ### Capsules
 #### What are capsules?
@@ -1050,7 +1029,7 @@ Capsules parameterised modulation profiles.
 Capsules are **parameterised modulation profiles** that record phrasing behaviour over time. Each capsule encapsulates both:
 
 - a sequence of observed output values — the _jumps_ and _holds_ within a time window (e.g. frames 200 to 250)
-- and the precise **settings** that generated them: algorithm type (SM or QS), signal frequencies, modulo durations, switching intervals, and reseed logic.
+- and the precise **settings** that generated them: algorithm type (SM, TM or QS), signal frequencies, modulo durations, switching intervals, and reseed logic.
 
 This pairing allows users to **reproduce expressive behaviour deterministically** — not as an approximation, but as a perfect playback of phrased motion within its original modulation context.
 
@@ -1070,7 +1049,8 @@ A collection of capsules forms a **library of expressive phrasing**: Each clip r
 #### Why do We Need Capsules?
 Given the unpredictable and continuous nature of FPS-R's performances, it is easy to get lost with endlessly tweaking seed values and parameters without being able to get the exact performance we want. Capsules serve as a collection of "moments". Giving descriptive names to the observed behaviour and performance characteristics of captured clips allow us to store and exactly reproduce these results when the context calls for it.
 
-#### What can we do with capsules?
+#### What Can We Do With Capsules?
+Capsulses provide a way to document and categorise various performances for replayability, so we can reproduce the exact performance with the same input parameters.
 
 ---
 ## 🗒️ Additional Development Notes
