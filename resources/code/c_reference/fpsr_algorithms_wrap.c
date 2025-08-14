@@ -118,24 +118,39 @@
  
  /**
   * @brief Wrapper for fpsr_sm that returns a detailed FPSR_Output struct.
-  * @param lod The level of detail to calculate.
-  * @param max_search_frames A safety limit for the backward/forward search to prevent infinite loops.
+  * @param frame (int) The current frame or time input.
+  * @param frame_multiplier (float) A float value to scale the frame input, effectively speeding
+  * up or slowing down the algorithm's internal timeline.
+  * @param minHold (int) The minimum duration (in frames) for a value to hold.
+  * @param maxHold (int) The maximum duration (in frames) for a value to hold.
+  * @param reseedInterval (int) The fixed interval at which a new hold duration is calculated.
+  * @param seedInner (int) An offset for the random duration calculation to create unique sequences.
+  * @param seedOuter (int) An offset for the final value calculation to create unique sequences.
+  * @param finalRandSwitch (int) A flag that can turn off the final randomisation step.
+  * @param lod (int) The level of detail to calculate.
+  * @param max_search_frames (int) A safety limit for the backward/forward search to prevent infinite loops.
   * @return FPSR_Output struct with metadata populated based on the LOD.
   */
  FPSR_Output fpsr_sm_get_details(
-     int frame, int minHold, int maxHold,
+     int frame, float frame_multiplier, // Reordered frame_multiplier
+     int minHold, int maxHold,
      int reseedInterval, int seedInner, int seedOuter, int finalRandSwitch,
      int lod, int max_search_frames)
  {
      FPSR_Output out = {0};
+     
+     // Calculate the scaled frame input for the base algorithm
+     int current_scaled_frame = (int)floor(frame * frame_multiplier);
  
      // LOD 0: Get current value.
-     out.randVal = _fpsr_sm_base(frame, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch);
+     out.randVal = _fpsr_sm_base(current_scaled_frame, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch);
  
      if (lod < 1) return out;
  
      // LOD 1: Compare with previous frame to check for change.
-     float prev_val = _fpsr_sm_base(frame - 1, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch);
+     // Calculate the scaled frame input for the previous frame
+     int prev_scaled_frame_for_lod1 = (int)floor((frame - 1) * frame_multiplier);
+     float prev_val = _fpsr_sm_base(prev_scaled_frame_for_lod1, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch);
      out.has_changed = (out.randVal != prev_val);
  
      if (lod < 2) return out;
@@ -145,10 +160,11 @@
  
      // --- Backwards Search for last_changed_frame ---
      // Phase 1: Exponential probe to find a "dirty" region.
-     int bound_low = frame;
+     int bound_low = frame; // operates on original frame space
      int step = 1;
      while (frame - step > frame - max_search_frames) {
-         float val_at_probe = _fpsr_sm_base(frame - step, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch);
+         // Scale the probe frame before passing to base algorithm
+         float val_at_probe = _fpsr_sm_base((int)floor((frame - step) * frame_multiplier), minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch);
          if (val_at_probe != out.randVal) {
              bound_low = frame - step;
              break;
@@ -160,17 +176,19 @@
      // Phase 2: Binary search within the safe, "dirty" region.
      low = bound_low;
      high = frame;
-     result = frame;
+     result = frame; // result stores the original frame number
      while(low <= high) {
          mid = low + (high - low) / 2;
-         if (_fpsr_sm_base(mid, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch) == out.randVal) {
-             if (_fpsr_sm_base(mid - 1, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch) != out.randVal) {
-                 result = mid; // Found the exact first frame
+         // Scale the mid frame before passing to base algorithm
+         if (_fpsr_sm_base((int)floor(mid * frame_multiplier), minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch) == out.randVal) {
+             // Check the frame immediately preceding 'mid' in the scaled timeline
+             if (_fpsr_sm_base((int)floor((mid - 1) * frame_multiplier), minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch) != out.randVal) {
+                 result = mid; // Found the exact first original frame of the current hold
                  break;
              }
-             high = mid - 1; // Continue searching in the lower half
+             high = mid - 1; // Continue searching in the lower half (original frame space)
          } else {
-             low = mid + 1; // Search in the upper half
+             low = mid + 1; // Search in the upper half (original frame space)
          }
      }
      out.last_changed_frame = result;
@@ -178,10 +196,11 @@
  
      // --- Forwards Search for next_changed_frame ---
      // Phase 1: Exponential probe.
-     int bound_high = frame;
+     int bound_high = frame; // operates on original frame space
      step = 1;
      while (frame + step < frame + max_search_frames) {
-         if (_fpsr_sm_base(frame + step, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch) != out.randVal) {
+         // Scale the probe frame before passing to base algorithm
+         if (_fpsr_sm_base((int)floor((frame + step) * frame_multiplier), minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch) != out.randVal) {
              bound_high = frame + step;
              break;
          }
@@ -192,11 +211,12 @@
      // Phase 2: Binary search.
      low = frame;
      high = bound_high;
-     result = frame + max_search_frames; // Default if no change is found
+     result = frame + max_search_frames; // Default if no change is found, in original frame space
      while(low <= high) {
          mid = low + (high - low) / 2;
-         if (_fpsr_sm_base(mid, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch) != out.randVal) {
-             result = mid;
+         // Scale the mid frame before passing to base algorithm
+         if (_fpsr_sm_base((int)floor(mid * frame_multiplier), minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch) != out.randVal) {
+             result = mid; // Found the exact first original frame of the next hold
              high = mid - 1; // Try to find an even earlier change
          } else {
              low = mid + 1;
@@ -204,10 +224,15 @@
      }
      out.next_changed_frame = result;
      
-     // Calculate hold progress.
-     int hold_duration = out.next_changed_frame - out.last_changed_frame;
-     if (hold_duration > 0) {
-         out.hold_progress = (float)(frame - out.last_changed_frame) / (float)hold_duration;
+     // Calculate hold progress based on scaled frame values
+     int scaled_last_changed_frame_val = (int)floor(out.last_changed_frame * frame_multiplier);
+     int scaled_next_changed_frame_val = (int)floor(out.next_changed_frame * frame_multiplier);
+     int hold_duration_scaled = scaled_next_changed_frame_val - scaled_last_changed_frame_val;
+     
+     if (hold_duration_scaled > 0) {
+         out.hold_progress = (float)(current_scaled_frame - scaled_last_changed_frame_val) / (float)hold_duration_scaled;
+     } else {
+         out.hold_progress = 0.0f; // Handle zero duration to avoid division by zero
      }
  
      return out;
@@ -215,20 +240,38 @@
  
  /**
   * @brief Wrapper for fpsr_tm that returns a detailed FPSR_Output struct.
+  * @param frame (int) The current frame or time input.
+  * @param frame_multiplier (float) A float value to scale the frame input, effectively speeding
+  * up or slowing down the algorithm's internal timeline.
+  * @param periodA (int) The first hold duration (in frames).
+  * @param periodB (int) The second hold duration (in frames).
+  * @param periodSwitch (int) The fixed interval at which the hold duration is toggled.
+  * @param seedInner (int) An offset for the toggle clock to de-sync it from the main clock.
+  * @param seedOuter (int) An offset for the main clock to create unique sequences.
+  * @param finalRandSwitch (int) A flag that can turn off the final randomisation step.
+  * @param lod (int) The level of detail to calculate.
+  * @param max_search_frames (int) A safety limit for the backward/forward search to prevent infinite loops.
+  * @return FPSR_Output struct with metadata populated based on the LOD.
   */
  FPSR_Output fpsr_tm_get_details(
-     int frame, int periodA, int periodB,
+     int frame, float frame_multiplier,
+     int periodA, int periodB,
      int periodSwitch, int seedInner, int seedOuter, int finalRandSwitch,
      int lod, int max_search_frames)
  {
      FPSR_Output out = {0};
  
+     // Calculate the scaled frame input for the base algorithm
+     int current_scaled_frame = (int)floor(frame * frame_multiplier);
+ 
      // LOD 0
-     out.randVal = _fpsr_tm_base(frame, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch);
+     out.randVal = _fpsr_tm_base(current_scaled_scaled_frame, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch);
      if (lod < 1) return out;
  
      // LOD 1
-     float prev_val = _fpsr_tm_base(frame - 1, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch);
+     // Calculate the scaled frame input for the previous frame
+     int prev_scaled_frame_for_lod1 = (int)floor((frame - 1) * frame_multiplier);
+     float prev_val = _fpsr_tm_base(prev_scaled_frame_for_lod1, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch);
      out.has_changed = (out.randVal != prev_val);
      if (lod < 2) return out;
  
@@ -239,7 +282,8 @@
      int bound_low = frame;
      int step = 1;
      while (frame - step > frame - max_search_frames) {
-         if (_fpsr_tm_base(frame - step, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch) != out.randVal) {
+         // Scale the probe frame before passing to base algorithm
+         if (_fpsr_tm_base((int)floor((frame - step) * frame_multiplier), periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch) != out.randVal) {
              bound_low = frame - step;
              break;
          }
@@ -251,8 +295,10 @@
      result = frame;
      while(low <= high) {
          mid = low + (high - low) / 2;
-         if (_fpsr_tm_base(mid, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch) == out.randVal) {
-             if (_fpsr_tm_base(mid - 1, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch) != out.randVal) {
+         // Scale the mid frame before passing to base algorithm
+         if (_fpsr_tm_base((int)floor(mid * frame_multiplier), periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch) == out.randVal) {
+             // Check the frame immediately preceding 'mid' in the scaled timeline
+             if (_fpsr_tm_base((int)floor((mid - 1) * frame_multiplier), periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch) != out.randVal) {
                  result = mid; break;
              }
              high = mid - 1;
@@ -266,7 +312,8 @@
      int bound_high = frame;
      step = 1;
      while (frame + step < frame + max_search_frames) {
-         if (_fpsr_tm_base(frame + step, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch) != out.randVal) {
+         // Scale the probe frame before passing to base algorithm
+         if (_fpsr_tm_base((int)floor((frame + step) * frame_multiplier), periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch) != out.randVal) {
              bound_high = frame + step;
              break;
          }
@@ -278,7 +325,8 @@
      result = frame + max_search_frames;
      while(low <= high) {
          mid = low + (high - low) / 2;
-         if (_fpsr_tm_base(mid, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch) != out.randVal) {
+         // Scale the mid frame before passing to base algorithm
+         if (_fpsr_tm_base((int)floor(mid * frame_multiplier), periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch) != out.randVal) {
              result = mid;
              high = mid - 1;
          } else {
@@ -287,9 +335,15 @@
      }
      out.next_changed_frame = result;
      
-     int hold_duration = out.next_changed_frame - out.last_changed_frame;
-     if (hold_duration > 0) {
-         out.hold_progress = (float)(frame - out.last_changed_frame) / (float)hold_duration;
+     // Calculate hold progress based on scaled frame values
+     int scaled_last_changed_frame_val = (int)floor(out.last_changed_frame * frame_multiplier);
+     int scaled_next_changed_frame_val = (int)floor(out.next_changed_frame * frame_multiplier);
+     int hold_duration_scaled = scaled_next_changed_frame_val - scaled_last_changed_frame_val;
+     
+     if (hold_duration_scaled > 0) {
+         out.hold_progress = (float)(current_scaled_frame - scaled_last_changed_frame_val) / (float)hold_duration_scaled;
+     } else {
+         out.hold_progress = 0.0f; // Handle zero duration to avoid division by zero
      }
  
      return out;
@@ -297,21 +351,42 @@
  
  /**
   * @brief Wrapper for fpsr_qs that returns a detailed FPSR_Output struct.
+  * @param frame (int) The current frame or time input.
+  * @param frame_multiplier (float) A float value to scale the frame input, effectively speeding
+  * up or slowing down the algorithm's internal timeline.
+  * @param baseWaveFreq (float) The base frequency for the modulation wave of stream 1.
+  * @param stream2FreqMult (float) A multiplier for the second stream's frequency.
+  * @param quantLevelsMinMax (const int[2]) An array of two integers for the min and max quantisation levels.
+  * @param streamsOffset (const int[2]) An array of two integers to offset the frame for each stream's sine wave.
+  * @param quantOffsets (const int[2]) An array of two integers to offset the random quantisation selection for each stream.
+  * @param streamSwitchDur (int) The number of frames after which the streams switch.
+  * @param stream1QuantDur (int) The duration for which stream 1's random quantisation level is held.
+  * @param stream2QuantDur (int) The duration for which stream 2's random quantisation level is held.
+  * @param finalRandSwitch (int) A flag that can turn off the final randomisation step.
+  * @param lod (int) The level of detail to calculate.
+  * @param max_search_frames (int) A safety limit for the backward/forward search to prevent infinite loops.
+  * @return FPSR_Output struct with metadata populated based on the LOD.
   */
  FPSR_Output fpsr_qs_get_details(
-     int frame, float baseWaveFreq, float stream2FreqMult,
+     int frame, float frame_multiplier,
+     float baseWaveFreq, float stream2FreqMult,
      const int quantLevelsMinMax[2], const int streamsOffset[2], const int quantOffsets[2],
      int streamSwitchDur, int stream1QuantDur, int stream2QuantDur, int finalRandSwitch,
      int lod, int max_search_frames)
  {
      FPSR_Output out = {0};
  
+     // Calculate the scaled frame input for the base algorithm
+     int current_scaled_frame = (int)floor(frame * frame_multiplier);
+ 
      // LOD 0
-     out.randVal = _fpsr_qs_base(frame, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch);
+     out.randVal = _fpsr_qs_base(current_scaled_frame, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch);
      if (lod < 1) return out;
  
      // LOD 1
-     float prev_val = _fpsr_qs_base(frame - 1, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch);
+     // Calculate the scaled frame input for the previous frame
+     int prev_scaled_frame_for_lod1 = (int)floor((frame - 1) * frame_multiplier);
+     float prev_val = _fpsr_qs_base(prev_scaled_frame_for_lod1, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch);
      out.has_changed = (out.randVal != prev_val);
      if (lod < 2) return out;
  
@@ -322,7 +397,8 @@
      int bound_low = frame;
      int step = 1;
      while (frame - step > frame - max_search_frames) {
-         if (_fpsr_qs_base(frame - step, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch) != out.randVal) {
+         // Scale the probe frame before passing to base algorithm
+         if (_fpsr_qs_base((int)floor((frame - step) * frame_multiplier), baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch) != out.randVal) {
              bound_low = frame - step;
              break;
          }
@@ -334,8 +410,10 @@
      result = frame;
      while(low <= high) {
          mid = low + (high - low) / 2;
-         if (_fpsr_qs_base(mid, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch) == out.randVal) {
-             if (_fpsr_qs_base(mid - 1, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch) != out.randVal) {
+         // Scale the mid frame before passing to base algorithm
+         if (_fpsr_qs_base((int)floor(mid * frame_multiplier), baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch) == out.randVal) {
+             // Check the frame immediately preceding 'mid' in the scaled timeline
+             if (_fpsr_qs_base((int)floor((mid - 1) * frame_multiplier), baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch) != out.randVal) {
                  result = mid; break;
              }
              high = mid - 1;
@@ -349,7 +427,8 @@
      int bound_high = frame;
      step = 1;
      while (frame + step < frame + max_search_frames) {
-         if (_fpsr_qs_base(frame + step, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch) != out.randVal) {
+         // Scale the probe frame before passing to base algorithm
+         if (_fpsr_qs_base((int)floor((frame + step) * frame_multiplier), baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch) != out.randVal) {
              bound_high = frame + step;
              break;
          }
@@ -361,7 +440,8 @@
      result = frame + max_search_frames;
      while(low <= high) {
          mid = low + (high - low) / 2;
-         if (_fpsr_qs_base(mid, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch) != out.randVal) {
+         // Scale the mid frame before passing to base algorithm
+         if (_fpsr_qs_base((int)floor(mid * frame_multiplier), baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch) != out.randVal) {
              result = mid;
              high = mid - 1;
          } else {
@@ -370,11 +450,16 @@
      }
      out.next_changed_frame = result;
      
-     int hold_duration = out.next_changed_frame - out.last_changed_frame;
-     if (hold_duration > 0) {
-         out.hold_progress = (float)(frame - out.last_changed_frame) / (float)hold_duration;
+     // Calculate hold progress based on scaled frame values
+     int scaled_last_changed_frame_val = (int)floor(out.last_changed_frame * frame_multiplier);
+     int scaled_next_changed_frame_val = (int)floor(out.next_changed_frame * frame_multiplier);
+     int hold_duration_scaled = scaled_next_changed_frame_val - scaled_last_changed_frame_val;
+     
+     if (hold_duration_scaled > 0) {
+         out.hold_progress = (float)(current_scaled_frame - scaled_last_changed_frame_val) / (float)hold_duration_scaled;
+     } else {
+         out.hold_progress = 0.0f; // Handle zero duration to avoid division by zero
      }
  
      return out;
  }
- 
