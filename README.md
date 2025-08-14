@@ -147,7 +147,7 @@ This extension document provides the structural foundation beneath the conceptua
 This document complements and extends the applications of FPS-R beyond the high-level summarised view provided in this ReadMe file. The document will dig deeper into each domain and provide larger number of use cases for each area of use. 
 
 ### 🧬 Origins, Journal, Reflections
-[Click here: FPSR_Origins.md](resources/readme/FPSR_Origins_Journal_reflections.md)
+[Click here: FPSR_Origins_Journal_Reflections.md](resources/readme/FPSR_Origins_Journal_Reflections.md)
 This document consists of 3 large sections: 
 - Origins
 - Reflections and Thoughts
