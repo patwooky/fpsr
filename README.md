@@ -112,7 +112,7 @@ While every update strives to be more accurate, there will be parts that are inc
 graph TD
   A[**README.md** 🏁<br>Manifesto & Overview] --> A2[Read-Me] 
   A2 --> A3[Technical]
-  A2 --> A4[🧬 Origins,<br> 🧠 Thoughts, Philosophy,<br>& 📓 Developer Journal]
+  A2 --> A4[🧬 Origins, Journal,<br>Reflections<br><br>🧬 Origin story,<br> 🧠 Thoughts & Philosophy,<br>📓 Developer Journal]
   C[**README-CH.md** 🈸<br>Manifesto in Chinese] --> A2
   A3 --> B[**Tech.md** 📐<br>Maths & Code]
   A3 --> D[**Applications.md** 🍭<br>Cross-Domain<br>Use Cases]
