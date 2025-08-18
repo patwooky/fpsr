@@ -112,14 +112,14 @@ While every update strives to be more accurate, there will be parts that are inc
 graph TD
   A[**README.md** 🏁<br>Manifesto & Overview] --> A2[Read-Me] 
   A2 --> A3[Technical]
-  A2 --> A4[Thoughts, Philosophy,<br>and History]
+  A2 --> A4[🧬 Origins,<br> 🧠 Thoughts, Philosophy,<br>& 📓 Developer Journal]
   C[**README-CH.md** 🈸<br>Manifesto in Chinese] --> A2
   A3 --> B[**Tech.md** 📐<br>Maths & Code]
   A3 --> D[**Applications.md** 🍭<br>Cross-Domain<br>Use Cases]
-  A4 --> E[**Dev_Journal.md** 📓<br>Developer's<br>Journal]
+  %% A4 --> E[**Dev_Journal.md** 📓<br>Developer's<br>Journal]
 
-  A4 --> F[**Origins.md** 🧬<br>Origin Story] 
-  A4 --> G[**Thoughts.md** 🧠<br>Reflections &<br> Conceptual Notes]
+  %% A4 --> F[**Origins.md** 🧬<br>Origin Story] 
+  %% A4 --> G[**Thoughts.md** 🧠<br>Reflections &<br> Conceptual Notes]
 
   classDef fileStyle fill:#A2A2A2,stroke:#333,stroke-width:1px,color:#000,rx:16,ry:16,font-size:15px;
   classDef techHighlight fill:#799F92,stroke:#444,stroke-width:1.5px,color:#E8E8E8,rx:16,ry:16,font-size:15px,font-style:italic;
@@ -146,17 +146,21 @@ This extension document provides the structural foundation beneath the conceptua
 [Click here: FPSR_Applications.md](resources/readme/FPSR_Applications.md)
 This document complements and extends the applications of FPS-R beyond the high-level summarised view provided in this ReadMe file. The document will dig deeper into each domain and provide larger number of use cases for each area of use. 
 
-### 🧬 Origins
-[Click here: FPSR_Origins.md](resources/readme/FPSR_Origins.md)
+### 🧬 Origins, Journal, Reflections
+[Click here: FPSR_Origins_Journal_Reflections.md](resources/readme/FPSR_Origins_Journal_Reflections.md)
+This document consists of 3 large sections: 
+- Origins
+- Reflections and Thoughts
+- Development Journal
+
+**🧬 Origins**
 This is the history and the story of FPS-R. It recounts the events that led to the discovery of each algorithm, and tells about the persistent pursue of the language of motion, about discovering meaning and refining the mechanics behind move and hold. It will also tell how each algorithm revealed itself, and how they come together to form the FPS-R framework. 
 
-### 📓 Development Journal — The Chronicle
-[Click here: FPSR_Dev_Journal.md](resources/readme/FPSR_Dev_Journal.md)
-A chronological account and living notebook of the research and design process. It records breakthroughs, failures, struggles, and revisions, offering insight into the iterative development that shaped the current implementation of FPS-R. 
-
-### 🧠 Thoughts — Reflections and Conceptual Notes
-[Click here: FPSR_Thoughts.md](resources/readme/FPSR_Thoughts.md)
+**🧠 Reflections and Thoughts**
 An archive of nonlinear reflections, theoretical digressions, and design meditations that contributed to the philosophical development of FPS-R. This document functions as a conceptual incubator and critical sketchpad, recording my internal struggles and conflicts. It also provides the philosophical and poetic dimensions of FPS-R's evolution—where structure meets sensation, and randomness finds rhythm.
+
+**📓 Development Journal**
+A chronological account and living notebook of the research and design process. It records revisions, offering insight into the iterative development that shaped the current implementation of FPS-R. It also briefly repeat the breakthroughs, failures, struggles behind those decisions that will also be recorded in `Reflections and Thoughts`
 
 ---
 
