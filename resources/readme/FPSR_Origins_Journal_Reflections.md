@@ -10,6 +10,7 @@ While every update strives to be more accurate, there will be parts that are inc
 - [Foreword](#foreword)
 - [Origins](#origins)
 - [Reflections and Thoughts](#reflections-and-thoughts)
+  - [Spculative](#speculative)
 - [Development Journal](#development-journal)
 
 
@@ -1875,7 +1876,7 @@ I encouraged by Microsoft to start doing something serious with this.
 
 ---
 ## What does FPS-R Sounds Like?
-_20250630 Monday night _
+_20250630 Monday night_
 FPS-R I told Ms copilot, "I wonder what FPS-R sounds like", and launched into a whole range of a audio and music related application use cases
 
 ---
@@ -2111,5 +2112,88 @@ With all these I'm ready to make some revision to how I introduce the FPS-R fram
 _01 Aug 2025_
 ![img](./images/h_sqPointTgt_v001_04_edited_still.jpg)
 [Article on Linkedin: The Telltale Heartbeat: A Hidden Vulnerability in Cybersecurity Simulation](https://www.linkedin.com/pulse/telltale-heartbeat-hidden-vulnerability-cybersecurity-woo-ker-yang-m3gac)
+
+---
+## Reinforced Determinism: Tackling the `Sine` Function
+_14 August 2025_
+
+FPS-R redefined sine modulation via baked interpolation. A first-principles breakthrough that unlocked scalable phrasing across inflated time domains.
+
+This section chronicles the moment FPS-R broke free from floating-point collapse by baking and interpolating the sine wave. It marks a shift from runtime volatility to deterministic texture sampling—unlocking scalable phrasing across inflated time domains.
+
+In the continuing effort to improve the usability and flexibility of FPS-R algorithms, I wanted to implement a mechanism to scale time. That is, being able to scale `frame`. This would allow us to "squash' the pattern scaling inwards or 'expand' the pattern scaling it outwards.
+
+This leads to a few problems. 
+
+1. The algorithms are built around statelessness and determinism. Hence the input units are integers. `frame` is an integer.
+
+2. To make the FPS-R pattern scale across time in a usable way we need to use a float number with a decimal point. 
+This breaks the core determinism FPS-R strives to achieve, across as many operating environments as possible.
+  - The Time domain is solved by "inflating" (multiplying) the floating point numbers by orders of 10 to the power of x where x is the number of decimal points to mitigate.
+  - all time-dependent duration parameters like `minHold`, `maxHold`, `reseedInterval` will need to inflate by the same inflation factor.
+  - this takes care of all time-based durations preserving their relationships while keeping them in the integer realm.
+3. Frequency domain is inversely proportionate to time. To preserve the frequency through inflated time, the value of frequency must deflate in inverse proportions. This results in even smaller numbers.
+
+_14 August 2025_
+Updated changelog to describe the upcoming changes to the FPS-R algorithms
+- A wrapper version of each FPS-R function that 
+    - enables rich analytic information on function output:
+        - `has_changed` checking with the value output of previous frame, returning `1` or `True` if value has changed or "jumped"
+        - `hold_progress` Normalized progress (0.0 to 1.0) through the current hold duration.
+        - `last_changed_frame` and `next_changed_frame` The frame number where the current hold period began or will jump, respectively.
+        - QS output
+            - `randStreams[]` output of streams 1 and 2
+            - `selected_stream` the index of the selected stream in `randStreams` array
+    - **Level-of-Detail (LOD)**
+        - **0** - directly call the existing "base" algorithms
+        - **1** - gets the `has_changed` by checking the output has jumped from the previous time step
+        - **2** - getting the full range of rich outputs stated above
+    - **time-scaling** allows a **dynamic scaling of the algorithm's internal timeline** via the frame_multiplier argument, enabling tempo changes without altering the core rhythm. 
+- Higher Level of Determinism, Robustness and Optimisation
+    - **double precision** using 64-bit memory allocation for floats in C.
+    - A new `initialize_sine_luts()` **function** must be called **exactly once at program startup** to pre-populate the sine lookup tables. Failure to do so will result in undefined behavior or fallback to less deterministic `sin()` calls."
+    - **baked sine curve** with multiple levels of detail (LOD) on sample count
+        - performance
+            - **performed once per session** the sine function is sampled and baked at various predefined resolutions _only once_ at the beginning storing the samples as a global constant. the results will be reused through look-up at interpolation.
+            - side-steps the costly sin()
+            - provides deterministic values even at very small increments.
+        - increased deterministic accuracy through bit-for-bit repeatability as a source of truth through the baked sine curve.
+        - **The `portable_rand()` function now utilizes the highest precision baked sine curve (LUT)** for its internal sine calculations, further enhancing its bit-for-bit determinism and robustness across all platforms.
+    - All **time-based integer parameters** (e.g., `minHold`, `maxHold`, `reseedInterval`, `periodA`, `periodB`, `periodSwitch`, `streamsOffset`, `quantOffsets`) are now **internally scaled by** `FPSR_INFLATION_FACTOR` within the base algorithms to match the high-resolution `int_frame` timeline. This ensures absolute, bit-for-bit determinism for all modulo and timing calculations.
+    - For Quantised Switching (QS), `baseWaveFreq` and `stream2FreqMult` are **internally deflated** by `FPSR_INFLATION_FACTOR` to correctly apply frequencies to the high-resolution `int_frame` timeline, preventing underflow and maintaining deterministic oscillation.
+
+These changes allows the function to achieve **bit-for-bit determinism** even in the low frequency domain where the decimal values can get very small. In other words it is practically reproducible across the widest range of operating environments, from low-powered embedded systems to the highest super-computers with huge computational resources to spare. The choice of data types are intentional decisions to protect and preserve determinism and statelessness as core pillars of FPS-R.
+
+---
+## Optimising Rich LOD Features
+_15-18 August 2025_
+
+Had a lot of struggles with how the feature of frame scaling was going to implement, or how the user should use and call FPSR-R functions.
+
+### Identifying What Frame Means
+I toyed with the idea of using floats for `frame` input. Float opens up a whole lot of questions, like how much is 1 unit of increment? 
+#### Int - an absolute unit
+With integers, a unit of increment is discrete and absolute. `frame - 1` is the previous frame and there is no ambiguity.
+##### Why Can't We use `(float)frame - 1.0f`?
+The answer lies in the **Infinite Density of Real Numbers**. 
+**Density of Real Numbers**
+When we use a `float` (or `double`) data type, we are faced with this. There are **Infinite Values Between Integers**. If you take any two integers, say 1 and 2, you can always find another real number between them. For example:
+- 1.5 is between 1 and 2.
+- 1.25 is between 1 and 1.5.
+- 1.251 is between 1.25 and 1.26.
+- And you can keep adding decimal places indefinitely (e.g., 1.2513456789...).
+
+In other words, with any decimal number, we can always slice the decimal portion into finer pieces. In the end, we can only approximate, depending on how closely we choose to "zoom in" to those values.
+
+When working with a continuous `double` value for `frame`, for instance `21.425126`, the concept of an "exact" previous step becomes ambiguous. While we can mathematically calculate `21.425126 - 1.0` to get `20.425126`, the fundamental issue lies in the **approximate nature of floating-point numbers**.
+
+Because there are infinitely many real numbers between any two distinct values, floating-point representations (even `double` precision) cannot perfectly capture every single point on a continuous timeline. This means that when our algorithms attempt to pinpoint the precise moment a value "jumps" within this continuous `double` timeline, the exact transition point can become **unambiguous across different computing environments**. Minor variations in floating-point calculations could lead to slightly different `double` results for `last_changed_frame` and `next_changed_frame`.
+
+Consequently, these rich outputs would only be **estimates** rather than exact, bit-for-bit identical values, thereby **breaking the absolute determinism** that FPS-R is meticulously designed to uphold.
+
+_18 August 2025_
+Had a hard time thinking about how frame and frame_multiplier
+
+
 
 ---
