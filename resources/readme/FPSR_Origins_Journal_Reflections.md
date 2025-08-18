@@ -2161,3 +2161,39 @@ Updated changelog to describe the upcoming changes to the FPS-R algorithms
         - **The `portable_rand()` function now utilizes the highest precision baked sine curve (LUT)** for its internal sine calculations, further enhancing its bit-for-bit determinism and robustness across all platforms.
     - All **time-based integer parameters** (e.g., `minHold`, `maxHold`, `reseedInterval`, `periodA`, `periodB`, `periodSwitch`, `streamsOffset`, `quantOffsets`) are now **internally scaled by** `FPSR_INFLATION_FACTOR` within the base algorithms to match the high-resolution `int_frame` timeline. This ensures absolute, bit-for-bit determinism for all modulo and timing calculations.
     - For Quantised Switching (QS), `baseWaveFreq` and `stream2FreqMult` are **internally deflated** by `FPSR_INFLATION_FACTOR` to correctly apply frequencies to the high-resolution `int_frame` timeline, preventing underflow and maintaining deterministic oscillation.
+
+These changes allows the function to achieve **bit-for-bit determinism** even in the low frequency domain where the decimal values can get very small. In other words it is practically reproducible across the widest range of operating environments, from low-powered embedded systems to the highest super-computers with huge computational resources to spare. The choice of data types are intentional decisions to protect and preserve determinism and statelessness as core pillars of FPS-R.
+
+---
+## Optimising Rich LOD Features
+_15-18 August 2025_
+
+Had a lot of struggles with how the feature of frame scaling was going to implement, or how the user should use and call FPSR-R functions.
+
+### Identifying What Frame Means
+I toyed with the idea of using floats for `frame` input. Float opens up a whole lot of questions, like how much is 1 unit of increment? 
+#### Int - an absolute unit
+With integers, a unit of increment is discrete and absolute. `frame - 1` is the previous frame and there is no ambiguity.
+##### Why Can't We use `(float)frame - 1.0f`?
+The answer lies in the **Infinite Density of Real Numbers**. 
+**Density of Real Numbers**
+When we use a `float` (or `double`) data type, we are faced with this. There are **Infinite Values Between Integers**. If you take any two integers, say 1 and 2, you can always find another real number between them. For example:
+- 1.5 is between 1 and 2.
+- 1.25 is between 1 and 1.5.
+- 1.251 is between 1.25 and 1.26.
+- And you can keep adding decimal places indefinitely (e.g., 1.2513456789...).
+
+In other words, with any decimal number, we can always slice the decimal portion into finer pieces. In the end, we can only approximate, depending on how closely we choose to "zoom in" to those values.
+
+When working with a continuous `double` value for `frame`, for instance `21.425126`, the concept of an "exact" previous step becomes ambiguous. While we can mathematically calculate `21.425126 - 1.0` to get `20.425126`, the fundamental issue lies in the **approximate nature of floating-point numbers**.
+
+Because there are infinitely many real numbers between any two distinct values, floating-point representations (even `double` precision) cannot perfectly capture every single point on a continuous timeline. This means that when our algorithms attempt to pinpoint the precise moment a value "jumps" within this continuous `double` timeline, the exact transition point can become **unambiguous across different computing environments**. Minor variations in floating-point calculations could lead to slightly different `double` results for `last_changed_frame` and `next_changed_frame`.
+
+Consequently, these rich outputs would only be **estimates** rather than exact, bit-for-bit identical values, thereby **breaking the absolute determinism** that FPS-R is meticulously designed to uphold.
+
+_18 August 2025_
+Had a hard time thinking about how frame and frame_multiplier
+
+
+
+---
