@@ -26,6 +26,18 @@ While every update strives to be more accurate, there will be parts that are inc
     - [The Stateful Wrapper: Achieving Determinism with Memory](#the-stateful-wrapper-achieving-determinism-with-memory)
     - [Deterministic Rules, Even When They Change](#deterministic-rules-even-when-they-change)
     - [Playing Better with Stateless Operators](#playing-better-with-stateless-operators)
+- [🧠 The FPS-R Design Philosophy](#-the-fps-r-design-philosophy)
+  - [🧮 Input `frame` as an Integer](#-input-frame-as-an-integer)
+    - [🧭 Integer `Frame` Input: The Gun Analogy](#-integer-frame-input-the-gun-analogy)
+  - [🧭 FPS-R: The Naïve Framework](#-fps-r-the-naïve-framework)
+  - [🗂️ FPS-R: The Indexer](#️-fps-r-the-indexer)
+  - [📊 Putting It Altogether: A Game Theory Tactical Simulation Example](#-putting-it-altogether-a-game-theory-tactical-simulation-example)
+    - [The Brief - Missile Incoming](#the-brief---missile-incoming)
+    - [The Possible Defense Strategies](#the-possible-defense-strategies)
+    - [The Adversary: Brings Its Own Surprise](#the-adversary-brings-its-own-surprise)
+    - [⚡ Observable Points from the Example](#-observable-points-from-the-example)
+    - [🧠 The Takeaway: FPS-R as a Universal, Domain-Agnostic Phrasing Primitive](#-the-takeaway-fps-r-as-a-universal-domain-agnostic-phrasing-primitive)
+    - [🎲 How to Adopt FPS-R in Your Domain](#-how-to-adopt-fps-r-in-your-domain)
 - [🌀 How It Works: Stacked Modulo (SM)](#-how-it-works-stacked-modulo-sm)
   - [SM: Core Mechanism](#sm-core-mechanism)
   - [SM Behaviour](#sm-behaviour)
@@ -219,7 +231,7 @@ All core FPS-R functions are pure mathematical algorithms. They are deterministi
 
 The result yields a surprising property, enabling a kind of expressive paradox: **discontinuities feel intentional**, and **apparent memory without simulation**. 
 
-> Perceived temporal coherence from purely evaluative logic
+> Perceived temporal coherence from purely evaluative logic.
 
 ---
 ## ⚙️ Key Features & Benefits
@@ -235,6 +247,7 @@ The framework was developed to be compatible with a wide number of languages and
 The framework is highly efficient by design, making it suitable for real-time applications and performance-critical environments. This is achieved through:
 - **Integer-Based Core:** An intentional use of integer math for core timing and state logic avoids common floating-point inaccuracies and is computationally efficient.
 - **Simple Functions:** It relies on pure, uncomplicated math functions (`sin`, `floor`, `%`(modulo)) with no heavy dependencies or external libraries.
+- **Modular Randomness:** FPS-R includes a lightweight, deterministic random generator (`portable_rand()`), designed for portability and predictability across platforms. This enables consistent pseudo-random behavior without external dependencies. For domains requiring cryptographic strength, domain-specific entropy, or proprietary randomness, `portable_rand()` can be seamlessly replaced with a custom generator—without disrupting the framework’s stateless core.
 
 ### 📈 Scalable Functionality: Power on Demand
 The framework is designed to be scalable, offering advanced features with additional, optimised computation overheads. A **Level of Detail (LOD)** parameter allows users to request deeper analysis only when needed, giving them direct control over the performance/power trade-off. This unlocks powerful features such as:
@@ -313,10 +326,11 @@ The true power of FPS-R’s stateless determinism emerges when paired with other
 
 > The section “**Combining FPS-R Algorithms**” explores how these principles can be layered, stacked, and merged with other systems to unlock deeper phrasing behaviour.
 
-## The FPS-R Design Philosophy
-### 🧭 Integer `Frame` Input: The Gun Analogy
+## 🧠 The FPS-R Design Philosophy
+### 🧮 Input `frame` as an Integer
 In FPS-R, the decision to use integer frame inputs is foundational. While floating-point values offer infinite granularity, they also introduce ambiguity - there’s always a finer resolution, always another decimal. This makes phrasing boundaries fuzzy and undermines the determinism FPS-R is built on.
 
+#### 🧭 Integer `Frame` Input: The Gun Analogy
 Think of it like observing a gun. At one zoom level, it’s a single object. Zoom in, and it’s a 17-part assembly. Zoom further, and you see grime, molecules, even air particles within its volume. The question “what is one gun?” depends entirely on your observational scale. Floats behave the same way: there is no fixed boundary, only deeper zoom.
 
 By contrast, integer frames commit to a phrasing resolution. They define exact modulation points, align with system architecture’s compute units, and allow phrasing to be auditable, reproducible, and expressive. In a world of infinite density, integers give FPS-R the courage to phrase with clarity.
@@ -341,7 +355,7 @@ Due to its inherently domain-agnostic nature, FPS-R can be conceptualised as an 
 
 The responsibility for interpreting these 1-unit increments and for managing domain-specific knowledge and context rests entirely with the parent system. This clear separation allows FPS-R to remain untangled from external definitions of time or meaning, making it universally applicable across diverse domains.
 
-### Putting It Altogether: A Game Theory Tactical Simulation Example
+### 📊 Putting It Altogether: A Game Theory Tactical Simulation Example
 #### The Brief - Missile Incoming
 Imagine a game theory simulation where a defending country reaches DEFCON 4 as an enemy missile is launched. The parent system of the defending country initiates a T-minus 30-minute countdown.
 
@@ -353,12 +367,12 @@ As the missile enters striking range, within 20 minutes of contact, FPS-R activa
 And so on, with each increment of FPS-R's internal `frame` representing one minute in the tactical countdown.
 #### The Possible Defense Strategies
 Within this scenario, FPS-R might deterministically decide to hold on deploying sea-to-air missiles from its navy fleet for three domain units (three minutes). Then, in the next two domain units, it shifts to intercepting with air defense, deploying a squadron of fighter jets. As the missile enters T-minus 15 minutes and moves over land, the parent system dynamically updates its available defensive options. FPS-R's `randVal` output, still between 0 and 1, is now mapped to a new discrete list of actions, potentially selecting ground-based surface missiles or even gatling cannons.
-#### The Advesary: Brings Its Own Surprise
+#### The Adversary: Brings Its Own Surprise
 In a sophisticated simulation, the invading missile could also have its own strategising mechanism driven by FPS-R. It might operate on a different domain unit. Missile timer has started at launch, so it is now 15 minutes since launched and increasing. It is running on 4-minute cycles with a different seed and FPS-R parameters. This would invoke a different rhythm of decision, expressing itself as different character, personality and emergent strategy. With these differences, the missile hold its current course steady, or it may decide to drop its altitude to minimise its radar signature, or may decide to change its phrasing and course-divert to a densely populated city center instead of a military installation.
 
 At the end of any scenario run, FPS-R's core strength becomes evident: it can precisely repeat every decision made by both sides. This is how FPS-R brings unique value to the table, enabling the exact reproduction and analysis of complex, human-like unpredictability that traditional pre-programmed or standard random methods cannot offer. It allows for auditing not just the outcome, but the deterministic emergence of strategic behavior.
 
-#### Observable Points from the Example
+#### ⚡ Observable Points from the Example
 The example above serves to illustrate the synergetic collaboration between the parent system and FPS-R. Here are a few points that can be observed. 
 - **Different Timelines and Timing policies:**
     - **for the missile** - called once every 4 minutes
@@ -372,22 +386,21 @@ The example above serves to illustrate the synergetic collaboration between the 
     - **FPS-R Concerns** to faithfully generate phrasing random move and hold values across its internal time when called.
 - **Call When Needed** If the simulator was running at 25 frames-per-second, or ticks, or timesteps, _FPS-R does not need to be called every step_.
 - **Domain Handling of FPS-R Return Values**
-    - **FPS-R Concerns** given the internal unit `frame` and input parameters, produce random holding values between the range of `0` and `1`.
-    - **Parent System Concerns** Apply those returned values to list of options explicitly available to each agent in the simulation:
-        - **defending country** naval fleet, airforce, ground defenses, etc.
+    - **FPS-R's Role** given the internal unit `frame` and input parameters, produce random holding values between the range of `0` and `1`.
+    - **Parent System's Role** Apply those returned values by mapping them to a list of options explicitly available to each agent in the simulation:
+        - **defending country** naval fleet, air force, ground defenses, etc.
         - **attacking missile** target options (populated city centre, military installation), normal altitude, low altitude stealth mode.
 ---
-#### The Big Idea: FPS-R as a Universal, Domain-Agnostic Phrasing Primitive
+#### 🧠 The Takeaway: FPS-R as a Universal, Domain-Agnostic Phrasing Primitive
 
 The wargame scenario demonstrates how to integrate FPS-R as a smart, stateless primitive to drive complex, human-like timing in any system. In that example, a parent simulation engine used FPS-R to model the strategic decisions of two competing agents, turning a predictable countdown into a dynamic and analyzable tactical "dance."
 
 This pattern can be adapted to any domain. FPS-R is intentionally "ignorant" of your specific context—whether you're modeling time, space, or a cognitive state. It simply provides a deterministic, phrased rhythm that your application can interpret.
 
-#### How to Adopt FPS-R in Your Domain
-
+#### 🎲 How to Adopt FPS-R in Your Domain
 Integrating FPS-R into your project is straightforward because its design is fundamentally flexible:
 
-* **Map Its Timeline to Yours**: You decide what an FPS-R `frame` means. [cite_start]It can be a literal frame, a second, a musical bar, or a turn in a game[cite: 320]. You can call it as often or as infrequently as your logic requires; FPS-R will maintain a consistent output for any given `frame` number.
+* **Map Its Timeline to Yours**: You decide what an FPS-R `frame` means. It can be a literal frame, a second, a musical bar, or a turn in a game. You can call it as often or as infrequently as your logic requires; FPS-R will maintain a consistent output for any given `frame` number.
 
 * **Quantize Its Output**: FPS-R returns a normalized float between 0 and 1. Your application is responsible for mapping this value to a discrete set of actions. You can easily quantize this output into however many options you need—two, ten, or a thousand—and you can dynamically change what those options are, just as the wargame scenario added new defenses when the missile moved over land.
 
