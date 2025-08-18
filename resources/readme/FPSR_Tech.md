@@ -254,6 +254,7 @@ The framework is designed to be scalable, offering advanced features with additi
 - **`has_changed` awareness** to indicate when the value has changed from the previous frame.
 - **Normalised hold-cycle progress awareness** a value of (0.0 to 1.0) to indicate the progress of the current frame through the current holding period. _(yet to implement)_
 - **Last-changed and next-change frame awareness** to be able to give explicit frame numbers for the start and end of the current hold cycle. _(yet to implement)_
+- **Next Segment Random Value** returns the next random value that will be produced at the next-change frame. _(yet to implement)_
 - **Last and Next Segment look-back and look-ahead** an even deeper insight (more compute overheads) into the previous hold segment and the next hold segment. _(yet to implement)_
 
 ### ⚖️ FPS-R Plays Well with Others: Safe Composability
