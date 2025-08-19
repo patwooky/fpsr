@@ -16,7 +16,10 @@ While every update strives to be more accurate, there will be parts that are inc
   - [🧾 Code Snippets Provided in this Repository](#-code-snippets-provided-in-this-repository)
 - [FPS-R Introduction](#fps-r-introduction)
 - [🔩 How FPS-R Works: The Core Principles](#-how-fps-r-works-the-core-principles)
-    - [🧮 FPS-R Functions are Mathematically Pure](#-fps-r-functions-are-mathematically-pure)
+    - [🧩 Deterministic: Perfect Repeatability](#-deterministic-perfect-repeatability)
+    - [🧳 Stateless: No Memory Required](#-stateless-no-memory-required)
+    - [🧮 Mathematically Pure: Safe and Predictable](#-mathematically-pure-safe-and-predictable)
+    - [🚀 Ambitious: Engineered for Universal Reliability](#-ambitious-engineered-for-universal-reliability)
 - [⚙️ Key Features & Benefits](#️-key-features--benefits)
   - [🧠 Implicit Memory: The Illusion of Intent](#-implicit-memory-the-illusion-of-intent)
   - [🌐 Portable by Design: Cross-Platform Integrity](#-portable-by-design-cross-platform-integrity)
@@ -32,7 +35,7 @@ While every update strives to be more accurate, there will be parts that are inc
   - [🧭 FPS-R: The Naïve Framework](#-fps-r-the-naïve-framework)
   - [🗂️ FPS-R: The Indexer](#️-fps-r-the-indexer)
   - [📊 Putting It Altogether: A Game Theory Tactical Simulation Example](#-putting-it-altogether-a-game-theory-tactical-simulation-example)
-    - [The Brief - Missile Incoming](#the-brief---missile-incoming)
+    - [The Brief: Missile Incoming](#the-brief-missile-incoming)
     - [The Possible Defense Strategies](#the-possible-defense-strategies)
     - [The Adversary: Brings Its Own Surprise](#the-adversary-brings-its-own-surprise)
     - [⚡ Observable Points from the Example](#-observable-points-from-the-example)
@@ -233,6 +236,15 @@ The result yields a surprising property, enabling a kind of expressive paradox: 
 
 > Perceived temporal coherence from purely evaluative logic.
 
+### 🚀 Ambitious: Engineered for Universal Reliability
+Given its goal to express a prevalent behavior observable across diverse domains and scales, FPS-R is engineered with a profound ambition: to function reliably in **any computational environment** and at the **highest levels of precision**.
+
+This ambition directly translates into aggressive design decisions:
+- **Uncompromising Determinism**: FPS-R is meticulously optimised to achieve **absolute, bit-for-bit identical results** across all compilers, hardware, and operating systems. This means every calculation is designed to be perfectly reproducible, from low-power, low-compute embedded devices to high-performance supercomputing environments.
+    - _note: 1.0 release of FPS-R algorithms does not have this implementation yet._
+- **Scalability Across Contexts**: From traditional single-threaded processes to massive parallel computing implementations, FPS-R is built to adapt. Its core design ensures that the same fundamental principles of phrasing and predictability hold true, whether it's driving a simple animation or powering complex scientific simulations.
+- **Precision-Grade Foundation**: This commitment to universal reliability positions FPS-R not just for general use, but for high-stakes contexts where numerical integrity is paramount—such as **quantum simulations, rocket propulsion systems, or cryptographic applications**. It's designed to be used everywhere, meeting the most stringent demands.
+
 ---
 ## ⚙️ Key Features & Benefits
 The core principles behind FPS-R algorithms unlock powerful and unique uses cases that emerge from them.
@@ -241,7 +253,7 @@ The core principles behind FPS-R algorithms unlock powerful and unique uses case
 The emergence of "memory" is implicit and inherently encoded into the algorithm's output. This creates the effect of **Memoryless Mimicry**—a system that feels like it remembers and holds values for a duration, all without using any stateful techniques or simulation buffers.
 
 ### 🌐 Portable by Design: Cross-Platform Integrity
-The framework was developed to be compatible with a wide number of languages and platforms. The code is intentionally "platform-conscious, not platform-specific," using plain logic and fundamental operations to ensure the core phrasing ports cleanly to C++, JavaScript, GLSL, VEX, MEL, and more.
+The framework is developed to be compatible with a wide number of languages and platforms. The code is intentionally "platform-conscious, not platform-specific," using plain logic and fundamental operations to ensure the core phrasing ports cleanly to C++, JavaScript, GLSL, VEX, MEL, and more.
 
 ### ⚡ Extremely Lightweight: Computationally Frugal
 The framework is highly efficient by design, making it suitable for real-time applications and performance-critical environments. This is achieved through:
@@ -255,7 +267,7 @@ The framework is designed to be scalable, offering advanced features with additi
 - **Normalised hold-cycle progress awareness** a value of (0.0 to 1.0) to indicate the progress of the current frame through the current holding period. _(yet to implement)_
 - **Last-changed and next-change frame awareness** to be able to give explicit frame numbers for the start and end of the current hold cycle. _(yet to implement)_
 - **Next Segment Random Value** returns the next random value that will be produced at the next-change frame. _(yet to implement)_
-- **Last and Next Segment look-back and look-ahead** an even deeper insight (more compute overheads) into the previous hold segment and the next hold segment. _(yet to implement)_
+- **Last and Next Segment(s) look-back and look-ahead** an even deeper insight (more compute overheads) into the previous hold segment and the next hold segment. _(yet to implement)_
 
 ### ⚖️ FPS-R Plays Well with Others: Safe Composability
 #### Playing Well with Everybody
@@ -352,13 +364,13 @@ The responsibility for domain knowledge lies entirely with the parent system. FP
 To use FPS-R in a meaningful way, every step increment should be exactly one internal unit. The previous phrasing step is frame - 1, and the next is frame + 1. In that way, it is possible to check if the previous frame has changed in a stateless and straightforward manner. In fact we can query the entire future and history of the FPS-R timeline by supplying a **domain time unit**.
 
 ### 🗂️ FPS-R: The Indexer 
-Due to its inherently domain-agnostic nature, FPS-R can be conceptualised as an infinitely long, perfectly discrete array of values. When a parent system interacts with FPS-R, it's essentially using a domain-specific index to look up a value on FPS-R's internal timeline. Each increment in this internal timeline is precisely **1 internal unit**, and FPS-R's functions are designed to operate solely within this defined internal context.
+Given FPS-R's domain-agnostic nature, the parent system can effectively treat FPS-R as an **infinitely long, perfectly discrete array of values**. Each call to an FPS-R function is then a lookup at a specific index on this internal timeline, where every increment represents precisely 1 internal unit.
 
 The responsibility for interpreting these 1-unit increments and for managing domain-specific knowledge and context rests entirely with the parent system. This clear separation allows FPS-R to remain untangled from external definitions of time or meaning, making it universally applicable across diverse domains.
 
 ### 📊 Putting It Altogether: A Game Theory Tactical Simulation Example
-#### The Brief - Missile Incoming
-Imagine a game theory simulation where a defending country reaches DEFCON 4 as an enemy missile is launched. The parent system of the defending country initiates a T-minus 30-minute countdown.
+#### The Brief: Missile Incoming
+Imagine a game theory simulation where a defending country is put into a **state of heightened alert** (triggered by an enemy missile launch). The parent system of the defending country initiates a T-minus 30-minute countdown.
 
 As the missile enters striking range, within 20 minutes of contact, FPS-R activates. The parent system, now operating on a "minute-to-contact" domain unit, begins querying FPS-R. For instance:
 
@@ -369,7 +381,7 @@ And so on, with each increment of FPS-R's internal `frame` representing one minu
 #### The Possible Defense Strategies
 Within this scenario, FPS-R might deterministically decide to hold on deploying sea-to-air missiles from its navy fleet for three domain units (three minutes). Then, in the next two domain units, it shifts to intercepting with air defense, deploying a squadron of fighter jets. As the missile enters T-minus 15 minutes and moves over land, the parent system dynamically updates its available defensive options. FPS-R's `randVal` output, still between 0 and 1, is now mapped to a new discrete list of actions, potentially selecting ground-based surface missiles or even gatling cannons.
 #### The Adversary: Brings Its Own Surprise
-In a sophisticated simulation, the invading missile could also have its own strategising mechanism driven by FPS-R. It might operate on a different domain unit. Missile timer has started at launch, so it is now 15 minutes since launched and increasing. It is running on 4-minute cycles with a different seed and FPS-R parameters. This would invoke a different rhythm of decision, expressing itself as different character, personality and emergent strategy. With these differences, the missile hold its current course steady, or it may decide to drop its altitude to minimise its radar signature, or may decide to change its phrasing and course-divert to a densely populated city center instead of a military installation.
+In a sophisticated simulation, the invading missile could also have its own strategising mechanism driven by FPS-R. It might operate on a different **domain unit** (e.g., 4-minute cycles, with its FPS-R `frame` incrementing from 0 at launch time) and use distinct FPS-R parameters. This would invoke a different rhythm of decision, expressing itself as a unique character and emergent strategy. With these differences, the missile might hold its current course steady, drop its altitude to minimize radar signature, or change its phrasing and course-divert to a densely populated city center instead of a military installation.
 
 At the end of any scenario run, FPS-R's core strength becomes evident: it can precisely repeat every decision made by both sides. This is how FPS-R brings unique value to the table, enabling the exact reproduction and analysis of complex, human-like unpredictability that traditional pre-programmed or standard random methods cannot offer. It allows for auditing not just the outcome, but the deterministic emergence of strategic behavior.
 
