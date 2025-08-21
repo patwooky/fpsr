@@ -105,15 +105,16 @@ Our brains are wired to accept the non-linear as natural:
 - We see an **animal** travel in bursts of different speeds and zig-zagging paths. We see a **vehicle** travelling at a sustained, constant speed in a straight line and know it is a human invention.
 
 We can observe the "random-move-and-hold" pattern in plain sight, as it appears in the mechanistic rhythms of systems at every scale:
-| Domain            | Burst-Hold Pattern Example                          |
-|-------------------|-----------------------------------------------------|
-| **Biology**       | Neuronal firing (action potential → refractory)     |
+| Domain            | Burst-Hold Pattern Example |
+|-------------------|----------------------------|
+| **Biology**       | Neuronal firing (action potential → refractory)<br>Metamorphosis (dormant latency (cocoon) → transformation) |
 | **Ecology**       | Predator-prey dynamics (boom → collapse → recovery) |
-| **Geology**       | Earthquakes (stress build-up → sudden release)      |
-| **Astronomy**     | Star formation (gas accumulation → ignition)        |
-| **Cognition**     | Insight generation (incubation → aha moment)        |
-| **Social systems**| Revolutions (tension → rupture → reorganization)    |
-| **Economics**     | Market cycles (growth → crash → recovery)           |
+| **Geology**       | Earthquakes (stress build-up → sudden release) |
+| **Astronomy**     | Star formation (gas accumulation → ignition) |
+| **Learning _Curve_**| Skill acquisition (practice → internalisation → burst of fluency) |
+| **Cognition**     | Insight generation <br>(information ingestion → incubation → aha-moment, ideas "click") |
+| **Social systems**| Revolutions (tension → rupture → reorganization) |
+| **Economics**     | Market cycles (growth → crash → recovery) |
 
 FPS-R's purpose is to make this intuitive, to make this rhythm legible, and traceable. It provides the formal grammar to describe what we have always instinctively known.
 
