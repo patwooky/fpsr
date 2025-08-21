@@ -195,11 +195,10 @@ This framework is not just for motion over time. FPS-R can be applied to any con
 Ultimately, FPS-R is a collaborator. It can be allowed to roam free for total, wild unpredictability, or it can be given clear boundaries to inject a rich, organic texture into otherwise predictable systems.
 
 ---
-### 🎓 Principles and Philosophy
+## 🎓 Principles and Philosophy
 ---
-
 ### 🧭 Guiding Principle
-"FPS-R isn't a single algorithm. It's a design philosophy for *shaping signals*. Whether by arithmetic folding or signal quantisation — whether in time or space — the goal is the same: give structure permission to behave."
+FPS-R isn't a single algorithm. It's a design philosophy for *shaping signals*. Whether by arithmetic folding or signal quantisation — whether in time or space — the goal is the same: give structure permission to behave.
 
 ### 🎭 Motion Philosophy
 **FPS-R simulates the unpredictability of hesitation — yet within the same framework, it can just as easily express instinct.**  
@@ -229,8 +228,9 @@ FPS-R may appear to drift chaotically, but beneath its phrased irregularity lies
 
 What results isn’t raw randomness — it’s **structured modulation**. Each jump, each hold, each reseed arises from the friction between layered rhythms and offset reseeds, not from entropy. Temporal phrasing emerges where cycles misalign just enough to simulate spontaneity.
 
-In this sense, FPS-R doesn’t simulate behaviour; it **orchestrates interference**. SM and QS aren't mere techniques — they are **procedural grammar primitives**, each governing a different expressive dimension:
+In this sense, FPS-R doesn’t simulate behaviour; it **orchestrates interference**. SM, TM and QS aren't mere techniques — they are **procedural grammar primitives**, each governing a different expressive dimension:
 - **SM (Stacked Modulo)** phrases values through layered cyclic constraints
+- **TM (Toggled Modulo)** phrases values through rhythmic alternation of constraint states
 - **QS (Quantised Switching)** modulates selection behaviour and categorical drift
 
 Together, these operators form a framework for engineered emergence: where each state transition is mathematically traceable, yet aesthetically untraceable.
@@ -335,8 +335,10 @@ And that is...
 🎛️ *In the language of math and algorithm*:  
 **FPS-R (Frame-Persistent Stateless Randomisation)**
 
-🗣️ *In everyday spoken English*:  
+🗣️ *In our everyday language*:  
 **Random Move and Hold**
+
+> 🧠 FPS-R is not a randomiser. It is a **universal phrasing primitive**—a stateless engine for generating structured surprise, expressive timing, and emergent behavior. It doesn’t simulate reality. It simulates the **rhythm of reality’s unfolding**.
 
 ---
 
