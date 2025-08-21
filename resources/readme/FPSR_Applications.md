@@ -238,7 +238,20 @@ In cybersecurity, unpredictability is a key defensive advantage. This concept pr
 **The "Secret Handshake" Protocol**
 At the heart of the system is a periodic, encrypted synchronization event where the client and server agree on a set of parameters. This "handshake" provides all the information needed for both sides to independently follow the same unpredictable schedule until the next sync.
 
-The synchronization tuple would include:
+The synchronisation tuple would look like this:
+
+```c
+// Define a struct for the synchronization packet
+typedef struct {
+    int start_time;
+    int fpsr_index;
+    int* timer_multiplier_minMax; // Pointer to an integer array
+    int number_of_cycles;
+    int fpsr_params_idx;
+} FpsrSyncPacket;
+```
+
+Where:
 - `start_time`: A precise timestamp (e.g., milliseconds since epoch) that serves as the anchor point for the new sequence.
 - `fpsr_index`: The integer frame number to initialize the FPS-R algorithm, ensuring both sides start at the same point in the deterministic sequence.
 - `timer_multiplier_minMax[]`: An array that maps FPS-R's normalized 0-1 output to a specific range of real-world hold durations (e.g., a randVal of 0.5 might map to a 42-second refresh interval).
