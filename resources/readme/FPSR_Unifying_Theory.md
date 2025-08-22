@@ -107,14 +107,18 @@ Our brains are wired to accept the non-linear as natural:
 We can observe the "random-move-and-hold" pattern in plain sight, as it appears in the mechanistic rhythms of systems at every scale:
 | Domain            | Burst-Hold Pattern Example |
 |-------------------|----------------------------|
-| **Biology**       | Neuronal firing (action potential → refractory)<br>Metamorphosis (dormant latency (cocoon) → transformation) |
-| **Ecology**       | Predator-prey dynamics (boom → collapse → recovery) |
-| **Geology**       | Earthquakes (stress build-up → sudden release) |
-| **Astronomy**     | Star formation (gas accumulation → ignition) |
-| **Learning _Curve_**| Skill acquisition (practice → internalisation → burst of fluency) |
-| **Cognition**     | Insight generation <br>(information ingestion → incubation → aha-moment, ideas "click") |
-| **Social systems**| Revolutions (tension → rupture → reorganization) |
-| **Economics**     | Market cycles (growth → crash → recovery) |
+| **Biology**       | **Neuronal firing** (action potential → refractory)<br>**Metamorphosis** (dormant latency (cocoon) → transformation) |
+| **Ecology**       | **Predator-prey dynamics** (boom → collapse → recovery) |
+| **Geology**       | **Earthquakes** (stress build-up → sudden release)<br>**Landslides** (fault expansion → sudden release) |
+| **Astronomy**     | **Star formation** (gas accumulation → ignition) |
+| **Learning _Curve_**| **Skill acquisition** (practice → internalisation → burst of fluency) |
+| **Emotions**      | **Meltdown** (emotional stress build-up → emotional trigger → meltdown)<br>**Anger** (initial trigger → continued build-up → final straw → outburst)<br>**Courage** (building apprehension → breakthrough → selfless act)<br>**Grief** (loss → numbness → delayed emotional processing → catharsis)|
+| **Relationships** | **Fallout** (tension accumulation → trigger event → emotional discharge )<br>**Forgiveness** (initial wound → anger → consideration → breakthrough) |
+| **Cognition**     | **Insight generation** (info ingestion → incubation → aha-moment + ideas click)<br>**Change of Heart** (slow belief erosion → moment of profound realisation) |
+| **Social systems**| **Revolutions** (tension → rupture → reorganisation) |
+| **Economics**     | **Market cycles** (growth → crash → recovery) |
+| **Technology**    | **Software adoption** (early hype → plateau → breakthrough use case → market shift) |
+| **Art**           | **Creative block** (inspiration drought → idea gestation → sudden idea cascade) |
 
 FPS-R's purpose is to make this intuitive, to make this rhythm legible, and traceable. It provides the formal grammar to describe what we have always instinctively known.
 
