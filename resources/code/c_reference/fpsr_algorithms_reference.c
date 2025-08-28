@@ -1,7 +1,7 @@
-// SPDX-License-Identifier: MIT — See LICENSE for full terms
+// SPDX-License-Identifier: Apache-2.0 — See LICENSE for full terms
 // Created by Patrick Woo, 2025.
 // This file is part of the FPS-R (Frame-Persistent Stateless Randomisation) project.
-// https://github.com/patwooky/FPSR_Algorithm
+// https://github.com/patwooky/fpsr
 
 // ⚠️ This C version of FPS-R is the canonical reference implementation.
 // All language bindings and variants should conform to this behavior.
