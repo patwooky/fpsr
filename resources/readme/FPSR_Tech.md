@@ -626,7 +626,16 @@ Where:
 
 ### Stacked Modulo (SM) One Line Code in C
 ```c 
-(seedOuter + frame) - ( (seedOuter + frame) % (minHold + floor( rand( (seedInner + frame) - ( (seedInner + frame) % reseedInterval) ) * (maxHold - minHold) ) ) )
+float fpsr_sm_expression = rand(
+    (seedOuter + frame) - ((seedOuter + frame) % (
+            minHold + floor(
+                rand(
+                    (seedInner + frame) - ((seedInner + frame) % reseedInterval) 
+                ) * (maxHold - minHold)
+            ) 
+        ) 
+    )
+);
 ```
 At the heart, FPS-R:SM is a temporal modulation function, where the output adjusts the current frame value in a structured-random way. Let’s unpack it inside-out:
 
@@ -950,7 +959,13 @@ Where:
 ### Toggled Modulo (TM) One-Line Code in C
 ```c
 // Note: frameB is typically frameA + offset to de-sync the clocks
-rand( (seedOuter + frame) - ( (seedOuter + frame) % ( ((seedInner + frame) % periodSwitch < periodSwitch * 0.5) ? periodA : periodB ) ) )
+float fpsr_tm_expression = rand( 
+    (seedOuter + frame) - ( (seedOuter + frame) % (
+            ((seedInner + frame) % periodSwitch < periodSwitch * 0.5
+            ) ? periodA : periodB 
+        ) 
+    ) 
+);
 ```
 ### 🧩 Toggled Modulo (TM) One-Line - Component Breakdown
 #### High-Level Breakdown
