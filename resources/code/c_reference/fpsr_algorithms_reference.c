@@ -141,7 +141,7 @@ if (randVal != randVal_previous) {
  * int frame: The current frame or time input.
  * int periodA: The first hold duration (in frames).
  * int periodB: The second hold duration (in frames).
- * int periodSwitch: The fixed interval at which the hold duration is toggled.
+ * int periodSwitch: The fixed interval at which the hold duration is toggled to switch between periodA and periodB.
  * int seedInner: An offset for the toggle clock to de-sync it from the main clock.
  * int seedOuter: An offset for the main clock to create unique sequences.
  * int finalRandSwitch: A flag that can turn off the final randomisation step.
@@ -194,7 +194,7 @@ float fpsr_tm(
 int frame = 100; // Replace with the current frame value
 int period_A = 10; // The first hold duration
 int period_B = 25; // The second hold duration
-int switch_duration = 30; // The toggle happens every 30 frames
+int periodSwitch = 30; // The toggle happens every 30 frames
 int offset_inner = 15; // offsets the inner (toggle) clock
 int offset_outer = 0; // offsets the outer (hold) clock
 int final_rand_switch = 1; // 1 to apply the final randomisation step, 0 to skip it
