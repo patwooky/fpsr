@@ -10,6 +10,7 @@ This file contains major announcements and important updates about the project.
 Released v1.0.0 on GitHub. 
 Link: [Release v1.0.0 on Github](https://github.com/patwooky/FPSR_Algorithm/releases/tag/v1.0.0)
 Commit hash: [`d512644`](https://github.com/patwooky/FPSR_Algorithm/commit/d512644e19c3c8f8ad5600f5294ef38cd10417c0)
+Released under the MIT License.
 
 #### > New `ANNOUNCEMENTS` Document
 I added the this announcements document in anticipation of any major changes in the codes, repos and documents.

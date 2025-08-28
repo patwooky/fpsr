@@ -1,9 +1,10 @@
-# 🎲 FPS-R Algorithm: Frame-Persistent Stateless Randomisation
-MIT License—[see LICENSE](./LICENSE.md) for details.  
-Copyright (c) 2025 Woo Ker Yang (Patrick Woo) patrickwoo.1976@gmail.com
-If you reference or adapt this framework, please credit Patrick Woo and this repository.
-**This documentation is still in development.** 
+Apache License 2.0—[see LICENSE](LICENSE.md) for details.  
+Copyright (c) 2025 Woo Ker Yang (Patrick Woo) patrickwoo.1976@gmail.com  
+If you reference or adapt this framework, please credit Patrick Woo and this repository.  
+**This documentation is still in development.**  
 While every update strives to be more accurate, there will be parts that are incomplete or inaccurate. 
+
+# 🎲 FPS-R Algorithm: Frame-Persistent Stateless Randomisation
 
 # Table of Contents
 - [🎲 FPS-R Algorithm: Frame-Persistent Stateless Randomisation](#-fps-r-algorithm-frame-persistent-stateless-randomisation)
