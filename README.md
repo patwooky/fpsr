@@ -139,15 +139,15 @@ graph TD
 The Chinese edition of the manifesto, presenting the philosophical and expressive foundation of FPS-R in Mandarin.
 
 ### 📐 The Mathematics and Mechanics
-[Click here: FPSR_Tech.md](resources/readme/FPSR_Tech.md)
+[Click here: fpsr_tech.md](resources/readme/fpsr_tech.md)
 This extension document provides the structural foundation beneath the conceptual framing. It outlines the algorithms, expressions, parameters, and architectural elements that support and shape the behaviour of FPS-R. **_The code lives here._**
 
 ### 🍭 Applications 
-[Click here: FPSR_Applications.md](resources/readme/FPSR_Applications.md)
+[Click here: fpsr_applications.md](resources/readme/fpsr_applications.md)
 This document complements and extends the applications of FPS-R beyond the high-level summarised view provided in this ReadMe file. The document will dig deeper into each domain and provide larger number of use cases for each area of use. 
 
 ### 🧬 Origins, Journal, Reflections
-[Click here: FPSR_Origins_Journal_Reflections.md](resources/readme/FPSR_Origins_Journal_Reflections.md)
+[Click here: fpsr_origins_journal_reflections.md](resources/readme/fpsr_origins_journal_reflections.md)
 This document consists of 3 large sections: 
 - Origins
 - Reflections and Thoughts
