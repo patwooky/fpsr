@@ -29,24 +29,22 @@
 // A simple, portable pseudo-random number generator that takes an integer seed.
 // Different languages have different rand() implementations, so using a custom
 // one like this ensures identical results on any platform.
-float portable_rand(int seed) {
+proc float portable_rand(int $seed) {
     // A common technique for a simple hash-like random number.
     // The large prime numbers are used to create a chaotic, unpredictable result.
-    float val = (float)seed * 12.9898;
-
-    // --- FIX for float precision on GPUs and other platforms ---
-    // On many platforms, sin() loses precision or returns 0 for large inputs.
-    // This causes the random value to "saturate" and become constant over time.
-    // By using the mathematical property sin(x) = sin(x mod 2π), we can wrap the
-    // input to sin() into a high-precision range [0, 2π], ensuring the result
-    // remains stable and correct indefinitely.
-    const float TWO_PI = 6.28318530718f;
-    val = fmod(val, TWO_PI);
-
-    float result = sin(val) * 43758.5453f;
+    float $val = (float)$seed * 12.9898;
     
-    // The fmod(result, 1.0) or (result - floor(result)) emulates GLSL's fract().
-    return result - floor(result);
+    // --- FIX for float precision on GPUs and other platforms ---
+    // By using the mathematical property sin(x) = sin(x mod 2π), we can wrap the
+    // input to sin() into a high-precision range, ensuring the result
+    // remains stable and correct indefinitely.
+    float $twoPi = 6.28318530718;
+    $val = $val % $twoPi;
+
+    float $result = sin($val) * 43758.5453;
+    
+    // MEL's equivalent of frac()
+    return $result - floor($result);
 }
  
  
@@ -73,23 +71,24 @@ float portable_rand(int seed) {
  */
  
 // Sample parameter values to call the FPS-R:SM expression with
-int frame = 100; // Replace with the current frame value
-int minHoldFrames = 16; // probable minimum held period
-int maxHoldFrames = 24; // maximum held period before cycling
-int reseedFrames = 9; // inner mod cycle timing
-int seedInner = -41; // offsets the inner frame
-int seedOuter = 23; // offsets the outer frame
+int $frame = 100; // Replace with the current frame value
+int $minHoldFrames = 16; // probable minimum held period
+int $maxHoldFrames = 24; // maximum held period before cycling
+int $reseedFrames = 9; // inner mod cycle timing
+int $seedInner = -41; // offsets the inner frame
+int $seedOuter = 23; // offsets the outer frame
 
 // Call the FPS-R:SM expression
-float fpsr_sm_expression = portable_rand(
-    (seedOuter + frame) - ((seedOuter + frame) % (
-            minHoldFrames + floor(
-                portable_rand(
-                    (seedInner + frame) - ((seedInner + frame) % reseedFrames) 
-                ) * (maxHoldFrames - minHoldFrames)
-            ) 
-        ) 
-    )
+float $fpsr_sm_expression = portable_rand(
+    ($seedOuter + $frame) - 
+    (($seedOuter + $frame) % (
+        $minHoldFrames + floor(
+            portable_rand(
+                ($seedInner + $frame) - 
+                (($seedInner + $frame) % $reseedFrames)
+            ) * ($maxHoldFrames - $minHoldFrames)
+        )
+    ))
 );
 
 
@@ -119,20 +118,20 @@ float fpsr_sm_expression = portable_rand(
  */
 
 // Sample parameter values to call the FPS-R:TM expression with
-int frame = 100; // Replace with the current frame value
-int period_A = 10; // The first hold duration
-int period_B = 25; // The second hold duration
-int periodSwitch = 30; // The toggle happens every 30 frames
-int seedInner = 15; // offsets the inner (toggle) clock
-int seedOuter = 0; // offsets the outer (hold) clock
+int $frame = 100; // Replace with the current frame value
+int $period_A = 10; // The first hold duration
+int $period_B = 25; // The second hold duration
+int $periodSwitch = 30; // The toggle happens every 30 frames
+int $seedInner = 15; // offsets the inner (toggle) clock
+int $seedOuter = 0; // offsets the outer (hold) clock
 
 // Call the FPS-R:TM expression
-float fpsr_tm_expression = portable_rand( 
-    (seedOuter + frame) - ( (seedOuter + frame) % (
-            ((seedInner + frame) % periodSwitch < periodSwitch * 0.5
-            ) ? period_A : period_B 
-        ) 
-    ) 
+float $fpsr_tm_expression = portable_rand(
+    ($seedOuter + $frame) - 
+    (($seedOuter + $frame) % (
+        ((($seedInner + $frame) % $periodSwitch) < ($periodSwitch * 0.5)) 
+        ? $period_A : $period_B
+    ))
 );
 
 

@@ -83,13 +83,12 @@ int seedOuter = 23; // offsets the outer frame
 // Call the FPS-R:SM expression
 float fpsr_sm_expression = portable_rand(
     (seedOuter + frame) - ((seedOuter + frame) % (
-            minHoldFrames + floor(
-                portable_rand(
-                    (seedInner + frame) - ((seedInner + frame) % reseedFrames) 
-                ) * (maxHoldFrames - minHoldFrames)
-            ) 
-        ) 
-    )
+        minHoldFrames + floor(
+            portable_rand(
+                (seedInner + frame) - ((seedInner + frame) % reseedFrames)
+            ) * (maxHoldFrames - minHoldFrames)
+        )
+    ))
 );
 
 
@@ -127,12 +126,11 @@ int seedInner = 15; // offsets the inner (toggle) clock
 int seedOuter = 0; // offsets the outer (hold) clock
 
 // Call the FPS-R:TM expression
-float fpsr_tm_expression = portable_rand( 
-    (seedOuter + frame) - ( (seedOuter + frame) % (
-            ((seedInner + frame) % periodSwitch < periodSwitch * 0.5
-            ) ? period_A : period_B 
-        ) 
-    ) 
+float fpsr_tm_expression = portable_rand(
+    (seedOuter + frame) - ((seedOuter + frame) % (
+        ((seedInner + frame) % periodSwitch < periodSwitch * 0.5
+        ) ? period_A : period_B
+    ))
 );
 
 
