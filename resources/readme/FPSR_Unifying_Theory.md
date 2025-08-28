@@ -110,6 +110,7 @@ We can observe the "random-move-and-hold" pattern in plain sight, as it appears 
 | **Biology**       | **Neuronal firing** (action potential → refractory)<br>**Metamorphosis** (dormant latency (cocoon) → transformation) |
 | **Ecology**       | **Predator-prey dynamics** (boom → collapse → recovery) |
 | **Geology**       | **Earthquakes** (stress build-up → sudden release)<br>**Landslides** (fault expansion → sudden release) |
+| **Elemental Systems**| **Lightning** (charge accumulation → electrical discharge)<br>**Bushfire** (heat + fuel accumulation → ignition → spread) |
 | **Astronomy**     | **Star formation** (gas accumulation → ignition) |
 | **Learning _Curve_**| **Skill acquisition** (practice → internalisation → burst of fluency) |
 | **Emotions**      | **Meltdown** (emotional stress build-up → emotional trigger → meltdown)<br>**Anger** (initial trigger → continued build-up → final straw → outburst)<br>**Courage** (building apprehension → breakthrough → selfless act)<br>**Grief** (loss → numbness → delayed emotional processing → catharsis)|
