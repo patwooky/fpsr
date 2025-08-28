@@ -112,7 +112,7 @@ While every update strives to be more accurate, there will be parts that are inc
 graph TD
   A[**README.md** 🏁<br>Manifesto & Overview] --> A2[Read-Me] 
   A2 --> A3[Technical]
-  A2 --> A4[🧬 Origins,<br> 🧠 Thoughts, Philosophy,<br>& 📓 Developer Journal]
+  A2 --> A4[🧬 Origins, Journal,<br>Reflections<br><br>🧬 Origin story,<br> 🧠 Thoughts & Philosophy,<br>📓 Developer Journal]
   C[**README-CH.md** 🈸<br>Manifesto in Chinese] --> A2
   A3 --> B[**Tech.md** 📐<br>Maths & Code]
   A3 --> D[**Applications.md** 🍭<br>Cross-Domain<br>Use Cases]
@@ -139,15 +139,15 @@ graph TD
 The Chinese edition of the manifesto, presenting the philosophical and expressive foundation of FPS-R in Mandarin.
 
 ### 📐 The Mathematics and Mechanics
-[Click here: FPSR_Tech.md](resources/readme/FPSR_Tech.md)
+[Click here: fpsr_tech.md](resources/readme/fpsr_tech.md)
 This extension document provides the structural foundation beneath the conceptual framing. It outlines the algorithms, expressions, parameters, and architectural elements that support and shape the behaviour of FPS-R. **_The code lives here._**
 
 ### 🍭 Applications 
-[Click here: FPSR_Applications.md](resources/readme/FPSR_Applications.md)
+[Click here: fpsr_applications.md](resources/readme/fpsr_applications.md)
 This document complements and extends the applications of FPS-R beyond the high-level summarised view provided in this ReadMe file. The document will dig deeper into each domain and provide larger number of use cases for each area of use. 
 
 ### 🧬 Origins, Journal, Reflections
-[Click here: FPSR_Origins_Journal_Reflections.md](resources/readme/FPSR_Origins_Journal_Reflections.md)
+[Click here: fpsr_origins_journal_reflections.md](resources/readme/fpsr_origins_journal_reflections.md)
 This document consists of 3 large sections: 
 - Origins
 - Reflections and Thoughts
@@ -195,11 +195,10 @@ This framework is not just for motion over time. FPS-R can be applied to any con
 Ultimately, FPS-R is a collaborator. It can be allowed to roam free for total, wild unpredictability, or it can be given clear boundaries to inject a rich, organic texture into otherwise predictable systems.
 
 ---
-### 🎓 Principles and Philosophy
+## 🎓 Principles and Philosophy
 ---
-
 ### 🧭 Guiding Principle
-"FPS-R isn't a single algorithm. It's a design philosophy for *shaping signals*. Whether by arithmetic folding or signal quantisation — whether in time or space — the goal is the same: give structure permission to behave."
+FPS-R isn't a single algorithm. It's a design philosophy for *shaping signals*. Whether by arithmetic folding or signal quantisation — whether in time or space — the goal is the same: give structure permission to behave.
 
 ### 🎭 Motion Philosophy
 **FPS-R simulates the unpredictability of hesitation — yet within the same framework, it can just as easily express instinct.**  
@@ -229,8 +228,9 @@ FPS-R may appear to drift chaotically, but beneath its phrased irregularity lies
 
 What results isn’t raw randomness — it’s **structured modulation**. Each jump, each hold, each reseed arises from the friction between layered rhythms and offset reseeds, not from entropy. Temporal phrasing emerges where cycles misalign just enough to simulate spontaneity.
 
-In this sense, FPS-R doesn’t simulate behaviour; it **orchestrates interference**. SM and QS aren't mere techniques — they are **procedural grammar primitives**, each governing a different expressive dimension:
+In this sense, FPS-R doesn’t simulate behaviour; it **orchestrates interference**. SM, TM and QS aren't mere techniques — they are **procedural grammar primitives**, each governing a different expressive dimension:
 - **SM (Stacked Modulo)** phrases values through layered cyclic constraints
+- **TM (Toggled Modulo)** phrases values through rhythmic alternation of constraint states
 - **QS (Quantised Switching)** modulates selection behaviour and categorical drift
 
 Together, these operators form a framework for engineered emergence: where each state transition is mathematically traceable, yet aesthetically untraceable.
@@ -335,8 +335,10 @@ And that is...
 🎛️ *In the language of math and algorithm*:  
 **FPS-R (Frame-Persistent Stateless Randomisation)**
 
-🗣️ *In everyday spoken English*:  
+🗣️ *In our everyday language*:  
 **Random Move and Hold**
+
+> 🧠 FPS-R is not a randomiser. It is a **universal phrasing primitive**—a stateless engine for generating structured surprise, expressive timing, and emergent behavior. It doesn’t simulate reality. It simulates the **rhythm of reality’s unfolding**.
 
 ---
 

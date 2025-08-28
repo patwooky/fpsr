@@ -15,12 +15,12 @@ Commit hash: [`d512644`](https://github.com/patwooky/FPSR_Algorithm/commit/d5126
 I added the this announcements document in anticipation of any major changes in the codes, repos and documents.
 
 #### > Consolidated Documents: `Journal`, `Thoughts` and `Origins`
-I have conslidated the following documents into a new one.
+I have consolidated the following documents into a new one.
 
 Removed: 
 `FPSR_Thoughts.md`, `FPSR_Journal.md`, `FPSR_Origins.md`
 
-New document:
+New document: 
 `FPSR_Origins_Journal_Reflections.md`
 
 This change will be reflected in `README.md` as well.
