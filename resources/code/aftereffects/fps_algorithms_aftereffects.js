@@ -240,34 +240,79 @@ let currentFrame = Math.round(time / thisComp.frameDuration) + frameOffset;
 // If a control doesn't exist on the layer, a default value is used.
 
 // SM Parameters
-try { let p_sm_minHold = thisComp.layer("FPSR_Controls").effect("SM minHold")("Slider"); } catch(e) { let p_sm_minHold = 16; }
-try { let p_sm_maxHold = thisComp.layer("FPSR_Controls").effect("SM maxHold")("Slider"); } catch(e) { let p_sm_maxHold = 24; }
-try { let p_sm_reseed = thisComp.layer("FPSR_Controls").effect("SM reseedInterval")("Slider"); } catch(e) { let p_sm_reseed = 9; }
-try { let p_sm_seedIn = thisComp.layer("FPSR_Controls").effect("SM seedInner")("Slider"); } catch(e) { let p_sm_seedIn = -41; }
-try { let p_sm_seedOut = thisComp.layer("FPSR_Controls").effect("SM seedOuter")("Slider"); } catch(e) { let p_sm_seedOut = 23; }
-try { let p_sm_bypass = thisComp.layer("FPSR_Controls").effect("SM Bypass Rand")("Checkbox").value ? false : true; } catch(e) { let p_sm_bypass = true; }
+let p_sm_minHold;
+try { p_sm_minHold = thisComp.layer("FPSR_Controls").effect("SM minHold")("Slider"); } catch(e) { p_sm_minHold = 16; }
+
+let p_sm_maxHold;
+try { p_sm_maxHold = thisComp.layer("FPSR_Controls").effect("SM maxHold")("Slider"); } catch(e) { p_sm_maxHold = 24; }
+
+let p_sm_reseed;
+try { p_sm_reseed = thisComp.layer("FPSR_Controls").effect("SM reseedInterval")("Slider"); } catch(e) { p_sm_reseed = 9; }
+
+let p_sm_seedIn;
+try { p_sm_seedIn = thisComp.layer("FPSR_Controls").effect("SM seedInner")("Slider"); } catch(e) { p_sm_seedIn = -41; }
+
+let p_sm_seedOut;
+try { p_sm_seedOut = thisComp.layer("FPSR_Controls").effect("SM seedOuter")("Slider"); } catch(e) { p_sm_seedOut = 23; }
+
+let p_sm_bypass;
+try { p_sm_bypass = thisComp.layer("FPSR_Controls").effect("SM Bypass Rand")("Checkbox").value ? false : true; } catch(e) { p_sm_bypass = true; }
 
 // TM Parameters
-try { let p_tm_periodA = thisComp.layer("FPSR_Controls").effect("TM periodA")("Slider"); } catch(e) { let p_tm_periodA = 10; }
-try { let p_tm_periodB = thisComp.layer("FPSR_Controls").effect("TM periodB")("Slider"); } catch(e) { let p_tm_periodB = 25; }
-try { let p_tm_switchDur = thisComp.layer("FPSR_Controls").effect("TM switch_duration")("Slider"); } catch(e) { let p_tm_switchDur = 30; }
-try { let p_tm_seedIn = thisComp.layer("FPSR_Controls").effect("TM seedInner")("Slider"); } catch(e) { let p_tm_seedIn = 15; }
-try { let p_tm_seedOut = thisComp.layer("FPSR_Controls").effect("TM seedOuter")("Slider"); } catch(e) { let p_tm_seedOut = 0; }
-try { let p_tm_bypass = thisComp.layer("FPSR_Controls").effect("TM Bypass Rand")("Checkbox").value ? false : true; } catch(e) { let p_tm_bypass = true; }
+let p_tm_periodA;
+try { p_tm_periodA = thisComp.layer("FPSR_Controls").effect("TM periodA")("Slider"); } catch(e) { p_tm_periodA = 10; }
+
+let p_tm_periodB;
+try { p_tm_periodB = thisComp.layer("FPSR_Controls").effect("TM periodB")("Slider"); } catch(e) { p_tm_periodB = 25; }
+
+let p_tm_switchDur;
+try { p_tm_switchDur = thisComp.layer("FPSR_Controls").effect("TM switch_duration")("Slider"); } catch(e) { p_tm_switchDur = 30; }
+
+let p_tm_seedIn;
+try { p_tm_seedIn = thisComp.layer("FPSR_Controls").effect("TM seedInner")("Slider"); } catch(e) { p_tm_seedIn = 15; }
+
+let p_tm_seedOut;
+try { p_tm_seedOut = thisComp.layer("FPSR_Controls").effect("TM seedOuter")("Slider"); } catch(e) { p_tm_seedOut = 0; }
+
+let p_tm_bypass;
+try { p_tm_bypass = thisComp.layer("FPSR_Controls").effect("TM Bypass Rand")("Checkbox").value ? false : true; } catch(e) { p_tm_bypass = true; }
 
 // QS Parameters
-try { let p_qs_baseFreq = thisComp.layer("FPSR_Controls").effect("QS baseWaveFreq")("Slider"); } catch(e) { let p_qs_baseFreq = 0.012; }
-try { let p_qs_freqMult = thisComp.layer("FPSR_Controls").effect("QS stream2FreqMult")("Slider"); } catch(e) { let p_qs_freqMult = 3.1; }
-try { let p_qs_qMin = thisComp.layer("FPSR_Controls").effect("QS quantMin")("Slider"); } catch(e) { let p_qs_qMin = 4; }
-try { let p_qs_qMax = thisComp.layer("FPSR_Controls").effect("QS quantMax")("Slider"); } catch(e) { let p_qs_qMax = 12; }
-try { let p_qs_off1 = thisComp.layer("FPSR_Controls").effect("QS streamOffset1")("Slider"); } catch(e) { let p_qs_off1 = 0; }
-try { let p_qs_off2 = thisComp.layer("FPSR_Controls").effect("QS streamOffset2")("Slider"); } catch(e) { let p_qs_off2 = 76; }
-try { let p_qs_qOff1 = thisComp.layer("FPSR_Controls").effect("QS quantOffset1")("Slider"); } catch(e) { let p_qs_qOff1 = 10; }
-try { let p_qs_qOff2 = thisComp.layer("FPSR_Controls").effect("QS quantOffset2")("Slider"); } catch(e) { let p_qs_qOff2 = 81; }
-try { let p_qs_switchDur = thisComp.layer("FPSR_Controls").effect("QS streamSwitchDur")("Slider"); } catch(e) { let p_qs_switchDur = 24; }
-try { let p_qs_qDur1 = thisComp.layer("FPSR_Controls").effect("QS quantDur1")("Slider"); } catch(e) { let p_qs_qDur1 = 16; }
-try { let p_qs_qDur2 = thisComp.layer("FPSR_Controls").effect("QS quantDur2")("Slider"); } catch(e) { let p_qs_qDur2 = 20; }
-try { let p_qs_bypass = thisComp.layer("FPSR_Controls").effect("QS Bypass Rand")("Checkbox").value ? false : true; } catch(e) { let p_qs_bypass = true; }
+let p_qs_baseFreq;
+try { p_qs_baseFreq = thisComp.layer("FPSR_Controls").effect("QS baseWaveFreq")("Slider"); } catch(e) { p_qs_baseFreq = 0.012; }
+
+let p_qs_freqMult;
+try { p_qs_freqMult = thisComp.layer("FPSR_Controls").effect("QS stream2FreqMult")("Slider"); } catch(e) { p_qs_freqMult = 3.1; }
+
+let p_qs_qMin;
+try { p_qs_qMin = thisComp.layer("FPSR_Controls").effect("QS quantMin")("Slider"); } catch(e) { p_qs_qMin = 4; }
+
+let p_qs_qMax;
+try { p_qs_qMax = thisComp.layer("FPSR_Controls").effect("QS quantMax")("Slider"); } catch(e) { p_qs_qMax = 12; }
+
+let p_qs_off1;
+try { p_qs_off1 = thisComp.layer("FPSR_Controls").effect("QS streamOffset1")("Slider"); } catch(e) { p_qs_off1 = 0; }
+
+let p_qs_off2;
+try { p_qs_off2 = thisComp.layer("FPSR_Controls").effect("QS streamOffset2")("Slider"); } catch(e) { p_qs_off2 = 76; }
+
+let p_qs_qOff1;
+try { p_qs_qOff1 = thisComp.layer("FPSR_Controls").effect("QS quantOffset1")("Slider"); } catch(e) { p_qs_qOff1 = 10; }
+
+let p_qs_qOff2;
+try { p_qs_qOff2 = thisComp.layer("FPSR_Controls").effect("QS quantOffset2")("Slider"); } catch(e) { p_qs_qOff2 = 81; }
+
+let p_qs_switchDur;
+try { p_qs_switchDur = thisComp.layer("FPSR_Controls").effect("QS streamSwitchDur")("Slider"); } catch(e) { p_qs_switchDur = 24; }
+
+let p_qs_qDur1;
+try { p_qs_qDur1 = thisComp.layer("FPSR_Controls").effect("QS quantDur1")("Slider"); } catch(e) { p_qs_qDur1 = 16; }
+
+let p_qs_qDur2;
+try { p_qs_qDur2 = thisComp.layer("FPSR_Controls").effect("QS quantDur2")("Slider"); } catch(e) { p_qs_qDur2 = 20; }
+
+let p_qs_bypass;
+try { p_qs_bypass = thisComp.layer("FPSR_Controls").effect("QS Bypass Rand")("Checkbox").value ? false : true; } catch(e) { p_qs_bypass = true; }
 
 
 // --- CHOOSE WHICH ALGORITHM TO RUN ---
