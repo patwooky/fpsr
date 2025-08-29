@@ -3,13 +3,9 @@
 // This file is part of the FPS-R (Frame-Persistent Stateless Randomisation) project.
 // https://github.com/patwooky/FPSR_Algorithm
 
-// ⚠️ This C version of FPS-R is the canonical reference implementation.
-// All language bindings and variants should conform to this behavior.
-// Do not alter without updating downstream bindings or reference docs.
-
 /**
- * @file fpsr_algorithms.c
- * @brief Portable C implementation of FPS-R algorithms: 
+ * @file fpsr_expressions_glsl.frag
+ * @brief GLSL one-line expression implementation of FPS-R algorithms: 
  * Stacked Modulo (SM), Toggled Modulo (TM) and Quantised Switching (QS).
  * @details This file contains three stateless, frame-persistent randomisation algorithms.
  * It uses a custom portable_rand() function to ensure deterministic and
