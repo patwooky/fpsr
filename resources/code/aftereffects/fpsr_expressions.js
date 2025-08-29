@@ -51,7 +51,7 @@ float portable_rand(int seed) {
 
 
 /******************************************************************************/
-/* FPS-R: Stacked Modulo (SM)                                                 */
+// FPS-R: Stacked Modulo (SM)                                                 */
 /******************************************************************************/
 
 /**
@@ -73,12 +73,12 @@ float portable_rand(int seed) {
 */
 
 // Sample parameter values to call the FPS-R:SM expression with
-int frame = 100; // Replace with the current frame value
-int minHoldFrames = 16; // probable minimum held period
-int maxHoldFrames = 24; // maximum held period before cycling
-int reseedFrames = 9; // inner mod cycle timing
-int seedInner = -41; // offsets the inner frame
-int seedOuter = 23; // offsets the outer frame
+let frame = 100; // Replace with the current frame value
+let minHoldFrames = 16; // probable minimum held period
+let maxHoldFrames = 24; // maximum held period before cycling
+let reseedFrames = 9; // inner mod cycle timing
+let seedInner = -41; // offsets the inner frame
+let seedOuter = 23; // offsets the outer frame
 
 // Call the FPS-R:SM expression
 let fpsr_sm_expression = portable_rand(
@@ -122,18 +122,17 @@ let fpsr_sm_expression = portable_rand(
 */
 
 // Sample parameter values to call the FPS-R:TM expression with
-int frame = 100; // Replace with the current frame value
-int period_A = 10; // The first hold duration
-int period_B = 25; // The second hold duration
-int periodSwitch = 30; // The toggle happens every 30 frames
-int seedInner = 15; // offsets the inner (toggle) clock
-int seedOuter = 0; // offsets the outer (hold) clock
+let period_A = 10; // The first hold duration
+let period_B = 25; // The second hold duration
+let periodSwitch = 30; // The toggle happens every 30 frames
+let seedInner_TM = 15; // offsets the inner (toggle) clock
+let seedOuter_TM = 0; // offsets the outer (hold) clock
 
 // Call the FPS-R:TM expression
 let fpsr_tm_expression = portable_rand(
-    (seedOuter + frame) - (
-        (seedOuter + frame) % (
-            ((seedInner + frame) % periodSwitch < periodSwitch * 0.5)
+    (seedOuter_TM + frame) - (
+        (seedOuter_TM + frame) % (
+            ((seedInner_TM + frame) % periodSwitch < periodSwitch * 0.5)
             ? period_A : period_B
         )
     )
