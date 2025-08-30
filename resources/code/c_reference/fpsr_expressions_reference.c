@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT — See LICENSE for full terms
 // Created by Patrick Woo, 2025.
 // This file is part of the FPS-R (Frame-Persistent Stateless Randomisation) project.
-// https://github.com/patwooky/FPSR_Algorithm
+// https://github.com/patwooky/fpsr
 
 // ⚠️ This C version of FPS-R is the canonical reference implementation.
 // All language bindings and variants should conform to this behavior.
 // Do not alter without updating downstream bindings or reference docs.
 
 /**
- * @file fpsr_algorithms.c
- * @brief Portable C implementation of FPS-R algorithms: 
+ * @file fpsr_expressions.c
+ * @brief Portable C one-line expressions implementation of FPS-R algorithms: 
  * Stacked Modulo (SM), Toggled Modulo (TM) and Quantised Switching (QS).
  * @details This file contains three stateless, frame-persistent randomisation algorithms.
  * It uses a custom portable_rand() function to ensure deterministic and
