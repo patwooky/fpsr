@@ -9,7 +9,7 @@
 // Do not alter without updating downstream bindings or reference docs.
 
 /**
- * @file fpsr_algorithms.glsl
+ * @file fpsr_algorithms_glsl.frag
  * @brief GLSL implementation of FPS-R algorithms: 
  * Stacked Modulo (SM), Toggled Modulo (TM) and Quantised Switching (QS).
  * @details This file contains three stateless, frame-persistent randomisation algorithms.

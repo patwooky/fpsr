@@ -1,23 +1,19 @@
 // SPDX-License-Identifier: MIT — See LICENSE for full terms
 // Created by Patrick Woo, 2025.
 // This file is part of the FPS-R (Frame-Persistent Stateless Randomisation) project.
-// https://github.com/patwooky/FPSR_Algorithm
-
-// ⚠️ This C version of FPS-R is the canonical reference implementation.
-// All language bindings and variants should conform to this behavior.
-// Do not alter without updating downstream bindings or reference docs.
+// https://github.com/patwooky/fpsr
 
 /**
- * @file fpsr_algorithms.c
- * @brief Portable C implementation of FPS-R algorithms: 
- * Stacked Modulo (SM), Toggled Modulo (TM) and Quantised Switching (QS).
- * @details This file contains three stateless, frame-persistent randomisation algorithms.
+ * @file fpsr_expressions.js
+ * @brief Javascript one-line expressions implementation of FPS-R algorithms: 
+ * Stacked Modulo (SM) and Toggled Modulo (TM).
+ * @details This file contains two stateless, frame-persistent randomisation algorithms.
  * It uses a custom portable_rand() function to ensure deterministic and
  * consistent results across any platform.
  */
 
-#include <math.h> // For sin() and floor()
-#include <stdio.h> // For NULL
+//# include <math.h> // For sin() and floor()
+//# include <stdio.h> // For NULL
 
 /**
 * A simple, portable pseudo-random number generator.
@@ -29,10 +25,10 @@
 // A simple, portable pseudo-random number generator that takes an integer seed.
 // Different languages have different rand() implementations, so using a custom
 // one like this ensures identical results on any platform.
-float portable_rand(int seed) {
+function portable_rand(seed) {
    // A common technique for a simple hash-like random number.
    // The large prime numbers are used to create a chaotic, unpredictable result.
-   float val = (float)seed * 12.9898;
+   let val = seed * 12.9898;
 
    // --- FIX for float precision on GPUs and other platforms ---
    // On many platforms, sin() loses precision or returns 0 for large inputs.
@@ -40,18 +36,18 @@ float portable_rand(int seed) {
    // By using the mathematical property sin(x) = sin(x mod 2π), we can wrap the
    // input to sin() into a high-precision range [0, 2π], ensuring the result
    // remains stable and correct indefinitely.
-   const float TWO_PI = 6.28318530718f;
-   val = fmod(val, TWO_PI);
+   const TWO_PI = 6.28318530718;
+   val = val % TWO_PI;
 
-   float result = sin(val) * 43758.5453f;
+   let result = Math.sin(val) * 43758.5453;
    
    // The fmod(result, 1.0) or (result - floor(result)) emulates GLSL's fract().
-   return result - floor(result);
+   return result - Math.floor(result);
 }
 
 
 /******************************************************************************/
-/* FPS-R: Stacked Modulo (SM)                                                 */
+// FPS-R: Stacked Modulo (SM)                                                 */
 /******************************************************************************/
 
 /**
@@ -73,12 +69,12 @@ float portable_rand(int seed) {
 */
 
 // Sample parameter values to call the FPS-R:SM expression with
-int frame = 100; // Replace with the current frame value
-int minHoldFrames = 16; // probable minimum held period
-int maxHoldFrames = 24; // maximum held period before cycling
-int reseedFrames = 9; // inner mod cycle timing
-int seedInner = -41; // offsets the inner frame
-int seedOuter = 23; // offsets the outer frame
+let frame = 100; // Replace with the current frame value
+let minHoldFrames = 16; // probable minimum held period
+let maxHoldFrames = 24; // maximum held period before cycling
+let reseedFrames = 9; // inner mod cycle timing
+let seedInner = -41; // offsets the inner frame
+let seedOuter = 23; // offsets the outer frame
 
 // Call the FPS-R:SM expression
 let fpsr_sm_expression = portable_rand(
@@ -97,7 +93,7 @@ let fpsr_sm_expression = portable_rand(
 
 
 /******************************************************************************/
-/* FPS-R: Toggled Modulo (TM)                                                 */
+// FPS-R: Toggled Modulo (TM)                                                 */
 /******************************************************************************/
 
 /**
@@ -122,18 +118,17 @@ let fpsr_sm_expression = portable_rand(
 */
 
 // Sample parameter values to call the FPS-R:TM expression with
-int frame = 100; // Replace with the current frame value
-int period_A = 10; // The first hold duration
-int period_B = 25; // The second hold duration
-int periodSwitch = 30; // The toggle happens every 30 frames
-int seedInner = 15; // offsets the inner (toggle) clock
-int seedOuter = 0; // offsets the outer (hold) clock
+let period_A = 10; // The first hold duration
+let period_B = 25; // The second hold duration
+let periodSwitch = 30; // The toggle happens every 30 frames
+let seedInner_TM = 15; // offsets the inner (toggle) clock
+let seedOuter_TM = 0; // offsets the outer (hold) clock
 
 // Call the FPS-R:TM expression
 let fpsr_tm_expression = portable_rand(
-    (seedOuter + frame) - (
-        (seedOuter + frame) % (
-            ((seedInner + frame) % periodSwitch < periodSwitch * 0.5)
+    (seedOuter_TM + frame) - (
+        (seedOuter_TM + frame) % (
+            ((seedInner_TM + frame) % periodSwitch < periodSwitch * 0.5)
             ? period_A : period_B
         )
     )
@@ -141,7 +136,7 @@ let fpsr_tm_expression = portable_rand(
 
 
 /******************************************************************************/
-/* FPS-R: Quantised Switching (QS)                                            */
+// FPS-R: Quantised Switching (QS)                                            */
 /******************************************************************************/
 
 /**
