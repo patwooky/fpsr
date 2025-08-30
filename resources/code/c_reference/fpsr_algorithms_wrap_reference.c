@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT — See LICENSE for full terms
 // Created by Patrick Woo, 2025.
 // This file is part of the FPS-R (Frame-Persistent Stateless Randomisation) project.
-// https://github.com/patwooky/FPSR_Algorithm
+// https://github.com/patwooky/fpsr
 
 /**
  * @file fpsr_wrapped.c
@@ -371,7 +371,7 @@ FPSR_Output fpsr_sm_get_details(
 
     // --- Backwards Search for last_changed_frame ---
     if (out.has_changed) {
-        // Optimization: If has_changed == 1, assign last_changed_frame = frame - 1.
+        // Optimization: If has_changed == 1, assign last_changed_frame = frame.
         // Avoids 4 calls to _fpsr_xx_base(): (1 in exponential probe, 3 in binary search)
         // Avoids 3 loops iterations (1 in exponential probe, 2 in binary search)
         out.last_changed_frame = frame;
@@ -450,6 +450,7 @@ FPSR_Output fpsr_sm_get_details(
         }
     }
     out.next_changed_frame = result_int;
+    out.randVal_next_changed_frame = next_val_candidate; 
     
     // Calculate hold progress based on scaled frame values
     // These calculations now also use double for precision before final cast
@@ -462,9 +463,7 @@ FPSR_Output fpsr_sm_get_details(
     } else {
         out.hold_progress = 0.0f; // Handle zero duration to avoid division by zero
     }
-
-    out.randVal_next_changed_frame = next_val_candidate; 
-
+    
     return out;
 }
 
@@ -513,7 +512,7 @@ FPSR_Output fpsr_tm_get_details(
 
     // --- Backwards Search for last_changed_frame ---
     if (out.has_changed) {
-        // Optimization: If has_changed == 1, assign last_changed_frame = frame - 1.
+        // Optimization: If has_changed == 1, assign last_changed_frame = frame.
         // Avoids 4 calls to _fpsr_xx_base(): (1 in exponential probe, 3 in binary search)
         // Avoids 3 loops iterations (1 in exponential probe, 2 in binary search)
         out.last_changed_frame = frame;
@@ -659,7 +658,7 @@ FPSR_Output fpsr_qs_get_details(
 
     // --- Backwards Search for last_changed_frame ---
     if (has_changed) {
-        // Optimization: If has_changed == 1, assign last_changed_frame = frame - 1.
+        // Optimization: If has_changed == 1, assign last_changed_frame = frame.
         // Avoids 4 calls to _fpsr_xx_base(): (1 in exponential probe, 3 in binary search)
         // Avoids 3 loops iterations (1 in exponential probe, 2 in binary search)
         out.last_changed_frame = frame;
