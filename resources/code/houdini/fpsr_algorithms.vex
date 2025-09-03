@@ -253,8 +253,8 @@ float fpsr_qs(int frame; float baseWaveFreq; float stream2freqMult; int quantLev
     if (stream2freqMult < 0) stream2freqMult = 3.7;
 
     // Reverted to floor() as requested.
-    float stream1 = floor(sin(float(streamsOffset[0] + frame) * baseWaveFreq) * s1_quant_level) / float(s1_quant_level);
-    float stream2 = floor(sin(float(streamsOffset[1] + frame) * baseWaveFreq * stream2freqMult) * s2_quant_level) / float(s2_quant_level);
+    float stream1 = floor((sin(float(streamsOffset[0] + frame) * baseWaveFreq) / 2.0 + 0.5) * s1_quant_level) / float(s1_quant_level);
+    float stream2 = floor((sin(float(streamsOffset[1] + frame) * baseWaveFreq * stream2freqMult) / 2.0 + 0.5) * s2_quant_level) / float(s2_quant_level);
 
     // --- 4. Switch between the two streams ---
     float active_stream_val = ((frame % streamSwitchDur) < streamSwitchDur / 2) ? stream1 : stream2;
