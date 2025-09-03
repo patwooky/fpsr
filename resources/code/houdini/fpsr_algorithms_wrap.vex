@@ -157,6 +157,24 @@ struct FPSR_Output {
     int selected_stream; // For QS details
 };
 
+// Using dicts in place of structs in Houdini 19.5 
+// structs can be declared in VEX #include but not directly in wrangle snippets
+dict FPSR_Output_Dict_Template;
+FPSR_Output_Dict_Template['randVal'] = 0.0;
+FPSR_Output_Dict_Template['has_changed'] = int(0);
+FPSR_Output_Dict_Template['hold_progress'] = 0.0;
+FPSR_Output_Dict_Template['last_changed_frame'] = int(0);
+FPSR_Output_Dict_Template['next_changed_frame'] = int(0);
+FPSR_Output_Dict_Template['randVal_next_changed_frame'] = 0.0;
+float streamArr[] = array(0, 0); // Initialise streamArr first then assign to dict
+FPSR_Output_Dict_Template['randStreams'] = streamArr; // for fpsr_qs
+FPSR_Output_Dict_Template['selected_stream'] = 0; // for fpsr_qs
+// querying and updating array values from the dict requires an intermediate variable
+// query: float tempArr[] = FPSR_Output_Dict['randStreams'];
+// update: tempArr[0] = newVal; FPSR_Output_Dict['randStreams'] = tempArr;
+// querying non-array values is direct: int tempInt = FPSR_Output_Dict['has_changed'];
+// updating non-array values is direct: FPSR_Output_Dict['has_changed'] = newVal;
+
 // Internal struct for _fpsr_qs_base to return multiple values
 struct _FPSR_QS_Base_Output {
     float randVal;
