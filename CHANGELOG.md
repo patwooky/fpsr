@@ -41,6 +41,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - N/A
 
 ---
+## [1.0.1] - 2025-09-04
+
+### Added
+- N/A
+
+### Changed
+- FPS-R QS implementations across all languages
+    - streams 1 and 2 used to output `sin()` results that were -1 to 1. This has been normalised to 0 to 1 range.
+        - this range is in consistent with many other noise generators (eg, worely, simlpex, perlin).
+        - -1 to 1 when gone through quantisation, will result in double the number of quantised levels than intended.
+    - **_This will break output consistency with prior versions. Please take note._**
+
+### Removed
+- N/A
+
+### Fixed
+- Maya Mel code implementation was using C-style casts 
+    eg `(int)(3.33 + 5.0)`
+    this has been changed to `int(3.33 + 5.0)`
+
+---
 ## [1.0.0] - 2025-08-14
 
 ### Added

@@ -272,8 +272,11 @@ float fpsr_qs(
     // --- 3. Generate the two quantised sine wave streams ---
     if (stream2FreqMult < 0) { stream2FreqMult = 3.7; }
 
-    float stream1 = floor(sin((float)(streamsOffset[0] + frame) * baseWaveFreq) * s1_quant_level) / (float)s1_quant_level;
-    float stream2 = floor(sin((float)(streamsOffset[1] + frame) * baseWaveFreq * stream2FreqMult) * s2_quant_level) / (float)s2_quant_level;
+    // to be consistent make sure the output is 0 to 1
+    // sin() returns -1 to 1, so we scale it to 0 to 1
+    // feel free to swap sine for cos or other waveforms, but make sure the output is consistently -1 to 1
+    float stream1 = floor((sin((float)(streamsOffset[0] + frame) * baseWaveFreq) / 2.0 + 0.5) * s1_quant_level) / (float)s1_quant_level;
+    float stream2 = floor((sin((float)(streamsOffset[1] + frame) * baseWaveFreq * stream2FreqMult) / 2.0 + 0.5) * s2_quant_level) / (float)s2_quant_level;
 
     // --- 4. Switch between the two streams ---
     float active_stream_val = ((frame % streamSwitchDur) < streamSwitchDur / 2) ? stream1 : stream2;

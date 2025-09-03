@@ -4,6 +4,10 @@ This file contains major announcements and important updates about the project.
 
 ---
 
+### 4 Sep 2025
+Made some changes to FPS-R QS stream outputs. This will affect QS outputs and break output consistency with previous versions.
+
+---
 ### 14 August 2025
 
 #### > New Release on GitHub

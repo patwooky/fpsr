@@ -295,8 +295,8 @@ https://github.com/patwooky/fpsr
             if (s1_quant_level < 1) { s1_quant_level = 1; }
             if (s2_quant_level < 1) { s2_quant_level = 1; }
             if (stream2FreqMult < 0.0) { stream2FreqMult = 3.7; }
-            float stream1 = floor(sin(float(streamsOffset.x + frame) * baseWaveFreq) * float(s1_quant_level)) / float(s1_quant_level);
-            float stream2 = floor(sin(float(streamsOffset.y + frame) * baseWaveFreq * stream2FreqMult) * float(s2_quant_level)) / float(s2_quant_level);
+            float stream1 = floor((sin(float(streamsOffset.x + frame) * baseWaveFreq) / 2.0 + 0.5) * float(s1_quant_level)) / float(s1_quant_level);
+            float stream2 = floor((sin(float(streamsOffset.y + frame) * baseWaveFreq * stream2FreqMult) / 2.0 + 0.5) * float(s2_quant_level)) / float(s2_quant_level);
             float active_stream_val = (intMod(frame, streamSwitchDur) < (streamSwitchDur / 2)) ? stream1 : stream2;
             if (finalRandSwitch) {
                 return portable_rand(int(active_stream_val * 100000.0));
