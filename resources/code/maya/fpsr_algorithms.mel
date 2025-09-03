@@ -38,7 +38,7 @@
 proc float portable_rand(int $seed) {
     // A common technique for a simple hash-like random number.
     // The large prime numbers are used to create a chaotic, unpredictable result.
-    float $val = (float)$seed * 12.9898;
+    float $val = float($seed) * 12.9898;
     
     // --- FIX for float precision on GPUs and other platforms ---
     // By using the mathematical property sin(x) = sin(x mod 2π), we can wrap the
@@ -90,7 +90,7 @@ proc float fpsr_sm(
     if ($reseedInterval < 1) { $reseedInterval = 1; } // Prevent division by zero.
 
     float $rand_for_duration = portable_rand($seedInner + $frame - ($frame % $reseedInterval));
-    int $holdDuration = (int)floor($minHold + $rand_for_duration * ($maxHold - $minHold));
+    int $holdDuration = int(floor($minHold + $rand_for_duration * float($maxHold - $minHold)));
 
     if ($holdDuration < 1) { $holdDuration = 1; } // Prevent division by zero.
 
@@ -100,7 +100,7 @@ proc float fpsr_sm(
     // --- 3. Use the stable state as a seed for the final random value ---
     float $fpsr_output = 0.0;
     if ($finalRandSwitch) {
-        $fpsr_output = portable_rand($held_integer_state * 100000.0);
+        $fpsr_output = portable_rand(int($held_integer_state * 100000.0));
     } else {
         $fpsr_output = $held_integer_state;
     }
@@ -127,7 +127,7 @@ float $randVal =
 // Optional: check if the value has changed from the previous frame
 float $randVal_previous =
     fpsr_sm(
-        (frame-1), $minHoldFrames, $maxHoldFrames,
+        (frame - 1), $minHoldFrames, $maxHoldFrames,
         $reseedFrames, $offsetInner, $offsetOuter, $finalRandSwitch);
 int $changed = 0;
 if ($randVal != $randVal_previous) {
@@ -180,7 +180,7 @@ if ($randVal != $randVal_previous) {
 proc float portable_rand(int $seed) {
     // A common technique for a simple hash-like random number.
     // The large prime numbers are used to create a chaotic, unpredictable result.
-    float $val = (float)$seed * 12.9898;
+    float $val = float($seed) * 12.9898;
     
     // --- FIX for float precision on GPUs and other platforms ---
     // By using the mathematical property sin(x) = sin(x mod 2π), we can wrap the
@@ -226,7 +226,7 @@ proc float fpsr_tm(
     float $fpsr_output;
     if ($finalRandSwitch) {
         // If true, apply the final randomisation hash.
-        $fpsr_output = portable_rand($held_integer_state * 100000.0);
+        $fpsr_output = portable_rand(int($held_integer_state * 100000.0));
     } else {
         // If false, return the raw integer state directly.
         $fpsr_output = (float)$held_integer_state; 
@@ -301,7 +301,7 @@ if ($randVal != $randVal_previous) {
 proc float portable_rand(int $seed) {
     // A common technique for a simple hash-like random number.
     // The large prime numbers are used to create a chaotic, unpredictable result.
-    float $val = (float)$seed * 12.9898;
+    float $val = float($seed) * 12.9898;
     
     // --- FIX for float precision on GPUs and other platforms ---
     // By using the mathematical property sin(x) = sin(x mod 2π), we can wrap the
@@ -324,9 +324,9 @@ proc float fpsr_qs(
     int $finalRandSwitch)
 {
     // --- 1. Set default durations if not provided ---
-    if ($streamSwitchDur < 1) { $streamSwitchDur = (int)floor((1.0 / $baseWaveFreq) * 0.76); }
-    if ($stream1QuantDur < 1) { $stream1QuantDur = (int)floor((1.0 / $baseWaveFreq) * 1.2); }
-    if ($stream2QuantDur < 1) { $stream2QuantDur = (int)floor((1.0 / $baseWaveFreq) * 0.9); }
+    if ($streamSwitchDur < 1) { $streamSwitchDur = int(floor((1.0 / $baseWaveFreq) * 0.76)); }
+    if ($stream1QuantDur < 1) { $stream1QuantDur = int(floor((1.0 / $baseWaveFreq) * 1.2)); }
+    if ($stream2QuantDur < 1) { $stream2QuantDur = int(floor((1.0 / $baseWaveFreq) * 0.9)); }
     
     if ($streamSwitchDur < 1) { $streamSwitchDur = 1; }
     if ($stream1QuantDur < 1) { $stream1QuantDur = 1; }
@@ -339,11 +339,11 @@ proc float fpsr_qs(
 
     int $s1_quant_seed = ($quantOffsets[0] + $frame) - (($quantOffsets[0] + $frame) % $stream1QuantDur);
     float $s1_rand_for_quant = portable_rand($s1_quant_seed);
-    int $s1_quant_level = $quant_min + (int)floor($s1_rand_for_quant * $quant_range);
+    int $s1_quant_level = $quant_min + int(floor($s1_rand_for_quant * float($quant_range)));
 
     int $s2_quant_seed = ($quantOffsets[1] + $frame) - (($quantOffsets[1] + $frame) % $stream2QuantDur);
     float $s2_rand_for_quant = portable_rand($s2_quant_seed);
-    int $s2_quant_level = $quant_min + (int)floor($s2_rand_for_quant * $quant_range);
+    int $s2_quant_level = $quant_min + int(floor($s2_rand_for_quant * float($quant_range)));
 
     if ($s1_quant_level < 1) { $s1_quant_level = 1; }
     if ($s2_quant_level < 1) { $s2_quant_level = 1; }
@@ -351,8 +351,8 @@ proc float fpsr_qs(
     // --- 3. Generate the two quantised sine wave streams ---
     if ($stream2FreqMult < 0) { $stream2FreqMult = 3.7; }
 
-    float $stream1 = floor(sin((float)($streamsOffset[0] + $frame) * $baseWaveFreq) * $s1_quant_level) / (float)$s1_quant_level;
-    float $stream2 = floor(sin((float)($streamsOffset[1] + $frame) * $baseWaveFreq * $stream2FreqMult) * $s2_quant_level) / (float)$s2_quant_level;
+    float $stream1 = floor((sin(float($streamsOffset[0] + $frame) * $baseWaveFreq) / 2.0 + 0.5) * float($s1_quant_level)) / float($s1_quant_level);
+    float $stream2 = floor((sin(float($streamsOffset[1] + $frame) * $baseWaveFreq * $stream2FreqMult) / 2.0 + 0.5) * float($s2_quant_level)) / float($s2_quant_level);
 
     // --- 4. Switch between the two streams ---
     float $active_stream_val = (($frame % $streamSwitchDur) < $streamSwitchDur / 2) ? $stream1 : $stream2;
@@ -360,7 +360,7 @@ proc float fpsr_qs(
     // --- 5. Hash the final output or bypass ---
     float $fpsr_output;
     if ($finalRandSwitch == 1) {
-        $fpsr_output = portable_rand((int)($active_stream_val * 100000.0));
+        $fpsr_output = portable_rand(int($active_stream_val * 100000.0));
     } else {
         $fpsr_output = 0.5 * $active_stream_val + 0.5; // Scale from [-1, 1] to [0, 1]
     }
@@ -388,7 +388,7 @@ float $randVal = fpsr_qs(
 /*
 // Optional: check if the value has changed from the previous frame
 float $randVal_previous = fpsr_qs(
-    (frame-1), $baseWaveFreq, $stream2freqMult, $quantLevelsMinMax,
+    (frame - 1), $baseWaveFreq, $stream2freqMult, $quantLevelsMinMax,
     $streamsOffset, $quantOffsets, $streamSwitchDur, $stream1QuantDur, $stream2QuantDur, $finalRandSwitch);
 int $changed_qs = 0;
 if ($randVal != $randVal_previous) {

@@ -206,8 +206,8 @@ function fpsr_qs(
     // --- 3. Generate the two quantised sine wave streams ---
     if (stream2FreqMult < 0) { stream2FreqMult = 3.7; }
 
-    let stream1 = Math.floor(Math.sin((streamsOffset[0] + frame) * baseWaveFreq) * s1_quant_level) / s1_quant_level;
-    let stream2 = Math.floor(Math.sin((streamsOffset[1] + frame) * baseWaveFreq * stream2FreqMult) * s2_quant_level) / s2_quant_level;
+    let stream1 = Math.floor((Math.sin((streamsOffset[0] + frame) * baseWaveFreq) / 2.0 + 0.5) * s1_quant_level) / s1_quant_level;
+    let stream2 = Math.floor((Math.sin((streamsOffset[1] + frame) * baseWaveFreq * stream2FreqMult) / 2.0 + 0.5) * s2_quant_level) / s2_quant_level;
 
     // --- 4. Switch between the two streams ---
     let active_stream_val = ((frame % streamSwitchDur) < streamSwitchDur / 2) ? stream1 : stream2;
