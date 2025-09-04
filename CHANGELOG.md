@@ -41,6 +41,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - N/A
 
 ---
+## [1.0.2] - 2025-09-05
+
+### Added
+- Unreal Engine 5.6 Project File. 
+    - contains 1 level and 3 shader, 3 material intances for the three FPS-R algorithms: SM, TM and QS.
+
+### Changed
+- N/A
+
+### Removed
+- N/A
+
+### Fixed
+- N/A
+
+---
 ## [1.0.1] - 2025-09-04
 
 ### Added
@@ -77,6 +93,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
     - After Effects (Javascript)
 - Comprehensive documentation including a manifesto (`README.md`), applications guide (`FPSR_Applications.md`), and unifying theory (`FPSR_Unifying_Theory.md`).
 - A portable pseudo-random number generator (`portable_rand`) to ensure deterministic results across different platforms.
+
+### Changed
+- N/A
+
+### Removed
+- N/A
+
+### Fixed
+- N/A
+
+---
+## [1.0.0] - yyyy-mm-dd
+
+### Added
+- N/A
 
 ### Changed
 - N/A
