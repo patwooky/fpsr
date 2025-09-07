@@ -32,13 +32,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
         - **The `portable_rand()` function now utilizes the highest precision baked sine curve (LUT)** for its internal sine calculations, further enhancing its bit-for-bit determinism and robustness across all platforms.
     - All **time-based integer parameters** (e.g., `minHold`, `maxHold`, `reseedInterval`, `periodA`, `periodB`, `periodSwitch`, `streamsOffset`, `quantOffsets`) are now **internally scaled by** `FPSR_INFLATION_FACTOR` within the base algorithms to match the high-resolution `int_frame` timeline. This ensures absolute, bit-for-bit determinism for all modulo and timing calculations.
     - For Quantised Switching (QS), `baseWaveFreq` and `stream2FreqMult` are **internally deflated** by `FPSR_INFLATION_FACTOR` to correctly apply frequencies to the high-resolution `int_frame` timeline, preventing underflow and maintaining deterministic oscillation.
-    
-
-### To Be Changed
-- N/A
-
-### To Be Removed
-- N/A
 
 ---
 ## [1.0.2] - 2025-09-05
@@ -47,20 +40,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Unreal Engine 5.6 Project File. 
     - contains 1 level and 3 shader, 3 material intances for the three FPS-R algorithms: SM, TM and QS.
 
-### Changed
-- N/A
-
-### Removed
-- N/A
-
-### Fixed
-- N/A
-
 ---
 ## [1.0.1] - 2025-09-04
-
-### Added
-- N/A
 
 ### Changed
 - FPS-R QS implementations across all languages
@@ -68,9 +49,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
         - this range is in consistent with many other noise generators (eg, worely, simlpex, perlin).
         - -1 to 1 when gone through quantisation, will result in double the number of quantised levels than intended.
     - **_This will break output consistency with prior versions. Please take note._**
-
-### Removed
-- N/A
 
 ### Fixed
 - Maya Mel code implementation was using C-style casts 
@@ -94,16 +72,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Comprehensive documentation including a manifesto (`README.md`), applications guide (`FPSR_Applications.md`), and unifying theory (`FPSR_Unifying_Theory.md`).
 - A portable pseudo-random number generator (`portable_rand`) to ensure deterministic results across different platforms.
 
-### Changed
-- N/A
-
-### Removed
-- N/A
-
-### Fixed
-- N/A
-
 ---
+<!-- entry template -->
 ## [1.0.0] - yyyy-mm-dd
 
 ### Added
