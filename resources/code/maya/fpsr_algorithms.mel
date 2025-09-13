@@ -1,7 +1,7 @@
-// SPDX-License-Identifier: MIT — See LICENSE for full terms
+// SPDX-License-Identifier: Apache-2.0 — See LICENSE for full terms
 // Created by Patrick Woo, 2025.
 // This file is part of the FPS-R (Frame-Persistent Stateless Randomisation) project.
-// https://github.com/patwooky/FPSR_Algorithm
+// https://github.com/patwooky/fpsr
 
 // ============================================================================
 //
@@ -362,7 +362,7 @@ proc float fpsr_qs(
     if ($finalRandSwitch == 1) {
         $fpsr_output = portable_rand(int($active_stream_val * 100000.0));
     } else {
-        $fpsr_output = 0.5 * $active_stream_val + 0.5; // Scale from [-1, 1] to [0, 1]
+        $fpsr_output = $active_stream_val; // direct stream value should already be between 0.0 and 1.0
     }
     return $fpsr_output;
 }
