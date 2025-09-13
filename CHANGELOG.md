@@ -7,7 +7,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## Unreleased
 
 ### To Be Added
-- Changed the licensing to Apache 2.0 License.
 - A wrapper version of each FPS-R function that 
     - enables rich analytic information on function output:
         - `has_changed` checking with the value output of previous frame, returning `1` or `True` if value has changed or "jumped"
@@ -33,6 +32,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
         - **The `portable_rand()` function now utilizes the highest precision baked sine curve (LUT)** for its internal sine calculations, further enhancing its bit-for-bit determinism and robustness across all platforms.
     - All **time-based integer parameters** (e.g., `minHold`, `maxHold`, `reseedInterval`, `periodA`, `periodB`, `periodSwitch`, `streamsOffset`, `quantOffsets`) are now **internally scaled by** `FPSR_INFLATION_FACTOR` within the base algorithms to match the high-resolution `int_frame` timeline. This ensures absolute, bit-for-bit determinism for all modulo and timing calculations.
     - For Quantised Switching (QS), `baseWaveFreq` and `stream2FreqMult` are **internally deflated** by `FPSR_INFLATION_FACTOR` to correctly apply frequencies to the high-resolution `int_frame` timeline, preventing underflow and maintaining deterministic oscillation.
+
+---
+## [2.0.0] - 2025-09-13
+### Added 
+- `(root)/resources/code/data_analysis/fpsr_algoAnalysis.ipynb`, 
+    - a jupyter notebook that provides the following analysis:
+        - output of each algorithm, profiling each algorithm's "fingerprint" across 400 time-steps.
+        - the distribution of output values over incremental steps
+        - a "held-frames" graph that describes the number of held frames every time the output values jump.
+
+### Changed
+- Changed the licensing to Apache 2.0 License. Makes it easier for collaboration and adoption.
+- updated all documentation and code to reflect the new Apache 2.0 License.
+
 
 ---
 ## [1.0.2] - 2025-09-05
