@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## Unreleased
 
 ### To Be Added
+- Changed the licensing to Apache 2.0 License.
 - A wrapper version of each FPS-R function that 
     - enables rich analytic information on function output:
         - `has_changed` checking with the value output of previous frame, returning `1` or `True` if value has changed or "jumped"

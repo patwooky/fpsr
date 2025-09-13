@@ -1,9 +1,9 @@
 # FPS-R: The Unifying Theory
-MIT License—[see LICENSE](../../LICENSE) for details.  
-Copyright (c) 2025 Woo Ker Yang (Patrick Woo) patrickwoo.1976@gmail.com
-If you reference or adapt this framework, please credit Patrick Woo and this repository.
-**This documentation is still in development.** 
-While every update strives for accuracy, some parts may be incomplete or inaccurate.
+Apache License 2.0—[see LICENSE](../../LICENSE.md) for details.  
+Copyright (c) 2025 Woo Ker Yang (Patrick Woo) patrickwoo.1976@gmail.com  
+If you reference or adapt this framework, please credit Patrick Woo and this repository.  
+**This documentation is still in development.**  
+While every update strives to be more accurate, there will be parts that are incomplete or inaccurate. 
 
 # Table of Contents
 - [The Purpose of This Document](#the-purpose-of-this-document)
