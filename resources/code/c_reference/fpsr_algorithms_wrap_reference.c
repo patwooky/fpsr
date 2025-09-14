@@ -637,7 +637,7 @@ FPSR_Output fpsr_qs_get_details(
     double current_scaled_frame_double = (double)frame * frame_multiplier; // Cast frame to double for multiplication
 
     // LOD 0
-    _FPSR_QS_Base_Output base_qs_output = _fpsr_qs_base((int)floor(current_scaled_frame_double), baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level);
+    _FPSR_QS_Base_Output base_qs_output = _fpsr_qs_base(current_scaled_frame_double, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level);
     out.randVal = base_qs_output.randVal;
     out.randStreams[0] = base_qs_output.stream1_val;
     out.randStreams[1] = base_qs_output.stream2_val;
@@ -648,7 +648,7 @@ FPSR_Output fpsr_qs_get_details(
     // LOD 1: Compare with previous frame to check for change.
     // Calculate the scaled frame input for the previous frame
     double prev_scaled_frame_for_lod1_double = (double)(frame - 1) * frame_multiplier; 
-    _FPSR_QS_Base_Output prev_qs_output = _fpsr_qs_base((int)floor(prev_scaled_frame_for_lod1_double), baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level);
+    _FPSR_QS_Base_Output prev_qs_output = _fpsr_qs_base(prev_scaled_frame_for_lod1_double, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level);
     float prev_val = prev_qs_output.randVal;
     out.has_changed = (out.randVal != prev_val);
     
