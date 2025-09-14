@@ -5,7 +5,7 @@ This file contains major announcements and important updates about the project.
 ---
 
 ### 4 Sep 2025
-Made some changes to FPS-R QS stream outputs. This will affect QS outputs and break output consistency with previous versions.
+Made some changes to FPS-R QS stream outputs. This will affect QS outputs and break output consistency with earlier versions. Pervious versions send the output from both sine wave streams (-1 to 1) to `portable_rand()`. I have normalised thsee to (0 to 1).
 
 ---
 ### 14 August 2025

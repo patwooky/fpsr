@@ -2662,9 +2662,46 @@ Because there are infinitely many real numbers between any two distinct values, 
 
 Consequently, these rich outputs would only be **estimates** rather than exact, bit-for-bit identical values, thereby **breaking the absolute determinism** that FPS-R is meticulously designed to uphold.
 
+#### Implementing a Frame Multiplier
 _18 August 2025_
-Had a hard time thinking about how frame and frame_multiplier
+Had a hard time thinking about how frame and frame_multiplier. In the end i was convinced that it is necessary for FPS-R's flexibility as a tool.
 
+But I also decided that determinism is a core pillar of FPS-R and must be fiercely protected.
 
+To enable multiplication of the timeline, I changed the wrapper `fpsr_xx_get_details()` to accept a `float` frame, and inside the base function inflate time and all other time-based arguments with a global inflation factor 10^8. This brings float frame numbers into the integer realm. For decimal numbers that go beyond the significance of `1e8` (or `100,000,000`), I decide to truncate by flooring it.  This works well with `SM` and `TM`.
+
+##### The QS Problem with Time Inflation
+The exception to this is `QS`. QS switches between two streams of sine curves. Their speeds are defined by the offending argument `frequency`. Frequency is inversely proportionate to time and frame. The smaller the frequency value, (aka "lower frequency"), the slower the curve oscillations. The higher the frequency, the faster the curve goes.
+
+In other words, as time inflates, the frequency must deflate by the same amount. This means that if the frequency is already a small float value, as all time or frame related values inflate by 100,000,000, my frequency related values will need to multiple themselves by `0.00000001`! After much deliberation, I decided to use the `double` data type to solve this problem. A `double` data type variable can typically hold 15 to 17 decimal digits. This is almost double my current 8 decimal places, so it should be very accurate to bit-for-bit representation.
+I also made sure that the variables in `portable_rand()` are `double`.
+
+##### The Problem of `sin()`
+There is a inherent problem with very small numbers with sine.
+
+Sine travels around a circle, from 0 to 1. When values become very small the point on a circle is really hard to differentiate between very samll steps. Imagine dividing the curve of a unit circle into 100,000,000 steps. After taking a few steps you would hardly appear to be moving. That is somewhat the visual anologue to the problem we face.
+Also when i researched the typical `sine()` function in a programming language, it usually takes 
+
+From my research, the typical implementation of the **sine** function (`sin()`) in programming languages involves several operations, which can vary based on the algorithm used. However, a common approach is to use a Taylor series expansion or a lookup table combined with interpolation. It also involve factorials which involve exponents calculations (for the powers of x).
+
+In total, a typical `sin()` function can involve anywhere from **5 to 15 operations**, depending on the method used and the precision required. More optimized libraries may reduce this further through various techniques.
+
+When using a very small value with `sin()`, the probability of inaccuracies occuring rises, as well as computational inefficiencies arise from increased computation complexity.
+
+##### The Baking Solution
+I managed to find out an solution to this. My solution is to bake the sine curve results into look-up tables once at the beginning of code execution, choosing only one of these precision steps (100, 500, 1000, 4096), with 4096 being the default. 
+
+This "bakes" the result of a single cycle of sine down to a look-up table. Lower-powered applications that can sacrifice accuracy can choose a sparsely sampled level of detail to reduce the one-time sampling process.
+
+From there on, all values will be looked up, and values in-between will be interpolated from the table, making what promised to be intensive calculations laced with risk of inaccuracy into a simple look-up operation.
 
 ---
+## Updated License to be Apache 2.0
+_13 September 2025, Saturday_
+Changed license to Apache 2.0
+
+---
+## Merging LOD Rich features
+_14 September 2025, Sunday_
+I PR and merged the rich output wrapper functions for FPS-R with LOD sine wave look-up into `main`. As of now only the canonical C code has the wrappers.
+
