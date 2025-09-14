@@ -368,6 +368,7 @@ FPSR_Output fpsr_sm_get_details(
     // LOD 2: Use a robust two-phase search to find change frames.
     int low_int, high_int, mid_int, result_int; 
     float next_val_candidate = 0.0f; // Stores the value at the next_changed_frame
+    int step_int = 1; // Used for exponential probe step
 
     // --- Backwards Search for last_changed_frame ---
     if (out.has_changed) {
@@ -378,7 +379,7 @@ FPSR_Output fpsr_sm_get_details(
     } else {
         // Phase 1: Exponential probe to find a "dirty" region.
         int bound_low_int = frame; // operates on original frame space (int)
-        int step_int = 1; // Used for exponential probe step
+        step_int = 1; // Reset for exponential probe step
         while (frame - step_int > frame - max_search_frames) { 
             // Scale the probe frame (as double) before passing to base algorithm
             double probe_frame_double = (double)(frame - step_int) * frame_multiplier; 
@@ -418,7 +419,7 @@ FPSR_Output fpsr_sm_get_details(
     // --- Forwards Search for next_changed_frame ---
     // Phase 1: Exponential probe.
     int bound_high_int = frame; // operates on original frame space (int)
-    int step_int = 1; // Used for exponential probe step
+    step_int = 1; // Reset for exponential probe step
     while (frame + step_int < frame + max_search_frames) { 
         // Scale the probe frame (as double) before passing to base algorithm
         double probe_frame_double = (double)(frame + step_int) * frame_multiplier; 
@@ -509,6 +510,7 @@ FPSR_Output fpsr_tm_get_details(
     // LOD 2: Robust Search
     int low_int, high_int, mid_int, result_int; 
     float next_val_candidate = 0.0f; // Stores the value at the next_changed_frame
+    int step_int = 1; // Used for exponential probe step
 
     // --- Backwards Search for last_changed_frame ---
     if (out.has_changed) {
@@ -518,7 +520,7 @@ FPSR_Output fpsr_tm_get_details(
         out.last_changed_frame = frame;
     } else {
         int bound_low_int = frame; // operates on original frame space (int)
-        int step_int = 1; // Used for exponential probe step
+        step_int = 1; // Reset for exponential probe step
         while (frame - step_int > frame - max_search_frames) { // All int
             // Scale the probe frame (as double) before passing to base algorithm
             double probe_frame_double = (double)(frame - step_int) * frame_multiplier; // All double
@@ -553,7 +555,7 @@ FPSR_Output fpsr_tm_get_details(
 
     // Forwards search
     int bound_high_int = frame; // operates on original frame space (int)
-    step_int = 1; // Used for exponential probe step
+    step_int = 1; // Reset for exponential probe step
     while (frame + step_int < frame + max_search_frames) { // All int
         // Scale the probe frame (as double) before passing to base algorithm
         double probe_frame_double = (double)(frame + step_int) * frame_multiplier; // All double
@@ -655,17 +657,18 @@ FPSR_Output fpsr_qs_get_details(
     // LOD 2: Robust Search
     int low_int, high_int, mid_int, result_int; 
     float next_val_candidate = 0.0f; // Stores the value at the next_changed_frame
+    int step_int = 1; // Used for exponential probe step
 
     // --- Backwards Search for last_changed_frame ---
-    if (has_changed) {
-        // Optimization: If has_changed == 1, assign last_changed_frame = frame.
+    if (out.has_changed) {
+        // Optimization: If out.has_changed == 1, assign last_changed_frame = frame.
         // Avoids 4 calls to _fpsr_xx_base(): (1 in exponential probe, 3 in binary search)
         // Avoids 3 loops iterations (1 in exponential probe, 2 in binary search)
         out.last_changed_frame = frame;
     } else {
         // Phase 1: Exponential probe to find a "dirty" region.
         int bound_low_int = frame; // operates on original frame space (int)
-        int step_int = 1; // Used for exponential probe step
+        step_int = 1; // Reset for exponential probe step
         while (frame - step_int > frame - max_search_frames) { 
             // Scale the probe frame (as double) before passing to base algorithm
             double probe_frame_double = (double)(frame - step_int) * frame_multiplier; 
@@ -703,7 +706,7 @@ FPSR_Output fpsr_qs_get_details(
 
     // Forwards search
     int bound_high_int = frame; // operates on original frame space (int)
-    step_int = 1; // Used for exponential probe step
+    step_int = 1; // Reset for exponential probe step
     while (frame + step_int < frame + max_search_frames) { 
         // Scale the probe frame (as double) before passing to base algorithm
         double probe_frame_double = (double)(frame + step_int) * frame_multiplier; 
