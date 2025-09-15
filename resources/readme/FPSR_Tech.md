@@ -612,11 +612,11 @@ This version is a highly compact form of the SM logic, suitable for environments
 
 ### Stacked Modulo (SM) One-Line Mathematical Model
 $$
-S_H(t) = (t + O_o) - \left( (t + O_o) \pmod{ \lfloor H_{min} + \text{rand}(O_i + \lfloor \frac{t}{P_r} \rfloor \cdot P_r) \cdot (H_{max} - H_{min}) \rfloor } \right)
+S_H(t) = \text{rand}\left( (t + O_o) - \left( (t + O_o) \pmod{ \lfloor H_{min} + \text{rand}(O_i + \lfloor \frac{t}{P_r} \rfloor \cdot P_r) \cdot (H_{max} - H_{min}) \rfloor } \right) \right)
 $$
 
 Where:
-- $S_H(t)$ is the stable integer state that is held.
+- $S_H(t)$ is the stable float state that is held.
 - $t$ is the current time or frame number (`frame`).
 - $O_o$ is the outer seed offset (`seedOuter`).
 - $H_{min}, H_{max}$ are the min/max hold durations (`minHold`, `maxHold`).
