@@ -308,11 +308,12 @@ FPS-R describes a fundamental and observable phenomenon found across many fields
   - Timing in protocols:
     - Authentication. By introducing a stateless and deterministic time factor into authentication protocols, we add an extra layer of protection.
     - Channel Hopping behaviour. By introducing a stateless, auditable, and deterministic synchronised hopping pattern in the temporal domain, security complexity is increased.
-- **Strategic, Simulation, Observation**
+- **Strategic, Simulation, Observation, Speculation**
   - emulate the non-linear behaviour of processes across diverse scenarios, including science, finance, military, government, and artificial intelligence.
     - traceability and auditibility of a glass-box system means that all processes can be traced, studied and understood.
     - directly adjust algorithm seeds and fpsr-parameters to easily explore "what-if" scenarios or alternate timelines.
     - reduce the need to log large amounts of data by using a concise set of keys (seed, fpsr-parameters) that can deterministically generate values without relying on stored state.
+  - reality modeling (advanced application) - for a real world event that has a recorded history of occurances, if we can find a set of FPS-R parameters and seed that very closely matches the timing of occurances (temporal fit) and intensity (output value fit) of the event, we can extend the timeline (look into the future and the past) of this FPS-R "timeline" and model a probable future, or probable futures for `n` number of closest matches.
 
 > **[fpsr_applications.md](./resources/readme/FPSR_Applications.md)**
   A more comprehensive document detailing potential areas of application.
