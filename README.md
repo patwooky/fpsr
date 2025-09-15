@@ -231,7 +231,7 @@ FPS-R is a **glass-box framework** due to its **mathematical purity**, **determi
 Out of the 3 algorithms, SM and TM are "less complex". They can each be expressed in a single line expression. QS has more complex logic than can be practically expressed in a single line.
 
 > **[fpsr_tech.md](resources/readme/FPSR_Tech.md)**
-  Go straight to the technical document of each algorithm here. 
+  Go straight to the technical document that covers all three algorithms here. 
 
 **Portable_Rand as part of FPS-R**
 The `portable_rand` function is a critical component of FPS-R, generating a pseudo-random number based on a given integer seed in a mathematically pure, stateless, and deterministic manner.
@@ -279,7 +279,7 @@ fpsr_sm_expression = portable_rand(
 Each algorithm is also expressed as a function, enabling flexible interaction with parent systems and richer outputs.
 
 > **[fpsr_tech.md](resources/readme/FPSR_Tech.md)**
-  Read more about the technical detail of each algorithm here.
+  Read more about the technical detail of all three algorithms here.
 
 ---
 # Fields of Applications
