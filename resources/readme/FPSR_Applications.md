@@ -481,7 +481,7 @@ And because FPS-R generates phrasing deterministically from fixed seeds and sett
 
 ---
 ## 🔬 Part IV — Simulation Testing & Digital Twin
-**FPS-R as an Co-Orchestrator of Simulations**
+**FPS-R as a Co-Orchestrator of Simulations**
 
 ### 🧠 The Value of Temporal Expressiveness in Simulation
 1. Beyond Combinatorics: Into Causality
