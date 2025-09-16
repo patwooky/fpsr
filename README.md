@@ -62,6 +62,7 @@ Currently, there are limited methods to emulate this realistic and complex behav
 
 ### `rand()`-based Methods
 **Stateful Logic Scaffolding: Holding `rand()` Across Frames**
+
 As mentioned, `rand()` tends to jump values from one seed to the next. It cannot achieve a continuous output even when the input seeds are continuous.
 
 A common workaround to make `rand()` hold its value across frames is to use a stateful logic scaffolding. This involves maintaining a counter variable that tracks how many frames have passed since the last random value was generated. The process typically looks like this:
