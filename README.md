@@ -308,12 +308,31 @@ FPS-R describes a fundamental and observable phenomenon found across many fields
   - Timing in protocols:
     - Authentication. By introducing a stateless and deterministic time factor into authentication protocols, we add an extra layer of protection.
     - Channel Hopping behaviour. By introducing a stateless, auditable, and deterministic synchronised hopping pattern in the temporal domain, security complexity is increased.
-- **Strategic, Simulation, Observation, Speculation**
-  - emulate the non-linear behaviour of processes across diverse scenarios, including science, finance, military, government, and artificial intelligence.
-    - traceability and auditibility of a glass-box system means that all processes can be traced, studied and understood.
-    - directly adjust algorithm seeds and fpsr-parameters to easily explore "what-if" scenarios or alternate timelines.
-    - reduce the need to log large amounts of data by using a concise set of keys (seed, fpsr-parameters) that can deterministically generate values without relying on stored state.
-  - reality modeling (advanced application) - for a real world event that has a recorded history of occurances, if we can find a set of FPS-R parameters and seed that very closely matches the timing of occurances (temporal fit) and intensity (output value fit) of the event, we can extend the timeline (look into the future and the past) of this FPS-R "timeline" and model a probable future, or probable futures for `n` number of closest matches.
+- **Systems Testing**
+  - **Emulating Timing Realism**  
+    - Simulate staggered causality and expressive timing to uncover latent vulnerabilities in complex systems with asynchronous components.  
+    - Catch bugs caused by timing issues, such as race conditions, synchronisation failures, and cascading delays.  
+
+  - **Uncovering Edge-Case Behaviours**  
+    - Test how long signals hold, when subsystems react, and how delays propagate across networks.  
+    - Mirror real-world dynamics where systems rarely shift in perfect unison.  
+
+  - **Traceability and Debugging**  
+    - Use FPS-R's deterministic and stateless properties to easily identify causes and points of failure.  
+    - Ensure robustness by testing resilience to timing drift and propagation lag.
+- **Strategic Simulation: Observation, Extrapolation**
+  - Emulate the non-linear behaviour of processes across diverse scenarios, including **science, finance, military, government, and artificial intelligence**.
+    - Traceability and auditibility of a glass-box system means that all processes can be traced, studied and understood.
+    - Directly adjust algorithm seeds and FPS-R parameters to easily explore "what-if" scenarios or alternate timelines.
+    - Reduce the need to log large amounts of data by using a concise set of keys (seed, fpsr-parameters) that can deterministically generate values without relying on stored state.
+  - **Digital Twin Systems**  
+    - Emulate timing realism to capture the true dynamics of physical environments with asynchronous components or variable latency.  
+    - Reveal edge-case behaviours, coordination failures, and emergent anomalies through expressive timing.  
+    - Transform digital twins into living diagnostic tools capable of:  
+      - Stress-testing resilience.  
+      - Training adaptive responses.  
+      - Identifying vulnerabilities caused by timing issues.  
+  - **Reality modeling (advanced application)**. For a real world event that has a recorded history of occurrences, if we can find a set of FPS-R parameters and seed that closely matches the timing of occurrences (temporal fit) and intensity (output value fit) of the event, we can extend the timeline (look into the future and the past) of this FPS-R "timeline" and model a probable future, or probable futures for `n` number of closest matches.
 
 > **[fpsr_applications.md](./resources/readme/FPSR_Applications.md)**
   A more comprehensive document detailing potential areas of application.
@@ -335,4 +354,4 @@ A philosophical exploration of the element of surprise, examining nature's compl
 A record of my development journey, including inspirations and challenges encountered along the way.
 
 **[fpsr_algoAnalysis.ipynb](./resources/code/data_analysis/fpsr_algoAnalysis.ipynb)** 
-A Jupyter notebook to with data graph plots to try.
+A Jupyter notebook containing data graph plots for you to explore and experiment with.
