@@ -379,4 +379,4 @@ A philosophical exploration of the element of surprise, examining nature's compl
 A record of my development journey, including inspirations and challenges encountered along the way.
 
 **[fpsr_algoAnalysis.ipynb](./resources/code/data_analysis/fpsr_algoAnalysis.ipynb)** 
-A Jupyter notebook to with data graph plots to try.
+A Jupyter notebook with data graph plots to try.
