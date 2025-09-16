@@ -217,12 +217,23 @@ The graphs shown above are example outputs. With different parameters, each algo
 
 - **Expressive**
   - By changing parameter values, all FPS-R algorithms can achieve a wide range of expressive output patterns, invoking a similarly broad range of emergent "behaviours" and "personalities" of unpredictability and surprises. In other words, FPS-R algorithms are instruments that encourage exploration and discovery.
-  
+
 - **Self-Composable**
   - As fundamental primitives, FPS-R can be stacked onto and joined with itself or other stateless and deterministic processes, and will keep the same stateless and deterministic properties.
 
 ### Auditable & Traceable
 FPS-R's deterministic and stateless properties ensure that its decisions are easy to follow, trace, audit, and study.
+
+### Ambitious
+**Lightweight**
+FPS-R was designed to be very optimized and extremely computationally light, yet able to operate on low-power and edge devices. In its enhanced wrapper version however, it is scalable in its output to unlock rich and analytically meaningful output in powerful high end computing environments.
+
+**Precise**
+Bit for Bit accuracy in the wrapper version. FPS-R mostly works on interger operations.
+In the wrapper version, floating decimal numbers are inflated to large numbers to maintain integer accuracy.
+
+The enhanced wrapper version with rich output will be described in greater detail shortly below.
+
 
 ### Glass-Box Framework
 FPS-R is a **glass-box framework** due to its **mathematical purity**, **determinism**, and **statelessness**. Its logic and outputs are transparent, predictable, and free from side effects.
@@ -235,7 +246,7 @@ FPS-R is a **glass-box framework** due to its **mathematical purity**, **determi
 Out of the 3 algorithms, SM and TM are "less complex". They can each be expressed in a single line expression. QS has more complex logic than can be practically expressed in a single line.
 
 > **[fpsr_tech.md](resources/readme/FPSR_Tech.md)**
-  Go straight to the technical document that covers all three algorithms here. 
+  Go straight to the technical document of each algorithm here. 
 
 **Portable_Rand as part of FPS-R**
 The `portable_rand` function is a critical component of FPS-R, generating a pseudo-random number based on a given integer seed in a mathematically pure, stateless, and deterministic manner.
@@ -279,11 +290,34 @@ fpsr_sm_expression = portable_rand(
     ))
 )
 ```
-**The Code as a Function**
+## The Code as a Function
 Each algorithm is also expressed as a function, enabling flexible interaction with parent systems and richer outputs.
 
+### Wrapper Version with Rich Output
+There are "wrapper versions" of the algorithms with rich output structures that are able to generate output that is more **insightful**, **meaningful**,**analytic**, at an increased computation cost. These features are organised into leve-of-details (LOD) from 0 (lowest computation cost) to 2 (highest computation cost). Setting a LOD will enable the respective set of rich outputs associated with the LOD.
+
+In broad terms these information include:
+- LOD 0 
+  - What is the current random value?
+- LOD 1
+  - Is the current value different from the one from the frame before?
+- LOD 2
+  - How far along am I in this hold period? 
+  - What was the frame number of the last jump? 
+  - What is the frame number of the upcoming jump? 
+  - What will be the random value of the next hold?
+  - For QS only
+    - What are the raw values of stream 1 and stream 2?
+    - Which is the currently selected stream?
+
+The wrapper version also has a huge feature: a frame multiplier. A lot of work and thought was put into the design to keep the output determinism and accuracy **bit-for-bit**.
+
+These enhancements make for very meaningful analysis, transparency, traceability and audit workflows.
+
+**(Wrapper version with rich output is currently only available in the C version.)**
+
 > **[fpsr_tech.md](resources/readme/FPSR_Tech.md)**
-  Read more about the technical detail of all three algorithms here.
+  Read more about the technical detail of each algorithm here.
 
 ---
 # Fields of Applications
@@ -312,34 +346,21 @@ FPS-R describes a fundamental and observable phenomenon found across many fields
   - Timing in protocols:
     - Authentication. By introducing a stateless and deterministic time factor into authentication protocols, we add an extra layer of protection.
     - Channel Hopping behaviour. By introducing a stateless, auditable, and deterministic synchronised hopping pattern in the temporal domain, security complexity is increased.
-- **Systems Testing**
-  - **Emulating Timing Realism**  
-    - Simulate staggered causality and expressive timing to uncover latent vulnerabilities in complex systems with asynchronous components.  
-    - Catch bugs caused by timing issues, such as race conditions, synchronisation failures, and cascading delays.  
-
-  - **Uncovering Edge-Case Behaviours**  
-    - Test how long signals hold, when subsystems react, and how delays propagate across networks.  
-    - Mirror real-world dynamics where systems rarely shift in perfect unison.  
-
-  - **Traceability and Debugging**  
-    - Use FPS-R's deterministic and stateless properties to easily identify causes and points of failure.  
-    - Ensure robustness by testing resilience to timing drift and propagation lag.
-- **Strategic Simulation: Observation, Extrapolation**
-  - Emulate the non-linear behaviour of processes across diverse scenarios, including **science, finance, military, government, and artificial intelligence**.
-    - Traceability and auditibility of a glass-box system means that all processes can be traced, studied and understood.
-    - Directly adjust algorithm seeds and FPS-R parameters to easily explore "what-if" scenarios or alternate timelines.
-    - Reduce the need to log large amounts of data by using a concise set of keys (seed, fpsr-parameters) that can deterministically generate values without relying on stored state.
-  - **Digital Twin Systems**  
-    - Emulate timing realism to capture the true dynamics of physical environments with asynchronous components or variable latency.  
-    - Reveal edge-case behaviours, coordination failures, and emergent anomalies through expressive timing.  
-    - Transform digital twins into living diagnostic tools capable of:  
-      - Stress-testing resilience.  
-      - Training adaptive responses.  
-      - Identifying vulnerabilities caused by timing issues.  
-  - **Reality modeling (advanced application)**. For a real world event that has a recorded history of occurrences, if we can find a set of FPS-R parameters and seed that closely matches the timing of occurrences (temporal fit) and intensity (output value fit) of the event, we can extend the timeline (look into the future and the past) of this FPS-R "timeline" and model a probable future, or probable futures for `n` number of closest matches.
+- **Strategic, Simulation, Observation**
+  - emulate the non-linear behaviour of processes across diverse scenarios, including science, finance, military, government, and artificial intelligence.
+    - traceability and auditibility of a glass-box system means that all processes can be traced, studied and understood.
+    - directly adjust algorithm seeds and fpsr-parameters to easily explore "what-if" scenarios or alternate timelines.
+    - reduce the need to log large amounts of data by using a concise set of keys (seed, fpsr-parameters) that can deterministically generate values without relying on stored state.
 
 > **[fpsr_applications.md](./resources/readme/FPSR_Applications.md)**
   A more comprehensive document detailing potential areas of application.
+
+---
+## Future Expansion
+Capsules
+
+---
+## Conclusion
 
 ---
 # Other Documents
@@ -358,4 +379,4 @@ A philosophical exploration of the element of surprise, examining nature's compl
 A record of my development journey, including inspirations and challenges encountered along the way.
 
 **[fpsr_algoAnalysis.ipynb](./resources/code/data_analysis/fpsr_algoAnalysis.ipynb)** 
-A Jupyter notebook containing data graph plots for you to explore and experiment with.
+A Jupyter notebook with data graph plots to try.
