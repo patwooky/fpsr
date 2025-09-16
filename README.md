@@ -226,7 +226,7 @@ FPS-R's deterministic and stateless properties ensure that its decisions are eas
 
 ### Ambitious
 **Lightweight**
-FPS-R was designed to be very optimised and extremely computationally light, yet able to operated on low-power and edge devices. In it's enhanced wrapper version however, it is scaleable in its output to unlock rich and analytically meaningful output in powerful high end computing envrionments.
+FPS-R was designed to be very optimized and extremely computationally light, yet able to operate on low-power and edge devices. In its enhanced wrapper version however, it is scalable in its output to unlock rich and analytically meaningful output in powerful high end computing environments.
 
 **Precise**
 Bit for Bit accuracy in the wrapper version. FPS-R mostly works on interger operations.
