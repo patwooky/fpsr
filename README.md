@@ -178,24 +178,24 @@ This is the output of the `Portable_rand()` included in FPS-R. It is like a `ran
 
 ## FPS-R: SM
 ![fpsr_sm](./resources/readme/images/fspr_data_analysis/fpsr_sm_output.png)
-The random output values are varied, and their hold durations for each stretch are different. By watching the spacing between the red spikes, we can see different and irregular hold times.
+The random output values are varied, and their hold durations for each stretch are different. By watching the spacing between the red spikes, we can see different and irregular hold times. Timing and spacing are configurable through parameters.
 
 ![fpsr_sm_distri](./resources/readme/images/fspr_data_analysis/fpsr_sm_distri.png)
 This is the distribution graph of SM's output after 100,000 time-steps. SM can achieve even distribution after many time-steps.
 
 ## FPS-R: TM
 ![fpsr_tm](./resources/readme/images/fspr_data_analysis/fpsr_tm_output.png)
-Here we see another seemingly even distribution of random values. In TM, there seems to be an underlying rhythm, alternating between 3 kinds of spacings, a large 30 frame spacing, another about 15 frames kind of spacking, then another short glitchy 3 to 5 frames type of spacing.
+Here we see another seemingly even distribution of random values. In TM, there appears to be an underlying rhythm, alternating between three types of spacings: a large spacing of about 30 frames, another spacing of approximately 15 frames, and a short, glitchy spacing of 3 to 5 frames. Timing and spacing are configurable through parameters.
 
 ![fpsr_tm_distri](./resources/readme/images/fspr_data_analysis/fpsr_tm_distri.png)
 This is the distribution graph of TM's output after 100,000 time-steps. TM can achieve even distribution after many time-steps.
 
 ## FPS-R: QS
 ![fpsr_qs](./resources/readme/images/fspr_data_analysis/fpsr_qs_output.png)
-The last algorithm is the most expressive with a highest contrasting short stuttering/glitching values and long holds. 
+The last algorithm is perhaps the most expressive, able to produce a wide range of phrasing patterns and the strongest contrast between short bursts of stuttering or glitching and long periods of holding. QS has the highest number of parameters. 
 
 ![fpsr_qs_distri](./resources/readme/images/fspr_data_analysis/fpsr_qs_distri.png)
-This is the distribution graph of QS's output after 100,000 time-steps. The distribution of the output values from QS are not evenly distributed. This is the nature of the algorithm. The distribution shape (ie, which band of values will be the prominent resonant one) will differ depending on the parameters.
+This is the distribution graph of QS's output after 100,000 time-steps. The distribution of the output values from QS are not evenly distributed. This is the nature of the algorithm. The distribution shape (ie, which bands of values will be the prominent, resonant ones) will differ depending on the parameters.
 
 ## Great Flexibility
 The graphs shown above are example outputs. With different parameters, each algorithm can achieve a wide variety of holding patterns and random values. This is especially true of FPS-R QS.
@@ -215,6 +215,9 @@ The graphs shown above are example outputs. With different parameters, each algo
 - **Foundational**
   - FPS-R is a construction primitive that is domain agnostic. When used together with a parent system with contextual domain logic, its output can be mapped onto any value range (continuous or discrete) and further processed to represent any number of things.
 
+- **Expressive**
+  - By changing parameter values, all FPS-R algorithms can achieve a wide range of expressive output patterns, invoking a similarly broad range of emergent "behaviours" and "personalities" of unpredictability and surprises. In other words, FPS-R algorithms are instruments that encourage exploration and discovery.
+  
 - **Self-Composable**
   - As fundamental primitives, FPS-R can be stacked onto and joined with itself or other stateless and deterministic processes, and will keep the same stateless and deterministic properties.
 
