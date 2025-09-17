@@ -370,20 +370,56 @@ FPS-R describes a fundamental and observable phenomenon found across many fields
     - Authentication. By introducing a stateless and deterministic time factor into authentication protocols, we add an extra layer of protection.
     - Channel Hopping behaviour. By introducing a stateless, auditable, and deterministic synchronised hopping pattern in the temporal domain, security complexity is increased.
 - **Strategic, Simulation, Observation**
-  - emulate the non-linear behaviour of processes across diverse scenarios, including science, finance, military, government, and artificial intelligence.
-    - traceability and auditibility of a glass-box system means that all processes can be traced, studied and understood.
-    - directly adjust algorithm seeds and fpsr-parameters to easily explore "what-if" scenarios or alternate timelines.
-    - reduce the need to log large amounts of data by using a concise set of keys (seed, fpsr-parameters) that can deterministically generate values without relying on stored state.
+  - Emulate the non-linear behaviour of processes across diverse scenarios, including **science, finance, military, government, and artificial intelligence**.
+    - Traceability and auditibility of a glass-box system means that all processes can be traced, studied and understood.
+    - Directly adjust algorithm seeds and FPS-R parameters to easily explore "what-if" scenarios or alternate timelines.
+    - Reduce the need to log large amounts of data by using a concise set of keys (seed, fpsr-parameters) that can deterministically generate values without relying on stored state.
+  - **Digital Twin Systems**  
+    - Emulate timing realism to capture the true dynamics of physical environments with asynchronous components or variable latency.  
+    - Reveal edge-case behaviours, coordination failures, and emergent anomalies through expressive timing.  
+    - Transform digital twins into living diagnostic tools capable of:  
+      - Stress-testing resilience.  
+      - Training adaptive responses.  
+      - Identifying vulnerabilities caused by timing issues. 
+  - **Reality modeling (advanced application)**. For a historic real-world event that has a recorded history of occurrences, if we can find a set of FPS-R parameters and seed that closely matches the timing of occurrences (temporal fit) and intensity (output value fit) of the event, we can extend the timeline (look into the future and the past) of this matching timeline and extrapolate the FPS-R signals to model a probable future, or probable futures for `n` number of next closest matches.
+    - Historical data fitting and predictive modelling can be applied to: 
+      - Economics, Climate Science, Epidemiology, Finance and Social Sciences
 
 > **[fpsr_applications.md](./resources/readme/FPSR_Applications.md)**
   A more comprehensive document detailing potential areas of application.
 
 ---
-## Future Expansion
-Capsules
+## Future Expansion: Capsules
+### Capsules as Building Blocks of FPS-R
+A Capsule is a self-contained, portable data structure that encapsulates a complete FPS-R "performance." Think of it as a preset or a clip. Each Capsule stores:
+- The Algorithm: Which FPS-R algorithm to use (SM, TM, or QS).
+- The Parameters: The full set of parameters that define the algorithm's unique behavior.
+- The Duration: A defined start and end frame, giving the performance a specific length.
+
+Essentially, a Capsule is a single, reusable "block" of deterministic, non-linear behavior, storing "presets" and "performances" similar to audio or video clips.  
+
+
+This is where the power of Capsules becomes clear. If a single Capsule is a "word" or a musical "note," then you can arrange them to create sophisticated compositions.
+
+**The Timeline**: Capsules can be placed sequentially on a "timeline" or a "playlist." By stringing together different Capsules—like `cautious_hesitation.cap` followed by `erratic_burst.cap`—you can build complex behavioral narratives for an AI, a robot, or an animation.
+
+**A True Grammar**: This system transforms FPS-R from a raw generator into a true compositional language. You are no longer just sculpting a single, continuous stream; you are arranging discrete ideas into phrases, sentences, and stories. This unlocks nuanced complex and even layered behaviours. Now imagine multi-track, multi-channel timelines with clips running in parallel, adding and subtracting from each other.
+
+### Powerful Application Examples: Security and Obfuscation
+- **Time-Based Passphrases**: A specific sequence of Capsules on a timeline can act as a complex, dynamic key. A system could require a match not just for a single value, but for an entire "performance" across thousands of frames, making it incredibly difficult to crack. The sequence `capsule_A -> capsule_C -> capsule_B` is a completely different "passphrase" from `capsule_B -> capsule_A -> capsule_C`.
+- **Multi-Layered Obfuscation**: This is where it becomes truly elegant. You can introduce a global "secret offset" that modifies the seeds of every Capsule on the timeline.
+  - The **"soul"** of the performance—the specific algorithms, their parameters, and their relative timing—remains identical.
+  - The **"signal"**—the actual random values produced—changes completely.
+
+This creates a powerful, two-factor system. To unlock the content, an adversary would need not only the correct sequence of Capsules (the timeline) but also the correct secret offset. This provides multiple, independent layers of obfuscation behind a veil of deterministic complexity.
+
+The applications of expressive phrases of auditable, traceable and controllable performances of stateless, deterministic random hold and jump are wide and diverse. And in the centre of it, **FPS-R as the foundational grammar**.
 
 ---
 ## Conclusion
+**FPS-R** is more than a pseudo-random number stream generator; it is a meticulously designed framework that **fills a critical gap** between chaotic randomness and rigid predictability. By providing a **stateless**, **deterministic**, and **mathematically pure** way to model the "hold-and-jump" phenomena found throughout nature, it offers a new, foundational primitive for a vast array of applications.
+
+From building more believable AI and resilient systems to composing complex security protocols with Capsules, FPS-R provides the tools to move beyond simple emulation and toward **true**, **expressive composition**. It is a **"glass-box" framework** designed for **exploration**, **precision**, and **scalability**, inviting developers, researchers, and creators to harness the power of predictable unpredictability.
 
 ---
 # Other Documents
@@ -396,7 +432,7 @@ Technical docs showing the math logic and code for all the algorithms.
 A more comprehensive document detailing potential areas of application.
 
 **[fpsr_unifying_theory.md](./resources/readme/FPSR_Unifying_Theory.md)**
-A philosophical exploration of the element of surprise, examining nature's complexity and non-linearity, and how FPS-R can capture this essence to elevate simulations and emulations through natural complexity.
+A philosophical exploration of surprise, examining nature's complexity and non-linearity, and how FPS-R captures this essence to enhance simulations and emulations with natural complexity.
 
 **[Origins, Journals and Reflections](./resources/readme/FPSR_Origins_Journal_Reflections.md)** 
 A record of my development journey, including inspirations and challenges encountered along the way.
