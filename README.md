@@ -12,7 +12,7 @@ A Podcast Style Audio Summary
 
 This Read-Me page features a high-level podcast style summary as an audio commentary.
 
-[🎧 Listen Now: FPS-R and the Nature of Random](https://patwooky.github.io/fpsr/resources/readme/audio/fpsr_readme.mp3)
+<a href="https://patwooky.github.io/fpsr/resources/readme/audio/fpsr_readme.mp3" target="_blank">🎧 Listen Now: FPS-R and the Nature of Random</a>
 
 ---
 # Introduction: What is FPS-R?
