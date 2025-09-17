@@ -37,7 +37,7 @@ Here are a few examples of non-linearity found in various aspects of our reality
 **Natural Systems**
   - **Flock Migration Trajectories**: The movement patterns of birds or fish often show non-linear dynamics, which result from interactions among individuals and environmental factors.
   - **Predatory Movement**: Predators and prey often alternate between holding their positions and making sudden bursts of speed during the chase and escape process.
-  - **Quantum Particle Jumps**: In quantum mechanics, particles often exhibit non-linear behavior by suddenly 'jumping' from one position to another.
+  - **Quantum Particle Jumps**: In quantum mechanics, particles often exhibit non-linear behaviour by suddenly 'jumping' from one position to another.
 
 **Human Systems**
   - **Eye Saccades**: The rapid movements of the eye exhibiting non-linear patterns in visual attention.
@@ -61,7 +61,8 @@ Here are a few examples of non-linearity found in various aspects of our reality
 Currently, there are limited methods to emulate this realistic and complex behaviour. Most of these methods are neither simple, convenient nor elegant.
 
 ### `rand()`-based Methods
-**Stateful Logic Scaffolding: Holding `rand()` Across Frames**
+> **High-Level Intent: `rand()`**
+To force structure onto a mechanism that produce actively jumping outputs from frame to frame, in an attempt to achieve naturalistic periods of holds.
 
 As mentioned, `rand()` tends to jump values from one seed to the next. It cannot achieve a continuous output even when the input seeds are continuous.
 
@@ -93,23 +94,38 @@ This approach requires storing state (such as counters and held values) and usin
 Furthermore, stateful methods cannot be easily used in parallel or distributed computing environments, including GPU operations, where statelessness is essential for scalability and reproducibility. As the number of these stateful streams increases, so does the burden of managing their individual states, leading to poor scalability and increased maintenance overhead.
 
 ### Noise-based Methods
-In the world of film, games and interactive media, using noise to generate random continuity is a common practice.
+> **High-Level Intent: Noise Functions**
+To force irregularity onto noise functions with periodically repeating output patterns to invoke organic irregularity.
+
+In the world of film, games and interactive media, using noise to generate random continuity is a common practice. 
 
 **Simplex, Perlin, etc**
 Noise functions like Perlin and Simplex generate smoothly varying, deterministic outputs across a domain, resulting in periodic and regular patterns. Even when these continuous gradients are quantised into discrete steps, the underlying regularity remains—cross-sections often resemble sine waves, and quantisation produces predictable, repeating transitions. This inherent evenness prevents noise functions from achieving truly random values with irregularly held periods, as their gradients distribute changes uniformly rather than unpredictably.
 
 **Worley or Cellular Noise**
-Worley (cellular) noise generates discrete, stepped patterns by assigning each point a value based on its distance to the nearest feature in a grid. This produces regions of stability (holds) and abrupt transitions (jumps), but the underlying structure remains regular and predictable due to the grid and distance calculations. While Worley noise introduces complexity through spatial relationships, its output is fundamentally periodic and lacks the organic, irregularly held randomness needed for naturalistic temporal behaviors. Thus, it cannot emulate the unpredictable holding changing of random values.
+Worley (cellular) noise generates discrete, stepped patterns by assigning each point a value based on its distance to the nearest feature in a grid. This produces regions of stability (holds) and abrupt transitions (jumps), but the underlying structure remains regular and predictable due to the grid and distance calculations. While Worley noise introduces complexity through spatial relationships, its output is fundamentally periodic and lacks the organic, irregularly held randomness needed for naturalistic temporal behaviours. Thus, it cannot emulate the unpredictable holding changing of random values.
+
+
+### Summary of Current Methods, Limitations and Workarounds
+A quick review of these methods:
+- **random number generators** are **_too irregular_** - programmers have to find ways to _hold their values across frames_.
+- **noise functions** are **_too regular_** - programmers and artists often have to find ways to _introduce irregularity_.
+
+The techniques described above attempt to achieve naturalistic "hold and jump" behaviour from opposite ends of the regularity-to-irregularity spectrum, but ultimately still fall short of expressing the natural "move and hold" phenomenon.
 
 **Workarounds to Mitigate Noise Regularity**
-To try to break up these regular patterns, programmers may layer more noise, commonly varying frequency, or blend in small amounts of true randomness (for example, `rand()`), but this increases complexity, increases the additional parameters to manage, and often requires stateful scaffolding to manage transitions. 
+To disrupt regular patterns, programmers and artists often introduce layers of different, higher-frequency noise functions, sometimes with additional post-processing to extract "peaks and troughs" before layering and smoothing them out. They also blend in small amounts of true randomness, such as from `rand()`, to achieve more natural results. 
 
-These workarounds wrestle with artifacts by adding more complexity to make these mechanisms—which were not designed for this purpose—behave in a naturalistic way. 
+However, these methods are essentially variations of the same techniques, inheriting the same inefficiencies. Each new layer of noise adds complexity, necessitating further tweaks and careful adjustments of parameters. Additionally, every layer of `rand()` requires its own stateful scaffolding to manage blending and transitions, leading to a complexity explosion.
+
+These workarounds attempt to reduce artifacts by increasing complexity, forcing mechanisms originally not designed for this purpose to behave in a more natural and realistic way.
+
+Given the complexity inherent in such structures, any attempts to modify or revise the setup necessitate a deep understanding of the intricate logic and relationships among the components. This complexity ultimately hinders expressive exploration.
 
 ## A Mathematical and Algorithmic Gap
-Despite the variety of techniques discussed above, none fully capture the naturalistic "hold and jump" phenomenon observed in real-world systems. Traditional random number generators and noise-based methods often produce overly regular transitions or rely on complex, stateful scaffolding to approximate irregularly held randomness. These approaches attempt to "force" naturalistic behavior from the outside, layering additional processes to compensate for their inherent limitations.
+Despite the variety of techniques discussed above, none fully capture the naturalistic "hold and jump" phenomenon observed in real-world systems. These approaches attempt to "force" naturalistic behavior from the outside, layering additional processes to compensate for their inherent limitations. FPS-R directly addresses this gap by working from the inside, designed to emulate natural "move and hold" behavior through intrinsic mathematical principles rather than relying on external mechanisms or scaffolding.
 
-FPS-R directly addresses this gap by working from the inside. Designed from the ground up, it uses elegant mathematics and logic to emulate, shape, and sculpt the natural behavior of "move and hold." By avoiding external scaffolding and embracing a stateless, deterministic foundation, FPS-R provides a clean, scalable, and reproducible solution to generating unpredictable yet repeatable sequences.
+Designed from the ground up, FPS-R uses mathematics and logic based on simple and fundamental arithmetic operations and a stateless, deterministic foundation to emulate, shape, and sculpt the natural behavior of "move and hold." By avoiding external scaffolding, FPS-R provides a clean, scalable, and reproducible solution for generating unpredictable yet repeatable sequences.
 
 ---
 # An Illustration
@@ -174,7 +190,9 @@ The graphs exist as a Jupyter notebook. Feel free to explore and try it out!
 
 ### `Portable_rand()`
 ![portable_rand](./resources/readme/images/fspr_data_analysis/fpsr_portablerand_output.png)
-This is the output of the `Portable_rand()` included in FPS-R. It is like a `rand()`. Every frame input into portable_rand() yields a very different output. There is no holding behaviour.
+This is the output of the `Portable_rand()` included in FPS-R. It works very much like a `rand()`. Every frame input into portable_rand() yields a very different output from the previous one. There is no holding behaviour.
+
+By implementing our own pseudo random noise generator, we make sure that these values are generated consistently, resulting in deterministic outputs across different languages and operating environments.
 
 ## FPS-R: SM
 ![fpsr_sm](./resources/readme/images/fspr_data_analysis/fpsr_sm_output.png)
@@ -225,15 +243,16 @@ The graphs shown above are example outputs. With different parameters, each algo
 FPS-R's deterministic and stateless properties ensure that its decisions are easy to follow, trace, audit, and study.
 
 ### Ambitious
+FPS-R is designed to be used across a spectrum of operating environments, from the most computationally frugal to high-powered and capable systems.
+
 **Lightweight**
-FPS-R was designed to be very optimised and extremely computationally light, yet able to operated on low-power and edge devices. In it's enhanced wrapper version however, it is scaleable in its output to unlock rich and analytically meaningful output in powerful high end computing envrionments.
+FPS-R was designed to be optimised and computationally light, to operate even on low-power and edge devices. But in the enhanced wrapper version, output can be scaled to unlock rich and analytically meaningful results in powerful high-end computing environments.
 
 **Precise**
-Bit for Bit accuracy in the wrapper version. FPS-R mostly works on interger operations.
-In the wrapper version, floating decimal numbers are inflated to large numbers to maintain integer accuracy.
+The wrapper version achieves bit-for-bit accuracy. FPS-R primarily uses integer operations to ensure precision.
+In the wrapper version, floating-point decimal numbers are scaled up to large integers to maintain precision.
 
 The enhanced wrapper version with rich output will be described in greater detail shortly below.
-
 
 ### Glass-Box Framework
 FPS-R is a **glass-box framework** due to its **mathematical purity**, **determinism**, and **statelessness**. Its logic and outputs are transparent, predictable, and free from side effects.
@@ -294,7 +313,7 @@ fpsr_sm_expression = portable_rand(
 Each algorithm is also expressed as a function, enabling flexible interaction with parent systems and richer outputs.
 
 ### Wrapper Version with Rich Output
-There are "wrapper versions" of the algorithms with rich output structures that are able to generate output that is more **insightful**, **meaningful**,**analytic**, at an increased computation cost. These features are organised into leve-of-details (LOD) from 0 (lowest computation cost) to 2 (highest computation cost). Setting a LOD will enable the respective set of rich outputs associated with the LOD.
+There are "wrapper versions" of the algorithms with rich output structures that are able to generate output that is more **insightful**, **meaningful**, **analytic**, at an increased computation cost. These features are organised into leve-of-details (LOD) from 0 (lowest computation cost) to 2 (highest computation cost). Setting a LOD will enable the respective set of rich outputs associated with the LOD.
 
 In broad terms these information include:
 - LOD 0 
