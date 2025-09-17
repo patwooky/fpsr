@@ -61,7 +61,7 @@ Here are a few examples of non-linearity found in various aspects of our reality
 Currently, there are limited methods to emulate this realistic and complex behaviour. Most of these methods are neither simple, convenient nor elegant.
 
 ### `rand()`-based Methods
-> **High-Level Intent: `rand()`**
+> **High-Level Intent: `rand()`**:
 To force structure onto a mechanism that produce actively jumping outputs from frame to frame, in an attempt to achieve naturalistic periods of holds.
 
 As mentioned, `rand()` tends to jump values from one seed to the next. It cannot achieve a continuous output even when the input seeds are continuous.
@@ -94,8 +94,8 @@ This approach requires storing state (such as counters and held values) and usin
 Furthermore, stateful methods cannot be easily used in parallel or distributed computing environments, including GPU operations, where statelessness is essential for scalability and reproducibility. As the number of these stateful streams increases, so does the burden of managing their individual states, leading to poor scalability and increased maintenance overhead.
 
 ### Noise-based Methods
-> **High-Level Intent: Noise Functions**
-To force irregularity onto noise functions with periodically repeating output patterns to invoke organic irregularity.
+> **High-Level Intent: Noise Functions**:
+The goal is to force irregularity into noise functions that are fundamentally periodic and regularly repeating, in order to achieve more organic and natural randomness.
 
 In the world of film, games and interactive media, using noise to generate random continuity is a common practice. 
 
@@ -111,7 +111,7 @@ A quick review of these methods:
 - **random number generators** are **_too irregular_** - programmers have to find ways to _hold their values across frames_.
 - **noise functions** are **_too regular_** - programmers and artists often have to find ways to _introduce irregularity_.
 
-The techniques described above attempt to achieve naturalistic "hold and jump" behaviour from opposite ends of the regularity-to-irregularity spectrum, but ultimately still fall short of expressing the natural "move and hold" phenomenon.
+The techniques described above try to achieve naturalistic "hold and jump" behaviour from opposite ends of the regularity-to-irregularity spectrum, but ultimately still fall short being able to express and control the natural "move and hold" phenomenon with intuitive ease.
 
 **Workarounds to Mitigate Noise Regularity**
 To disrupt regular patterns, programmers and artists often introduce layers of different, higher-frequency noise functions, sometimes with additional post-processing to extract "peaks and troughs" before layering and smoothing them out. They also blend in small amounts of true randomness, such as from `rand()`, to achieve more natural results. 
