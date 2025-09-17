@@ -370,10 +370,20 @@ FPS-R describes a fundamental and observable phenomenon found across many fields
     - Authentication. By introducing a stateless and deterministic time factor into authentication protocols, we add an extra layer of protection.
     - Channel Hopping behaviour. By introducing a stateless, auditable, and deterministic synchronised hopping pattern in the temporal domain, security complexity is increased.
 - **Strategic, Simulation, Observation**
-  - emulate the non-linear behaviour of processes across diverse scenarios, including science, finance, military, government, and artificial intelligence.
-    - traceability and auditibility of a glass-box system means that all processes can be traced, studied and understood.
-    - directly adjust algorithm seeds and fpsr-parameters to easily explore "what-if" scenarios or alternate timelines.
-    - reduce the need to log large amounts of data by using a concise set of keys (seed, fpsr-parameters) that can deterministically generate values without relying on stored state.
+  - Emulate the non-linear behaviour of processes across diverse scenarios, including **science, finance, military, government, and artificial intelligence**.
+    - Traceability and auditibility of a glass-box system means that all processes can be traced, studied and understood.
+    - Directly adjust algorithm seeds and FPS-R parameters to easily explore "what-if" scenarios or alternate timelines.
+    - Reduce the need to log large amounts of data by using a concise set of keys (seed, fpsr-parameters) that can deterministically generate values without relying on stored state.
+  - **Digital Twin Systems**  
+    - Emulate timing realism to capture the true dynamics of physical environments with asynchronous components or variable latency.  
+    - Reveal edge-case behaviours, coordination failures, and emergent anomalies through expressive timing.  
+    - Transform digital twins into living diagnostic tools capable of:  
+      - Stress-testing resilience.  
+      - Training adaptive responses.  
+      - Identifying vulnerabilities caused by timing issues. 
+  - **Reality modeling (advanced application)**. For a historic real-world event that has a recorded history of occurrences, if we can find a set of FPS-R parameters and seed that closely matches the timing of occurrences (temporal fit) and intensity (output value fit) of the event, we can extend the timeline (look into the future and the past) of this matching timeline and extrapolate the FPS-R signals to model a probable future, or probable futures for `n` number of next closest matches.
+    - Historical data fitting and predictive modelling can be applied to: 
+      - Economics, Climate Science, Epidemiology, Finance and Social Sciences
 
 > **[fpsr_applications.md](./resources/readme/FPSR_Applications.md)**
   A more comprehensive document detailing potential areas of application.
