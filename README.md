@@ -6,9 +6,13 @@ While every update strives to be more accurate, there will be parts that are inc
 
 # 🎲 FPS-R: Frame-Persistent Stateless Randomisation
 
-# Table of Contents
-- [Introduction: What is FPS-R?](#introduction-what-is-fps-r)
+---
+## TLDR: Podcast Audio Summary
+A Podcast Style Audio Summary
 
+This Read-Me page features a high-level podcast style summary as an audio commentary.
+
+[🎧 Listen Now: FPS-R and the Nature of Random](./resources/readme/audio/fpsr_readme.mp3)
 
 ---
 # Introduction: What is FPS-R?
