@@ -7,10 +7,10 @@ While every update strives to be more accurate, there will be parts that are inc
 # 🎲 FPS-R: Frame-Persistent Stateless Randomisation
 
 ---
-## TLDR: Podcast Audio Summary
-A Podcast Style Audio Summary
+## An Audio Introduction: Podcast-Style
+A Podcast Style Audio Introduction
 
-This Read-Me page features a high-level podcast style summary as an audio commentary.
+Here is a high-level podcast audio commentary of the following content.
 
 <a href="https://patwooky.github.io/fpsr/resources/readme/audio/fpsr_readme.mp3" target="_blank">🎧 Listen Now: FPS-R and the Nature of Random</a>
 
