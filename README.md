@@ -194,7 +194,7 @@ The graphs exist as a Jupyter notebook. Feel free to explore and try it out!
 
 ### `Portable_rand()`
 ![portable_rand](./resources/readme/images/fspr_data_analysis/fpsr_portablerand_output.png)
-This is the output of the `Portable_rand()` included in FPS-R. It works very much like a `rand()`. Every frame input into portable_rand() yields a very different output from the previous one. There is no holding behaviour.
+This is the output of the `Portable_rand()` included in FPS-R. It works very much like a `rand()`. Every frame input into `portable_rand()` yields a very different output from the previous one. There is no holding behaviour.
 
 By implementing our own pseudo random noise generator, we make sure that these values are generated consistently, resulting in deterministic outputs across different languages and operating environments.
 
@@ -235,7 +235,7 @@ The graphs shown above are example outputs. With different parameters, each algo
   - FPS-R uses simple arithmetic operations that are well defined, well understood and do not produce side effects.
 
 - **Foundational**
-  - FPS-R is a construction primitive that is domain agnostic. When used together with a parent system with contextual domain logic, its output can be mapped onto any value range (continuous or discrete) and further processed to represent any number of things.
+  - FPS-R is a construction primitive that is **domain agnostic**. When used together with a parent system with contextual domain logic, its output can be mapped onto any value range (continuous or discrete) and further processed to represent any number of things.
 
 - **Expressive**
   - By changing parameter values, all FPS-R algorithms can achieve a wide range of expressive output patterns, invoking a similarly broad range of emergent "behaviours" and "personalities" of unpredictability and surprises. In other words, FPS-R algorithms are instruments that encourage exploration and discovery.
@@ -381,9 +381,10 @@ FPS-R describes a fundamental and observable phenomenon found across many fields
       - Stress-testing resilience.  
       - Training adaptive responses.  
       - Identifying vulnerabilities caused by timing issues. 
-  - **Reality modeling (advanced application)**. For a historic real-world event that has a recorded history of occurrences, if we can find a set of FPS-R parameters and seed that closely matches the timing of occurrences (temporal fit) and intensity (output value fit) of the event, we can extend the timeline (look into the future and the past) of this matching timeline and extrapolate the FPS-R signals to model a probable future, or probable futures for `n` number of next closest matches.
-    - Historical data fitting and predictive modelling can be applied to: 
-      - Economics, Climate Science, Epidemiology, Finance and Social Sciences
+  - **Reality modeling (advanced application)**. 
+    - For a historic real-world event that has a recorded history of occurrences, if we can find a set of FPS-R parameters and seed that closely matches the timing of occurrences (temporal fit) and intensity (output value fit) of the event, we can extend the timeline (look into the future and the past) of this matching timeline and extrapolate the FPS-R signals to model a probable future, or probable futures for `n` number of next closest matches.
+      - Historical data fitting and predictive modelling can be applied to: 
+        - **Economics**, **Climate Science**, **Epidemiology**, **Finance** and **Social Sciences**
 
 > **[fpsr_applications.md](./resources/readme/FPSR_Applications.md)**
   A more comprehensive document detailing potential areas of application.
@@ -398,12 +399,11 @@ A Capsule is a self-contained, portable data structure that encapsulates a compl
 
 Essentially, a Capsule is a single, reusable "block" of deterministic, non-linear behavior, storing "presets" and "performances" similar to audio or video clips.  
 
-
 This is where the power of Capsules becomes clear. If a single Capsule is a "word" or a musical "note," then you can arrange them to create sophisticated compositions.
 
 **The Timeline**: Capsules can be placed sequentially on a "timeline" or a "playlist." By stringing together different Capsules—like `cautious_hesitation.cap` followed by `erratic_burst.cap`—you can build complex behavioral narratives for an AI, a robot, or an animation.
 
-**A True Grammar**: This system transforms FPS-R from a raw generator into a true compositional language. You are no longer just sculpting a single, continuous stream; you are arranging discrete ideas into phrases, sentences, and stories. This unlocks nuanced complex and even layered behaviours. Now imagine multi-track, multi-channel timelines with clips running in parallel, adding and subtracting from each other.
+**A True Grammar**: This system transforms FPS-R from a raw generator into a true compositional language. You are no longer just sculpting a single, continuous stream; you are arranging discrete ideas into phrases, sentences, and stories. This unlocks nuanced complex and even layered behaviours. Now imagine a natural extension of a single timeline into simultaneous multi-track, multi-channel timelines with clips running in parallel, adding and subtracting from each other. This can create meaningful complexity that unlocks deeper expressivity.
 
 ### Powerful Application Examples: Security and Obfuscation
 - **Time-Based Passphrases**: A specific sequence of Capsules on a timeline can act as a complex, dynamic key. A system could require a match not just for a single value, but for an entire "performance" across thousands of frames, making it incredibly difficult to crack. The sequence `capsule_A -> capsule_C -> capsule_B` is a completely different "passphrase" from `capsule_B -> capsule_A -> capsule_C`.
@@ -438,4 +438,4 @@ A philosophical exploration of surprise, examining nature's complexity and non-l
 A record of my development journey, including inspirations and challenges encountered along the way.
 
 **[fpsr_algoAnalysis.ipynb](./resources/code/data_analysis/fpsr_algoAnalysis.ipynb)** 
-A Jupyter notebook with data graph plots to try.
+A Jupyter notebook with data graph plots to for interactive exploration and experimentation. Try it out yourself!
