@@ -6,9 +6,7 @@ While every update strives to be more accurate, there will be parts that are inc
 
 # 🎲 FPS-R: Frame-Persistent Stateless Randomisation
 
-<div style="text-align: right;">
-<a href="./README-CH.md">Chinese|中文版 README</a>
-</div>
+[Chinese|中文版 README](./README-CH.md)
 
 ---
 ## An Audio Introduction: Podcast-Style
