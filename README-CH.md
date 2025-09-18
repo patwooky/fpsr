@@ -19,7 +19,7 @@ Copyright (c) 2025 Woo Ker Yang (Patrick Woo) patrickwoo.1976@gmail.com
 **FPS-R 是 Frame Persistent Stateless Randomisation (静态律动算法)。**
 
 FPS-R 是一个具备**时间感知**的伪随机数生成器。
-给定任何递增的输入值序列（例如 `frame`、`training-epoch`、`uv`、`latent-space`、`x-axis`），FPS-R 会产生一个``确定``性的持久随机数序列。
+给定任何递增的输入值序列（例如 `frame`、`training-epoch`、`uv`、`latent-space`、`x-axis`），FPS-R 会产生一个`确定`性的持久随机数序列。
 这些数值会在变化前，以不可预测但确定的时间步长保持其值。
 FPS-R 也是`无状态`的——它不需要在每个时间步存储状态，从而避免了复杂的逻辑和状态管理。
 
@@ -273,7 +273,7 @@ FPS-R 被设计为优化且计算轻量，甚至可以在低功耗和边缘设�
 因为 `portable_rand` 是无状态、确定性且数学上纯粹的，任何使用它的 FPS-R 算法也将继承这些属性。
 
 ## 叠模机制 (SM) 的单行数学模型
-为简洁起见，本文仅展示 ``FPS-R SM`` 的逻辑和表达式。
+为简洁起见，本文仅展示 `FPS-R SM` 的逻辑和表达式。
 $$
 S_H(t) = \text{rand}\left( (t + O_o) - \left( (t + O_o) \pmod{ \lfloor H_{min} + \text{rand}(O_i + \lfloor \frac{t}{P_r} \rfloor \cdot P_r) \cdot (H_{max} - H_{min}) \rfloor } \right) \right)
 $$
