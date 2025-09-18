@@ -438,4 +438,4 @@ A philosophical exploration of surprise, examining nature's complexity and non-l
 A record of my development journey, including inspirations and challenges encountered along the way.
 
 **[fpsr_algoAnalysis.ipynb](./resources/code/data_analysis/fpsr_algoAnalysis.ipynb)** 
-A Jupyter notebook with data graph plots to for interactive exploration and experimentation. Try it out yourself!
+A Jupyter notebook with data graph plots for interactive exploration and experimentation. Try it out yourself!
