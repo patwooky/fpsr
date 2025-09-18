@@ -11,8 +11,8 @@ Copyright (c) 2025 Woo Ker Yang (Patrick Woo) patrickwoo.1976@gmail.com
 </div>
 
 ---
-## 音频简介：播客风格
-一段播客风格的音频简介
+## 音频简介：播客风格 (英语)
+一段播英语客风格的音频简介。
 
 以下是关于后续内容的高层概述播客音频评论。
 
