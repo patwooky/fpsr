@@ -6,6 +6,8 @@ While every update strives to be more accurate, there will be parts that are inc
 
 # 🎲 FPS-R: Frame-Persistent Stateless Randomisation
 
+[Chinese Version 中文版](./README-CH.md)
+
 ---
 ## An Audio Introduction: Podcast-Style
 A Podcast Style Audio Introduction
