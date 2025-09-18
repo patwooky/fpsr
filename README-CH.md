@@ -6,6 +6,8 @@ Copyright (c) 2025 Woo Ker Yang (Patrick Woo) patrickwoo.1976@gmail.com
 
 # 🎲 FPS-R: Frame-Persistent Stateless Randomisation (静态律动算法)
 
+[English|英文版 README](./README.md)
+
 ---
 ## 音频简介：播客风格
 一段播客风格的音频简介
