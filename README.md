@@ -372,10 +372,12 @@ FPS-R describes a fundamental and observable phenomenon found across many fields
     - Authentication. By introducing a stateless and deterministic time factor into authentication protocols, we add an extra layer of protection.
     - Channel Hopping behaviour. By introducing a stateless, auditable, and deterministic synchronised hopping pattern in the temporal domain, security complexity is increased.
 - **Strategic, Simulation, Observation**
-  - Emulate the non-linear behaviour of processes across diverse scenarios, including **science, finance, military, government, and artificial intelligence**.
-    - Traceability and auditibility of a glass-box system means that all processes can be traced, studied and understood.
-    - Directly adjust algorithm seeds and FPS-R parameters to easily explore "what-if" scenarios or alternate timelines.
-    - Reduce the need to log large amounts of data by using a concise set of keys (seed, fpsr-parameters) that can deterministically generate values without relying on stored state.
+  - **Model Complex Systems with High Fidelity**: Emulate the non-linear dynamics of large-scale systems across diverse scenarios—from the emergent effects of economic policy to the complex behaviors in **science**, **finance**, **military**, and **artificial intelligence**.
+  - **Inject Realistic, Multi-Scale Decision-Making**: FPS-R excels at modeling the nuanced, human-like decision frameworks within these systems. It can drive agent behavior at every level, from high-level strategic choices down to the actions of individuals. By introducing **realistic deliberation**, **delayed adoption**, and **hesitation**, simulations can reveal complex emergent phenomena that realistically mirror real-world systems.
+  - **Unlock Powerful Analytical Benefits**: The "glass-box" nature of FPS-R provides unique advantages for observation and analysis:
+    - **Effortless "What-If" Exploration**: Instantly explore alternate timelines and test different strategies simply by adjusting seeds and parameters, without altering the core logic of the simulation.
+    - **Complete Traceability**: Every event and decision is fully auditable and repeatable, allowing complex processes to be studied and understood in granular detail.
+    - **Efficient Hybrid State Management**: Revolutionise how simulation data is handled by drastically reducing data logging overhead. While the simulation's cumulative, stateful values (e.g., population count, resource levels) must still be logged, FPS-R eliminates the need to log the countless underlying temporal events and non-stateful decisions that lead to those outcomes. They can be perfectly regenerated from a concise set of keys and time-steps, allowing for detailed analysis without extensive storage.
   - **Digital Twin Systems**  
     - Emulate timing realism to capture the true dynamics of physical environments with asynchronous components or variable latency.  
     - Reveal edge-case behaviours, coordination failures, and emergent anomalies through expressive timing.  
@@ -384,7 +386,8 @@ FPS-R describes a fundamental and observable phenomenon found across many fields
       - Training adaptive responses.  
       - Identifying vulnerabilities caused by timing issues. 
   - **Reality modeling (advanced application)**. 
-    - For a historic real-world event that has a recorded history of occurrences, if we can find a set of FPS-R parameters and seed that closely matches the timing of occurrences (temporal fit) and intensity (output value fit) of the event, we can extend the timeline (look into the future and the past) of this matching timeline and extrapolate the FPS-R signals to model a probable future, or probable futures for `n` number of next closest matches.
+    - For a historical event that has a recorded history of occurrences, if we can find a set of FPS-R parameters and seed that closely matches the timing of occurrences (temporal fit) and intensity (output value fit) of the event
+      - we can extend the timeline (look into the future and the past) of this matching timeline and extrapolate the FPS-R signals to model a probable future, or probable futures for `n` number of next closest matches.
       - Historical data fitting and predictive modelling can be applied to: 
         - **Economics**, **Climate Science**, **Epidemiology**, **Finance** and **Social Sciences**
 
