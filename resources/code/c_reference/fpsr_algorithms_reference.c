@@ -16,9 +16,9 @@
  * consistent results across any platform.
  */
 
- #include <math.h> // For sin() and floor()
- #include <stdio.h> // For NULL
- 
+#include <math.h> // For sin() and floor()
+#include <stdio.h> // For NULL
+
 /**
  * A simple, portable pseudo-random number generator.
  * @brief Generates a deterministic float between 0.0 and 1.0 from an integer seed.
@@ -114,7 +114,8 @@ typedef struct {
  */
 float fpsr_sm(
     int frame, int minHold, int maxHold,
-    int reseedInterval, int seedInner, int seedOuter)
+    int reseedInterval, int seedInner, int seedOuter,
+    int finalRandSwitch)
 {
     // --- 1. Calculate the random hold duration ---
     if (reseedInterval < 1) { reseedInterval = 1; } // Prevent division by zero.
@@ -154,15 +155,35 @@ int finalRandSwitch = 1; // 1 to apply the final randomisation step, 0 to skip i
 // Call the FPS-R:SM function
 float randVal = 
     fpsr_sm(
-        int(frame), minHoldFrames, maxHoldFrames, 
+        frame, minHoldFrames, maxHoldFrames, 
         reseedFrames, offsetInner, offsetOuter, finalRandSwitch);
 float randVal_previous = 
     fpsr_sm(
-        int(frame-1), minHoldFrames, maxHoldFrames, 
+        (frame-1), minHoldFrames, maxHoldFrames, 
         reseedFrames, offsetInner, offsetOuter, finalRandSwitch);
 int changed = 0;
 if (randVal != randVal_previous) {
     changed = 1; // value has changed from the previous frame
+}
+// sample output single frame
+// printf("randVal %f, randVal_previous %f, changed %d\n",
+// create a loop of 20 frames to demonstrate changes
+for (int test_frame = frame; test_frame < frame + 20; test_frame++) {
+    float test_randVal = 
+        fpsr_sm(
+            test_frame, minHoldFrames, maxHoldFrames, 
+            reseedFrames, offsetInner, offsetOuter, finalRandSwitch);
+    float test_randVal_previous = 
+        fpsr_sm(
+            (test_frame - 1), minHoldFrames, maxHoldFrames, 
+            reseedFrames, offsetInner, offsetOuter, finalRandSwitch);
+    int test_changed = 0;
+    if (test_randVal != test_randVal_previous) {
+        test_changed = 1; // value has changed from the previous frame
+    }
+    // sample output for each frame in the loop
+    printf("Frame %d: randVal %f, randVal_previous %f, changed %d\n", 
+        test_frame, test_randVal, test_randVal_previous, test_changed);
 }
 
 
@@ -241,14 +262,35 @@ int final_rand_switch = 1; // 1 to apply the final randomisation step, 0 to skip
 float randVal = 
     fpsr_tm(
         frame, period_A, period_B, 
-        switch_duration, offset_inner, offset_outer, final_rand_switch);
+        periodSwitch, offset_inner, offset_outer, final_rand_switch);
 float randVal_previous = 
     fpsr_tm(
         frame - 1, period_A, period_B, 
-        switch_duration, offset_inner, offset_outer, final_rand_switch);
+        periodSwitch, offset_inner, offset_outer, final_rand_switch);
 int changed = 0;
 if (randVal != randVal_previous) {
     changed = 1; // value has changed from the previous frame
+}
+// sample output single frame
+// printf("randVal %f, randVal_previous %f, changed %d\n", 
+//     randVal, randVal_previous, changed);
+// create a loop of 20 frames to demonstrate changes
+for (int test_frame = frame; test_frame < frame + 20; test_frame++) {
+    float test_randVal = 
+        fpsr_tm(
+            test_frame, period_A, period_B, 
+            periodSwitch, offset_inner, offset_outer, final_rand_switch);
+    float test_randVal_previous = 
+        fpsr_tm(
+            test_frame - 1, period_A, period_B, 
+            periodSwitch, offset_inner, offset_outer, final_rand_switch);
+    int test_changed = 0;
+    if (test_randVal != test_randVal_previous) {
+        test_changed = 1; // value has changed from the previous frame
+    }
+    // sample output for each frame in the loop
+    printf("Frame %d: randVal %f, randVal_previous %f, changed %d\n", 
+        test_frame, test_randVal, test_randVal_previous, test_changed);
 }
 
 
@@ -354,4 +396,23 @@ float randVal_previous = fpsr_qs(
 int changed = 0; // Variable to track if the value has changed
 if (randVal != randVal_previous) {
     changed = 1; // Mark as changed if the value has changed from the previous frame
-} 
+}
+// sample output single frame
+// printf("randVal %f, randVal_previous %f, changed %d\n", 
+//     randVal, randVal_previous, changed);
+// create a loop of 20 frames to demonstrate changes
+for (int test_frame = frame; test_frame < frame + 20; test_frame++) {
+    float test_randVal = fpsr_qs(
+        test_frame, baseWaveFreq, stream2freqMult, quantLevelsMinMax, 
+        streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch);
+    float test_randVal_previous = fpsr_qs(
+        test_frame - 1, baseWaveFreq, stream2freqMult, quantLevelsMinMax, 
+        streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch);
+    int test_changed = 0; // Variable to track if the value has changed
+    if (test_randVal != test_randVal_previous) {
+        test_changed = 1; // Mark as changed if the value has changed from the previous frame
+    }
+    // sample output for each frame in the loop
+    printf("Frame %d: randVal %f, randVal_previous %f, changed %d\n", 
+        test_frame, test_randVal, test_randVal_previous, test_changed);
+}
