@@ -140,7 +140,7 @@ float portable_rand(int seed) {
 typedef struct {
     float randVal; 
     int has_changed; 
-    int randVal_previous;
+    float randVal_previous;
     float hold_progress; 
     int last_changed_frame; 
     int next_changed_frame; 
@@ -509,7 +509,7 @@ FPSR_Output fpsr_tm_get_details(
     // LOD 1: Compare with previous frame to check for change.
     // Calculate the scaled frame input for the previous frame
     double prev_scaled_frame_for_lod1_double = (double)(frame - 1) * frame_multiplier; 
-    float prev_val = _fpsr_tm_base((int)floor(prev_scaled_frame_for_lod1_double), periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch);
+    float prev_val = _fpsr_tm_base(prev_scaled_frame_for_lod1_double, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch);
     out.has_changed = (out.randVal != prev_val);
     
     if (lod < 2) return out;
@@ -654,12 +654,15 @@ FPSR_Output fpsr_qs_get_details(
 
     // LOD 1: Compare with previous frame to check for change.
     // Calculate the scaled frame input for the previous frame
-    double prev_scaled_frame_for_lod1_double = (double)(frame - 1) * frame_multiplier; 
+    double prev_scaled_frame_for_lod1_double = (double)((frame - 1) * frame_multiplier); 
     FPSR_Output prev_qs_output = _fpsr_qs_base(prev_scaled_frame_for_lod1_double, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level);
     out.randVal_previous = prev_qs_output.randVal;
     out.has_changed = (out.randVal != out.randVal_previous);
     printf("--- fpsr_qs_get_details Debug ---\n");
-    printf("Current randVal: %f, Previous randVal: %f, Has Changed: %d\n", out.randVal, out.randVal_previous, out.has_changed);
+    printf("Frame: %d, Scaled Frame: %f, prev Scaled Frame %f\n", frame, current_scaled_frame_double, prev_scaled_frame_for_lod1_double);
+    printf("out.randVal: %f, base_qs_output.randVal %f, out.randVal_previous %f, prev_qs_output.randVal: %f\n", out.randVal, base_qs_output.randVal, out.randVal_previous,prev_qs_output.randVal);
+    printf("Current randVal: %f, Previous randVal: %f, Has Changed: %i, finalRandSwitch %d\n", out.randVal, out.randVal_previous, out.has_changed, finalRandSwitch);
+    printf("--- End Debug ---\n");
     
     if (lod < 2) return out;
 
@@ -681,7 +684,7 @@ FPSR_Output fpsr_qs_get_details(
         while (frame - step_int > frame - max_search_frames) { 
             // Scale the probe frame (as double) before passing to base algorithm
             double probe_frame_double = (double)(frame - step_int) * frame_multiplier; 
-            FPSR_Output probe_qs_output = _fpsr_qs_base((int)floor(probe_frame_double), baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level);
+            FPSR_Output probe_qs_output = _fpsr_qs_base(probe_frame_double, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level);
             if (probe_qs_output.randVal != out.randVal) {
                 bound_low_int = frame - step_int;
                 break;
@@ -696,12 +699,12 @@ FPSR_Output fpsr_qs_get_details(
             mid_int = low_int + (high_int - low_int) / 2; 
             // Scale the mid frame (as double) before passing to base algorithm
             double mid_frame_double = (double)mid_int * frame_multiplier; 
-            FPSR_Output mid_qs_output = _fpsr_qs_base((int)floor(mid_frame_double), baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level);
+            FPSR_Output mid_qs_output = _fpsr_qs_base(mid_frame_double, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level);
             if (mid_qs_output.randVal == out.randVal) {
                 // Check the frame immediately preceding 'mid' in the scaled timeline
                 // using 1 as the step for comparison
                 double mid_minus_step_frame_double = (double)(mid_int - 1) * frame_multiplier; 
-                FPSR_Output mid_minus_step_qs_output = _fpsr_qs_base((int)floor(mid_minus_step_frame_double), baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level);
+                FPSR_Output mid_minus_step_qs_output = _fpsr_qs_base(mid_minus_step_frame_double, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level);
                 if (mid_minus_step_qs_output.randVal != out.randVal) {
                     result_int = mid_int; break;
                 }
@@ -719,7 +722,7 @@ FPSR_Output fpsr_qs_get_details(
     while (frame + step_int < frame + max_search_frames) { 
         // Scale the probe frame (as double) before passing to base algorithm
         double probe_frame_double = (double)(frame + step_int) * frame_multiplier; 
-        FPSR_Output probe_qs_output = _fpsr_qs_base((int)floor(probe_frame_double), baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level);
+        FPSR_Output probe_qs_output = _fpsr_qs_base(probe_frame_double, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level);
         if (probe_qs_output.randVal != out.randVal) {
             bound_high_int = frame + step_int;
             next_val_candidate = probe_qs_output.randVal; // Store the value at the first differing frame
@@ -735,7 +738,7 @@ FPSR_Output fpsr_qs_get_details(
         mid_int = low_int + (high_int - low_int) / 2; 
         // Scale the mid frame (as double) before passing to base algorithm
         double mid_frame_double = (double)mid_int * frame_multiplier; 
-        FPSR_Output mid_qs_output = _fpsr_qs_base((int)floor(mid_frame_double), baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level);
+        FPSR_Output mid_qs_output = _fpsr_qs_base(mid_frame_double, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level);
         if (mid_qs_output.randVal != out.randVal) {
             result_int = mid_int;
             next_val_candidate = mid_qs_output.randVal; // Store the value at this frame
@@ -834,10 +837,10 @@ int main() {
         }
 
         // Print the output for the current frame
-        printf("Frame %d: randVal %f, randVal_previous %d, has_changed %d, hold_progress %f,  last_changed_frame %d, next_changed_frame %d ",
+        printf("Frame %d: randVal %f, randVal_previous %f, has_changed %d, hold_progress %f,  last_changed_frame %d, next_changed_frame %d ",
             frame, output.randVal, output.randVal_previous, output.has_changed, output.hold_progress, output.last_changed_frame, output.next_changed_frame);
         if (output.has_changed) printf("(jumped)");
-            printf("\n");
+        printf("\n");
         
     }
 
