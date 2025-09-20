@@ -424,7 +424,13 @@ The applications of expressive phrases of auditable, traceable and controllable 
 ## Conclusion
 **FPS-R** is more than a pseudo-random number stream generator; it is a meticulously designed framework that **fills a critical gap** between chaotic randomness and rigid predictability. By providing a **stateless**, **deterministic**, and **mathematically pure** way to model the "hold-and-jump" phenomena found throughout nature, it offers a new, foundational primitive for a vast array of applications.
 
+Beyond being a technical primitive, FPS-R is **a new lens** for **observing, expressing and composing** with the grammar of our non-linear world.
+
 From building more believable AI and resilient systems to composing complex security protocols with Capsules, FPS-R provides the tools to move beyond simple emulation and toward **true**, **expressive composition**. It is a **"glass-box" framework** designed for **exploration**, **precision**, and **scalability**, inviting developers, researchers, and creators to harness the power of predictable unpredictability.
+
+The potential for composability enables FPS-R to combine its time-phrased output in numerous ways. Moving forward, the vision for capsules allows for the encapsulation of performance clips that capture different "moods" across an infinite timeline, utilising various parameter combinations. This further unlocks **richer and deeper "move and hold" phrases**, enabling a **new form of expressiveness** that communicates with true non-linearity.
+
+Join me in exploring the limitless possibilities of FPS-R. Together, we can shape the future of non-linear composition with creativity!
 
 ---
 # Other Documents
