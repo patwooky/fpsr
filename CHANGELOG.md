@@ -7,6 +7,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## Unreleased
 
 
+## [2.02] - 2025-09-21
+### Added
+- an English podcast style introduction to FPS-R
+
+### Changed
+- updated `README.md`, `README-CH.md`.
+- the wrapper functions are not working yet. C and Houdini `_wrap` has been moved to `./resources/code/_WIP` 
+
 ---
 ## [2.0.1] - 2025-09-14
 ### Added 
