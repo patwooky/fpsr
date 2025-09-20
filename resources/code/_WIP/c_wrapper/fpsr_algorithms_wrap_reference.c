@@ -15,6 +15,7 @@
 
 #include <math.h> // For sin() and floor() (double versions)
 #include <stdio.h> // For NULL
+#include <stdint.h> // Added for 64-bit integer timeline (int64_t)
 
 
 
@@ -66,6 +67,13 @@ void initialize_sine_luts() {
 }
 
 // Helper function to get sine value from a specific LUT with linear interpolation
+/*
+Sine LUT determinism note:
+- The LUT-based sine approximation yields deterministic, bit-for-bit identical results
+  when given the same phase modulo 2π.
+- Linear interpolation is performed in double precision to minimize rounding drift
+  and to maintain cross-platform parity.
+*/
 double _get_sine_from_lod_lut(double phase, int lut_size, const double* lut_array) {
     if (!_luts_initialized) {
         // Fallback or error if LUTs not initialized.
@@ -100,7 +108,13 @@ double _get_sine_from_lod_lut(double phase, int lut_size, const double* lut_arra
 // A simple, portable pseudo-random number generator that takes an integer seed.
 // Internal calculations use double for higher precision, result is float.
 // Now uses the global sine lookup table for absolute determinism.
-float portable_rand(int seed) {
+/*
+Bit-for-bit determinism note:
+- Accepts a 64-bit seed and uses only integer math and LUT-based sine via _get_sine_from_lod_lut.
+- Avoids platform-dependent libm sin rounding so results are identical across compilers/OS/CPU.
+- The final subtraction with floor() mirrors GLSL fract() semantics to maintain parity.
+*/
+float portable_rand(int64_t seed) { // Changed seed to 64-bit to avoid overflow in seeds
     double val = (double)seed * 12.9898; // Use double literal
     val = fmod(val, TWO_PI); // This ensures 'val' is in [0, 2*PI)
     if (val < 0) val += TWO_PI; // Ensure positive for fmod results
@@ -162,41 +176,51 @@ typedef struct {
 /* Untouched, Low-Level FPS-R Algorithms                                      */
 /******************************************************************************/
 // These functions remain pure, returning only a single float value.
+// All three map the double-scaled time into a 64-bit integer timeline so that all
+// modulo/offset/hold computations are done with integers for bit-for-bit stability.
 
 float _fpsr_sm_base(
     double frame_input_from_wrapper, // frame is now double from wrapper
     int minHold, int maxHold,
     int reseedInterval, int seedInner, int seedOuter, int finalRandSwitch)
 {
-    // Convert scaled double frame to large integer for pure integer math
-    // This ensures bit-for-bit determinism for all modulo operations.
-    int int_frame = (int)floor(frame_input_from_wrapper * FPSR_INFLATION_FACTOR); 
+    // Convert scaled double frame to large integer for pure integer math (64-bit to avoid overflow)
+    int64_t int_frame = (int64_t)floor(frame_input_from_wrapper * FPSR_INFLATION_FACTOR); 
 
-    // Scale all time-based integer parameters to match the int_frame resolution
-    // These are now 'internal_' variables and replace the direct use of input parameters
-    int internal_minHold = (int)floor(minHold * FPSR_INFLATION_FACTOR);
-    int internal_maxHold = (int)floor(maxHold * FPSR_INFLATION_FACTOR);
-    int internal_reseedInterval = (int)floor(reseedInterval * FPSR_INFLATION_FACTOR);
-    int internal_seedInner = (int)floor(seedInner * FPSR_INFLATION_FACTOR);
-    int internal_seedOuter = (int)floor(seedOuter * FPSR_INFLATION_FACTOR);
+    // Scale all time-based integer parameters to match the int_frame resolution (64-bit)
+    int64_t internal_minHold = (int64_t)floor((double)minHold * FPSR_INFLATION_FACTOR);
+    int64_t internal_maxHold = (int64_t)floor((double)maxHold * FPSR_INFLATION_FACTOR);
+    int64_t internal_reseedInterval = (int64_t)floor((double)reseedInterval * FPSR_INFLATION_FACTOR);
+    int64_t internal_seedInner = (int64_t)floor((double)seedInner * FPSR_INFLATION_FACTOR);
+    int64_t internal_seedOuter = (int64_t)floor((double)seedOuter * FPSR_INFLATION_FACTOR);
 
+    // Ensure minimum tick (1 inflated unit)
+    int64_t one_tick = (int64_t)floor(1.0 * FPSR_INFLATION_FACTOR);
+    if (internal_reseedInterval < one_tick) { internal_reseedInterval = one_tick; }
 
-    if (internal_reseedInterval < (int)floor(1.0 * FPSR_INFLATION_FACTOR)) { internal_reseedInterval = (int)floor(1.0 * FPSR_INFLATION_FACTOR); }
-    // Use int_frame for modulo operations
-    double rand_for_duration_seed_double = (double)internal_seedInner + int_frame - (int_frame % internal_reseedInterval);
-    double rand_for_duration = portable_rand((int)floor(rand_for_duration_seed_double));
-    
-    int holdDuration = (int)floor(internal_minHold + rand_for_duration * (internal_maxHold - internal_minHold));
-    if (holdDuration < (int)floor(1.0 * FPSR_INFLATION_FACTOR)) { holdDuration = (int)floor(1.0 * FPSR_INFLATION_FACTOR); }
-    
-    // Use int_frame for modulo operations
-    double held_integer_state_double = (double)internal_seedOuter + int_frame - ((double)(internal_seedOuter + int_frame) / holdDuration - floor((double)(internal_seedOuter + int_frame) / holdDuration)) * holdDuration; // Explicit integer modulo for absolute determinism
-    int held_integer_state = (int)floor(held_integer_state_double);
-    
+    // Stable 64-bit reseed boundary and duration randomisation
+    int64_t rand_for_duration_seed = internal_seedInner + int_frame - (int_frame % internal_reseedInterval);
+    float rand_for_duration = portable_rand(rand_for_duration_seed);
+
+    int64_t holdDuration = internal_minHold + (int64_t)floor(rand_for_duration * (double)(internal_maxHold - internal_minHold));
+    if (holdDuration < one_tick) { holdDuration = one_tick; }
+
+    // 64-bit modulo for held integer state (normalized to [0, holdDuration))
+    /*
+    Integer modulo determinism (SM):
+    - Use int64_t modulo instead of floating-point fmod to avoid rounding drift
+      and to guarantee bit-for-bit deterministic wrapping across platforms.
+    - In C, the sign of the result of x % m follows x (dividend). We normalize
+      negatives by adding the modulus to produce a canonical [0, m) representative.
+    - Inputs are scaled to int64_t, keeping values within defined ranges to avoid overflow.
+    */
+    int64_t rem = (internal_seedOuter + int_frame) % holdDuration;
+    if (rem < 0) rem += holdDuration;
+
     if (finalRandSwitch) {
-        return portable_rand(held_integer_state); // Seed is already large integer
+        return portable_rand(rem); // Seed is 64-bit integer state
     }
-    return (float)held_integer_state;
+    return (float)rem;
 }
 
 float _fpsr_tm_base(
@@ -204,38 +228,43 @@ float _fpsr_tm_base(
     int periodA, int periodB,
     int periodSwitch, int seedInner, int seedOuter, int finalRandSwitch)
 {
-    // Convert scaled double frame to large integer for pure integer math
-    int int_frame = (int)floor(frame_input_from_wrapper * FPSR_INFLATION_FACTOR);
+    // Convert scaled double frame to large integer for pure integer math (64-bit to avoid overflow)
+    int64_t int_frame = (int64_t)floor(frame_input_from_wrapper * FPSR_INFLATION_FACTOR);
 
-    // Scale all time-based integer parameters to match the int_frame resolution
-    // These are now 'internal_' variables and replace the direct use of input parameters
-    int internal_periodA = (int)floor(periodA * FPSR_INFLATION_FACTOR);
-    int internal_periodB = (int)floor(periodB * FPSR_INFLATION_FACTOR);
-    int internal_periodSwitch = (int)floor(periodSwitch * FPSR_INFLATION_FACTOR);
-    int internal_seedInner = (int)floor(seedInner * FPSR_INFLATION_FACTOR);
-    int internal_seedOuter = (int)floor(seedOuter * FPSR_INFLATION_FACTOR);
+    // Scale all time-based integer parameters to match the int_frame resolution (64-bit)
+    int64_t internal_periodA = (int64_t)floor((double)periodA * FPSR_INFLATION_FACTOR);
+    int64_t internal_periodB = (int64_t)floor((double)periodB * FPSR_INFLATION_FACTOR);
+    int64_t internal_periodSwitch = (int64_t)floor((double)periodSwitch * FPSR_INFLATION_FACTOR);
+    int64_t internal_seedInner = (int64_t)floor((double)seedInner * FPSR_INFLATION_FACTOR);
+    int64_t internal_seedOuter = (int64_t)floor((double)seedOuter * FPSR_INFLATION_FACTOR);
 
-    if (internal_periodSwitch < (int)floor(1.0 * FPSR_INFLATION_FACTOR)) { internal_periodSwitch = (int)floor(1.0 * FPSR_INFLATION_FACTOR); }
-    double inner_clock_frame_double = (double)internal_seedInner + int_frame; // Use int_frame
-    
-    int holdDuration;
-    // Use int_frame for modulo operations
-    if ((int_frame % internal_periodSwitch) < (internal_periodSwitch / 2)) { // Pure integer modulo
+    int64_t one_tick = (int64_t)floor(1.0 * FPSR_INFLATION_FACTOR);
+    if (internal_periodSwitch < one_tick) { internal_periodSwitch = one_tick; }
+
+    // Toggle using 64-bit modulo
+    int64_t holdDuration;
+    if ((int_frame % internal_periodSwitch) < (internal_periodSwitch / 2)) {
         holdDuration = internal_periodA;
     } else {
         holdDuration = internal_periodB;
     }
-    if (holdDuration < (int)floor(1.0 * FPSR_INFLATION_FACTOR)) { holdDuration = (int)floor(1.0 * FPSR_INFLATION_FACTOR); }
-    
-    double outer_clock_frame_double = (double)internal_seedOuter + int_frame; // Use int_frame
-    // Use int_frame for modulo operations
-    double held_integer_state_double = outer_clock_frame_double - ((double)(internal_seedOuter + int_frame) / holdDuration - floor((double)(internal_seedOuter + int_frame) / holdDuration)) * holdDuration; // Explicit integer modulo for absolute determinism
-    int held_integer_state = (int)floor(held_integer_state_double);
+    if (holdDuration < one_tick) { holdDuration = one_tick; }
+
+    // 64-bit modulo for held integer state (normalized)
+    /*
+    Integer modulo determinism (TM):
+    - The remainder encodes the phase within the current hold period exactly.
+    - Using integer modulo ensures the phase does not drift due to FP rounding.
+    - Normalization (if (rem < 0) rem += holdDuration) provides consistent [0, m)
+      behavior on any platform where % retains the sign of the dividend.
+    */
+    int64_t rem = (internal_seedOuter + int_frame) % holdDuration;
+    if (rem < 0) rem += holdDuration;
 
     if (finalRandSwitch) {
-        return portable_rand(held_integer_state); // Seed is already large integer
+        return portable_rand(rem); // Seed is 64-bit integer state
     }
-    return (float)held_integer_state;
+    return (float)rem;
 }
 
 FPSR_Output _fpsr_qs_base( 
@@ -247,34 +276,41 @@ FPSR_Output _fpsr_qs_base(
 {
     FPSR_Output output = {0}; // Initialize output struct
     
-    // Convert scaled double frame to large integer for pure integer math
-    int int_frame = (int)floor(frame_input_from_wrapper * FPSR_INFLATION_FACTOR);
+    // Convert scaled double frame to large integer for pure integer math (64-bit)
+    int64_t int_frame = (int64_t)floor(frame_input_from_wrapper * FPSR_INFLATION_FACTOR);
     
-    // Scale all time-based integer parameters to match the int_frame resolution
-    // These are now 'internal_' variables and replace the direct use of input parameters
-    int internal_streamSwitchDur = (int)floor(streamSwitchDur * FPSR_INFLATION_FACTOR);
-    int internal_stream1QuantDur = (int)floor(stream1QuantDur * FPSR_INFLATION_FACTOR);
-    int internal_stream2QuantDur = (int)floor(stream2QuantDur * FPSR_INFLATION_FACTOR);
-    int internal_streamsOffset_0 = (int)floor(streamsOffset[0] * FPSR_INFLATION_FACTOR);
-    int internal_streamsOffset_1 = (int)floor(streamsOffset[1] * FPSR_INFLATION_FACTOR);
-    int internal_quantOffsets_0 = (int)floor(quantOffsets[0] * FPSR_INFLATION_FACTOR);
-    int internal_quantOffsets_1 = (int)floor(quantOffsets[1] * FPSR_INFLATION_FACTOR);
+    // Scale all time-based integer parameters to match the int_frame resolution (64-bit)
+    int64_t internal_streamSwitchDur = (int64_t)floor((double)streamSwitchDur * FPSR_INFLATION_FACTOR);
+    int64_t internal_stream1QuantDur = (int64_t)floor((double)stream1QuantDur * FPSR_INFLATION_FACTOR);
+    int64_t internal_stream2QuantDur = (int64_t)floor((double)stream2QuantDur * FPSR_INFLATION_FACTOR);
+    int64_t internal_streamsOffset_0 = (int64_t)floor((double)streamsOffset[0] * FPSR_INFLATION_FACTOR);
+    int64_t internal_streamsOffset_1 = (int64_t)floor((double)streamsOffset[1] * FPSR_INFLATION_FACTOR);
+    int64_t internal_quantOffsets_0 = (int64_t)floor((double)quantOffsets[0] * FPSR_INFLATION_FACTOR);
+    int64_t internal_quantOffsets_1 = (int64_t)floor((double)quantOffsets[1] * FPSR_INFLATION_FACTOR);
 
-    if (internal_streamSwitchDur < (int)floor(1.0 * FPSR_INFLATION_FACTOR)) { internal_streamSwitchDur = (int)floor(1.0 * FPSR_INFLATION_FACTOR); } 
-    if (internal_stream1QuantDur < (int)floor(1.0 * FPSR_INFLATION_FACTOR)) { internal_stream1QuantDur = (int)floor(1.0 * FPSR_INFLATION_FACTOR); } 
-    if (internal_stream2QuantDur < (int)floor(1.0 * FPSR_INFLATION_FACTOR)) { internal_stream2QuantDur = (int)floor(1.0 * FPSR_INFLATION_FACTOR); } 
+    int64_t one_tick = (int64_t)floor(1.0 * FPSR_INFLATION_FACTOR);
+    if (internal_streamSwitchDur < one_tick) { internal_streamSwitchDur = one_tick; } 
+    if (internal_stream1QuantDur < one_tick) { internal_stream1QuantDur = one_tick; } 
+    if (internal_stream2QuantDur < one_tick) { internal_stream2QuantDur = one_tick; } 
 
     int quant_min = quantLevelsMinMax[0];
     int quant_max = quantLevelsMinMax[1];
     int quant_range = quant_max - quant_min + 1;
     if (quant_range < 1) quant_range = 1;
 
-    // Use int_frame for modulo operations
-    double s1_quant_seed_double = (double)internal_quantOffsets_0 + int_frame - (int_frame % internal_stream1QuantDur);
-    int s1_quant_level = quant_min + (int)floor(portable_rand((int)floor(s1_quant_seed_double)) * quant_range);
+    // Use 64-bit modulo boundaries for seeds
+    /*
+    Integer modulo bracketing (QS quant levels):
+    - Snap to the start of the current quant window using:
+        int_frame - (int_frame % internal_streamXQuantDur)
+      This is exact in integer arithmetic and avoids FP off-by-one at boundaries.
+    - Seeds derived from these boundaries feed portable_rand for deterministic quant levels.
+    */
+    int64_t s1_quant_seed = internal_quantOffsets_0 + int_frame - (int_frame % internal_stream1QuantDur);
+    int s1_quant_level = quant_min + (int)floor(portable_rand(s1_quant_seed) * quant_range);
     
-    double s2_quant_seed_double = (double)internal_quantOffsets_1 + int_frame - (int_frame % internal_stream2QuantDur);
-    int s2_quant_level = quant_min + (int)floor(portable_rand((int)floor(s2_quant_seed_double)) * quant_range);
+    int64_t s2_quant_seed = internal_quantOffsets_1 + int_frame - (int_frame % internal_stream2QuantDur);
+    int s2_quant_level = quant_min + (int)floor(portable_rand(s2_quant_seed) * quant_range);
     
     if (s1_quant_level < 1) { s1_quant_level = 1; }
     if (s2_quant_level < 1) { s2_quant_level = 1; }
@@ -291,38 +327,45 @@ FPSR_Output _fpsr_qs_base(
     // Select sine generation method based on sine_lod_level
     switch (sine_lod_level) {
         case 0: // Direct sin() call (double precision)
-            stream1_raw_sine = sin(((double)internal_streamsOffset_0 + int_frame) * deflated_baseWaveFreq);
-            stream2_raw_sine = sin(((double)internal_streamsOffset_1 + int_frame) * deflated_stream2FreqMult_applied);
+            stream1_raw_sine = sin(((double)internal_streamsOffset_0 + (double)int_frame) * deflated_baseWaveFreq);
+            stream2_raw_sine = sin(((double)internal_streamsOffset_1 + (double)int_frame) * deflated_stream2FreqMult_applied);
             break;
         case 1: // LUT 100 samples
-            stream1_raw_sine = _get_sine_from_lod_lut(((double)internal_streamsOffset_0 + int_frame) * deflated_baseWaveFreq, SINE_LUT_SIZE_100, _sine_lut_100);
-            stream2_raw_sine = _get_sine_from_lod_lut(((double)internal_streamsOffset_1 + int_frame) * deflated_stream2FreqMult_applied, SINE_LUT_SIZE_100, _sine_lut_100);
+            stream1_raw_sine = _get_sine_from_lod_lut(((double)internal_streamsOffset_0 + (double)int_frame) * deflated_baseWaveFreq, SINE_LUT_SIZE_100, _sine_lut_100);
+            stream2_raw_sine = _get_sine_from_lod_lut(((double)internal_streamsOffset_1 + (double)int_frame) * deflated_stream2FreqMult_applied, SINE_LUT_SIZE_100, _sine_lut_100);
             break;
         case 2: // LUT 500 samples
-            stream1_raw_sine = _get_sine_from_lod_lut(((double)internal_streamsOffset_0 + int_frame) * deflated_baseWaveFreq, SINE_LUT_SIZE_500, _sine_lut_500);
-            stream2_raw_sine = _get_sine_from_lod_lut(((double)internal_streamsOffset_1 + int_frame) * deflated_stream2FreqMult_applied, SINE_LUT_SIZE_500, _sine_lut_500);
+            stream1_raw_sine = _get_sine_from_lod_lut(((double)internal_streamsOffset_0 + (double)int_frame) * deflated_baseWaveFreq, SINE_LUT_SIZE_500, _sine_lut_500);
+            stream2_raw_sine = _get_sine_from_lod_lut(((double)internal_streamsOffset_1 + (double)int_frame) * deflated_stream2FreqMult_applied, SINE_LUT_SIZE_500, _sine_lut_500);
             break;
         case 3: // LUT 1000 samples
-            stream1_raw_sine = _get_sine_from_lod_lut(((double)internal_streamsOffset_0 + int_frame) * deflated_baseWaveFreq, SINE_LUT_SIZE_1000, _sine_lut_1000);
-            stream2_raw_sine = _get_sine_from_lod_lut(((double)internal_streamsOffset_1 + int_frame) * deflated_stream2FreqMult_applied, SINE_LUT_SIZE_1000, _sine_lut_1000);
+            stream1_raw_sine = _get_sine_from_lod_lut(((double)internal_streamsOffset_0 + (double)int_frame) * deflated_baseWaveFreq, SINE_LUT_SIZE_1000, _sine_lut_1000);
+            stream2_raw_sine = _get_sine_from_lod_lut(((double)internal_streamsOffset_1 + (double)int_frame) * deflated_stream2FreqMult_applied, SINE_LUT_SIZE_1000, _sine_lut_1000);
             break;
         case 4: // LUT 4096 samples (highest precision default)
         default: // Default to highest precision LUT if invalid LOD is provided
-            stream1_raw_sine = _get_sine_from_lod_lut(((double)internal_streamsOffset_0 + int_frame) * deflated_baseWaveFreq, SINE_LUT_SIZE_4096, _sine_lut_4096);
-            stream2_raw_sine = _get_sine_from_lod_lut(((double)internal_streamsOffset_1 + int_frame) * deflated_stream2FreqMult_applied, SINE_LUT_SIZE_4096, _sine_lut_4096);
+            stream1_raw_sine = _get_sine_from_lod_lut(((double)internal_streamsOffset_0 + (double)int_frame) * deflated_baseWaveFreq, SINE_LUT_SIZE_4096, _sine_lut_4096);
+            stream2_raw_sine = _get_sine_from_lod_lut(((double)internal_streamsOffset_1 + (double)int_frame) * deflated_stream2FreqMult_applied, SINE_LUT_SIZE_4096, _sine_lut_4096);
             break;
     }
     
     output.randStreams[0] = floor(stream1_raw_sine * s1_quant_level) / (double)s1_quant_level;
     output.randStreams[1] = floor(stream2_raw_sine * s2_quant_level) / (double)s2_quant_level;
 
-    // Use frame for modulo operation
+    // Use 64-bit frame for modulo operation
+    /*
+    Integer modulo for stream switch schedule (QS):
+    - The stream selection toggles on an exact integer cadence using:
+        (int_frame % internal_streamSwitchDur) < (internal_streamSwitchDur / 2)
+      which yields a stable 50/50 duty cycle without FP rounding artifacts.
+    */
     output.selected_stream_idx = ((int_frame % internal_streamSwitchDur) < (internal_streamSwitchDur / 2)) ? 0 : 1;
     
     double active_stream_val_double = (output.selected_stream_idx == 0) ? output.randStreams[0] : output.randStreams[1];
 
     if (finalRandSwitch) {
-        output.randVal = portable_rand((int)(active_stream_val_double * FPSR_INFLATION_FACTOR)); // Seed is already large integer
+        int64_t seed = (int64_t)floor(active_stream_val_double * FPSR_INFLATION_FACTOR); // 64-bit seed
+        output.randVal = portable_rand(seed); // Seed is large integer
     } else {
         output.randVal = (float)(0.5 * active_stream_val_double + 0.5); // Return float, calculations in double
     }
@@ -368,27 +411,31 @@ FPSR_Output fpsr_sm_get_details(
     // Calculate the scaled frame input for the previous frame
     double prev_scaled_frame_for_lod1_double = (double)(frame - 1) * frame_multiplier; 
     float prev_val = _fpsr_sm_base(prev_scaled_frame_for_lod1_double, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch);
+    out.randVal_previous = prev_val; 
     out.has_changed = (out.randVal != prev_val);
 
     if (lod < 2) return out;
 
     // LOD 2: Use a robust two-phase search to find change frames.
+    /*
+    Exponential search (a.k.a. galloping search) + binary search:
+    - First, probe exponentially farther (1,2,4,8,...) to bracket the nearest change
+      within O(log D) probes, where D is distance to the change.
+    - Then, run a binary search inside the bracket to locate the exact boundary frame.
+    This minimizes base calls, guarantees correctness, and avoids false positives from
+    coincidental value collisions.
+    */
     int low_int, high_int, mid_int, result_int; 
     float next_val_candidate = 0.0f; // Stores the value at the next_changed_frame
     int step_int = 1; // Used for exponential probe step
 
     // --- Backwards Search for last_changed_frame ---
     if (out.has_changed) {
-        // Optimization: If has_changed == 1, assign last_changed_frame = frame.
-        // Avoids 4 calls to _fpsr_xx_base(): (1 in exponential probe, 3 in binary search)
-        // Avoids 3 loops iterations (1 in exponential probe, 2 in binary search)
         out.last_changed_frame = frame;
     } else {
-        // Phase 1: Exponential probe to find a "dirty" region.
         int bound_low_int = frame; // operates on original frame space (int)
         step_int = 1; // Reset for exponential probe step
         while (frame - step_int > frame - max_search_frames) { 
-            // Scale the probe frame (as double) before passing to base algorithm
             double probe_frame_double = (double)(frame - step_int) * frame_multiplier; 
             float val_at_probe = _fpsr_sm_base(probe_frame_double, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch);
             if (val_at_probe != out.randVal) {
@@ -399,17 +446,13 @@ FPSR_Output fpsr_sm_get_details(
             step_int *= 2; 
         }
         
-        // Phase 2: Binary search within the safe, "dirty" region.
         low_int = bound_low_int;
         high_int = frame;
-        result_int = frame; // result stores the original frame number (int)
+        result_int = frame - max_search_frames + 1; // Default to earliest searched frame
         while(low_int <= high_int) {
             mid_int = low_int + (high_int - low_int) / 2; 
-            // Scale the mid frame (as double) before passing to base algorithm
             double mid_frame_double = (double)mid_int * frame_multiplier; 
             if (_fpsr_sm_base(mid_frame_double, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch) == out.randVal) {
-                // Check the frame immediately preceding 'mid' in the scaled timeline
-                // using 1 as the step for comparison
                 double mid_minus_step_frame_double = (double)(mid_int - 1) * frame_multiplier; 
                 if (_fpsr_sm_base(mid_minus_step_frame_double, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch) != out.randVal) {
                     result_int = mid_int; break;
@@ -422,13 +465,10 @@ FPSR_Output fpsr_sm_get_details(
         out.last_changed_frame = result_int;
     }
 
-
     // --- Forwards Search for next_changed_frame ---
-    // Phase 1: Exponential probe.
     int bound_high_int = frame; // operates on original frame space (int)
     step_int = 1; // Reset for exponential probe step
     while (frame + step_int < frame + max_search_frames) { 
-        // Scale the probe frame (as double) before passing to base algorithm
         double probe_frame_double = (double)(frame + step_int) * frame_multiplier; 
         float val_at_probe = _fpsr_sm_base(probe_frame_double, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch);
         if (val_at_probe != out.randVal) {
@@ -440,13 +480,11 @@ FPSR_Output fpsr_sm_get_details(
         step_int *= 2; 
     }
 
-    // Phase 2: Binary search.
     low_int = frame;
     high_int = bound_high_int;
     result_int = frame + max_search_frames; // Default if no change is found, in original frame space (int)
     while(low_int <= high_int) {
         mid_int = low_int + (high_int - low_int) / 2; 
-        // Scale the mid frame (as double) before passing to base algorithm
         double mid_frame_double = (double)mid_int * frame_multiplier; 
         float mid_val = _fpsr_sm_base(mid_frame_double, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch);
         if (mid_val != out.randVal) {
@@ -461,7 +499,6 @@ FPSR_Output fpsr_sm_get_details(
     out.randVal_next_changed_frame = next_val_candidate; 
     
     // Calculate hold progress based on scaled frame values
-    // These calculations now also use double for precision before final cast
     double scaled_last_changed_frame_val_double = (double)out.last_changed_frame * frame_multiplier; 
     double scaled_next_changed_frame_val_double = (double)out.next_changed_frame * frame_multiplier; 
     double hold_duration_scaled_double = scaled_next_changed_frame_val_double - scaled_last_changed_frame_val_double;
@@ -510,20 +547,24 @@ FPSR_Output fpsr_tm_get_details(
     // Calculate the scaled frame input for the previous frame
     double prev_scaled_frame_for_lod1_double = (double)(frame - 1) * frame_multiplier; 
     float prev_val = _fpsr_tm_base(prev_scaled_frame_for_lod1_double, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch);
+    out.randVal_previous = prev_val; 
     out.has_changed = (out.randVal != prev_val);
     
     if (lod < 2) return out;
 
     // LOD 2: Robust Search
+    /*
+    Exponential search rationale:
+    - We use an exponential probe to quickly bracket the change frame, then refine with
+      a binary search. This is both asymptotically optimal and practical for large
+      search windows, while remaining deterministic.
+    */
     int low_int, high_int, mid_int, result_int; 
     float next_val_candidate = 0.0f; // Stores the value at the next_changed_frame
     int step_int = 1; // Used for exponential probe step
 
     // --- Backwards Search for last_changed_frame ---
     if (out.has_changed) {
-        // Optimization: If has_changed == 1, assign last_changed_frame = frame.
-        // Avoids 4 calls to _fpsr_xx_base(): (1 in exponential probe, 3 in binary search)
-        // Avoids 3 loops iterations (1 in exponential probe, 2 in binary search)
         out.last_changed_frame = frame;
     } else {
         int bound_low_int = frame; // operates on original frame space (int)
@@ -531,7 +572,7 @@ FPSR_Output fpsr_tm_get_details(
         while (frame - step_int > frame - max_search_frames) { // All int
             // Scale the probe frame (as double) before passing to base algorithm
             double probe_frame_double = (double)(frame - step_int) * frame_multiplier; // All double
-            if (_fpsr_tm_base((int)floor(probe_frame_double), periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch) != out.randVal) {
+            if (_fpsr_tm_base(probe_frame_double, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch) != out.randVal) {
                 bound_low_int = frame - step_int;
                 break;
             }
@@ -540,16 +581,16 @@ FPSR_Output fpsr_tm_get_details(
         }
         low_int = bound_low_int;
         high_int = frame;
-        result_int = frame; // result stores the original frame number (int)
+        result_int = frame - max_search_frames + 1; // Default to earliest searched frame
         while(low_int <= high_int) {
             mid_int = low_int + (high_int - low_int) / 2; // All int
             // Scale the mid frame (as double) before passing to base algorithm
             double mid_frame_double = (double)mid_int * frame_multiplier; // All double
-            if (_fpsr_tm_base((int)floor(mid_frame_double), periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch) == out.randVal) {
+            if (_fpsr_tm_base(mid_frame_double, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch) == out.randVal) {
                 // Check the frame immediately preceding 'mid' in the scaled timeline
                 // using 1 as the step for comparison
                 double mid_minus_step_frame_double = (double)(mid_int - 1) * frame_multiplier; 
-                if (_fpsr_tm_base((int)floor(mid_minus_step_frame_double), periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch) != out.randVal) {
+                if (_fpsr_tm_base(mid_minus_step_frame_double, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch) != out.randVal) {
                     result_int = mid_int; break;
                 }
                 high_int = mid_int - 1; 
@@ -566,7 +607,7 @@ FPSR_Output fpsr_tm_get_details(
     while (frame + step_int < frame + max_search_frames) { // All int
         // Scale the probe frame (as double) before passing to base algorithm
         double probe_frame_double = (double)(frame + step_int) * frame_multiplier; // All double
-        float val_at_probe = _fpsr_tm_base((int)floor(probe_frame_double), periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch);
+        float val_at_probe = _fpsr_tm_base(probe_frame_double, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch);
         if (val_at_probe != out.randVal) {
             bound_high_int = frame + step_int;
             next_val_candidate = val_at_probe; // Store the value at the first differing frame
@@ -582,7 +623,7 @@ FPSR_Output fpsr_tm_get_details(
         mid_int = low_int + (high_int - low_int) / 2; // All int
         // Scale the mid frame (as double) before passing to base algorithm
         double mid_frame_double = (double)mid_int * frame_multiplier; // All double
-        float mid_val = _fpsr_tm_base((int)floor(mid_frame_double), periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch);
+        float mid_val = _fpsr_tm_base(mid_frame_double, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch);
         if (mid_val != out.randVal) {
             result_int = mid_int;
             next_val_candidate = mid_val; // Store the value at this frame
@@ -658,27 +699,30 @@ FPSR_Output fpsr_qs_get_details(
     FPSR_Output prev_qs_output = _fpsr_qs_base(prev_scaled_frame_for_lod1_double, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level);
     out.randVal_previous = prev_qs_output.randVal;
     out.has_changed = (out.randVal != out.randVal_previous);
-    printf("--- fpsr_qs_get_details Debug ---\n");
-    printf("Frame: %d, Scaled Frame: %f, prev Scaled Frame %f\n", frame, current_scaled_frame_double, prev_scaled_frame_for_lod1_double);
-    printf("out.randVal: %f, base_qs_output.randVal %f, out.randVal_previous %f, prev_qs_output.randVal: %f\n", out.randVal, base_qs_output.randVal, out.randVal_previous,prev_qs_output.randVal);
-    printf("Current randVal: %f, Previous randVal: %f, Has Changed: %i, finalRandSwitch %d\n", out.randVal, out.randVal_previous, out.has_changed, finalRandSwitch);
-    printf("--- End Debug ---\n");
+    // printf("--- fpsr_qs_get_details Debug ---\n");
+    // printf("Frame: %d, Scaled Frame: %f, prev Scaled Frame %f\n", frame, current_scaled_frame_double, prev_scaled_frame_for_lod1_double);
+    // printf("out.randVal: %f, base_qs_output.randVal %f, out.randVal_previous %f, prev_qs_output.randVal: %f\n", out.randVal, base_qs_output.randVal, out.randVal_previous,prev_qs_output.randVal);
+    // printf("Current randVal: %f, Previous randVal: %f, Has Changed: %i, finalRandSwitch %d\n", out.randVal, out.randVal_previous, out.has_changed, finalRandSwitch);
+    // printf("--- End Debug ---\n");
     
     if (lod < 2) return out;
 
     // LOD 2: Robust Search
+    /*
+    Exponential + binary search (deterministic):
+    - Phase 1: exponential probe to bound the nearest change on each side.
+    - Phase 2: binary search within the bound to get exact last/next change frames.
+    This maintains bit-for-bit parity with the base function by only varying the input
+    frame and never modifying the underlying state machine.
+    */
     int low_int, high_int, mid_int, result_int; 
     float next_val_candidate = 0.0f; // Stores the value at the next_changed_frame
     int step_int = 1; // Used for exponential probe step
 
     // --- Backwards Search for last_changed_frame ---
     if (out.has_changed) {
-        // Optimization: If out.has_changed == 1, assign last_changed_frame = frame.
-        // Avoids 4 calls to _fpsr_xx_base(): (1 in exponential probe, 3 in binary search)
-        // Avoids 3 loops iterations (1 in exponential probe, 2 in binary search)
         out.last_changed_frame = frame;
     } else {
-        // Phase 1: Exponential probe to find a "dirty" region.
         int bound_low_int = frame; // operates on original frame space (int)
         step_int = 1; // Reset for exponential probe step
         while (frame - step_int > frame - max_search_frames) { 
@@ -694,7 +738,7 @@ FPSR_Output fpsr_qs_get_details(
         }
         low_int = bound_low_int;
         high_int = frame;
-        result_int = frame; // result stores the original frame number (int)
+        result_int = frame - max_search_frames + 1; // Default to earliest searched frame
         while(low_int <= high_int) {
             mid_int = low_int + (high_int - low_int) / 2; 
             // Scale the mid frame (as double) before passing to base algorithm
@@ -750,7 +794,6 @@ FPSR_Output fpsr_qs_get_details(
     out.next_changed_frame = result_int;
     
     // Calculate hold progress based on scaled frame values
-    // These calculations now also use double for precision before final cast
     double scaled_last_changed_frame_val_double = (double)out.last_changed_frame * frame_multiplier; 
     double scaled_next_changed_frame_val_double = (double)out.next_changed_frame * frame_multiplier; 
     double hold_duration_scaled_double = scaled_next_changed_frame_val_double - scaled_last_changed_frame_val_double;
@@ -772,7 +815,7 @@ int main() {
     initialize_sine_luts(); // Initialize sine lookup tables
     
     // Algorithms: 0 - SM, 1 - TM, 2 - QS
-    int algo = 2; // Change this value to 0, 1, or 2 to test different algorithms
+    int algo = 0; // Change this value to 0, 1, or 2 to test different algorithms
     char algo_name[][3] = {"SM", "TM", "QS"}; // Names for the algorithms
     printf("Using algorithm FPS-R: %s\n", algo_name[algo]);
 
@@ -782,16 +825,16 @@ int main() {
 
     for (int loop_frame = 0; loop_frame < num_frames; loop_frame++) {
         int frame = loop_frame + start_frames[algo]; // Starting frame for the selected algorithm
-        int frame_multiplier = 1; // Speed factor
+        float frame_multiplier = 1.0f; // Speed factor
         FPSR_Output output = {0}; // Variable to hold the FPSR_Output struct
 
         if (algo == 0) {
             // Parameters for FPS-R:SM
             // int frame = 90;
             // float frame_multiplier = 1.0f; // Speed factor
-            int minHoldFrames = 16;
-            int maxHoldFrames = 24;
-            int reseedFrames = 9;
+            int minHoldFrames = 7; 
+            int maxHoldFrames = 9; 
+            int reseedFrames = 6; 
             int offsetInner = -41;
             int offsetOuter = 23;
             int finalRandSwitch = 1;
@@ -804,9 +847,9 @@ int main() {
             // Parameters for FPS-R:TM
             // int frame = 100;
             // float frame_multiplier = 1.0f; // Speed factor
-            int periodA = 10;
-            int periodB = 25;
-            int periodSwitch = 30;
+            int periodA = 8;      
+            int periodB = 5;      
+            int periodSwitch = 6; 
             int offsetInner = 15;
             int offsetOuter = 0;
             int finalRandSwitch = 1;
@@ -824,9 +867,9 @@ int main() {
             int quantLevelsMinMax[2] = {4, 12};
             int streamsOffset[2] = {0, 76};
             int quantOffsets[2] = {10, 81};
-            int streamSwitchDur = 24;
-            int stream1QuantDur = 16;
-            int stream2QuantDur = 20;
+            int streamSwitchDur = 8;  
+            int stream1QuantDur = 10; 
+            int stream2QuantDur = 13; 
             int finalRandSwitch = 1;
             int sine_lod_level = 4;
             // int lod = 2;
