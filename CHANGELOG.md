@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - an English podcast style introduction to FPS-R
 
 ### Changed
-- updated `README.md`, `README-CH.md`.
+- updated `README.md`, `README-CH.md`
 - the wrapper functions are not working yet. C and Houdini `_wrap` have been moved to `./resources/code/_WIP`
 
 ---
