@@ -225,7 +225,7 @@ def fpsr_qs(frame, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffs
     stream2 = math.floor((math.sin((streamsOffset[1] + frame) * baseWaveFreq * stream2FreqMult) / 2.0 + 0.5) * s2_quant_level) / s2_quant_level
 
     # --- 4. Switch between the two streams ---
-    active_stream_val = stream1 if int(frame % streamSwitchDur) < int(streamSwitchDur / 2.0) else stream2
+    active_stream_val = stream1 if int(frame % streamSwitchDur) < (streamSwitchDur // 2) else stream2
 
     # --- 5. Hash the final output to create a random-looking value (or bypass) ---
     if finalRandSwitch:
