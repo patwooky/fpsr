@@ -323,7 +323,7 @@ int main() {
             // int frame = 100; // Replace with the current frame value
             int period_A = 6; // The first hold duration
             int period_B = 8; // The second hold duration
-            int periodSwitch = 10; // The toggle happens every 30 frames
+            int periodSwitch = 10; // The toggle duration between periods A and B in frames
             int offset_inner = 15; // offsets the inner (toggle) clock
             int offset_outer = 0; // offsets the outer (hold) clock
             int final_rand_switch = 1; // 1 to apply the final randomisation step, 0 to skip it
