@@ -75,7 +75,7 @@ def fpsr_sm(frame, minHold, maxHold, reseedInterval, seedInner, seedOuter, final
     if reseedInterval < 1:
         reseedInterval = 1  # Prevent division by zero.
 
-    rand_for_duration = portable_rand(seedInner + frame - int(frame % reseedInterval))
+    rand_for_duration = portable_rand(seedInner + frame - (frame % reseedInterval))
     holdDuration = math.floor(minHold + rand_for_duration * (maxHold - minHold))
 
     if holdDuration < 1:
