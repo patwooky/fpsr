@@ -266,12 +266,12 @@ int main() {
     // printf("Try programiz.pro\n");
  
     // algorithms: 0 - sm, 1 - tm, 2 - qs
-    int algo = 1; // Change this value to 0, 1, or 2 to test different algorithms
+    int algo = 0; // Change this value to 0, 1, or 2 to test different algorithms
     char algo_name[][3] = {"SM", "TM", "QS"}; // Names for the algorithms
     printf("Using algorithm FPS-R: %s\n", algo_name[algo]);
 
     int start_frames[] = {90, 100, 103}; // starting frames for each algorithm
-    int num_frames = 20; // run a loop of x frames to demonstrate changes
+    int num_frames = 30; // run a loop of x frames to demonstrate changes
     
     // create main for loop to demonstrate changes
     for (int loop_frame = 0; loop_frame < num_frames; loop_frame++) {
@@ -283,12 +283,14 @@ int main() {
         int changed = 0; // Variable to track if the value has changed
 
         if (algo == 0) {
+            // --------------------------------------------------------------------------
             // Sample code to call the FPS-R:SM function
+            // --------------------------------------------------------------------------
             // Parameters
             // int frame = 90; // Replace with the current frame value
-            int minHoldFrames = 16; // probable minimum held period
-            int maxHoldFrames = 24; // maximum held period before cycling
-            int reseedFrames = 9; // inner mod cycle timing
+            int minHoldFrames = 12; // probable minimum held period
+            int maxHoldFrames = 21; // maximum held period before cycling
+            int reseedFrames = 7; // inner mod cycle timing
             int offsetInner = -41; // offsets the inner frame
             int offsetOuter = 23; // offsets the outer frame
             int finalRandSwitch = 1; // 1 to apply the final randomisation step, 0 to skip it
@@ -314,12 +316,14 @@ int main() {
         }
         
         else if (algo == 1) {
+            // --------------------------------------------------------------------------
             // Sample code to call the FPS-R:TM function
+            // --------------------------------------------------------------------------
             // Parameters
             // int frame = 100; // Replace with the current frame value
-            int period_A = 10; // The first hold duration
-            int period_B = 25; // The second hold duration
-            int periodSwitch = 30; // The toggle happens every 30 frames
+            int period_A = 6; // The first hold duration
+            int period_B = 8; // The second hold duration
+            int periodSwitch = 10; // The toggle happens every 30 frames
             int offset_inner = 15; // offsets the inner (toggle) clock
             int offset_outer = 0; // offsets the outer (hold) clock
             int final_rand_switch = 1; // 1 to apply the final randomisation step, 0 to skip it
@@ -345,7 +349,9 @@ int main() {
         }
         
         else if (algo == 2) {
+            // --------------------------------------------------------------------------
             // Sample code to call the FPS-R:QS function
+            // --------------------------------------------------------------------------
             // Parameters
             // int frame = 103; // Current frame number
             float baseWaveFreq = 0.012; // Base frequency for the modulation wave of stream 1
@@ -353,9 +359,9 @@ int main() {
             int quantLevelsMinMax[2] = {4, 12}; // Min, Max quantisation levels for the two streams
             int streamsOffset[2] = {0, 76}; // Offset for the two streams
             int quantOffsets[2] = {10, 81}; // Offset for the random quantisation selection
-            int streamSwitchDur = 24; // Duration for switching streams in frames
-            int stream1QuantDur = 16; // Duration for the first stream's quantisation switch cycle in frames
-            int stream2QuantDur = 20; // Duration for the second stream's quantisation switch cycle in frames
+            int streamSwitchDur = 14; // Duration for switching streams in frames
+            int stream1QuantDur = 6; // Duration for the first stream's quantisation switch cycle in frames
+            int stream2QuantDur = 9; // Duration for the second stream's quantisation switch cycle in frames
             int finalRandSwitch = 1; // 1 to apply the final randomisation step, 0 to skip it
             
             // call to fpsr_qs for the current frame
@@ -375,9 +381,8 @@ int main() {
             //     loop_frame, randVal, randVal_previous, changed);
         }
         printf("Frame %d: randVal %f, randVal_previous %f, changed %d ", 
-            frame, randVal, randVal_previous, changed);
-        if (changed) printf("(jumped)");
-        printf("\n");
+                frame, randVal, randVal_previous, changed);
+        printf("%s\n", (changed ? "(jumped)" : ""));
     } // end of main for loop
     return 0;
 }
