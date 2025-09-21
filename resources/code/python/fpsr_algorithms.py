@@ -133,7 +133,7 @@ def fpsr_tm(frame, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRa
     inner_clock_frame = seedInner + frame
     
     # The ternary switch: toggle between periodA and periodB at a fixed rhythm.
-    if int(inner_clock_frame % periodSwitch) < int(periodSwitch / 2.0):
+    if int(inner_clock_frame % periodSwitch) < (periodSwitch // 2):
         holdDuration = periodA
     else:
         holdDuration = periodB
