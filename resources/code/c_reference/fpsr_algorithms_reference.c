@@ -271,7 +271,7 @@ int main() {
     printf("Using algorithm FPS-R: %s\n", algo_name[algo]);
 
     int start_frames[] = {90, 100, 103}; // starting frames for each algorithm
-    int num_frames = 20; // run a loop of x frames to demonstrate changes
+    int num_frames = 30; // run a loop of x frames to demonstrate changes
     
     // create main for loop to demonstrate changes
     for (int loop_frame = 0; loop_frame < num_frames; loop_frame++) {
@@ -283,7 +283,9 @@ int main() {
         int changed = 0; // Variable to track if the value has changed
 
         if (algo == 0) {
+            // --------------------------------------------------------------------------
             // Sample code to call the FPS-R:SM function
+            // --------------------------------------------------------------------------
             // Parameters
             // int frame = 90; // Replace with the current frame value
             int minHoldFrames = 10; // probable minimum held period
@@ -314,7 +316,9 @@ int main() {
         }
         
         else if (algo == 1) {
+            // --------------------------------------------------------------------------
             // Sample code to call the FPS-R:TM function
+            // --------------------------------------------------------------------------
             // Parameters
             // int frame = 100; // Replace with the current frame value
             int period_A = 10; // The first hold duration
@@ -345,7 +349,9 @@ int main() {
         }
         
         else if (algo == 2) {
+            // --------------------------------------------------------------------------
             // Sample code to call the FPS-R:QS function
+            // --------------------------------------------------------------------------
             // Parameters
             // int frame = 103; // Current frame number
             float baseWaveFreq = 0.012; // Base frequency for the modulation wave of stream 1
@@ -375,9 +381,8 @@ int main() {
             //     loop_frame, randVal, randVal_previous, changed);
         }
         printf("Frame %d: randVal %f, randVal_previous %f, changed %d ", 
-            frame, randVal, randVal_previous, changed);
-        if (changed) printf("(jumped)");
-        printf("\n");
+                frame, randVal, randVal_previous, changed);
+        printf("%s\n", (changed ? "(jumped)" : ""));
     } // end of main for loop
     return 0;
 }
