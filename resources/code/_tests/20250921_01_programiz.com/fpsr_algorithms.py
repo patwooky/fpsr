@@ -75,7 +75,7 @@ def fpsr_sm(frame, minHold, maxHold, reseedInterval, seedInner, seedOuter, final
     if reseedInterval < 1:
         reseedInterval = 1  # Prevent division by zero.
 
-    rand_for_duration = portable_rand(seedInner + frame - (frame % reseedInterval))
+    rand_for_duration = portable_rand(seedInner + frame - int(frame % reseedInterval))
     holdDuration = math.floor(minHold + rand_for_duration * (maxHold - minHold))
 
     if holdDuration < 1:
@@ -133,7 +133,7 @@ def fpsr_tm(frame, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRa
     inner_clock_frame = seedInner + frame
     
     # The ternary switch: toggle between periodA and periodB at a fixed rhythm.
-    if int(inner_clock_frame % periodSwitch) < (periodSwitch // 2):
+    if int(inner_clock_frame % periodSwitch) < int(periodSwitch / 2.0):
         holdDuration = periodA
     else:
         holdDuration = periodB
@@ -225,7 +225,7 @@ def fpsr_qs(frame, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffs
     stream2 = math.floor((math.sin((streamsOffset[1] + frame) * baseWaveFreq * stream2FreqMult) / 2.0 + 0.5) * s2_quant_level) / s2_quant_level
 
     # --- 4. Switch between the two streams ---
-    active_stream_val = stream1 if int(frame % streamSwitchDur) < (streamSwitchDur // 2) else stream2
+    active_stream_val = stream1 if int(frame % streamSwitchDur) < int(streamSwitchDur / 2.0) else stream2
 
     # --- 5. Hash the final output to create a random-looking value (or bypass) ---
     if finalRandSwitch:
