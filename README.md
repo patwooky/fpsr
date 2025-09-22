@@ -6,7 +6,7 @@ While every update strives to be more accurate, there will be parts that are inc
 
 # 🎲 FPS-R: Frame-Persistent Stateless Randomisation
 
-[Chinese|中文版 README](./README-CH.md)
+中文版 | [Chinese README](./README-CH.md)
 
 ---
 ## An Audio Introduction: Podcast-Style
@@ -448,5 +448,8 @@ A philosophical exploration of surprise, examining nature's complexity and non-l
 **[Origins, Journals and Reflections](./resources/readme/FPSR_Origins_Journal_Reflections.md)** 
 A record of my development journey, including inspirations and challenges encountered along the way.
 
-**[fpsr_algoAnalysis.ipynb](./resources/code/data_analysis/fpsr_algoAnalysis.ipynb)** 
+**[fpsr_algoAnalysis](./resources/code/data_analysis/fpsr_algoAnalysis.ipynb)** 
 A Jupyter notebook with data graph plots for interactive exploration and experimentation. Try it out yourself!
+
+**[README-CH](./README-CH.md)** 
+The Chinese version of this document.
