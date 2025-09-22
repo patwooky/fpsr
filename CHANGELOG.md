@@ -32,7 +32,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [2.0.1] - 2025-09-14
 ### Added 
 - A wrapper version of each FPS-R function (SM, TM, QS):
-    console.log("🚀 ~ FPS:", FPS)
     - enables rich analytic information on function output:
         - `has_changed` checking with the value output of previous frame, returning `1` or `True` if value has changed or "jumped"
         - `hold_progress` Normalized progress (0.0 to 1.0) through the current hold duration.
