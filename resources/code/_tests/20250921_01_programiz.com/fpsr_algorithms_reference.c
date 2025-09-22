@@ -22,69 +22,35 @@
 // https://www.programiz.com/c-programming/online-compiler/
 #include <stdio.h>
 #include <math.h> // For sin() and floor()
-// Add fixed-width integer headers for deterministic 64-bit math on all platforms.
-#include <stdint.h>
-#include <inttypes.h>
-
-/**
- * Deterministic integer math helpers and PRNG
- *
- * Rationale for determinism across C and Python:
- * - Python's % and // are floor-based for negatives; C's % and / truncate toward zero.
- *   Using floor-mod alignment here ensures identical behavior for negative frames/seeds.
- * - All integer counters, frames, durations, and seeds are int64_t for large-range support.
- * - All fractional math that converts to/from integers uses double to match Python's float.
- * - The PRNG uses a uint64_t mixer (SplitMix64) with well-defined wraparound, then maps the
- *   top 53 bits to a double in [0,1). This yields bit-for-bit identical results across
- *   compilers and mirrors a standard reference implementation in Python.
- */
-
-// Floor-based modulo that matches Python's semantics for negative inputs.
-// C's a % m truncates toward zero; Python's a % m is always in [0, m-1] for m>0.
-// By normalizing remainders this way, all alignments and toggles match Python exactly.
-static inline int64_t i64_floor_mod(int64_t a, int64_t m) {
-    // assume m > 0
-    int64_t r = a % m;
-    if (r < 0) r += m;
-    return r;
-}
-
-// Align-down to the nearest multiple of m using floor-mod semantics.
-// This mirrors Python's a - (a % m) even when a is negative, guaranteeing parity
-// between C and Python for all frame-alignment logic.
-static inline int64_t i64_align_down(int64_t a, int64_t m) {
-    return a - i64_floor_mod(a, m);
-}
-
-// SplitMix64: simple, robust 64-bit mixer using well-defined uint64_t wraparound.
-// Produces identical bit patterns across platforms/compilers. Suitable for hashing
-// integer seeds into pseudo-random 64-bit values.
-static inline uint64_t splitmix64(uint64_t x) {
-    x += 0x9E3779B97F4A7C15ULL;
-    x = (x ^ (x >> 30)) * 0xBF58476D1CE4E5B9ULL;
-    x = (x ^ (x >> 27)) * 0x94D049BB133111EBULL;
-    x ^= (x >> 31);
-    return x;
-}
-
-// Map a uint64_t to a double in [0,1) by taking the top 53 bits (double mantissa width).
-// Using the identical bit-extraction and scale factor (2^-53) in Python ensures that
-// both languages produce the exact same floating value for the same 64-bit seed.
-static inline double portable_rand_u64(uint64_t seed) {
-    uint64_t r = splitmix64(seed);
-    return (double)(r >> 11) * (1.0 / 9007199254740992.0); // 2^53
-}
 
 /**
  * A simple, portable pseudo-random number generator.
- * @brief Back-compat wrapper: generates a deterministic float in [0, 1) from an integer seed.
- * @details This now forwards to the 64-bit deterministic PRNG above to guarantee parity with Python.
+ * @brief Generates a deterministic float between 0.0 and 1.0 from an integer seed.
  * @param seed An integer used to generate the random number.
  * @return A pseudo-random float between 0.0 and 1.0.
  */
-static inline float portable_rand(int seed) {
-    // Keep seeding strictly in integer domain; cast via int64_t to preserve sign.
-    return (float)portable_rand_u64((uint64_t)(int64_t)seed);
+
+// A simple, portable pseudo-random number generator that takes an integer seed.
+// Different languages have different rand() implementations, so using a custom
+// one like this ensures identical results on any platform.
+float portable_rand(int seed) {
+    // A common technique for a simple hash-like random number.
+    // The large prime numbers are used to create a chaotic, unpredictable result.
+    float val = (float)seed * 12.9898;
+
+    // --- FIX for float precision on GPUs and other platforms ---
+    // On many platforms, sin() loses precision or returns 0 for large inputs.
+    // This causes the random value to "saturate" and become constant over time.
+    // By using the mathematical property sin(x) = sin(x mod 2π), we can wrap the
+    // input to sin() into a high-precision range [0, 2π], ensuring the result
+    // remains stable and correct indefinitely.
+    const float TWO_PI = 6.28318530718f;
+    val = fmod(val, TWO_PI);
+
+    float result = sin(val) * 43758.5453f;
+    
+    // The fmod(result, 1.0) or (result - floor(result)) emulates GLSL's fract().
+    return result - floor(result);
 }
 
 /******************************************************************************/
@@ -119,41 +85,37 @@ static inline float portable_rand(int seed) {
  *          A float value between 0.0 and 1.0 that remains constant 
  *          for the held duration.
  */
-double fpsr_sm(
-    int64_t frame, int64_t minHold, int64_t maxHold,
-    int64_t reseedInterval, int64_t seedInner, int64_t seedOuter, int finalRandSwitch)
+float fpsr_sm(
+    int frame, int minHold, int maxHold,
+    int reseedInterval, int seedInner, int seedOuter, int finalRandSwitch)
 {
     // --- 1. Calculate the random hold duration ---
     if (reseedInterval < 1) { reseedInterval = 1; } // Prevent division by zero.
 
-    // Use floor-based modulo to match Python for negative frames.
-    // Seed stays in integer domain for reproducibility.
-    int64_t reseed_anchor = (seedInner + frame) - i64_floor_mod(frame, reseedInterval);
+    float rand_for_duration = portable_rand(seedInner + frame - (frame % reseedInterval));
+    int holdDuration = (int)floor(minHold + rand_for_duration * (maxHold - minHold));
 
-    // Deterministic PRNG over 64-bit integer seed; result is double in [0,1).
-    double rand_for_duration = portable_rand_u64((uint64_t)reseed_anchor);
-
-    // Compute duration with double intermediates then floor to int64.
-    // Double math here mirrors Python's float behavior for cross-language parity.
-    int64_t holdDuration = (int64_t)floor((double)minHold + rand_for_duration * (double)(maxHold - minHold));
     if (holdDuration < 1) { holdDuration = 1; } // Prevent division by zero.
 
     // --- 2. Generate the stable integer "state" for the hold period ---
-    // Align down using floor-mod semantics for negative inputs.
-    int64_t held_integer_state = i64_align_down((seedOuter + frame), holdDuration);
+    // This value is constant for the entire duration of the hold.
+    int held_integer_state = (seedOuter + frame) - ((seedOuter + frame) % holdDuration);
 
     // --- 3. Use the stable state as a seed for the final random value ---
-    // Keep all seed math in 64-bit integer space; rely on uint64 wraparound (well-defined).
-    double fpsr_output = 0.0;
+    // Because the seed is stable, the final value is also stable.
+    float fpsr_output = 0.0;
     if (finalRandSwitch) {
-        uint64_t seed = (uint64_t)held_integer_state * 100000ULL;
-        fpsr_output = portable_rand_u64(seed);
+        // If finalRandSwitch is true, we apply the final randomisation step.
+        fpsr_output = portable_rand((int)(held_integer_state * 100000)); // integer seed
     } else {
-        // Return the active stream value directly as a double (cast by caller if needed).
-        fpsr_output = (double)held_integer_state; 
+        // If finalRandSwitch is false, we return the active stream value directly.
+        fpsr_output = held_integer_state; 
     }
     return fpsr_output;
 }
+
+
+
 
 /******************************************************************************/
 /* FPS-R: Toggled Modulo (TM)                                                 */
@@ -178,40 +140,40 @@ double fpsr_sm(
  * when finalRandSwitch is 1: 
  * A float value between 0.0 and 1.0 that holds for the toggled duration.
  */
-double fpsr_tm(
-    int64_t frame, int64_t periodA, int64_t periodB,
-    int64_t periodSwitch, int64_t seedInner, int64_t seedOuter,
+float fpsr_tm(
+    int frame, int periodA, int periodB,
+    int periodSwitch, int seedInner, int seedOuter,
     int finalRandSwitch)
 {
     // --- 1. Determine the hold duration by toggling between two periods ---
     if (periodSwitch < 1) { periodSwitch = 1; } // Prevent division by zero.
 
     // The "inner clock" is offset by seedInner to de-correlate it from the main frame.
-    int64_t inner_clock_frame = seedInner + frame;
+    int inner_clock_frame = seedInner + frame;
     
-    // Use floor-based modulo for cross-language consistency.
-    int64_t r = i64_floor_mod(inner_clock_frame, periodSwitch);
-
-    // Toggle threshold at exactly half the period using integer math.
-    // Equivalent to: (r < 0.5 * periodSwitch) without floating-point rounding.
-    int64_t holdDuration = (2 * r < periodSwitch) ? periodA : periodB;
+    int holdDuration;
+    // The ternary switch: toggle between periodA and periodB at a fixed rhythm.
+    if ((int)(inner_clock_frame % periodSwitch) < (int)(periodSwitch / 2)) {
+        holdDuration = periodA;
+    } else {
+        holdDuration = periodB;
+    }
 
     if (holdDuration < 1) { holdDuration = 1; } // Prevent division by zero.
 
     // --- 2. Generate the stable integer "state" for the hold period ---
     // The "outer clock" is offset by seedOuter to create unique output sequences.
-    int64_t outer_clock_frame = seedOuter + frame;
-    int64_t held_integer_state = i64_align_down(outer_clock_frame, holdDuration);
+    int outer_clock_frame = seedOuter + frame;
+    int held_integer_state = outer_clock_frame - (outer_clock_frame % holdDuration);
 
     // --- 3. Use the stable state as a seed for the final random value (or bypass) ---
-    double fpsr_output;
+    float fpsr_output;
     if (finalRandSwitch) {
-        // Seed hashing in the 64-bit integer domain; well-defined wraparound.
-        uint64_t seed = (uint64_t)held_integer_state * 100000ULL;
-        fpsr_output = portable_rand_u64(seed);
+        // If true, apply the final randomisation hash.
+        fpsr_output = portable_rand((int)(held_integer_state * 100000)); // integer seed
     } else {
-        // Return the raw integer state directly.
-        fpsr_output = (double)held_integer_state; 
+        // If false, return the raw integer state directly.
+        fpsr_output = (float)held_integer_state; 
     }
     return fpsr_output;
 }
@@ -240,35 +202,35 @@ double fpsr_tm(
  * int stream2QuantDur: The duration for which stream 2's random quantisation level is held.
  * int finalRandSwitch: A flag that can turn off the final randomisation step.
  */
-double fpsr_qs(
-    int64_t frame, double baseWaveFreq, double stream2FreqMult,
+float fpsr_qs(
+    int frame, float baseWaveFreq, float stream2FreqMult,
     const int quantLevelsMinMax[2], const int streamsOffset[2], const int quantOffsets[2],
-    int64_t streamSwitchDur, int64_t stream1QuantDur, int64_t stream2QuantDur,
+    int streamSwitchDur, int stream1QuantDur, int stream2QuantDur,
     int finalRandSwitch)
 {
     // --- 1. Set default durations if not provided ---
-    if (streamSwitchDur < 1) { streamSwitchDur = (int64_t)floor((1.0 / baseWaveFreq) * 0.76); }
-    if (stream1QuantDur < 1) { stream1QuantDur = (int64_t)floor((1.0 / baseWaveFreq) * 1.2); }
-    if (stream2QuantDur < 1) { stream2QuantDur = (int64_t)floor((1.0 / baseWaveFreq) * 0.9); }
+    if (streamSwitchDur < 1) { streamSwitchDur = (int)floor((1.0 / baseWaveFreq) * 0.76); }
+    if (stream1QuantDur < 1) { stream1QuantDur = (int)floor((1.0 / baseWaveFreq) * 1.2); }
+    if (stream2QuantDur < 1) { stream2QuantDur = (int)floor((1.0 / baseWaveFreq) * 0.9); }
     
     if (streamSwitchDur < 1) { streamSwitchDur = 1; }
     if (stream1QuantDur < 1) { stream1QuantDur = 1; }
     if (stream2QuantDur < 1) { stream2QuantDur = 1; }
 
     // --- 2. Calculate random quantisation levels for each stream ---
-    int64_t quant_min = (int64_t)quantLevelsMinMax[0];
-    int64_t quant_max = (int64_t)quantLevelsMinMax[1];
-    int64_t quant_range = quant_max - quant_min + 1;
+    int quant_min = quantLevelsMinMax[0];
+    int quant_max = quantLevelsMinMax[1];
+    int quant_range = quant_max - quant_min + 1;
 
     // --- Stream 1 Quant Level ---
-    int64_t s1_quant_seed_aligned = i64_align_down((int64_t)quantOffsets[0] + frame, stream1QuantDur);
-    double s1_rand_for_quant = portable_rand_u64((uint64_t)s1_quant_seed_aligned);
-    int64_t s1_quant_level = quant_min + (int64_t)floor(s1_rand_for_quant * (double)quant_range);
+    int s1_quant_seed = (quantOffsets[0] + frame) - ((quantOffsets[0] + frame) % stream1QuantDur);
+    float s1_rand_for_quant = portable_rand(s1_quant_seed);
+    int s1_quant_level = quant_min + (int)floor(s1_rand_for_quant * quant_range);
 
     // --- Stream 2 Quant Level ---
-    int64_t s2_quant_seed_aligned = i64_align_down((int64_t)quantOffsets[1] + frame, stream2QuantDur);
-    double s2_rand_for_quant = portable_rand_u64((uint64_t)s2_quant_seed_aligned);
-    int64_t s2_quant_level = quant_min + (int64_t)floor(s2_rand_for_quant * (double)quant_range);
+    int s2_quant_seed = (quantOffsets[1] + frame) - ((quantOffsets[1] + frame) % stream2QuantDur);
+    float s2_rand_for_quant = portable_rand(s2_quant_seed);
+    int s2_quant_level = quant_min + (int)floor(s2_rand_for_quant * quant_range);
 
     if (s1_quant_level < 1) { s1_quant_level = 1; }
     if (s2_quant_level < 1) { s2_quant_level = 1; }
@@ -276,31 +238,21 @@ double fpsr_qs(
     // --- 3. Generate the two quantised sine wave streams ---
     if (stream2FreqMult < 0) { stream2FreqMult = 3.7; }
 
-    // Ensure deterministic double math. sin() returns [-1,1]; map to [0,1] and quantise.
-    double angle1 = ((double)streamsOffset[0] + (double)frame) * baseWaveFreq;
-    double angle2 = ((double)streamsOffset[1] + (double)frame) * baseWaveFreq * stream2FreqMult;
-
-    double stream1 = floor((sin(angle1) * 0.5 + 0.5) * (double)s1_quant_level) / (double)s1_quant_level;
-    double stream2 = floor((sin(angle2) * 0.5 + 0.5) * (double)s2_quant_level) / (double)s2_quant_level;
+    // to be consistent make sure the output is 0 to 1
+    // sin() returns -1 to 1, so we scale it to 0 to 1
+    // feel free to swap sine for cos or other waveforms, but make sure the output is consistently -1 to 1
+    float stream1 = floor((sin((float)(streamsOffset[0] + frame) * baseWaveFreq) / 2.0 + 0.5) * s1_quant_level) / (float)s1_quant_level;
+    float stream2 = floor((sin((float)(streamsOffset[1] + frame) * baseWaveFreq * stream2FreqMult) / 2.0 + 0.5) * s2_quant_level) / (float)s2_quant_level;
 
     // --- 4. Switch between the two streams ---
-    // Use floor-mod and an integer half-threshold (2*r < period) to match Python.
-    double active_stream_val = 0.0;
-    {
-        int64_t r = i64_floor_mod(frame, streamSwitchDur);
-        active_stream_val = (2 * r < streamSwitchDur) ? stream1 : stream2;
-    }
+    float active_stream_val = ((int)(frame % streamSwitchDur) < (int)(streamSwitchDur / 2)) ? stream1 : stream2;
 
     // --- 5. Hash the final output or bypass ---
-    double fpsr_output;
+    float fpsr_output;
     if (finalRandSwitch == 1) {
-        // Derive a stable integer seed from the double stream using floor(), then hash.
-        // This avoids ambiguous float->int casts and reproduces exactly in Python.
-        int64_t hashed_int = (int64_t)floor(active_stream_val * 100000.0);
-        fpsr_output = portable_rand_u64((uint64_t)hashed_int);
+        fpsr_output = portable_rand((int)(active_stream_val * 100000));
     } else {
-        // Preserve original behavior (scaling applied by existing code path).
-        fpsr_output = 0.5 * active_stream_val + 0.5;
+        fpsr_output = 0.5 * active_stream_val + 0.5; // Scale from [-1, 1] to [0, 1]
     }
     return fpsr_output;
 }
@@ -314,12 +266,12 @@ int main() {
     // printf("Try programiz.pro\n");
  
     // algorithms: 0 - sm, 1 - tm, 2 - qs
-    int algo = 2; // Change this value to 0, 1, or 2 to test different algorithms
+    int algo = 0; // Change this value to 0, 1, or 2 to test different algorithms
     char algo_name[][3] = {"SM", "TM", "QS"}; // Names for the algorithms
     printf("Using algorithm FPS-R: %s\n", algo_name[algo]);
 
     int start_frames[] = {90, 100, 103}; // starting frames for each algorithm
-    int num_frames = 30; // run a loop of x frames to demonstrate changes
+    int num_frames = 20; // run a loop of x frames to demonstrate changes
     
     // create main for loop to demonstrate changes
     for (int loop_frame = 0; loop_frame < num_frames; loop_frame++) {
@@ -331,9 +283,7 @@ int main() {
         int changed = 0; // Variable to track if the value has changed
 
         if (algo == 0) {
-            // --------------------------------------------------------------------------
             // Sample code to call the FPS-R:SM function
-            // --------------------------------------------------------------------------
             // Parameters
             // int frame = 90; // Replace with the current frame value
             int minHoldFrames = 10; // probable minimum held period
@@ -346,14 +296,14 @@ int main() {
             // Call the FPS-R:SM function        
             // call to fpsr_sm for the current frame
             randVal = 
-                (float)fpsr_sm(
-                    (int64_t)loop_frame, (int64_t)minHoldFrames, (int64_t)maxHoldFrames, 
-                    (int64_t)reseedFrames, (int64_t)offsetInner, (int64_t)offsetOuter, finalRandSwitch);
+                fpsr_sm(
+                    frame, minHoldFrames, maxHoldFrames, 
+                    reseedFrames, offsetInner, offsetOuter, finalRandSwitch);
             // another call to fpsr_sm for the previous frame
             randVal_previous = 
-                (float)fpsr_sm(
-                    (int64_t)(loop_frame - 1), (int64_t)minHoldFrames, (int64_t)maxHoldFrames, 
-                    (int64_t)reseedFrames, (int64_t)offsetInner, (int64_t)offsetOuter, finalRandSwitch);
+                fpsr_sm(
+                    frame - 1, minHoldFrames, maxHoldFrames, 
+                    reseedFrames, offsetInner, offsetOuter, finalRandSwitch);
             changed = 0;
             if (randVal != randVal_previous) {
                 changed = 1; // value has changed from the previous frame
@@ -364,9 +314,7 @@ int main() {
         }
         
         else if (algo == 1) {
-            // --------------------------------------------------------------------------
             // Sample code to call the FPS-R:TM function
-            // --------------------------------------------------------------------------
             // Parameters
             // int frame = 100; // Replace with the current frame value
             int period_A = 10; // The first hold duration
@@ -379,14 +327,14 @@ int main() {
             // Call the FPS-R:TM function
             // call to fpsr_tm for the current frame
             randVal = 
-                (float)fpsr_tm(
-                    (int64_t)loop_frame, (int64_t)period_A, (int64_t)period_B, 
-                    (int64_t)periodSwitch, (int64_t)offset_inner, (int64_t)offset_outer, final_rand_switch);
+                fpsr_tm(
+                    frame, period_A, period_B, 
+                    periodSwitch, offset_inner, offset_outer, final_rand_switch);
             // another call to fpsr_tm for the previous frame
             randVal_previous = 
-                (float)fpsr_tm(
-                    (int64_t)(loop_frame - 1), (int64_t)period_A, (int64_t)period_B, 
-                    (int64_t)periodSwitch, (int64_t)offset_inner, (int64_t)offset_outer, final_rand_switch);
+                fpsr_tm(
+                    frame - 1, period_A, period_B, 
+                    periodSwitch, offset_inner, offset_outer, final_rand_switch);
             changed = 0;
             if (randVal != randVal_previous) {
                 changed = 1; // value has changed from the previous frame
@@ -397,9 +345,7 @@ int main() {
         }
         
         else if (algo == 2) {
-            // --------------------------------------------------------------------------
             // Sample code to call the FPS-R:QS function
-            // --------------------------------------------------------------------------
             // Parameters
             // int frame = 103; // Current frame number
             float baseWaveFreq = 0.012; // Base frequency for the modulation wave of stream 1
@@ -413,13 +359,13 @@ int main() {
             int finalRandSwitch = 1; // 1 to apply the final randomisation step, 0 to skip it
             
             // call to fpsr_qs for the current frame
-            randVal = (float)fpsr_qs(
-                (int64_t)loop_frame, (double)baseWaveFreq, (double)stream2freqMult, quantLevelsMinMax, 
-                streamsOffset, quantOffsets, (int64_t)streamSwitchDur, (int64_t)stream1QuantDur, (int64_t)stream2QuantDur, finalRandSwitch);
+            randVal = fpsr_qs(
+                frame, baseWaveFreq, stream2freqMult, quantLevelsMinMax, 
+                streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch);
             // another call to fpsr_qs for the previous frame
-            randVal_previous = (float)fpsr_qs(
-                (int64_t)(loop_frame - 1), (double)baseWaveFreq, (double)stream2freqMult, quantLevelsMinMax, 
-                streamsOffset, quantOffsets, (int64_t)streamSwitchDur, (int64_t)stream1QuantDur, (int64_t)stream2QuantDur, finalRandSwitch);
+            randVal_previous = fpsr_qs(
+                frame - 1, baseWaveFreq, stream2freqMult, quantLevelsMinMax, 
+                streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch);
             changed = 0; // Variable to track if the value has changed
             if (randVal != randVal_previous) {
                 changed = 1; // Mark as changed if the value has changed from the previous frame
@@ -429,8 +375,9 @@ int main() {
             //     loop_frame, randVal, randVal_previous, changed);
         }
         printf("Frame %d: randVal %f, randVal_previous %f, changed %d ", 
-                frame, randVal, randVal_previous, changed);
-        printf("%s\n", (changed ? "(jumped)" : ""));
+            frame, randVal, randVal_previous, changed);
+        if (changed) printf("(jumped)");
+        printf("\n");
     } // end of main for loop
     return 0;
 }

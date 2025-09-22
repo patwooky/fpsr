@@ -339,7 +339,7 @@ The wrapper version also has a huge feature: a frame multiplier. A lot of work a
 
 These enhancements make for very meaningful analysis, transparency, traceability and audit workflows.
 
-**(Wrapper version with rich output is currently only available in the C version.)**
+(**Wrapper version with rich output is currently Work in progress**.)
 
 > **[fpsr_tech.md](resources/readme/FPSR_Tech.md)**
   Read more about the technical detail of each algorithm here.
