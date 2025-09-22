@@ -6,7 +6,7 @@ Copyright (c) 2025 Woo Ker Yang (Patrick Woo) patrickwoo.1976@gmail.com
 
 # 🎲 FPS-R: Frame-Persistent Stateless Randomisation (静态律动算法)
 
-[English|英文版 README](./README.md)
+英文版 | [English README](./README.md)
 
 ---
 ## 音频简介：播客风格 (英语)
@@ -445,7 +445,7 @@ FPS-R 描述了一个在许多领域中发现的基本和可观察现象。因�
 **[fpsr_algoAnalysis.ipynb](./resources/code/data_analysis/fpsr_algoAnalysis.ipynb)** 
 一个包含数据图表的 Jupyter 笔记本，供互动探索和实验使用。自己试试看吧！
 
-
+**[README](./README.md)** 英文版.
 
 
 
