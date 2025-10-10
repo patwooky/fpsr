@@ -20,7 +20,7 @@ Here is a high-level podcast audio commentary of the following content.
 # Introduction: What is FPS-R?
 **FPS-R** is **Frame Persistent Stateless Randomisation**.
 
-FPS-R is a **time-aware** pseudo-random number generator.  
+FPS-R is a **time-aware** pseudo-random number generator that produces **practically non-repeating patterns**.  
 Given any series of incrementing input values (e.g., `frame`, `training-epoch`, `uv`, `latent-space`, `x-axis`), FPS-R produces a persistent sequence of **deterministic** random numbers.  
 These numbers hold their values for unpredictable, yet deterministic, time steps before changing.  
 FPS-R is also **stateless**—it does not need to store state at each time-step, which avoids complex logic and state management.
@@ -62,6 +62,12 @@ Here are a few examples of non-linearity found in various aspects of our reality
 
 > **[fpsr_unifying_theory.md](resources/readme/FPSR_Unifying_Theory.md)**
   Read more about the thoughts and research behind the principle of move-hold and surprise.
+
+## Key Properties and Effects
+The framework's core design produces several distinct and powerful advantages:
+- **Generates Practically Non-Repeating Patterns**. The layered, compositional nature of FPS-R produces complex, long-form patterns that are practically non-repeating, making it an ideal source for organic and unpredictable procedural logic.
+- **Resists Pattern Detection**. Its inherent complexity makes its output difficult to predict, offering significant advantages in security, procedural generation, and high-fidelity simulations where avoiding predictable cycles is critical.
+- **Creates Emergent 'Surprise'**. By breaking predictable rhythms with irregularly held values, FPS-R generates moments of surprise and hesitation. This is key to creating behaviors that feel more natural and intentional, from AI decision-making to robotics and artistic animation.
 
 ## Current Methods and Limitations
 Currently, there are limited methods to emulate this realistic and complex behaviour. Most of these methods are neither simple, convenient nor elegant.
