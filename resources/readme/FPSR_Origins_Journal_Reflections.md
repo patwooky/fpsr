@@ -2705,3 +2705,43 @@ Changed license to Apache 2.0
 _14 September 2025, Sunday_
 I PR and merged the rich output wrapper functions for FPS-R with LOD sine wave look-up into `main`. As of now only the canonical C code has the wrappers.
 
+---
+## A Fourth Algorithm is Born - FPS-R Bitwise Decode (BD)
+_17 Oct 2025_
+
+This is really crazy. Just when I thought the FPS-R algorithm line-up was complete, another one came and hit me out of nowhere.
+
+### The Beginning of the Discovery
+It started earlier this week with my curiosity in the outputs of PRNG (PseudoRandom Number Generator) and CSPRNG (Cryptographically Secure PseudoRandom Number Generator).
+
+On October 15, 2025 (Wednesday), I explored the concept that "lightning does not strike the same place twice," particularly in relation to uniform distribution tendencies in random number generation (RNG). My focus was on adversaries attempting to exploit the behaviour of outputs from Pseudorandom Number Generators (PRNG) and Cryptographically Secure PRNGs (CSPRNG). I wondered if there might be a tendency for generated values to either repel from previously produced numbers or cluster in areas distant from them. If this were the case, an attacker could potentially establish "areas of confidence fall-off" centred around the last predicted value, leading them to anticipate that the next number would neither replicate the last one nor fall within that region.
+
+The answer to my inquiry was "no." Well-implemented Cryptographically Secure PRNG algorithms maintain an equal probability for all possible numbers from one generation to the next. This ensures that no discernible patterns can easily emerge, defining these algorithms as truly neutral and cryptographically secure.
+
+This confirmation led me down a more fundamental line of inquiry: how do PRNGs operate on a bit level? The conversation revealed that these generators don't inherently produce decimal numbers but rather a stream of bits. These bitstreams are then interpreted to form integers, floats, or doubles. This was a critical paradigm shift in my thinking, as I had previously been conceptualising the output only in terms of final numerical values.
+
+As I visualised these bitstreams, I had a moment of inspiration. The sequence of bits immediately reminded me of the "playbook" concept from another of my inventions, the Phrase-Timing Authentication Protocol (PTAP). The PTAP playbook is essentially a high-level bitstream used to generate FPS-R sequences.
+
+### Getting Inspiration from Bitstreams
+This connection sparked the idea for an unexpected fourth FPS-R algorithm. While my original framework utilised random floats, I realised I could use the **raw bitstream from a CSPRNG directly** as the input for the FPS-R framework. This new method, "**FPS-R by Bitstream**," would operate on a more fundamental level of randomness, inspired by the abstract playbook concept but grounded in the actual mechanics of the generator. 
+
+The realisation was followed by a moment of face-palming clarity. I "kicked myself" for not seeing it sooner: the patterns in a bitstream were perfect sources for the "move-and-hold" or "hold-then-break" mechanics at the heart of FPS-R. With mounting excitement, I initiated another conversation with Gemini to rigorously explore the viability of this new approach. After providing the necessary background on the FPS-R framework, I posed a challenge: could it guess how a binary stream might lead to a fourth algorithm? Gemini's first attempt was an insightful, albeit different, direction—proposing an alternative implementation of the SM algorithm using bitstreams.
+
+This prompted me to clarify my own idea: using the very structure of the bitstream to generate the FPS-R signals. The logic was simple yet powerful: every time a bit flipped (from 0 to 1, or 1 to 0), it would trigger a "jump" to a new random value. As long as the same bit value continued in the sequence, the output would "hold."
+
+Initially, I viewed this bitstream method as a supplementary tool—a "sub-algorithm" or a utility that could "fill in the gaps" during long holds produced by the original "big three" algorithms (SM, TM, and QS). However, as I fleshed out the concept, I realised it wasn't just an add-on. This new method stood on its own, perfectly embodying all the foundational pillars of FPS-R: it was deterministic, stateless, foundational, composable, mathematically pure, and a complete "glass-box."
+
+The conceptual floodgates opened. The exchange that followed led to the idea of not just one, but multiple bitstreams interacting, combining, and collapsing into a single, final output stream. This gave rise to the concepts of intra-stream (unary) and inter-stream interaction modes, adding another layer of complexity and expressive potential.
+
+Finally, the brainstorming for a name began. After considering several options, I settled on a title that captured its essence: **FPS-R: Bitwise Decode (BD)**.
+
+With the theoretical framework in place, it was time to translate the architecture into functional code. Through an iterative process of implementation and refinement, the abstract concept of Bitwise Decode solidified into a tangible algorithm, performing exactly as designed.
+
+I proceeded to explore the similarity of the existing algorithms and how each one was more similar or different from the other. Then, in the context of the newly created Bitwise Decode, the similarities and differences between the four were this: The original trio of algorithms—SM, TM, and QS—are fundamentally composers of rhythm. They take a high-entropy source (`rand()`) and actively impose a "move-and-hold" structure onto it through various internal mechanics like modulo operations and stream switching. In contrast, Bitwise Decode is a **direct interpreter**. It doesn't create phrasing; it reveals the phrasing that already exists within the source bitstream itself. Its "jumps" and "holds" are a direct reflection of the bit flips and consecutive runs in its input. This makes BD unique: while the others create complexity, BD provides a transparent window into the complexity of its source.
+
+This discovery highlights a unique advantage (in this case) that comes from an unconventional perspective. A formally trained algorithm researcher, steeped in complex computer science foundations, might have overlooked such a straightforward solution, perhaps attempting to derive a more intricate mathematical model. My own simplistic mindset, however, allowed me to approach the bitstream visually, almost like an ASCII art character stream. By doing so, I was able to see the 'move-and-hold' phrasing that was already naturally expressed in the pattern of flipping bits and use that pattern directly as a generative source, bypassing unnecessary layers of abstraction.
+
+The discussion that began with a simple question about uniform distribution and random bitstream generation had culminated in the addition of yet another algorithm to my framework. I am still reeling in disbelief that FPS-R would turn from a trio to a quartet.
+
+---
+
