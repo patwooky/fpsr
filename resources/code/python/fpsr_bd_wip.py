@@ -76,7 +76,8 @@ def fpsr_bd(
     streams_number: int = 1,
     streams_offset: int = 0,
     intra_op: str = "none",
-    shift_amount: int = 1,
+    dynamic_shift_bits: int = 6,
+    static_shift_amount: int = 1,
     inter_op: str = "xor",
     value_seed_offset: int = 0
 ):
@@ -98,9 +99,9 @@ def fpsr_bd(
         intra_op (str): The unary (intra-stream) operation.
                         Static ops: "none", "not", "lshift", "rshift", "rotl", "rotr".
                         Dynamic ops: "lshift_dynamic", "rshift_dynamic", "rotl_dynamic", "rotr_dynamic".
-        shift_amount (int): For static ops, the fixed number of bits to shift/rotate.
-                            For dynamic ops, the number of bits to read from the controller
-                            stream to determine the shift/rotate amount (1-6 when chunk_bits=64).
+        dynamic_shift_bits (int): For dynamic ops, the number of controller bits to read
+                                  to determine the shift/rotate amount (1-6 when chunk_bits=64).
+        static_shift_amount (int): For static ops, the fixed number of bits to shift/rotate.
         inter_op (str): The binary (inter-stream) operation to combine multiple
                         transformed streams. Options: "xor", "or", "and".
         value_seed_offset (int): An additional seed offset for the final value calculation.
@@ -136,9 +137,9 @@ def fpsr_bd(
             controller_stream = raw_streams[i * 2 + 1]
             
             # Determine how many controller bits to read so shifts/rotations cover [0, chunk_bits-1].
-            # With chunk_bits=64 this is 6 bits (0..63). Clamp to the user's shift_amount.
+            # With chunk_bits=64 this is 6 bits (0..63). Clamp to the user's dynamic_shift_bits.
             max_bits_for_shift = max(1, math.ceil(math.log2(chunk_bits)) if chunk_bits > 1 else 1)
-            bit_mask_size = max(1, min(max_bits_for_shift, shift_amount))
+            bit_mask_size = max(1, min(max_bits_for_shift, dynamic_shift_bits))
             bit_mask = (1 << bit_mask_size) - 1
             
             transformed_chunks = []
@@ -167,13 +168,13 @@ def fpsr_bd(
             if unary_op == "not":
                 transformed_chunks = [_to_uint64(~chunk) for chunk in stream_chunks]
             elif unary_op == "lshift":
-                transformed_chunks = [_to_uint64(chunk << shift_amount) for chunk in stream_chunks]
+                transformed_chunks = [_to_uint64(chunk << static_shift_amount) for chunk in stream_chunks]
             elif unary_op == "rshift":
-                transformed_chunks = [_to_uint64(chunk >> shift_amount) for chunk in stream_chunks]
+                transformed_chunks = [_to_uint64(chunk >> static_shift_amount) for chunk in stream_chunks]
             elif unary_op == "rotl":
-                transformed_chunks = [_circular_left_shift(chunk, shift_amount) for chunk in stream_chunks]
+                transformed_chunks = [_circular_left_shift(chunk, static_shift_amount) for chunk in stream_chunks]
             elif unary_op == "rotr":
-                transformed_chunks = [_circular_right_shift(chunk, shift_amount) for chunk in stream_chunks]
+                transformed_chunks = [_circular_right_shift(chunk, static_shift_amount) for chunk in stream_chunks]
             else: # "none" or any other value
                 transformed_chunks = stream_chunks
             transformed_streams.append(transformed_chunks)
@@ -228,7 +229,10 @@ if __name__ == "__main__":
     p_streams_number = 2 # Must be even for dynamic ops, or last one is ignored by intra_op
     p_streams_offset = 10
     p_intra_op = "rotl_dynamic" # Try "lshift_dynamic", "rotr_dynamic", etc.
-    p_shift_amount = 6          # For dynamic ops and chunk_bits=64, this bitmask size reads 1-6 controller bits
+    # For dynamic ops (chunk_bits=64), this is the bitmask size, reading 1-6 controller bits.
+    p_dynamic_shift_bits = 6
+    # For static ops, this is the fixed shift/rotate amount.
+    p_static_shift_amount = 1
     p_inter_op = "xor"          # "xor", "or", "and"
     p_value_seed_offset = 78901
 
@@ -244,7 +248,8 @@ if __name__ == "__main__":
             streams_number=p_streams_number,
             streams_offset=p_streams_offset,
             intra_op=p_intra_op,
-            shift_amount=p_shift_amount,
+            dynamic_shift_bits=p_dynamic_shift_bits,
+            static_shift_amount=p_static_shift_amount,
             inter_op=p_inter_op,
             value_seed_offset=p_value_seed_offset
         )
