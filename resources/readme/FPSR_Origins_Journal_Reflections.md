@@ -8,7 +8,7 @@ While every update strives to be more accurate, there will be parts that are inc
 # Table of Contents
 
 - [Foreword](#foreword)
-- [Origins](#origins)
+- [Origin Story](#origin-story)
 - [Reflections and Thoughts](#reflections-and-thoughts)
   - [Speculative](#speculative)
 - [Development Journal](#development-journal)
@@ -21,7 +21,7 @@ Welcome to the messy world of FPS-R. This document aims to chronicle the discove
 
 The document is broken up into 3 sections.
 
-## 1. Origins
+## 1. Origin Story
 Origins recounts and records the beginnings of FPS-R, how the idea took shape over decades, and how each algorithm in the framework as born, refined, and took shape.
 
 It serves as a memoire and a record of that journey.
@@ -149,11 +149,25 @@ And I wanted TM to be inserted in between the two existing algorithms:
 
 Read about the discussion later in this document: [Origin - The Code Order Conversation](#origin---the-code-order-conversation)  
 
+## A Fourth Algorithm - Deeper into the Bits: Bitwise Decode
+On _17 Oct 2025_, about three months after developing "Toggled Modulo," I discovered a fourth algorithm for the FPS-R suite. Just when I thought the project was complete with three, I was surprised yet again.
+
+This new development emerged from my work on the Synchronised Obfuscation Protocol (SOP), a framework designed to use FPS-R for authentication, obfuscation, and compression. A core feature of SOP was a novel "playbook" mechanism—a sequence of instructions like (1,1,0,0,2,0,...) that cued different actions.
+
+The breakthrough came while I was researching Cryptographically Secure PRNGs (CSPRNGs). I learned they generate raw bits before converting them to decimal values. This concept of bitstreams sparked an idea; I realized these streams weren't just random noise but had a natural phrasing. There were clusters of zeros punctuated by ones, then another run of zeros followed by blocks of ones. Visualizing them in my mind, they appeared like ASCII art or dancing patterns embodying a rhythm of "move-and-hold" and "hold-then-break," which immediately reminded me of the SOP playbook. 
+
+This insight led me to explore using the inherent patterns of bitstreams as a new type of playbook for generating unpredictable, yet deterministic and stateless, outputs. This became the foundation for a new FPS-R algorithm, which I named "Bitwise Decode" to align with its siblings. The next step was to flesh out the technical details, adding controls and parameters to give it the same expressive flexibility as the other algorithms in the suite.
+
+Ultimately, I designed a system using multiple bitstreams, with the ability to transform each stream individually (intra-stream unary bitwise operations) and combine them (inter-stream operations) to produce a single, final output.
+
+By _19 Oct 2025_, the algorithm was complete, with implementations in both C and Python. When I tested the outputs of all four algorithms (SM, TM, QS, and the new BD) across both languages, the results were identical. This perfect match was the ultimate validation, proving the implementation was bit-for-bit accurate.
 
 ## Origin Story - Conclusion
-I did not intend for it to be stateless and deterministic, but these properties surfaced from the way the algorithms were shaped. I think the biggest contributor of its statelessness was the fact that I kept refining and thinking about it in the context of the code being used in an expression that can be evaluated in an "one-line" expression field.
+The stateless and deterministic properties of FPS-R were not part of the initial design; they emerged organically from the development process. I believe the primary driver for this was my constraint of refining the algorithms to work within a single, "one-line" expression field, which naturally forced a stateless architecture.
 
-I am not a math genius with fancy moves up my sleeves: I was simply limited to the tools I know and have come to understand well enough to use them the way I did. I used them to create the Maths parallel of well used visual effects techniques, reaching for visual complexity and detail through layering of noise, adding dissonance and breaking repeated recognisable patterns with offset, scale and frequency. I just applied these to the expressions, where instead of noise patterns, I was working with values and algorithmic components that I understood.
+Once I recognised these emerging properties—Stateless, Deterministic, Mathematically Pure, and Foundational (Composable), they became the core pillars of the framework. These principles transformed into a guiding compass, directing all subsequent architectural and development decisions.
+
+I am not a math genius with a deep bag of tricks. My approach was simply shaped by the tools I knew and understood well. In essence, I created the mathematical parallel of common visual effects techniques. To achieve visual complexity, designers layer noise, add dissonance, and break repetitive patterns with offsets, scaling, and frequency changes. I applied this same philosophy to mathematical expressions, replacing visual noise with numerical values and layering the algorithmic components I had built.
 
 ---
 ## Origin - The SM Conversation
