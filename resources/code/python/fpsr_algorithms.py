@@ -30,6 +30,7 @@ import functools
 
 # Bit-width used for chunked bit operations. It must remain 64 for deterministic
 # compatibility with SplitMix64 and the 64-bit masking below.
+# This value is not meant to be changed. DO NOT MODIFY.
 _CHUNK_BITS = 64
 
 # 64-bit mask for emulating uint64_t wraparound exactly like C.
