@@ -10,8 +10,8 @@
 /**
  * @file fpsr_algorithms.c
  * @brief Portable C implementation of FPS-R algorithms: 
- * Stacked Modulo (SM), Toggled Modulo (TM) and Quantised Switching (QS).
- * @details This file contains three stateless, frame-persistent randomisation algorithms.
+ * Stacked Modulo (SM), Toggled Modulo (TM), Quantised Switching (QS), and Bitwise Decode (BD).
+ * @details This file contains four stateless, frame-persistent randomisation algorithms.
  * It uses a custom portable_rand() function to ensure deterministic and
  * consistent results across any platform.
  */
@@ -21,22 +21,28 @@
 // with any online C compiler.
 // https://www.programiz.com/c-programming/online-compiler/
 #include <stdio.h>
-#include <math.h> // For sin() and floor()
+#include <math.h> // For sin(), floor(), ceil(), log2()
 // Add fixed-width integer headers for deterministic 64-bit math on all platforms.
 #include <stdint.h>
 #include <inttypes.h>
+#include <stdlib.h> // For malloc(), free()
+#include <string.h> // For strcmp()
+
+// Bit-width used for chunked bit operations.
+// It must remain 64 for deterministic compatibility with SplitMix64 and the 64-bit masking below. DO NOT MODIFY.
+#define CHUNK_BITS 64
 
 /**
  * Deterministic integer math helpers and PRNG
  *
  * Rationale for determinism across C and Python:
  * - Python's % and // are floor-based for negatives; C's % and / truncate toward zero.
- *   Using floor-mod alignment here ensures identical behavior for negative frames/seeds.
+ * Using floor-mod alignment here ensures identical behavior for negative frames/seeds.
  * - All integer counters, frames, durations, and seeds are int64_t for large-range support.
  * - All fractional math that converts to/from integers uses double to match Python's float.
  * - The PRNG uses a uint64_t mixer (SplitMix64) with well-defined wraparound, then maps the
- *   top 53 bits to a double in [0,1). This yields bit-for-bit identical results across
- *   compilers and mirrors a standard reference implementation in Python.
+ * top 53 bits to a double in [0,1). This yields bit-for-bit identical results across
+ * compilers and mirrors a standard reference implementation in Python.
  */
 
 // Floor-based modulo that matches Python's semantics for negative inputs.
@@ -87,6 +93,23 @@ static inline float portable_rand(int seed) {
     return (float)portable_rand_u64((uint64_t)(int64_t)seed);
 }
 
+// --- Bitwise Rotation Helpers ---
+// Performs a circular (rotate) left shift on a 64-bit unsigned integer.
+static inline uint64_t u64_circular_left_shift(uint64_t value, int shift) {
+    int s = shift % CHUNK_BITS;        // When CHUNK_BITS is 64, ensure shift is within 0-63 (wraps for >64)
+    if (s == 0) return value;          // No shift needed if s is zero
+    // Shift left by s, then fill in the lower bits with the upper bits shifted out
+    return (value << s) | (value >> (CHUNK_BITS - s));
+}
+
+// Performs a circular (rotate) right shift on a 64-bit unsigned integer.
+static inline uint64_t u64_circular_right_shift(uint64_t value, int shift) {
+    int s = shift % CHUNK_BITS;        // When CHUNK_BITS is 64, ensure shift is within 0-63 (wraps for >64)
+    if (s == 0) return value;          // No shift needed if s is zero
+    // Shift right by s, then fill in the upper bits with the lower bits shifted out
+    return (value >> s) | (value << (CHUNK_BITS - s));
+}
+
 /******************************************************************************/
 /* FPS-R: Stacked Modulo (SM)                                                 */
 /******************************************************************************/
@@ -105,19 +128,18 @@ static inline float portable_rand(int seed) {
  * int seedOuter: An offset for the final value calculation to create unique sequences.
  * int finalRandSwitch: A flag that can turn off the final randomisation step.
  * int lod: The level of detail (LOD) that controls computational overhead. Valid values are 0 to 2.
- * 
- * return 
- *     FPSR_Output struct containing the random value and other details.
- *     Output fields depend on the LOD level.
- *     Refer to the FPSR_Output structure for details on the return values.
+ * * return 
+ * FPSR_Output struct containing the random value and other details.
+ * Output fields depend on the LOD level.
+ * Refer to the FPSR_Output structure for details on the return values.
  *
- *     float randVal: this is the main output, which is a float value between [0.0, 1.0]
- *     when finalRandSwitch is 0: 
- *          randVal will be a whole number representing the currently held frame 
- *          that remains constant for the hold duration.
- *     when finalRandSwitch is 1: 
- *          A float value between 0.0 and 1.0 that remains constant 
- *          for the held duration.
+ * float randVal: this is the main output, which is a float value between [0.0, 1.0]
+ * when finalRandSwitch is 0: 
+ *      randVal will be a whole number representing the currently held frame 
+ *      that remains constant for the hold duration.
+ * when finalRandSwitch is 1: 
+ *      A float value between 0.0 and 1.0 that remains constant 
+ *      for the held duration.
  */
 double fpsr_sm(
     int64_t frame, int64_t minHold, int64_t maxHold,
@@ -304,7 +326,158 @@ double fpsr_qs(
     }
     return fpsr_output;
 }
- 
+
+/******************************************************************************/
+/* FPS-R: Bitwise Decode (BD)                                                 */
+/******************************************************************************/
+
+// Helper to get a specific bit from a chunk array, matching Python's out-of-bounds logic
+static int get_bit(int64_t n, int64_t block_size, const uint64_t* chunks, int64_t num_chunks) {
+    if (n < 0 || n >= block_size) return 0;
+    int64_t chunk_index = n / CHUNK_BITS;
+    int bit_index = n % CHUNK_BITS;
+    if (chunk_index >= num_chunks) return 0; // Should not happen with correct logic but safe
+    return (chunks[chunk_index] >> bit_index) & 1;
+}
+
+/**
+ * @brief Generates a phrased random value by decoding a deterministically generated bitstream.
+ * @details This algorithm is stateless. For any given frame, it calculates its state by:
+ * 1. Finding the start of its macro-block (`outer_anchor`).
+ * 2. Generating one or more raw bitstreams for the block.
+ * 3. Applying transformations (intra-stream op) to each stream, possibly in pairs for dynamic ops.
+ * 4. Combining the transformed streams (inter-stream op).
+ * 5. Decoding the final bitstream to produce phrased holds and jumps based on bit-flips.
+ * 
+ * int64_t frame: The current frame or time input.
+ * int64_t block_size: The size of the macro-rhythm in frames. Must be > 0.
+ * int streams_number: The number of parallel bitstreams to generate.
+ * int64_t streams_offset: The frame offset between each parallel stream's seed.
+ * const char* intra_op: The unary (intra-stream) operation.
+ *      Static ops: "none", "not", "lshift", "rshift", "rotl", "rotr".
+ *      Dynamic ops: "lshift_dynamic", "rshift_dynamic", "rotl_dynamic", "rotr_dynamic".
+ * int dynamic_shift_bits: For dynamic ops, the number of controller bits to read
+ *      to determine the shift/rotate amount (1-6 when chunk_bits=64).
+ * int static_shift_amount: For static ops, the fixed number of bits to shift/rotate.
+ * const char* inter_op: The binary (inter-stream) operation to combine multiple
+ *      transformed streams. Options: "xor", "or", "and".
+ * int64_t value_seed_offset: An additional seed offset for the final value calculation.
+ * @return A deterministic, phrased pseudo-random double between 0.0 and 1.0.
+ */
+double fpsr_bd(
+    int64_t frame,
+    int64_t block_size,
+    int streams_number,
+    int64_t streams_offset,
+    const char* intra_op,
+    int dynamic_shift_bits,
+    int static_shift_amount,
+    const char* inter_op,
+    int64_t value_seed_offset
+) {
+    if (block_size <= 0) block_size = 1;
+    if (streams_number < 1) streams_number = 1;
+
+    // --- Step 1: Find the Outer Anchor for the macro-block ---
+    int64_t outer_anchor = i64_align_down(frame, block_size);
+    
+    // --- Step 2: Generate the raw bitstream(s) for the entire block ---
+    int64_t num_chunks = (block_size + (CHUNK_BITS - 1)) / CHUNK_BITS;
+    
+    uint64_t** raw_streams = (uint64_t**)malloc(streams_number * sizeof(uint64_t*));
+    for (int i = 0; i < streams_number; ++i) {
+        raw_streams[i] = (uint64_t*)malloc(num_chunks * sizeof(uint64_t));
+        int64_t stream_seed = outer_anchor + (i * streams_offset);
+        for (int j = 0; j < num_chunks; ++j) {
+            raw_streams[i][j] = splitmix64((uint64_t)(stream_seed + j));
+        }
+    }
+    
+    // --- Step 3: Apply Intra-Stream Transformations ---
+    uint64_t** transformed_streams = (uint64_t**)malloc(streams_number * sizeof(uint64_t*));
+    for(int i = 0; i < streams_number; ++i) {
+        transformed_streams[i] = (uint64_t*)malloc(num_chunks * sizeof(uint64_t));
+    }
+
+    int is_dynamic = (strcmp(intra_op, "lshift_dynamic") == 0 || strcmp(intra_op, "rshift_dynamic") == 0 ||
+                      strcmp(intra_op, "rotl_dynamic") == 0 || strcmp(intra_op, "rotr_dynamic") == 0);
+
+    if (is_dynamic) {
+        int transformed_count = 0;
+        for (int i = 0; i < streams_number / 2; ++i) {
+            uint64_t* data_stream = raw_streams[i * 2];
+            uint64_t* controller_stream = raw_streams[i * 2 + 1];
+            
+            // max_bits_for_shift is ceil(log2(CHUNK_BITS)), which is 6 for 64.
+            int max_bits_for_shift = 6; // Equivalent to ceil(log2(64))
+            int bit_mask_size = dynamic_shift_bits;
+            if (bit_mask_size < 1) bit_mask_size = 1;
+            if (bit_mask_size > max_bits_for_shift) bit_mask_size = max_bits_for_shift;
+            uint64_t bit_mask = (1ULL << bit_mask_size) - 1;
+
+            for (int j = 0; j < num_chunks; ++j) {
+                int dynamic_shift = (controller_stream[j] & bit_mask) % CHUNK_BITS;
+                if (strcmp(intra_op, "lshift_dynamic") == 0) transformed_streams[transformed_count][j] = data_stream[j] << dynamic_shift;
+                else if (strcmp(intra_op, "rshift_dynamic") == 0) transformed_streams[transformed_count][j] = data_stream[j] >> dynamic_shift;
+                else if (strcmp(intra_op, "rotl_dynamic") == 0) transformed_streams[transformed_count][j] = u64_circular_left_shift(data_stream[j], dynamic_shift);
+                else if (strcmp(intra_op, "rotr_dynamic") == 0) transformed_streams[transformed_count][j] = u64_circular_right_shift(data_stream[j], dynamic_shift);
+            }
+            transformed_count++;
+        }
+        if (streams_number % 2 != 0) {
+            memcpy(transformed_streams[streams_number / 2], raw_streams[streams_number - 1], num_chunks * sizeof(uint64_t));
+        }
+    } else { // Static operations
+        for (int i = 0; i < streams_number; ++i) {
+            for (int j = 0; j < num_chunks; ++j) {
+                if (strcmp(intra_op, "not") == 0) transformed_streams[i][j] = ~raw_streams[i][j];
+                else if (strcmp(intra_op, "lshift") == 0) transformed_streams[i][j] = raw_streams[i][j] << static_shift_amount;
+                else if (strcmp(intra_op, "rshift") == 0) transformed_streams[i][j] = raw_streams[i][j] >> static_shift_amount;
+                else if (strcmp(intra_op, "rotl") == 0) transformed_streams[i][j] = u64_circular_left_shift(raw_streams[i][j], static_shift_amount);
+                else if (strcmp(intra_op, "rotr") == 0) transformed_streams[i][j] = u64_circular_right_shift(raw_streams[i][j], static_shift_amount);
+                else transformed_streams[i][j] = raw_streams[i][j]; // "none"
+            }
+        }
+    }
+    
+    // --- Step 4: Combine Streams with Inter-Stream Operation ---
+    uint64_t* final_chunks = (uint64_t*)malloc(num_chunks * sizeof(uint64_t));
+    if (streams_number > 0) {
+        memcpy(final_chunks, transformed_streams[0], num_chunks * sizeof(uint64_t));
+    }
+    for (int i = 1; i < streams_number; ++i) {
+        for (int j = 0; j < num_chunks; ++j) {
+            if (strcmp(inter_op, "or") == 0) final_chunks[j] |= transformed_streams[i][j];
+            else if (strcmp(inter_op, "and") == 0) final_chunks[j] &= transformed_streams[i][j];
+            else final_chunks[j] ^= transformed_streams[i][j]; // "xor" is default
+        }
+    }
+    
+    // --- Step 5: Decode the final bitstream ---
+    int64_t current_pos_in_block = frame - outer_anchor;
+    int64_t last_flip_pos = 0;
+    for (int64_t i = current_pos_in_block; i > 0; --i) {
+        if (get_bit(i, block_size, final_chunks, num_chunks) != get_bit(i - 1, block_size, final_chunks, num_chunks)) {
+            last_flip_pos = i;
+            break;
+        }
+    }
+    
+    // --- Step 6: Generate the final random value from the last bit-flip position ---
+    uint64_t final_seed = (uint64_t)outer_anchor + (uint64_t)last_flip_pos + (uint64_t)value_seed_offset;
+    double result = portable_rand_u64(final_seed);
+
+    // --- Cleanup ---
+    for (int i = 0; i < streams_number; ++i) {
+        free(raw_streams[i]);
+        free(transformed_streams[i]);
+    }
+    free(raw_streams);
+    free(transformed_streams);
+    free(final_chunks);
+    
+    return result;
+}
 
 /******************************************************************************/
 /* Main function to demonstrate usage of FPS-R algorithms                     */
@@ -313,12 +486,12 @@ int main() {
     // Write C code here
     // printf("Try programiz.pro\n");
  
-    // algorithms: 0 - sm, 1 - tm, 2 - qs
-    int algo = 2; // Change this value to 0, 1, or 2 to test different algorithms
-    char algo_name[][3] = {"SM", "TM", "QS"}; // Names for the algorithms
+    // algorithms: 0 - sm, 1 - tm, 2 - qs, 3 - bd
+    int algo = 3; // Change this value to 0, 1, 2, or 3 to test different algorithms
+    char algo_name[][3] = {"SM", "TM", "QS", "BD"}; // Names for the algorithms
     printf("Using algorithm FPS-R: %s\n", algo_name[algo]);
 
-    int start_frames[] = {90, 100, 103}; // starting frames for each algorithm
+    int start_frames[] = {90, 100, 103, 100}; // starting frames for each algorithm
     int num_frames = 30; // run a loop of x frames to demonstrate changes
     
     // create main for loop to demonstrate changes
@@ -343,24 +516,21 @@ int main() {
             int offsetOuter = 22; // offsets the outer frame
             int finalRandSwitch = 1; // 1 to apply the final randomisation step, 0 to skip it
             
-            // Call the FPS-R:SM function        
+            // Call the FPS-R:SM function
             // call to fpsr_sm for the current frame
             randVal = 
                 (float)fpsr_sm(
-                    (int64_t)loop_frame, (int64_t)minHoldFrames, (int64_t)maxHoldFrames, 
+                    (int64_t)frame, (int64_t)minHoldFrames, (int64_t)maxHoldFrames, 
                     (int64_t)reseedFrames, (int64_t)offsetInner, (int64_t)offsetOuter, finalRandSwitch);
             // another call to fpsr_sm for the previous frame
             randVal_previous = 
                 (float)fpsr_sm(
-                    (int64_t)(loop_frame - 1), (int64_t)minHoldFrames, (int64_t)maxHoldFrames, 
+                    (int64_t)(frame - 1), (int64_t)minHoldFrames, (int64_t)maxHoldFrames, 
                     (int64_t)reseedFrames, (int64_t)offsetInner, (int64_t)offsetOuter, finalRandSwitch);
             changed = 0;
             if (randVal != randVal_previous) {
                 changed = 1; // value has changed from the previous frame
             }
-            // sample output for each frame in the loop
-            // printf("Frame %d: randVal %f, randVal_previous %f, changed %d\n", 
-            //     loop_frame, randVal, randVal_previous, changed);
         }
         
         else if (algo == 1) {
@@ -380,20 +550,17 @@ int main() {
             // call to fpsr_tm for the current frame
             randVal = 
                 (float)fpsr_tm(
-                    (int64_t)loop_frame, (int64_t)period_A, (int64_t)period_B, 
+                    (int64_t)frame, (int64_t)period_A, (int64_t)period_B, 
                     (int64_t)periodSwitch, (int64_t)offset_inner, (int64_t)offset_outer, final_rand_switch);
             // another call to fpsr_tm for the previous frame
             randVal_previous = 
                 (float)fpsr_tm(
-                    (int64_t)(loop_frame - 1), (int64_t)period_A, (int64_t)period_B, 
+                    (int64_t)(frame - 1), (int64_t)period_A, (int64_t)period_B, 
                     (int64_t)periodSwitch, (int64_t)offset_inner, (int64_t)offset_outer, final_rand_switch);
             changed = 0;
             if (randVal != randVal_previous) {
                 changed = 1; // value has changed from the previous frame
             }
-            // sample output for each frame in the loop
-            // printf("Frame %d: randVal %f, randVal_previous %f, changed %d\n", 
-            //     loop_frame, randVal, randVal_previous, changed);
         }
         
         else if (algo == 2) {
@@ -414,20 +581,55 @@ int main() {
             
             // call to fpsr_qs for the current frame
             randVal = (float)fpsr_qs(
-                (int64_t)loop_frame, (double)baseWaveFreq, (double)stream2freqMult, quantLevelsMinMax, 
+                (int64_t)frame, (double)baseWaveFreq, (double)stream2freqMult, quantLevelsMinMax, 
                 streamsOffset, quantOffsets, (int64_t)streamSwitchDur, (int64_t)stream1QuantDur, (int64_t)stream2QuantDur, finalRandSwitch);
             // another call to fpsr_qs for the previous frame
             randVal_previous = (float)fpsr_qs(
-                (int64_t)(loop_frame - 1), (double)baseWaveFreq, (double)stream2freqMult, quantLevelsMinMax, 
+                (int64_t)(frame - 1), (double)baseWaveFreq, (double)stream2freqMult, quantLevelsMinMax, 
                 streamsOffset, quantOffsets, (int64_t)streamSwitchDur, (int64_t)stream1QuantDur, (int64_t)stream2QuantDur, finalRandSwitch);
             changed = 0; // Variable to track if the value has changed
             if (randVal != randVal_previous) {
                 changed = 1; // Mark as changed if the value has changed from the previous frame
             }
-            // sample output for each frame in the loop
-            // printf("Frame %d: randVal %f, randVal_previous %f, changed %d\n", 
-            //     loop_frame, randVal, randVal_previous, changed);
         }
+        
+        else if (algo == 3) {
+            // --------------------------------------------------------------------------
+            // Sample code to call the FPS-R:BD function
+            // --------------------------------------------------------------------------
+            // Parameters
+            int64_t p_block_size = 64; // size of the macro-rhythm in frames
+            int p_streams_number = 2; // number of parallel bitstreams to generate
+            int64_t p_streams_offset = 10; // frame offset between each parallel stream's seed
+            const char* p_intra_op = "rotl_dynamic"; // The unary (intra-stream) operation.
+                // p_intra_op modes:
+                //      Static ops: "none", "not", "lshift", "rshift", "rotl", "rotr".
+                //      Dynamic ops: "lshift_dynamic", "rshift_dynamic", "rotl_dynamic", "rotr_dynamic".
+            int p_dynamic_shift_bits = 6; // number of controller bits to read for dynamic ops
+            int p_static_shift_amount = 1; // fixed number of bits to shift/rotate for static ops
+            const char* p_inter_op = "xor"; // inter-stream operation to combine transformed streams
+                // p_inter_op modes:
+                //      The binary (inter-stream) operation to combine multiple
+                //      transformed streams. Options: "xor", "or", "and".
+            int64_t p_value_seed_offset = 78901; // additional seed offset for the final value calculation
+
+            randVal = (float)fpsr_bd(
+                (int64_t)frame, p_block_size, p_streams_number, p_streams_offset,
+                p_intra_op, p_dynamic_shift_bits, p_static_shift_amount,
+                p_inter_op, p_value_seed_offset
+            );
+
+            randVal_previous = (float)fpsr_bd(
+                (int64_t)(frame - 1), p_block_size, p_streams_number, p_streams_offset,
+                p_intra_op, p_dynamic_shift_bits, p_static_shift_amount,
+                p_inter_op, p_value_seed_offset
+            );
+
+            if (randVal != randVal_previous) {
+                changed = 1;
+            }
+        }
+
         printf("Frame %d: randVal %f, randVal_previous %f, changed %d ", 
                 frame, randVal, randVal_previous, changed);
         printf("%s\n", (changed ? "(jumped)" : ""));
