@@ -7,8 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## Unreleased
 
 --- 
-## [2.0.3] - 2025-09-22
-## Changed
+## [2.0.4] - 2025-09-22
+### Changed
 - **Breaking Change**: Determinism between C_reference and Python 
     - `fpsr_algorithms.py` and `fpsr_algorithms_reference.c` now 
         - produce the same random value outputs for the same seed and parameters.
@@ -18,6 +18,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
         - This was due to different ways C and Python were handling large integers and modulo operations for negative numbers.
     - FPS-R in other languages are still deterministic with themselves, but they do not guarantee consistency with C (reference source of truth) and other applications.
 - Wrapper versions are placed back to `./resources/code/_WIP` to be re-worked since they are not fully working.
+
+---
+## [2.0.3] - 2025-10-19
+### Added
+- an exciting addition of a **_fourth_** algorithm to the FPS-R framework, the **FPS-R: Bitwise Decode**.
+- Updated Development Journal on the origins. [Read Here](./resources/readme/FPSR_Origins_Journal_Reflections.md#a-fourth-algorithm---deeper-into-the-bits-bitwise-decode)
+- Updated reference C (`fpsr_algorithms_reference.c`) code, and Python code (`fpsr_algorithms.py`)
 
 ---
 ## [2.0.2] - 2025-09-21

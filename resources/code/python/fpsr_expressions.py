@@ -114,9 +114,17 @@ fpsr_tm_expression = portable_rand(
     ))
 )
 
+
 # ------------------------------------------------------------------------------
 # FPS-R: Quantised Switching (QS)
 # ------------------------------------------------------------------------------
-
 # The nature of QS does not support a single line implementation.
 # Instead, it requires a more complex function with multiple parameters.
+
+
+# ------------------------------------------------------------------------------
+# FPS-R: Bitwise Decode (BD)
+# ------------------------------------------------------------------------------
+# The BD algorithm cannot be implemented as a single-line expression.
+# It requires procedural logic, including looping, intermediate data storage,
+# and iterative searching, which cannot be represented as a single mathematical expression.

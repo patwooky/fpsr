@@ -8,7 +8,7 @@ While every update strives to be more accurate, there will be parts that are inc
 # Table of Contents
 
 - [Foreword](#foreword)
-- [Origins](#origins)
+- [Origin Story](#origin-story)
 - [Reflections and Thoughts](#reflections-and-thoughts)
   - [Speculative](#speculative)
 - [Development Journal](#development-journal)
@@ -21,7 +21,7 @@ Welcome to the messy world of FPS-R. This document aims to chronicle the discove
 
 The document is broken up into 3 sections.
 
-## 1. Origins
+## 1. Origin Story
 Origins recounts and records the beginnings of FPS-R, how the idea took shape over decades, and how each algorithm in the framework as born, refined, and took shape.
 
 It serves as a memoire and a record of that journey.
@@ -149,11 +149,25 @@ And I wanted TM to be inserted in between the two existing algorithms:
 
 Read about the discussion later in this document: [Origin - The Code Order Conversation](#origin---the-code-order-conversation)  
 
+## A Fourth Algorithm - Deeper into the Bits: Bitwise Decode
+On _17 Oct 2025_, about three months after developing "Toggled Modulo," I discovered a fourth algorithm for the FPS-R suite. Just when I thought the project was complete with three, I was surprised yet again.
+
+This new development emerged from my work on the Synchronised Obfuscation Protocol (SOP), a framework designed to use FPS-R for authentication, obfuscation, and compression. A core feature of SOP was a novel "playbook" mechanism—a sequence of instructions like (1,1,0,0,2,0,...) that cued different actions.
+
+The breakthrough came while I was researching Cryptographically Secure PRNGs (CSPRNGs). I learned they generate raw bits before converting them to decimal values. This concept of bitstreams sparked an idea; I realized these streams weren't just random noise but had a natural phrasing. There were clusters of zeros punctuated by ones, then another run of zeros followed by blocks of ones. Visualizing them in my mind, they appeared like ASCII art or dancing patterns embodying a rhythm of "move-and-hold" and "hold-then-break," which immediately reminded me of the SOP playbook. 
+
+This insight led me to explore using the inherent patterns of bitstreams as a new type of playbook for generating unpredictable, yet deterministic and stateless, outputs. This became the foundation for a new FPS-R algorithm, which I named "Bitwise Decode" to align with its siblings. The next step was to flesh out the technical details, adding controls and parameters to give it the same expressive flexibility as the other algorithms in the suite.
+
+Ultimately, I designed a system using multiple bitstreams, with the ability to transform each stream individually (intra-stream unary bitwise operations) and combine them (inter-stream operations) to produce a single, final output.
+
+By _19 Oct 2025_, the algorithm was complete, with implementations in both C and Python. When I tested the outputs of all four algorithms (SM, TM, QS, and the new BD) across both languages, the results were identical. This perfect match was the ultimate validation, proving the implementation was bit-for-bit accurate.
 
 ## Origin Story - Conclusion
-I did not intend for it to be stateless and deterministic, but these properties surfaced from the way the algorithms were shaped. I think the biggest contributor of its statelessness was the fact that I kept refining and thinking about it in the context of the code being used in an expression that can be evaluated in an "one-line" expression field.
+The stateless and deterministic properties of FPS-R were not part of the initial design; they emerged organically from the development process. I believe the primary driver for this was my constraint of refining the algorithms to work within a single, "one-line" expression field, which naturally forced a stateless architecture.
 
-I am not a math genius with fancy moves up my sleeves: I was simply limited to the tools I know and have come to understand well enough to use them the way I did. I used them to create the Maths parallel of well used visual effects techniques, reaching for visual complexity and detail through layering of noise, adding dissonance and breaking repeated recognisable patterns with offset, scale and frequency. I just applied these to the expressions, where instead of noise patterns, I was working with values and algorithmic components that I understood.
+Once I recognised these emerging properties—Stateless, Deterministic, Mathematically Pure, and Foundational (Composable), they became the core pillars of the framework. These principles transformed into a guiding compass, directing all subsequent architectural and development decisions.
+
+I am not a math genius with a deep bag of tricks. My approach was simply shaped by the tools I knew and understood well. In essence, I created the mathematical parallel of common visual effects techniques. To achieve visual complexity, designers layer noise, add dissonance, and break repetitive patterns with offsets, scaling, and frequency changes. I applied this same philosophy to mathematical expressions, replacing visual noise with numerical values and layering the algorithmic components I had built.
 
 ---
 ## Origin - The SM Conversation
@@ -2704,4 +2718,44 @@ Changed license to Apache 2.0
 ## Merging LOD Rich features
 _14 September 2025, Sunday_
 I PR and merged the rich output wrapper functions for FPS-R with LOD sine wave look-up into `main`. As of now only the canonical C code has the wrappers.
+
+---
+## A Fourth Algorithm is Born - FPS-R Bitwise Decode (BD)
+_17 Oct 2025_
+
+This is really crazy. Just when I thought the FPS-R algorithm line-up was complete, another one came and hit me out of nowhere.
+
+### The Beginning of the Discovery
+It started earlier this week with my curiosity in the outputs of PRNG (PseudoRandom Number Generator) and CSPRNG (Cryptographically Secure PseudoRandom Number Generator).
+
+On October 15, 2025 (Wednesday), I explored the concept that "lightning does not strike the same place twice," particularly in relation to uniform distribution tendencies in random number generation (RNG). My focus was on adversaries attempting to exploit the behaviour of outputs from Pseudorandom Number Generators (PRNG) and Cryptographically Secure PRNGs (CSPRNG). I wondered if there might be a tendency for generated values to either repel from previously produced numbers or cluster in areas distant from them. If this were the case, an attacker could potentially establish "areas of confidence fall-off" centred around the last predicted value, leading them to anticipate that the next number would neither replicate the last one nor fall within that region.
+
+The answer to my inquiry was "no." Well-implemented Cryptographically Secure PRNG algorithms maintain an equal probability for all possible numbers from one generation to the next. This ensures that no discernible patterns can easily emerge, defining these algorithms as truly neutral and cryptographically secure.
+
+This confirmation led me down a more fundamental line of inquiry: how do PRNGs operate on a bit level? The conversation revealed that these generators don't inherently produce decimal numbers but rather a stream of bits. These bitstreams are then interpreted to form integers, floats, or doubles. This was a critical paradigm shift in my thinking, as I had previously been conceptualising the output only in terms of final numerical values.
+
+As I visualised these bitstreams, I had a moment of inspiration. The sequence of bits immediately reminded me of the "playbook" concept from another of my inventions, the Phrase-Timing Authentication Protocol (PTAP). The PTAP playbook is essentially a high-level bitstream used to generate FPS-R sequences.
+
+### Getting Inspiration from Bitstreams
+This connection sparked the idea for an unexpected fourth FPS-R algorithm. While my original framework utilised random floats, I realised I could use the **raw bitstream from a CSPRNG directly** as the input for the FPS-R framework. This new method, "**FPS-R by Bitstream**," would operate on a more fundamental level of randomness, inspired by the abstract playbook concept but grounded in the actual mechanics of the generator. 
+
+The realisation was followed by a moment of face-palming clarity. I "kicked myself" for not seeing it sooner: the patterns in a bitstream were perfect sources for the "move-and-hold" or "hold-then-break" mechanics at the heart of FPS-R. With mounting excitement, I initiated another conversation with Gemini to rigorously explore the viability of this new approach. After providing the necessary background on the FPS-R framework, I posed a challenge: could it guess how a binary stream might lead to a fourth algorithm? Gemini's first attempt was an insightful, albeit different, direction—proposing an alternative implementation of the SM algorithm using bitstreams.
+
+This prompted me to clarify my own idea: using the very structure of the bitstream to generate the FPS-R signals. The logic was simple yet powerful: every time a bit flipped (from 0 to 1, or 1 to 0), it would trigger a "jump" to a new random value. As long as the same bit value continued in the sequence, the output would "hold."
+
+Initially, I viewed this bitstream method as a supplementary tool—a "sub-algorithm" or a utility that could "fill in the gaps" during long holds produced by the original "big three" algorithms (SM, TM, and QS). However, as I fleshed out the concept, I realised it wasn't just an add-on. This new method stood on its own, perfectly embodying all the foundational pillars of FPS-R: it was deterministic, stateless, foundational, composable, mathematically pure, and a complete "glass-box."
+
+The conceptual floodgates opened. The exchange that followed led to the idea of not just one, but multiple bitstreams interacting, combining, and collapsing into a single, final output stream. This gave rise to the concepts of intra-stream (unary) and inter-stream interaction modes, adding another layer of complexity and expressive potential.
+
+Finally, the brainstorming for a name began. After considering several options, I settled on a title that captured its essence: **FPS-R: Bitwise Decode (BD)**.
+
+With the theoretical framework in place, it was time to translate the architecture into functional code. Through an iterative process of implementation and refinement, the abstract concept of Bitwise Decode solidified into a tangible algorithm, performing exactly as designed.
+
+I proceeded to explore the similarity of the existing algorithms and how each one was more similar or different from the other. Then, in the context of the newly created Bitwise Decode, the similarities and differences between the four were this: The original trio of algorithms—SM, TM, and QS—are fundamentally composers of rhythm. They take a high-entropy source (`rand()`) and actively impose a "move-and-hold" structure onto it through various internal mechanics like modulo operations and stream switching. In contrast, Bitwise Decode is a **direct interpreter**. It doesn't create phrasing; it reveals the phrasing that already exists within the source bitstream itself. Its "jumps" and "holds" are a direct reflection of the bit flips and consecutive runs in its input. This makes BD unique: while the others create complexity, BD provides a transparent window into the complexity of its source.
+
+This discovery highlights a unique advantage (in this case) that comes from an unconventional perspective. A formally trained algorithm researcher, steeped in complex computer science foundations, might have overlooked such a straightforward solution, perhaps attempting to derive a more intricate mathematical model. My own simplistic mindset, however, allowed me to approach the bitstream visually, almost like an ASCII art character stream. By doing so, I was able to see the 'move-and-hold' phrasing that was already naturally expressed in the pattern of flipping bits and use that pattern directly as a generative source, bypassing unnecessary layers of abstraction.
+
+The discussion that began with a simple question about uniform distribution and random bitstream generation had culminated in the addition of yet another algorithm to my framework. I am still reeling in disbelief that FPS-R would turn from a trio to a quartet.
+
+---
 

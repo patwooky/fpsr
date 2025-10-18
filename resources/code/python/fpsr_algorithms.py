@@ -6,15 +6,16 @@
 '''
 file: fpsr_algorithms.py
 brief: Python implementation of FPS-R algorithms: 
-    Stacked Modulo (SM), Toggled Modulo (TM) and Quantised Switching (QS).
+    Stacked Modulo (SM), Toggled Modulo (TM), Quantised Switching (QS), and Bitwise Decode (BD).
 details: 
-    FPS-R (Frame-Persistent Stateless Randomisation) is a set of three algorithms that
+    FPS-R (Frame-Persistent Stateless Randomisation) is a set of algorithms that
     generate frame-persistent and stateless random values. 
-    This file contains three stateless, frame-persistent randomization algorithms.
+    This file contains four stateless, frame-persistent randomization algorithms.
     It uses a custom portable_rand() function to ensure deterministic and consistent results across any platform.
 '''
 
 import math
+import functools
 
 # -----------------------------------------------------------------------------
 # Deterministic helpers and PRNG matching the C reference implementation
@@ -27,8 +28,13 @@ import math
 # - All fractional math that converts to/from integers uses Python's float (IEEE-754
 #   double) and math.floor to match C 'double' behavior, ensuring bit-for-bit parity.
 
+# Bit-width used for chunked bit operations. It must remain 64 for deterministic
+# compatibility with SplitMix64 and the 64-bit masking below.
+# This value is not meant to be changed. DO NOT MODIFY.
+_CHUNK_BITS = 64
+
 # 64-bit mask for emulating uint64_t wraparound exactly like C.
-_UINT64_MASK = (1 << 64) - 1
+_UINT64_MASK = (1 << _CHUNK_BITS) - 1
 
 def _to_uint64(x: int) -> int:
     """Cast any Python int to an emulated uint64_t by masking to 64 bits.
@@ -92,6 +98,18 @@ def portable_rand(seed):
     else:
         seed = int(seed)
     return portable_rand_u64(seed)
+
+# --- Bitwise Rotation Helpers ---
+
+def _circular_left_shift(value: int, shift: int) -> int:
+    """Performs a _CHUNK_BITS-wide circular left shift (rotate left)."""
+    shift %= _CHUNK_BITS
+    return _to_uint64((value << shift) | (value >> (_CHUNK_BITS - shift)))
+
+def _circular_right_shift(value: int, shift: int) -> int:
+    """Performs a _CHUNK_BITS-wide circular right shift (rotate right)."""
+    shift %= _CHUNK_BITS
+    return _to_uint64((value >> shift) | (value << (_CHUNK_BITS - shift)))
 
 
 """
@@ -374,16 +392,207 @@ use_final_random = True # Set to False to bypass final randomization
 
 # end of fpsr_qs function
 
+"""
+------------------------------
+FPS-R: Bitwise Decode (BD)
+------------------------------
+"""
+
+def fpsr_bd(
+    frame: int,
+    block_size: int,
+    streams_number: int = 1,
+    streams_offset: int = 0,
+    intra_op: str = "none",
+    dynamic_shift_bits: int = 6,
+    static_shift_amount: int = 1,
+    inter_op: str = "xor",
+    value_seed_offset: int = 0
+):
+    """
+    Generates a phrased random value by decoding a deterministically generated bitstream.
+
+    This algorithm is stateless. For any given frame, it calculates its state by:
+    1. Finding the start of its macro-block (`outer_anchor`).
+    2. Generating one or more raw bitstreams for the block.
+    3. Applying transformations (intra-stream op) to each stream.
+    4. Combining the transformed streams (inter-stream op).
+    5. Decoding the final bitstream to produce phrased holds and jumps based on bit-flips.
+
+    Args:
+        frame (int): The current frame or time input.
+        block_size (int): The size of the macro-rhythm in frames. Must be > 0.
+        streams_number (int): The number of parallel bitstreams to generate.
+        streams_offset (int): The frame offset between each parallel stream's seed.
+        intra_op (str): The unary (intra-stream) operation.
+                        Static ops: "none", "not", "lshift", "rshift", "rotl", "rotr".
+                        Dynamic ops: "lshift_dynamic", "rshift_dynamic", "rotl_dynamic", "rotr_dynamic".
+        dynamic_shift_bits (int): For dynamic ops, the number of controller bits to determine shift amount.
+        static_shift_amount (int): For static ops, the fixed number of bits to shift/rotate.
+        inter_op (str): The binary (inter-stream) operation to combine streams ("xor", "or", "and").
+        value_seed_offset (int): An additional seed offset for the final value calculation.
+    Returns:
+        float: A deterministic, phrased pseudo-random float between 0.0 and 1.0.
+    """
+    if block_size <= 0:
+        block_size = 1
+
+    # --- Step 1: Find the Outer Anchor for the macro-block ---
+    outer_anchor = i64_align_down(frame, block_size)
+
+    # --- Step 2: Generate the raw bitstream(s) for the entire block ---
+    num_chunks = (block_size + (_CHUNK_BITS - 1)) // _CHUNK_BITS
+    raw_streams = []
+    for i in range(streams_number):
+        stream_seed = outer_anchor + (i * streams_offset)
+        chunks = [_splitmix64(_to_uint64(stream_seed + j)) for j in range(num_chunks)]
+        raw_streams.append(chunks)
+
+    # --- Step 3: Apply Intra-Stream Transformations ---
+    transformed_streams = []
+    unary_op = intra_op.lower()
+    
+    dynamic_ops = ["lshift_dynamic", "rshift_dynamic", "rotl_dynamic", "rotr_dynamic"]
+
+    if unary_op in dynamic_ops:
+        for i in range(0, streams_number // 2):
+            data_stream = raw_streams[i * 2]
+            controller_stream = raw_streams[i * 2 + 1]
+            
+            max_bits_for_shift = max(1, math.ceil(math.log2(_CHUNK_BITS)) if _CHUNK_BITS > 1 else 1)
+            bit_mask_size = max(1, min(max_bits_for_shift, dynamic_shift_bits))
+            bit_mask = (1 << bit_mask_size) - 1
+            
+            transformed_chunks = []
+            for j in range(num_chunks):
+                data_chunk = data_stream[j]
+                controller_chunk = controller_stream[j]
+                dynamic_shift = (controller_chunk & bit_mask) % _CHUNK_BITS
+                
+                if unary_op == "lshift_dynamic":
+                    transformed_chunks.append(_to_uint64(data_chunk << dynamic_shift))
+                elif unary_op == "rshift_dynamic":
+                    transformed_chunks.append(_to_uint64(data_chunk >> dynamic_shift))
+                elif unary_op == "rotl_dynamic":
+                    transformed_chunks.append(_circular_left_shift(data_chunk, dynamic_shift))
+                elif unary_op == "rotr_dynamic":
+                    transformed_chunks.append(_circular_right_shift(data_chunk, dynamic_shift))
+            transformed_streams.append(transformed_chunks)
+        
+        if streams_number % 2 != 0:
+            transformed_streams.append(raw_streams[-1])
+
+    else: # Apply static operations
+        for stream_chunks in raw_streams:
+            if unary_op == "not":
+                transformed_chunks = [_to_uint64(~chunk) for chunk in stream_chunks]
+            elif unary_op == "lshift":
+                transformed_chunks = [_to_uint64(chunk << static_shift_amount) for chunk in stream_chunks]
+            elif unary_op == "rshift":
+                transformed_chunks = [_to_uint64(chunk >> static_shift_amount) for chunk in stream_chunks]
+            elif unary_op == "rotl":
+                transformed_chunks = [_circular_left_shift(chunk, static_shift_amount) for chunk in stream_chunks]
+            elif unary_op == "rotr":
+                transformed_chunks = [_circular_right_shift(chunk, static_shift_amount) for chunk in stream_chunks]
+            else: # "none"
+                transformed_chunks = stream_chunks
+            transformed_streams.append(transformed_chunks)
+        
+    # --- Step 4: Combine Streams with Inter-Stream Operation ---
+    if len(transformed_streams) > 1:
+        op_map = { "xor": (lambda a, b: a ^ b), "or": (lambda a, b: a | b), "and": (lambda a, b: a & b) }
+        chosen_op = op_map.get(inter_op.lower(), lambda a, b: a ^ b)
+        
+        combined_chunks = []
+        for chunk_idx in range(num_chunks):
+            chunks_to_combine = [stream[chunk_idx] for stream in transformed_streams]
+            combined_chunk = functools.reduce(chosen_op, chunks_to_combine)
+            combined_chunks.append(combined_chunk)
+        final_chunks = combined_chunks
+    elif transformed_streams:
+        final_chunks = transformed_streams[0]
+    else:
+        final_chunks = [0] * num_chunks
+
+    # --- Step 5: Decode the final bitstream ---
+    def get_bit(n):
+        if not (0 <= n < block_size): return 0
+        chunk_index, bit_index = n // _CHUNK_BITS, n % _CHUNK_BITS
+        return (final_chunks[chunk_index] >> bit_index) & 1
+
+    current_pos_in_block = frame - outer_anchor
+    last_flip_pos = 0
+    
+    for i in range(current_pos_in_block, 0, -1):
+        if get_bit(i) != get_bit(i - 1):
+            last_flip_pos = i
+            break
+            
+    # --- Step 6: Generate the final random value from the last bit-flip position ---
+    final_seed = _to_uint64(outer_anchor) + _to_uint64(last_flip_pos) + _to_uint64(value_seed_offset)
+    
+    return portable_rand_u64(final_seed)
+
+# Sample code to call the FPS-R:BD function
+# Parameters
+frame = 100  # Current frame number
+p_block_size = 64 # Size of the macro-rhythm in frames
+p_streams_number = 2 # Number of parallel bitstreams to generate
+p_streams_offset = 10 # Frame offset between each parallel stream's seed
+# Intra-stream operation
+# Static ops: "none", "not", "lshift", "rshift", "rotl", "rotr".
+# Dynamic ops: "lshift_dynamic", "rshift_dynamic", "rotl_dynamic", "rotr_dynamic".
+p_intra_op = "rotl_dynamic" 
+p_dynamic_shift_bits = 6 # For dynamic ops, number of controller bits to determine shift amount
+p_static_shift_amount = 1 # For static ops, fixed number of bits to shift/rotate
+p_inter_op = "xor" # Binary (inter-stream) operation to combine streams
+p_value_seed_offset = 78901 # Additional seed offset for the final value calculation
+
+# # Call the FPS-R:BD function
+# randVal = fpsr_bd(
+#     frame=frame,
+#     block_size=p_block_size,
+#     streams_number=p_streams_number,
+#     streams_offset=p_streams_offset,
+#     intra_op=p_intra_op,
+#     dynamic_shift_bits=p_dynamic_shift_bits,
+#     static_shift_amount=p_static_shift_amount,
+#     inter_op=p_inter_op,
+#     value_seed_offset=p_value_seed_offset
+# )
+# # Another call to fpsr_bd for the previous frame
+# randVal_previous = fpsr_bd(
+#     frame=frame - 1,
+#     block_size=p_block_size,
+#     streams_number=p_streams_number,
+#     streams_offset=p_streams_offset,
+#     intra_op=p_intra_op,
+#     dynamic_shift_bits=p_dynamic_shift_bits,
+#     static_shift_amount=p_static_shift_amount,
+#     inter_op=p_inter_op,
+#     value_seed_offset=p_value_seed_offset
+# )
+# # Check if the value has changed
+# changed = 1 if randVal != randVal_previous else 0
+
+# print("--- Bitwise Decode (BD) Sample ---")
+# print(f'randVal_previous: {randVal_previous}')
+# print(f'randVal: {randVal}')
+# print(f'changed: {changed}')
+
+# end of fpsr_bd sample
+
+
 # /******************************************************************************/
 # /* Main function to demonstrate usage of FPS-R algorithms                     */
 # /******************************************************************************/
 if __name__ == "__main__":
-    # algorithms: 0 - sm, 1 - tm, 2 - qs
-    algo = 0  # Change this value to 0, 1, or 2 to test different algorithms
-    algo_name = ["SM", "TM", "QS"]  # Names for the algorithms
+    # algorithms: 0 - sm, 1 - tm, 2 - qs, 3 - bd
+    algo = 3  # Change this value to 0, 1, 2, or 3 to test different algorithms
+    algo_name = ["SM", "TM", "QS", "BD"]  # Names for the algorithms
     print(f"Using algorithm FPS-R: {algo_name[algo]}")
 
-    start_frames = [90, 100, 103]  # starting frames for each algorithm
+    start_frames = [90, 100, 103, 100]  # starting frames for each algorithm
     num_frames = 30  # run a loop of x frames to demonstrate changes
     
     # create main for loop to demonstrate changes
@@ -469,6 +678,37 @@ if __name__ == "__main__":
             changed = 0  # Variable to track if the value has changed
             if randVal != randVal_previous:
                 changed = 1  # Mark as changed if the value has changed from the previous frame
+
+        elif algo == 3:
+            # --------------------------------------------------------------------------
+            # Sample code to call the FPS-R:BD function
+            # --------------------------------------------------------------------------
+            # Parameters
+            p_block_size = 64 # Size of the macro-rhythm in frames
+            p_streams_number = 2 # Number of parallel bitstreams to generate
+            p_streams_offset = 10 # Frame offset between each parallel stream's seed
+            # Intra-stream operation
+            # Static ops: "none", "not", "lshift", "rshift", "rotl", "rotr".
+            # Dynamic ops: "lshift_dynamic", "rshift_dynamic", "rotl_dynamic", "rotr_dynamic".
+            p_intra_op = "rotl_dynamic"
+            p_dynamic_shift_bits = 6 # For dynamic ops, number of controller bits to determine shift amount
+            p_static_shift_amount = 1 # For static ops, fixed number of bits to shift/rotate
+            p_inter_op = "xor" # Binary (inter-stream) operation to combine streams
+            p_value_seed_offset = 78901 # Additional seed offset for the final value calculation
+
+            randVal = fpsr_bd(
+                frame=frame, block_size=p_block_size, streams_number=p_streams_number,
+                streams_offset=p_streams_offset, intra_op=p_intra_op,
+                dynamic_shift_bits=p_dynamic_shift_bits, static_shift_amount=p_static_shift_amount,
+                inter_op=p_inter_op, value_seed_offset=p_value_seed_offset)
+            
+            randVal_previous = fpsr_bd(
+                frame=frame - 1, block_size=p_block_size, streams_number=p_streams_number,
+                streams_offset=p_streams_offset, intra_op=p_intra_op,
+                dynamic_shift_bits=p_dynamic_shift_bits, static_shift_amount=p_static_shift_amount,
+                inter_op=p_inter_op, value_seed_offset=p_value_seed_offset)
+
+            if randVal != randVal_previous: changed = 1
         
         # Mirror C printf formatting and two-step print for the suffix
         print(f"Frame {frame}: randVal {randVal:.6f}, randVal_previous {randVal_previous:.6f}, changed {changed} ", end="")
