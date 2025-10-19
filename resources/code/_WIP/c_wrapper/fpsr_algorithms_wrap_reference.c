@@ -343,39 +343,44 @@ double fpsr_bd(
     int64_t outer_anchor = i64_align_down(frame, block_size);
     int64_t num_chunks = (block_size + (CHUNK_BITS - 1)) / CHUNK_BITS;
 
-    // --- Performance: Use stack allocation instead of heap allocation ---
-    // This is much faster for a function called in a tight loop.
-    // A safety check is added to fall back to malloc for unusually large blocks.
-    uint64_t** raw_streams = NULL;
-    uint64_t** transformed_streams = NULL;
-    uint64_t* final_chunks = NULL;
-    int use_heap = (block_size > BD_MAX_STACK_BLOCK_SIZE) || (streams_number > 32);
+    // --- Safer Memory Allocation ---
+    // Calculate total memory needed for all buffers to make one contiguous allocation.
+    // This is safer than multiple alloca() calls and simplifies cleanup.
+    size_t chunk_data_sz = num_chunks * sizeof(uint64_t);
+    // Check for overflow before calculating total size, though unlikely with realistic params.
+    if (streams_number > 0 && (SIZE_MAX / streams_number < chunk_data_sz)) return 0.0; // Overflow
+    size_t total_chunk_data_sz = streams_number * chunk_data_sz;
 
-    size_t raw_streams_sz = streams_number * sizeof(uint64_t*);
-    size_t transformed_streams_sz = streams_number * sizeof(uint64_t*);
-    size_t chunks_sz = num_chunks * sizeof(uint64_t);
+    // Allocate a single contiguous buffer on the heap for pointer arrays and chunk data to avoid alloca().
+    size_t ptr_arrays_sz = (size_t)streams_number * sizeof(uint64_t*) * 2; // raw_streams pointers + transformed_streams pointers
+    size_t total_alloc_size = ptr_arrays_sz + (2 * total_chunk_data_sz) + chunk_data_sz; // pointer arrays + raw_streams + transformed_streams + final_chunks
 
-    if (use_heap) {
-        raw_streams = (uint64_t**)malloc(raw_streams_sz);
-        transformed_streams = (uint64_t**)malloc(transformed_streams_sz);
-        final_chunks = (uint64_t*)malloc(chunks_sz);
-        for (int i = 0; i < streams_number; ++i) {
-            raw_streams[i] = (uint64_t*)malloc(chunks_sz);
-            transformed_streams[i] = (uint64_t*)malloc(chunks_sz);
-        }
-    } else {
-        raw_streams = (uint64_t**)alloca(raw_streams_sz);
-        transformed_streams = (uint64_t**)alloca(transformed_streams_sz);
-        final_chunks = (uint64_t*)alloca(chunks_sz);
-        for (int i = 0; i < streams_number; ++i) {
-            raw_streams[i] = (uint64_t*)alloca(chunks_sz);
-            transformed_streams[i] = (uint64_t*)alloca(chunks_sz);
-        }
-    }
+    void* buffer_base = malloc(total_alloc_size);
+    if (!buffer_base) { 
+        fprintf(stderr, "ERROR in fpsr_bd: malloc failed to allocate %zu bytes. Returning 0.0.\n", total_alloc_size);
+        return 0.0; // Allocation failed, return neutral value.
+    } 
     
+    // Carve up the single buffer into the pointer arrays and per-stream chunk arrays.
+    uint8_t* p = (uint8_t*)buffer_base;
+    uint64_t** raw_streams = (uint64_t**)p;
+    p += streams_number * sizeof(uint64_t*);
+    uint64_t** transformed_streams = (uint64_t**)p;
+    p += streams_number * sizeof(uint64_t*);
+    
+    for (int i = 0; i < streams_number; ++i) {
+        raw_streams[i] = (uint64_t*)p;
+        p += chunk_data_sz;
+    }
+    for (int i = 0; i < streams_number; ++i) {
+        transformed_streams[i] = (uint64_t*)p;
+        p += chunk_data_sz;
+    }
+    uint64_t* final_chunks = (uint64_t*)p;
+
     // --- Safety: Initialize transformed_streams to zero ---
     for (int i = 0; i < streams_number; ++i) {
-        memset(transformed_streams[i], 0, chunks_sz);
+        memset(transformed_streams[i], 0, chunk_data_sz);
     }
     
     // --- Step 2: Generate the raw bitstream(s) for the entire block ---
@@ -389,7 +394,7 @@ double fpsr_bd(
     
     // --- Step 3: Apply Intra-Stream Transformations ---
     int is_dynamic = (strcmp(intra_op, "lshift_dynamic") == 0 || strcmp(intra_op, "rshift_dynamic") == 0 ||
-                    strcmp(intra_op, "rotl_dynamic") == 0 || strcmp(intra_op, "rotr_dynamic") == 0);
+                      strcmp(intra_op, "rotl_dynamic") == 0 || strcmp(intra_op, "rotr_dynamic") == 0);
 
     int num_transformed_streams = is_dynamic ? (streams_number / 2 + streams_number % 2) : streams_number;
 
@@ -422,7 +427,7 @@ double fpsr_bd(
         if (streams_number % 2 != 0) {
             int last_raw_idx = streams_number - 1;
             int last_target_idx = num_transformed_streams - 1;
-            memcpy(transformed_streams[last_target_idx], raw_streams[last_raw_idx], chunks_sz);
+            memcpy(transformed_streams[last_target_idx], raw_streams[last_raw_idx], chunk_data_sz);
         }
     } else { // Static operations
         for (int i = 0; i < streams_number; ++i) {
@@ -439,7 +444,7 @@ double fpsr_bd(
     
     // --- Step 4: Combine Streams with Inter-Stream Operation ---
     if (num_transformed_streams > 0) {
-        memcpy(final_chunks, transformed_streams[0], chunks_sz);
+        memcpy(final_chunks, transformed_streams[0], chunk_data_sz);
         for (int i = 1; i < num_transformed_streams; ++i) {
             for (int j = 0; j < num_chunks; ++j) {
                 if (strcmp(inter_op, "or") == 0) final_chunks[j] |= transformed_streams[i][j];
@@ -448,7 +453,7 @@ double fpsr_bd(
             }
         }
     } else {
-        memset(final_chunks, 0, chunks_sz);
+        memset(final_chunks, 0, chunk_data_sz);
     }
     
     // --- Step 5: Decode the final bitstream ---
@@ -471,15 +476,7 @@ double fpsr_bd(
     double result = portable_rand_u64(final_seed);
 
     // --- Cleanup for heap allocation ---
-    if (use_heap) {
-        for (int i = 0; i < streams_number; ++i) {
-            free(raw_streams[i]);
-            free(transformed_streams[i]);
-        }
-        free(raw_streams);
-        free(transformed_streams);
-        free(final_chunks);
-    }
+    free(buffer_base);
     
     return result;
 }

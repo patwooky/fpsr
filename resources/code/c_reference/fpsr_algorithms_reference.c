@@ -418,22 +418,22 @@ double fpsr_bd(
     if (streams_number > 0 && (SIZE_MAX / streams_number < chunk_data_sz)) return 0.0; // Overflow
     size_t total_chunk_data_sz = streams_number * chunk_data_sz;
 
-    size_t total_alloc_size = (2 * total_chunk_data_sz) + chunk_data_sz; // raw_streams + transformed_streams + final_chunks
+    // Allocate a single contiguous buffer on the heap for pointer arrays and chunk data to avoid alloca().
+    size_t ptr_arrays_sz = (size_t)streams_number * sizeof(uint64_t*) * 2; // raw_streams pointers + transformed_streams pointers
+    size_t total_alloc_size = ptr_arrays_sz + (2 * total_chunk_data_sz) + chunk_data_sz; // pointer arrays + raw_streams + transformed_streams + final_chunks
+
+    void* buffer_base = malloc(total_alloc_size);
+    if (!buffer_base) { 
+        fprintf(stderr, "ERROR in fpsr_bd: malloc failed to allocate %zu bytes. Returning 0.0.\n", total_alloc_size);
+        return 0.0; // Allocation failed, return neutral value.
+    } 
     
-    int use_heap = (total_alloc_size > BD_MAX_STACK_BLOCK_SIZE);
-    void* buffer_base = NULL;
-    
-    if (use_heap) {
-        buffer_base = malloc(total_alloc_size);
-        if (!buffer_base) { return 0.0; } // Allocation failed, return neutral value.
-    } else {
-        buffer_base = alloca(total_alloc_size);
-    }
-    
-    // Carve up the single buffer into pointers for each stream array.
+    // Carve up the single buffer into the pointer arrays and per-stream chunk arrays.
     uint8_t* p = (uint8_t*)buffer_base;
-    uint64_t** raw_streams = (uint64_t**)alloca(streams_number * sizeof(uint64_t*));
-    uint64_t** transformed_streams = (uint64_t**)alloca(streams_number * sizeof(uint64_t*));
+    uint64_t** raw_streams = (uint64_t**)p;
+    p += streams_number * sizeof(uint64_t*);
+    uint64_t** transformed_streams = (uint64_t**)p;
+    p += streams_number * sizeof(uint64_t*);
     
     for (int i = 0; i < streams_number; ++i) {
         raw_streams[i] = (uint64_t*)p;
@@ -543,9 +543,7 @@ double fpsr_bd(
     double result = portable_rand_u64(final_seed);
 
     // --- Cleanup for heap allocation ---
-    if (use_heap) {
-        free(buffer_base);
-    }
+    free(buffer_base);
     
     return result;
 }
