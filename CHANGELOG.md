@@ -22,7 +22,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ---
 ## [2.0.4] - 2025-10-20
 ### Changed
-- **Breaking Change**: **Breaking Change**
+- **Breaking Change**:
 Changed the SM and TM output. In previous versions, the final stage where the seed was multiplied by a very large number (`100000ULL`) before being passed to `portable_rand_u64()`. This number is now removed, and this final number would be directly passed to `portable_rand_u64()`. This improves the theoretical purity of the hashing step.
 
 ---
