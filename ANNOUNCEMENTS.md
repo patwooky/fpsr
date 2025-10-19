@@ -3,6 +3,19 @@
 This file contains major announcements and important updates about the project.
 
 
+
+---
+### 20 Oct 2025
+[v 2.0.4]
+**Breaking Change**
+Changed the SM and TM output. In previous versions, the final stage where the seed was multiplied by a very large number (`100000ULL`) before being passed to `portable_rand_u64()`. This number is now removed, and this final number would be directly passed to `portable_rand_u64()`. This improves the theoretical purity of the hashing step.
+
+---
+### 19 Oct 2025
+[v 2.0.3]
+.An exciting addition of a **_fourth_** algorithm to the FPS-R framework, the **FPS-R: Bitwise Decode**.
+Updated Development Journal on the origin. [Read Here](./resources/readme/FPSR_Origins_Journal_Reflections.md#a-fourth-algorithm---deeper-into-the-bits-bitwise-decode)
+
 ---
 ### 22 Sep 2025
 [v 2.0.3]
