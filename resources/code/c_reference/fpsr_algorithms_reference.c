@@ -181,7 +181,9 @@ double fpsr_sm(
     // Keep all seed math in 64-bit integer space; rely on uint64 wraparound (well-defined).
     double fpsr_output = 0.0;
     if (finalRandSwitch) {
-        uint64_t seed = (uint64_t)held_integer_state * 100000ULL;
+        // The held_integer_state is already the unique identifier for this hold segment.
+        // We pass it directly to the SplitMix64 hasher without needing an additional multiplier.
+        uint64_t seed = (uint64_t)held_integer_state;
         fpsr_output = portable_rand_u64(seed);
     } else {
         // Return the active stream value directly as a double (cast by caller if needed).
@@ -241,8 +243,9 @@ double fpsr_tm(
     // --- 3. Use the stable state as a seed for the final random value (or bypass) ---
     double fpsr_output;
     if (finalRandSwitch) {
-        // Seed hashing in the 64-bit integer domain; well-defined wraparound.
-        uint64_t seed = (uint64_t)held_integer_state * 100000ULL;
+        // The held_integer_state is the unique identifier for the hold segment.
+        // Pass it directly to the SplitMix64 hasher for a well-distributed random value.
+        uint64_t seed = (uint64_t)held_integer_state;
         fpsr_output = portable_rand_u64(seed);
     } else {
         // Return the raw integer state directly.
@@ -697,3 +700,4 @@ int main() {
     } // end of main for loop
     return 0;
 }
+
