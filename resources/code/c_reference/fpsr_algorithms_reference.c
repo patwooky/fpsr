@@ -26,11 +26,19 @@
 #include <stdint.h>
 #include <inttypes.h>
 #include <stdlib.h> // For malloc(), free()
-#include <string.h> // For strcmp()
+#include <string.h> // For strcmp(), memset()
+#if defined(_MSC_VER)
+#include <malloc.h> // For _alloca
+#define alloca _alloca
+#elif defined(__GNUC__) || defined(__clang__)
+#include <alloca.h> // For alloca
+#endif
 
 // Bit-width used for chunked bit operations.
 // It must remain 64 for deterministic compatibility with SplitMix64 and the 64-bit masking below. DO NOT MODIFY.
 #define CHUNK_BITS 64
+// Safety limit for stack allocation in fpsr_bd to prevent stack overflow.
+#define BD_MAX_STACK_BLOCK_SIZE 8192
 
 /**
  * Deterministic integer math helpers and PRNG
@@ -135,11 +143,11 @@ static inline uint64_t u64_circular_right_shift(uint64_t value, int shift) {
  *
  * float randVal: this is the main output, which is a float value between [0.0, 1.0]
  * when finalRandSwitch is 0: 
- *      randVal will be a whole number representing the currently held frame 
- *      that remains constant for the hold duration.
+    * randVal will be a whole number representing the currently held   frame 
+    * that remains constant for the hold duration.
  * when finalRandSwitch is 1: 
- *      A float value between 0.0 and 1.0 that remains constant 
- *      for the held duration.
+    * A float value between 0.0 and 1.0 that remains constant 
+    * for the held duration.
  */
 double fpsr_sm(
     int64_t frame, int64_t minHold, int64_t maxHold,
@@ -334,6 +342,7 @@ double fpsr_qs(
 // Helper to get a specific bit from a chunk array, matching Python's out-of-bounds logic
 static int get_bit(int64_t n, int64_t block_size, const uint64_t* chunks, int64_t num_chunks) {
     if (n < 0 || n >= block_size) return 0;
+    // Bit ordering: chunk_index progresses block-wise, bit_index is LSB-first within a chunk.
     int64_t chunk_index = n / CHUNK_BITS;
     int bit_index = n % CHUNK_BITS;
     if (chunk_index >= num_chunks) return 0; // Should not happen with correct logic but safe
@@ -348,7 +357,7 @@ static int get_bit(int64_t n, int64_t block_size, const uint64_t* chunks, int64_
  * 3. Applying transformations (intra-stream op) to each stream, possibly in pairs for dynamic ops.
  * 4. Combining the transformed streams (inter-stream op).
  * 5. Decoding the final bitstream to produce phrased holds and jumps based on bit-flips.
- * 
+ *
  * int64_t frame: The current frame or time input.
  * int64_t block_size: The size of the macro-rhythm in frames. Must be > 0.
  * int streams_number: The number of parallel bitstreams to generate.
@@ -377,16 +386,53 @@ double fpsr_bd(
 ) {
     if (block_size <= 0) block_size = 1;
     if (streams_number < 1) streams_number = 1;
+    
+    // --- Hardening: Sanitize static_shift_amount to prevent Undefined Behavior ---
+    // This ensures the shift is always within the valid range [0, 63].
+    int sanitized_static_shift = static_shift_amount & (CHUNK_BITS - 1);
 
     // --- Step 1: Find the Outer Anchor for the macro-block ---
     int64_t outer_anchor = i64_align_down(frame, block_size);
+    int64_t num_chunks = (block_size + (CHUNK_BITS - 1)) / CHUNK_BITS;
+
+    // --- Performance: Use stack allocation instead of heap allocation ---
+    // This is much faster for a function called in a tight loop.
+    // A safety check is added to fall back to malloc for unusually large blocks.
+    uint64_t** raw_streams = NULL;
+    uint64_t** transformed_streams = NULL;
+    uint64_t* final_chunks = NULL;
+    int use_heap = (block_size > BD_MAX_STACK_BLOCK_SIZE) || (streams_number > 32);
+
+    size_t raw_streams_sz = streams_number * sizeof(uint64_t*);
+    size_t transformed_streams_sz = streams_number * sizeof(uint64_t*);
+    size_t chunks_sz = num_chunks * sizeof(uint64_t);
+
+    if (use_heap) {
+        raw_streams = (uint64_t**)malloc(raw_streams_sz);
+        transformed_streams = (uint64_t**)malloc(transformed_streams_sz);
+        final_chunks = (uint64_t*)malloc(chunks_sz);
+        for (int i = 0; i < streams_number; ++i) {
+            raw_streams[i] = (uint64_t*)malloc(chunks_sz);
+            transformed_streams[i] = (uint64_t*)malloc(chunks_sz);
+        }
+    } else {
+        raw_streams = (uint64_t**)alloca(raw_streams_sz);
+        transformed_streams = (uint64_t**)alloca(transformed_streams_sz);
+        final_chunks = (uint64_t*)alloca(chunks_sz);
+        for (int i = 0; i < streams_number; ++i) {
+            raw_streams[i] = (uint64_t*)alloca(chunks_sz);
+            transformed_streams[i] = (uint64_t*)alloca(chunks_sz);
+        }
+    }
+    
+    // --- Safety: Initialize transformed_streams to zero ---
+    for (int i = 0; i < streams_number; ++i) {
+        memset(transformed_streams[i], 0, chunks_sz);
+    }
     
     // --- Step 2: Generate the raw bitstream(s) for the entire block ---
-    int64_t num_chunks = (block_size + (CHUNK_BITS - 1)) / CHUNK_BITS;
-    
-    uint64_t** raw_streams = (uint64_t**)malloc(streams_number * sizeof(uint64_t*));
     for (int i = 0; i < streams_number; ++i) {
-        raw_streams[i] = (uint64_t*)malloc(num_chunks * sizeof(uint64_t));
+        // Casting negative offsets to uint64_t is well-defined and deterministic.
         int64_t stream_seed = outer_anchor + (i * streams_offset);
         for (int j = 0; j < num_chunks; ++j) {
             raw_streams[i][j] = splitmix64((uint64_t)(stream_seed + j));
@@ -394,68 +440,75 @@ double fpsr_bd(
     }
     
     // --- Step 3: Apply Intra-Stream Transformations ---
-    uint64_t** transformed_streams = (uint64_t**)malloc(streams_number * sizeof(uint64_t*));
-    for(int i = 0; i < streams_number; ++i) {
-        transformed_streams[i] = (uint64_t*)malloc(num_chunks * sizeof(uint64_t));
-    }
-
     int is_dynamic = (strcmp(intra_op, "lshift_dynamic") == 0 || strcmp(intra_op, "rshift_dynamic") == 0 ||
                       strcmp(intra_op, "rotl_dynamic") == 0 || strcmp(intra_op, "rotr_dynamic") == 0);
 
+    int num_transformed_streams = is_dynamic ? (streams_number / 2 + streams_number % 2) : streams_number;
+
     if (is_dynamic) {
-        int transformed_count = 0;
+        // For dynamic ops, streams are processed in pairs (data, controller).
         for (int i = 0; i < streams_number / 2; ++i) {
-            uint64_t* data_stream = raw_streams[i * 2];
-            uint64_t* controller_stream = raw_streams[i * 2 + 1];
+            int data_idx = i * 2;
+            int controller_idx = i * 2 + 1;
+            int target_idx = i; // Simplified index for clarity
+
+            uint64_t* data_stream = raw_streams[data_idx];
+            uint64_t* controller_stream = raw_streams[controller_idx];
             
             // max_bits_for_shift is ceil(log2(CHUNK_BITS)), which is 6 for 64.
-            int max_bits_for_shift = 6; // Equivalent to ceil(log2(64))
+            int max_bits_for_shift = 6;
             int bit_mask_size = dynamic_shift_bits;
             if (bit_mask_size < 1) bit_mask_size = 1;
             if (bit_mask_size > max_bits_for_shift) bit_mask_size = max_bits_for_shift;
             uint64_t bit_mask = (1ULL << bit_mask_size) - 1;
 
             for (int j = 0; j < num_chunks; ++j) {
-                int dynamic_shift = (controller_stream[j] & bit_mask) % CHUNK_BITS;
-                if (strcmp(intra_op, "lshift_dynamic") == 0) transformed_streams[transformed_count][j] = data_stream[j] << dynamic_shift;
-                else if (strcmp(intra_op, "rshift_dynamic") == 0) transformed_streams[transformed_count][j] = data_stream[j] >> dynamic_shift;
-                else if (strcmp(intra_op, "rotl_dynamic") == 0) transformed_streams[transformed_count][j] = u64_circular_left_shift(data_stream[j], dynamic_shift);
-                else if (strcmp(intra_op, "rotr_dynamic") == 0) transformed_streams[transformed_count][j] = u64_circular_right_shift(data_stream[j], dynamic_shift);
+                int dynamic_shift = (controller_stream[j] & bit_mask); // Shift amount is derived from controller
+                if (strcmp(intra_op, "lshift_dynamic") == 0) transformed_streams[target_idx][j] = data_stream[j] << (dynamic_shift % CHUNK_BITS);
+                else if (strcmp(intra_op, "rshift_dynamic") == 0) transformed_streams[target_idx][j] = data_stream[j] >> (dynamic_shift % CHUNK_BITS);
+                else if (strcmp(intra_op, "rotl_dynamic") == 0) transformed_streams[target_idx][j] = u64_circular_left_shift(data_stream[j], dynamic_shift);
+                else if (strcmp(intra_op, "rotr_dynamic") == 0) transformed_streams[target_idx][j] = u64_circular_right_shift(data_stream[j], dynamic_shift);
             }
-            transformed_count++;
         }
+        // If there's an odd number of streams, the last one is unpaired and copied directly.
         if (streams_number % 2 != 0) {
-            memcpy(transformed_streams[streams_number / 2], raw_streams[streams_number - 1], num_chunks * sizeof(uint64_t));
+            int last_raw_idx = streams_number - 1;
+            int last_target_idx = num_transformed_streams - 1;
+            memcpy(transformed_streams[last_target_idx], raw_streams[last_raw_idx], chunks_sz);
         }
     } else { // Static operations
         for (int i = 0; i < streams_number; ++i) {
             for (int j = 0; j < num_chunks; ++j) {
                 if (strcmp(intra_op, "not") == 0) transformed_streams[i][j] = ~raw_streams[i][j];
-                else if (strcmp(intra_op, "lshift") == 0) transformed_streams[i][j] = raw_streams[i][j] << static_shift_amount;
-                else if (strcmp(intra_op, "rshift") == 0) transformed_streams[i][j] = raw_streams[i][j] >> static_shift_amount;
-                else if (strcmp(intra_op, "rotl") == 0) transformed_streams[i][j] = u64_circular_left_shift(raw_streams[i][j], static_shift_amount);
-                else if (strcmp(intra_op, "rotr") == 0) transformed_streams[i][j] = u64_circular_right_shift(raw_streams[i][j], static_shift_amount);
+                else if (strcmp(intra_op, "lshift") == 0) transformed_streams[i][j] = raw_streams[i][j] << sanitized_static_shift;
+                else if (strcmp(intra_op, "rshift") == 0) transformed_streams[i][j] = raw_streams[i][j] >> sanitized_static_shift;
+                else if (strcmp(intra_op, "rotl") == 0) transformed_streams[i][j] = u64_circular_left_shift(raw_streams[i][j], sanitized_static_shift);
+                else if (strcmp(intra_op, "rotr") == 0) transformed_streams[i][j] = u64_circular_right_shift(raw_streams[i][j], sanitized_static_shift);
                 else transformed_streams[i][j] = raw_streams[i][j]; // "none"
             }
         }
     }
     
     // --- Step 4: Combine Streams with Inter-Stream Operation ---
-    uint64_t* final_chunks = (uint64_t*)malloc(num_chunks * sizeof(uint64_t));
-    if (streams_number > 0) {
-        memcpy(final_chunks, transformed_streams[0], num_chunks * sizeof(uint64_t));
-    }
-    for (int i = 1; i < streams_number; ++i) {
-        for (int j = 0; j < num_chunks; ++j) {
-            if (strcmp(inter_op, "or") == 0) final_chunks[j] |= transformed_streams[i][j];
-            else if (strcmp(inter_op, "and") == 0) final_chunks[j] &= transformed_streams[i][j];
-            else final_chunks[j] ^= transformed_streams[i][j]; // "xor" is default
+    if (num_transformed_streams > 0) {
+        memcpy(final_chunks, transformed_streams[0], chunks_sz);
+        for (int i = 1; i < num_transformed_streams; ++i) {
+            for (int j = 0; j < num_chunks; ++j) {
+                if (strcmp(inter_op, "or") == 0) final_chunks[j] |= transformed_streams[i][j];
+                else if (strcmp(inter_op, "and") == 0) final_chunks[j] &= transformed_streams[i][j];
+                else final_chunks[j] ^= transformed_streams[i][j]; // "xor" is default
+            }
         }
+    } else {
+        memset(final_chunks, 0, chunks_sz);
     }
     
     // --- Step 5: Decode the final bitstream ---
     int64_t current_pos_in_block = frame - outer_anchor;
     int64_t last_flip_pos = 0;
+    // Scan backwards from the current frame's position to find the most recent bit flip.
+    // If no flip is found (constant bitstream), last_flip_pos remains 0.
+    // The hold is defined by the distance to this last flip.
     for (int64_t i = current_pos_in_block; i > 0; --i) {
         if (get_bit(i, block_size, final_chunks, num_chunks) != get_bit(i - 1, block_size, final_chunks, num_chunks)) {
             last_flip_pos = i;
@@ -464,17 +517,21 @@ double fpsr_bd(
     }
     
     // --- Step 6: Generate the final random value from the last bit-flip position ---
+    // The seed is a combination of the block start, the position of the last flip,
+    // and a user-provided offset, ensuring a unique value for each held segment.
     uint64_t final_seed = (uint64_t)outer_anchor + (uint64_t)last_flip_pos + (uint64_t)value_seed_offset;
     double result = portable_rand_u64(final_seed);
 
-    // --- Cleanup ---
-    for (int i = 0; i < streams_number; ++i) {
-        free(raw_streams[i]);
-        free(transformed_streams[i]);
+    // --- Cleanup for heap allocation ---
+    if (use_heap) {
+        for (int i = 0; i < streams_number; ++i) {
+            free(raw_streams[i]);
+            free(transformed_streams[i]);
+        }
+        free(raw_streams);
+        free(transformed_streams);
+        free(final_chunks);
     }
-    free(raw_streams);
-    free(transformed_streams);
-    free(final_chunks);
     
     return result;
 }
@@ -636,3 +693,4 @@ int main() {
     } // end of main for loop
     return 0;
 }
+
