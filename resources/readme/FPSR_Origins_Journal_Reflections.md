@@ -9,6 +9,7 @@ While every update strives to be more accurate, there will be parts that are inc
 
 - [Foreword](#foreword)
 - [Origin Story](#origin-story)
+  - [Origin - Exploratory Chatbot Conversations](#origin---exploratory-chatbot-conversations)
 - [Reflections and Thoughts](#reflections-and-thoughts)
   - [Speculative](#speculative)
 - [Development Journal](#development-journal)
@@ -163,15 +164,21 @@ Ultimately, I designed a system using multiple bitstreams, with the ability to t
 By _19 Oct 2025_, the algorithm was complete, with implementations in both C and Python. When I tested the outputs of all four algorithms (SM, TM, QS, and the new BD) across both languages, the results were identical. This perfect match was the ultimate validation, proving the implementation was bit-for-bit accurate.
 
 ## Origin Story - Conclusion
-The stateless and deterministic properties of FPS-R were not part of the initial design; they emerged organically from the development process. I believe the primary driver for this was my constraint of refining the algorithms to work within a single, "one-line" expression field, which naturally forced a stateless architecture.
+The order of discovery was SM, QS, TM then BD.
+
+The stateless and deterministic properties of FPS-R were not part of the initial design; they emerged organically from the development process. 
+
+I believe the primary driver for this was my constraint of refining the algorithms to work within a single, "one-line" expression field, which naturally forced a stateless architecture. SM and TM can be expressed in a single line, but not for QS and BD. After SM emerged, I understood the constraints of achieving a stateless algorithm, so I was able to make sure subsequent algorithms are also stateless, pure and deterministic when I developed them.
 
 Once I recognised these emerging properties—Stateless, Deterministic, Mathematically Pure, and Foundational (Composable), they became the core pillars of the framework. These principles transformed into a guiding compass, directing all subsequent architectural and development decisions.
 
 I am not a math genius with a deep bag of tricks. My approach was simply shaped by the tools I knew and understood well. In essence, I created the mathematical parallel of common visual effects techniques. To achieve visual complexity, designers layer noise, add dissonance, and break repetitive patterns with offsets, scaling, and frequency changes. I applied this same philosophy to mathematical expressions, replacing visual noise with numerical values and layering the algorithmic components I had built.
 
 ---
+## Origin - Exploratory Chatbot Conversations
+
 ## Origin - The SM Conversation
-_sometime before 16 June 2025_
+_Sometime before 16 June 2025_
 
 I was attempting a re-creation of VHS artifacts. In the VHS artifacts, there are bright and dark bands that will periodically pop up, differing in number of bands every time, each band has differing width, roams vertically around at different speeds, and has differing brightness.
 
