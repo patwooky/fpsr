@@ -331,13 +331,20 @@ double fpsr_qs(
 
     // --- 5. Hash the final output or bypass ---
     double fpsr_output;
+    // If final randomisation is enabled, derive a deterministic seed from the active stream value
     if (finalRandSwitch == 1) {
-        // Derive a stable integer seed from the double stream using floor(), then hash.
-        // This avoids ambiguous float->int casts and reproduces exactly in Python.
-        int64_t hashed_int = (int64_t)floor(active_stream_val * 100000.0);
-        fpsr_output = portable_rand_u64((uint64_t)hashed_int);
+        // Initialize to zero in case sizeof(double) < sizeof(uint64_t) on niche targets
+        // (prevents any uninitialised high bytes from being used as part of the seed).
+        uint64_t seed = 0;
+        // Bit-cast the quantised stream value (double) into a 64-bit seed.
+        // memcpy avoids strict-aliasing UB and produces a bit-identical copy of the IEEE-754 payload.
+        // Endianness is irrelevant for a full-width copy into the same width.
+        memcpy(&seed, &active_stream_val, sizeof(seed));
+        // Hash the seed into a uniform double in [0,1) using the portable SplitMix64-based PRNG.
+        // This preserves persistence: identical active_stream_val over the held segment -> identical output.
+        fpsr_output = portable_rand_u64(seed);
     } else {
-        // Preserve original behavior (scaling applied by existing code path).
+        // return the active stream value directly, mapped to [0.0, 1.0]
         fpsr_output = 0.5 * active_stream_val + 0.5;
     }
     return fpsr_output;
