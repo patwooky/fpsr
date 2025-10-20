@@ -76,11 +76,11 @@ int main(void) {
         int64_t frame = (int64_t)(start_frame + i);
 
         // SM
-        double sm_val = fpsr_sm(frame, sm_minHold, sm_maxHold, sm_reseed, sm_seedInner, sm_seedOuter, sm_final);
+        double sm_val = fpsr_sm_base(frame, sm_minHold, sm_maxHold, sm_reseed, sm_seedInner, sm_seedOuter, sm_final);
         printf("SM frame=%4lld val=%.17g bits=0x%016" PRIX64 "\n", (long long)frame, sm_val, f64_bits(sm_val));
 
         // TM
-        double tm_val = fpsr_tm(frame, tm_periodA, tm_periodB, tm_periodSwitch, tm_seedInner, tm_seedOuter, tm_final);
+        double tm_val = fpsr_tm_base(frame, tm_periodA, tm_periodB, tm_periodSwitch, tm_seedInner, tm_seedOuter, tm_final);
         printf("TM frame=%4lld val=%.17g bits=0x%016" PRIX64 "\n", (long long)frame, tm_val, f64_bits(tm_val));
 
         // QS
