@@ -25,13 +25,22 @@
 #include <alloca.h> // For alloca
 #endif
 
-
 // Bit-width used for chunked bit operations.
 // It must remain 64 for deterministic compatibility with SplitMix64. DO NOT MODIFY.
 #define CHUNK_BITS 64
 // Safety limit for stack allocation in fpsr_bd to prevent stack overflow.
 #define BD_MAX_STACK_BLOCK_SIZE 8192
 
+// --- Platform-Specific Includes for Thread-Safe Init ---
+#if defined(_WIN32) || defined(_WIN64)
+    #include <windows.h>
+#elif defined(__linux__) || defined(__APPLE__) || defined(__unix__)
+    #include <pthread.h>
+#else
+    #warning "Unsupported platform: Thread-safe LUT initialization is not available. Falling back to non-thread-safe."
+    // Define a fallback for unsupported platforms
+    #define UNSUPPORTED_PLATFORM
+#endif
 
 #define SINE_LUT_SIZE_100 100
 #define SINE_LUT_SIZE_500 500
@@ -47,14 +56,52 @@ static double _sine_lut_500[SINE_LUT_SIZE_500];
 static double _sine_lut_1000[SINE_LUT_SIZE_1000];
 static double _sine_lut_4096[SINE_LUT_SIZE_4096]; // Highest precision default
 
-// Flag to track if LUTs are initialized
-static int _luts_initialized = 0;
+// Forward declaration of the initialization function
+void initialize_sine_luts(void);
 
-// Function to initialize all sine lookup tables
-// THIS FUNCTION MUST BE CALLED ONCE AT PROGRAM STARTUP!
-void initialize_sine_luts() {
-    if (_luts_initialized) return; // Only initialize once
+// --- Thread-Safe "Call Once" Implementation ---
+#if defined(_WIN32) || defined(_WIN64)
+    // Windows implementation
+    static int os = 0;
+    static INIT_ONCE init_once_control = INIT_ONCE_STATIC_INIT;
+    
+    // Windows requires a specific callback signature
+    BOOL CALLBACK InitLutsCallback(PINIT_ONCE InitOnce, PVOID Parameter, PVOID *Context) {
+        initialize_sine_luts();
+        return TRUE;
+    }
 
+    static inline void init_once_func(void) {
+        InitOnceExecuteOnce(&init_once_control, InitLutsCallback, NULL, NULL);
+    }
+
+#elif defined(__linux__) || defined(__APPLE__) || defined(__unix__)
+    // POSIX (Linux, macOS, etc.) implementation
+    static int os = 1;
+    static pthread_once_t init_once_control = PTHREAD_ONCE_INIT;
+
+    static inline void init_once_func(void) {
+        pthread_once(&init_once_control, initialize_sine_luts);
+    }
+
+#else
+    // Fallback implementation for unsupported platforms
+    static int _luts_initialized_fallback = 0;
+    static inline void init_once_func(void) {
+        if (!_luts_initialized_fallback) {
+            initialize_sine_luts();
+            _luts_initialized_fallback = 1;
+        }
+    }
+#endif
+
+/**
+ * @brief Initializes all global sine lookup tables.
+ * @details This function is designed to be called exactly once, in a
+ * thread-safe manner, by the init_once_func().
+ * THIS FUNCTION MUST BE CALLED ONCE AT PROGRAM STARTUP (automatically handled by init_once_func)!
+ */
+void initialize_sine_luts(void) {
     for (int i = 0; i < SINE_LUT_SIZE_100; ++i) {
         _sine_lut_100[i] = sin((double)i / SINE_LUT_SIZE_100 * TWO_PI);
     }
@@ -67,18 +114,30 @@ void initialize_sine_luts() {
     for (int i = 0; i < SINE_LUT_SIZE_4096; ++i) {
         _sine_lut_4096[i] = sin((double)i / SINE_LUT_SIZE_4096 * TWO_PI);
     }
-    _luts_initialized = 1;
 }
 
 // Helper function to get sine value from a specific LUT with linear interpolation
 double _get_sine_from_lod_lut(double phase, int lut_size, const double* lut_array) {
-    if (!_luts_initialized) {
-        // Fallback or error if LUTs not initialized.
-        // For absolute determinism, this should ideally not happen in production.
-        fprintf(stderr, "WARNING: Sine LUTs not initialized. Falling back to sin(). Call initialize_sine_luts() once.\n");
-        return sin(phase); 
-    }
+    /*
+        * @brief Gets a sine value from a specific LUT with linear interpolation.
+        * @param phase The input phase angle in radians.
+        * @param lut_size The size of the lookup table.
+        * @param lut_array Pointer to the sine lookup table array.
+        * @return The interpolated sine value corresponding to the input phase.
+    */
 
+    // On unsupported platforms, fall back to direct sin() to avoid non-thread-safe LUT init.
+    #if defined(UNSUPPORTED_PLATFORM)
+        // Fallback or error if LUTs not initialized.
+        return sin(phase); // Fallback
+    #endif
+
+    // 1. GUARANTEED THREAD-SAFE CALL
+    // This will run initialize_sine_luts() on the first call across all threads
+    // and will do nothing on subsequent calls.
+    init_once_func();
+
+    // 2. Interpolation logic
     // Wrap phase to 0 to 2*PI range
     phase = fmod(phase, TWO_PI);
     if (phase < 0) phase += TWO_PI; // Ensure positive for fmod results
@@ -91,6 +150,8 @@ double _get_sine_from_lod_lut(double phase, int lut_size, const double* lut_arra
     double frac = fractional_index - index1;
     
     // Handle wrap-around for index2 (last point wraps to first)
+    // Guard against index1 being exactly lut_size (when frac is 0.0)
+    if (index1 >= lut_size) index1 = 0;
     int index2 = (index1 + 1) % lut_size;
 
     // Linear interpolation
@@ -1107,8 +1168,15 @@ FPSR_Output fpsr_bd_get_details(
 
 int main() {
     // Example usage of the FPSR algorithms with detailed output
-
-    initialize_sine_luts(); // Initialize sine lookup tables
+    
+    // Report OS type
+    if (os == 0) {
+        printf("Windows OS.\n");
+    } else if (os == 1) {
+        printf("POSIX OS.\n");
+    } else {
+        printf("Unknown OS.\n");
+    }
     
     // Algorithms: 0 - SM, 1 - TM, 2 - QS, 3 - BD
     int algo = 3; // Change this value to 0, 1, 2, or 3 to test different algorithms
