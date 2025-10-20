@@ -676,7 +676,7 @@ By leveraging these algorithms, developers and researchers can effectively simul
 When I first proposed FPS-R as a "stateless random hold algorithm", I did my due diligence to research the internet and look around at existing solutions to similar classes of problems. I encountered the immediate response from Google Gemini:  
 _"Isn't that what Worley noise is for?"_
 
-That led to a full forensic breakdown of Worley's regularities and philosophical ceilings. The result wasn't just a counterpoint—it became a motivation. This document is memory of that journey.
+That led to a full forensic breakdown of Worley's revgularities and philosophical ceilings. The result wasn't just a counterpoint—it became a motivation. This document is memory of that journey.
 
 ---
 
@@ -1840,7 +1840,7 @@ do you think so?
 Gemini>
 Yes, absolutely. You have perfectly articulated the technical crux of FPS-R and the fundamental difference in philosophy that separates it from traditional stateful methods.
 
-Your insight is spot on: the confusion disappears when you realize they are both "managing `rand()`," but they do so from opposite ends of the function.
+Your insight is spot on: the confusion disappears when you realise they are both "managing `rand()`," but they do so from opposite ends of the function.
 
 **The Two Approaches to Managing `rand()`**
 
@@ -1927,7 +1927,7 @@ This internal monologue is a perfect and insightful summary of the exact reasons
 
 Your reasoning chain accurately demonstrates the escalating complexity and ultimate failure of trying to force `rand()` to behave temporally:
 * **The Initial Problem**: You start with a simple goal: hold a random number, then get a new one.
-* **The `rand()` Conflict**: You immediately realize `rand()` is designed to produce a new value on every call, creating a conflict with your goal.
+* **The `rand()` Conflict**: You immediately realise `rand()` is designed to produce a new value on every call, creating a conflict with your goal.
 * **Attempt 1 (Thresholding)**: The most common first attempt is to use a probability threshold (`if rand() > x`). You correctly identify that due to `rand()`'s even distribution, this is unreliable for long holds and produces jittery, short-term results.
 * **Attempt 2 (Stateful Counter)**: The next logical step is to add state, like a frame counter, to guarantee a minimum hold. This works, but as you noted, it results in robotic, predictable rhythms (e.g., always holding in blocks of 5 frames).
 * **Attempt 3 (Layered Stateful Logic)**: To fight the robotic feel, you try to layer more logic—adding a second counter for 8 frames, then a third for 13.
@@ -2425,7 +2425,7 @@ You are describing a tool that could act like a **"behavioural spectrometer."** 
 
 ---
 ## FPS-R as a Study for Plausible Past Lead-Up and Future Unfolding
-_20250704, 12am_
+_4 Jul 2025, 12am_
 I think this is huge.
 following the entry that comes before
 
@@ -2497,13 +2497,13 @@ Would you like to explore what an extrapolation engine might look like—one tha
 
 ---
 ## I put the MIT Open Source License on FPS-R 
-_20250705, 12:50am_
+_5 Jul 2025, 12:50am_
 After researching and thinking about this, and using AI chat assistants as sounding boards, I have decided to put this FPS-R project under the MIT Open Source License. 
 
 ---
 
 ## Created Two Visualisation Videos
-_20250707 - 20250708_
+_7 Jul 2025 - 8 Jul 2025_
 I created 2 visualisations in 2 days. Both are made with Houdini, and I posted them as articles on LinkedIn.
 
 [LinkedIn Article: FPS-R Test: Rat Movement Demo](https://www.linkedin.com/pulse/fps-r-test-rat-movement-demo-patrick-woo-ker-yang-i7foc)
@@ -2516,7 +2516,7 @@ I created 2 visualisations in 2 days. Both are made with Houdini, and I posted t
 
 ---
 ## Released the Codes in C, Python, Jupyter Notebook, and Houdini Vex.
-_20250711_
+_11 Jul 2025_
 I worked hard and ported the codes over to these platforms.
 
 Notebook file size was too large. I have to find ways to reduce it
@@ -2524,15 +2524,15 @@ Notebook file size was too large. I have to find ways to reduce it
 ---
 
 ## Released Codes in Autodesk Maya
-_20250714_
+_14 Jul 2025_
 
 ---
 ## Released Codes in Adobe AfterEffects
-_20250715_
+_15 Jul 2025_
 
 ---
 ## A Third Algorithm Joins FPS-R
-_20250716, 5pm_
+_16 Jul 2025, 5pm_
 Today while writing an entry on the origins of FPS-R, while describing my progressive search for visual unpredictability, I formalised another expression. Unexpectedly, Google Gemini recognised it as worthy of standing on its own as an expression in the FPS-R family.
 
 Let us look at the existing FPS-R: SM (Stacked Modulo) in its one-line format.
@@ -2607,7 +2607,7 @@ _01 Aug 2025_
 
 ---
 ## Reinforced Determinism: Tackling the `Sine` Function
-_14 August 2025_
+_14 Aug 2025_
 
 FPS-R redefined sine modulation via baked interpolation. A first-principles breakthrough that unlocked scalable phrasing across inflated time domains.
 
@@ -2705,7 +2705,7 @@ Also when i researched the typical `sine()` function in a programming language, 
 
 From my research, the typical implementation of the **sine** function (`sin()`) in programming languages involves several operations, which can vary based on the algorithm used. However, a common approach is to use a Taylor series expansion or a lookup table combined with interpolation. It also involve factorials which involve exponents calculations (for the powers of x).
 
-In total, a typical `sin()` function can involve anywhere from **5 to 15 operations**, depending on the method used and the precision required. More optimized libraries may reduce this further through various techniques.
+In total, a typical `sin()` function can involve anywhere from **5 to 15 operations**, depending on the method used and the precision required. More optimised libraries may reduce this further through various techniques.
 
 When using a very small value with `sin()`, the probability of inaccuracies occuring rises, as well as computational inefficiencies arise from increased computation complexity.
 
@@ -2763,6 +2763,225 @@ I proceeded to explore the similarity of the existing algorithms and how each on
 This discovery highlights a unique advantage (in this case) that comes from an unconventional perspective. A formally trained algorithm researcher, steeped in complex computer science foundations, might have overlooked such a straightforward solution, perhaps attempting to derive a more intricate mathematical model. My own simplistic mindset, however, allowed me to approach the bitstream visually, almost like an ASCII art character stream. By doing so, I was able to see the 'move-and-hold' phrasing that was already naturally expressed in the pattern of flipping bits and use that pattern directly as a generative source, bypassing unnecessary layers of abstraction.
 
 The discussion that began with a simple question about uniform distribution and random bitstream generation had culminated in the addition of yet another algorithm to my framework. I am still reeling in disbelief that FPS-R would turn from a trio to a quartet.
+
+---
+## FPS-R Algorithm Profile & QS Optimization
+_19 Oct 2025_
+
+I started to explore the structure and cost with both Gemini and MS Copilot.
+
+**Objective:** To summarise the technical analysis of the four core FPS-R algorithms (SM, TM, QS, BD) based on conversations with Gemini and MS Copilot. The goal was to profile their resource costs against their expressive potential, which led to a significant architectural breakthrough in optimising the QS algorithm.
+
+### **Test Setup & Methodology**
+
+The following analysis was conducted through a collaborative, iterative process with AI assistants Gemini and MS Copilot. The goal was to quantify and compare the algorithms not just on performance, but on their expressive power relative to their resource cost. Using these base metrics, we calculated aggregated scores to provide a holistic view of each algorithm's profile. 
+
+The methodology involved:
+
+1. **Estimating Resource Cost:** We established ballpark estimates for both computational complexity (CPU work per call) and memory footprint (static and dynamic). These scores were then normalised, with the most resource-intensive algorithm (BD for compute, initial QS for memory) set to a baseline of 1.0.  
+
+My initial estimates for compute and memory
+|Computation|Memory|
+|---|---|
+SM 0.02 | 0.01
+TM 0.02 | 0.01
+QS 0.3 | 1 (with LUT 4096)
+BD 1 | 0.7
+
+Copilot's estimates
+|Computation|Memory|
+|---|---|
+SM 0.03 | 0.01
+TM 0.02 | 0.01
+QS 0.35 | 1.0
+BD 1.0 | 0.5
+
+Gemini's Estimates
+|Computation|Memory| Key Rationale |
+|---|---|---|
+SM 0.01 | 0.001 | $O(1)$ CPU, $O(1)$ Stack
+TM 0.01 | 0.001 | $O(1)$ CPU, $O(1)$ Stack
+QS 0.1 | 1.0  | $O(1)$ CPU, but $O(N)$Static (45.6KB LUTs)
+BD 1.0 | 0.82 | $O(B)$ CPU (loops!), $O(B)$Dynamic (per-call)
+
+2. **Total Impact Score** This metric is calculated by multiplying the normalized *Compute* and *Memory* scores (C × M). It heavily penalizes an algorithm if it is expensive in either category, providing a clear indicator of its overall 'cost' in a system. This model represents the total resource footprint of an algorithm, where a lower score is better. 
+
+**Gemini's Impact Scores:**
+| Algorithm | Compute (Normalized) | Memory (Normalized) | Total Impact (C × M) |
+| :---- | :---- | :---- | :---- |
+| **SM** | 0.01 | 0.001 | 0.00001 |
+| **TM** | 0.01 | 0.001 | 0.00001 |
+| **QS** | 0.1 | 1.0 (Initial) | 0.1 (Initial) |
+| **BD** | 1.0 | 0.82 | 0.82 |
+
+**MS Copilot's Impact Scores:**
+| Algorithm | Compute (Normalized) | Memory (Normalized) | Total Impact (C × M) |
+| :---- | :---- | :---- | :---- |
+| **SM** | 0.03 | 0.01 | 0.0003 |
+| **TM** | 0.02 | 0.01 | 0.0002 |
+| **QS** | 0.35 | 1.00 (Initial) | 0.35 (Initial) |
+| **BD** | 1.00 | 0.50 | 0.50 |
+
+3. **Quantifying Expressive Complexity:** I created a metric to represent the expressive potential of each algorithm. This was derived from the number of unique user-configurable parameters ("Numeric Dials") and the combinatorial modes of operation ("Categorical Modes"), providing a score for the richness and flexibility of each tool.  
+- Defining expressive complexity as a blend of:
+  - Parameter richness: number and diversity of tunable inputs
+  - Combinatory flexibility: how many distinct modes or behaviors can emerge from parameter combinations
+  - Structural modulation: whether the algorithm supports structural phrasing, switching, or multi-stream logic
+
+MS Copilot's Expressive Complexity Score (ECS)
+algo | param count | Combinatory Modes | structural modulation | ECS
+|---|---|---|---|---|
+SM|5 (frame, minHold, maxHold, reseedInterval, 2 seeds)|High — reseed + hold range + seed offsets create many combinations|No switching or phrasing|0.4
+TM|6 (frame, periodA/B, switch interval, 2 seeds)|Moderate — toggled rhythm, but fewer stochastic combinations|Rhythmic switching only|0.5
+QS|~10 (2 freq params, 2 quant levels, 2 quant durations, 2 offsets, switch duration, finalRandSwitch)|Low — many params but fixed structure (always dual sine + switch)|No mode switching, fixed logic|0.6
+BD|~9+ (frame, block size, streams, offset, intra_op, inter_op, shift params, seed offset)|Very high — combinatory explosion from op modes × stream count × phrasing logic|Full structural phrasing, dynamic ops|1.0
+
+Gemini's Expressive Complexity Score (ECS)
+algo | params & modes count | ECS | ECS normalised
+|---|---|---|---
+SM| 5(dials) * 2(modes) | 10 | 0.056
+TM| 5(dials) * 2(modes) | 10 | 0.056
+QS| 9(dials) * (2(modes) * 5(sine_lod)) | 90 | 0.5
+BD| 6(dials) * (10(inter-op modes) * 3(intra-op modes)) | 180 | 1
+
+4. **Complexity to Cost Ratio**. This is the "bang for buck" or return-on-investment (ROI) analysis - the expressive complexity for each unit of resource. _(The higher complexity per unit-resource, the better)_. 
+
+This would be computed as: $\text{Expressive Complexity} / \text{(Total) Resource Impact}$ 
+or `(expressive_complexity / resource_impact)` 
+
+### Initial Complexity to Cost Ratio
+**How to Interpret the "Complexity to Cost Ratio Score":** This metric, also referred to as the "Complexity-to-Cost" ratio, is calculated by dividing the *Expressive Complexity* score by the *Total Impact* score. It represents the "return on investment" or "bang for the buck" for each algorithm. A higher score is better, indicating that an algorithm offers more expressive features and flexibility for its given resource cost.
+
+Copilot's Scores
+Algo|Expressive Complexity|Resource Impact|Complexity/Cost
+---|---|---|---
+SM|0.4|0.0003|1333.3
+TM|0.5|0.0002|2500.0
+QS|0.6|0.35|1.71
+BD|1.0|0.50|2.0
+
+Gemini's Scores
+$\text{Value} = \text{Expressive Complexity Score} / \text{Total Impact Cost}$
+Algo|Expressive Complexity (normalised)|Resource Impact (Total Impact Cost) |Value Score (Complexity/Cost)
+---|---|---|---
+SM|0.056|0.00001|~5600	
+TM|0.056|0.00001|~5600	
+QS|0.5|0.1|5
+BD|1.0|0.82|~1.22
+
+### Initial Interpretation
+**Ms Copilot:**
+- SM and TM are absurdly efficient — they offer high expressive flexibility per unit of resource cost. TM slightly edges SM due to rhythmic toggling.
+- QS has rich parameterization but low structural flexibility, and its LUT-heavy memory cost drags down its efficiency.
+- BD is the most expressive by far, and its cost is justified — but only if you need phrased, multi-stream logic. Otherwise, it’s overkill.
+- Conclusion: This framework reveals a beautiful tension: SM and TM are minimalist but powerful, QS is rich but rigid, and BD is a full expressive engine. If we were designing a layered system, SM/TM would be the base rhythm, QS the modulator, and BD the phrasing engine.
+
+**Gemini**
+- **SM & TM (The Hyper-Efficient Tools)** Their "Value" score is astronomical. The resources they consume are so close to zero that you get all their expressive power (5 dials and a mode switch) for practically free. They are the definition of high-return, low-cost.
+- **QS (The "Luxury" Flavor)** QS has a terrible value score. You pay a massive static memory cost (for the LUTs) and in return, you get a moderate, "glitchy" flavor. It's a specialist. You don't use it unless you specifically need that quantized-sine-wave texture.
+- **BD (The "Brute Force" Powerhouse)** This is the most interesting. It has the worst value score. Its resource cost scales almost 1:1 with its expressive power. You get immense combinatorial flexibility (30 modes!), but you pay for every bit of it with a O(B) compute and memory cost on every single call.
+- This makes the design choice perfect:
+  - Need cheap, reliable holds? **SM/TM**.
+  - Need a specific "glitch" texture and have memory to burn? **QS**.
+  - Need deep, structural, "phrased" complexity and are willing to pay the heavy CPU cost? **BD**.
+
+#### Does the Complexity Justify the Cost?
+Gemini Pro commented that the complexity did justify the cost, but that justification creates a clear "tier list" of when and why we'd use each one.
+
+### Initial Analysis & Key Points Raised**
+Both AI assistants praised the framework's novel design, particularly its commitment to determinism and the elegant core-vs-wrapper architecture. However, they offered different perspectives on its strengths and weaknesses.
+
+#### **Points Raised by Gemini:**
+* **Primary Strength:** The architecture itself. The separation of pure, stateless functions from the rich, analytical wrappers was identified as a standout feature.  
+* **Determinism:** Praised the use of Python-parity math, a deterministic PRNG, and crucially, the Sine Look-Up Tables (LUTs) for QS to guarantee cross-platform consistency.  
+* **Resource Profiles:** Characterized the algorithms by their cost nature:  
+  * **SM/TM:** "Always Cheap" \- Negligible, constant-time cost.  
+  * **QS:** "Buy Once" \- A heavy, one-time static memory cost (for LUTs), but fast per-call.  
+  * **BD:** "Pay-as-you-go" \- A dynamic, linear cost that scales with block\_size on every call.
+
+#### **Points Raised by MS Copilot:**
+* **Primary Focus:** Risk analysis and hardening. The feedback was more critical and focused on production-readiness.  
+* **Identified Risks:**  
+  * **LUT Dependency:** The reliance on initialize\_sine\_luts() created a dependency and was not thread-safe.  
+  * **Fragile Comparisons:** Using direct \== for floating-point values is risky.  
+  * **Memory Safety:** The use of alloca in the BD algorithm posed a stack overflow risk despite safeguards.  
+  * **API Ergonomics:** Noted that function signatures with many primitive parameters are prone to user error.  
+* **Recommendation:** Prioritized hardening memory/concurrency edges and replacing fragile float equality with deterministic integer-based tokens.
+
+### The Breakthrough: Re-architecting the QS Algorithm
+The initial analysis from both sides painted QS as a "luxury" or "specialist" algorithm—a "resource-demanding prima donna" due to its high static memory cost from the high-precision Sine LUTs. This led to a poorer "Value Score" (Expressive Complexity / Resource Cost).
+
+#### The Core Insight
+The comment that QS had a terrible value score did not sit well with me, that the system has to pay a heavy price to get a glitchy performance with more personality also was not true. I knew that much of the "terrible value score" came from the 4096 sampled values from the sine wave look-up table. The *expressive quality* of QS comes from its modulated fluctuation and stream-switching architecture, not from the mathematical purity of the sine wave. I had planned QS to be able to swap waveforms I raised this insight to reframed the waveform generators for the streams as swappable, pluggable components rather than fixed, costly dependencies.
+
+#### The Optimisation Path & Results
+We explored decoupling the expensive LUT from the core QS logic:
+
+1. **Reduced LUTs:** The cost was recalculated using smaller, more pragmatic LUTs (100-step, then a non-uniform 40-step). This dramatically improved the value score. A 40-sample LUT increased its value-for-money by over **125x** (Copilot's estimate).  
+2. **Procedural Waveform (Sawtooth):** The final exploration alternative was to replace the LUT entirely with a procedural sawtooth wave. This reduced the static memory cost to nearly zero, making it comparable to SM and TM.
+
+##### Exploring QS Impact Costs with LODs and Procedural Signal Generators
+Estimated Resource Impact between 3 methods
+- **QS-4096** samples a deterministic sine wave 4096 steps
+- **QS-40** samples the same sine wave with 40 steps
+- **QS-100** samples the same sine wave with 100 steps
+- **QS-Saw** uses a procedural sawtooth wave
+
+QS Method|Memory Footprint|Memory Normalised|Estimated Compute Cost
+|---|---|---|---
+QS-4096 |32kb|1.0|0.35 (interpolation + sine logic)
+QS-100 | ~800 bytes|0.025|~0.2801 (interpolated from QS-40 and QS-4096)
+QS-40 |~320 bytes|0.01|~0.28 (less interpolation, smaller LUT)
+QS-Saw |0 bytes| 0.0|~0.25 (simple procedural ramp, no lookup)
+
+This optimization transformed QS's profile entirely.
+
+#### **Final "Value for Money" Ranking (Expressiveness / Cost)**
+MS Copilot's Updated Score
+| Rank | Algorithm | Expressiveness | Total Impact Cost | Value Score 
+| ---- | ---- | ---- | ---- | ----  
+| 🥇 | QS-SAW (Procedural) | 0.6 | 0.0000 | **∞** (theoretical)
+| 🥈 | SM / TM | 0.056| 0.00001 | ~5600 
+| 🥉 | QS-40 (LUT) | 0.6 | 0.0028 | ~214.3 
+| 4 | QS-(100-LUT) | 0.6 | 0.0075 | ~80 
+| 5 | QS-4096 | 0.6 | 0.35 | 1.71
+| 6 | BD | 1.0 | 0.82 | ~1.22 
+
+Gemini's Updated Score
+| Rank | Algorithm | Expressiveness | Total Impact Cost | Value Score 
+| ---- | ---- | ---- | ---- | ----  
+| 🥇 | SM / TM | 0.056| 0.00001 | ~5600
+| 🥈 | QS-SAW (Procedural)** | 0.5 | 0.0001 | ~5000
+| 🥉 | QS-40 (LUT) | 0.5 | 0.0001 | ~712
+| 4 | QS-100 (LUT) | 0.5 | 0.00175 | ~286
+| 5 | QS-4096 | 0.5 | 0.1 | 5
+| 6 | BD | 1.0 | 0.82 | ~1.22
+
+The procedural sawtooth variant (QS-SAW) emerged as the most efficient algorithm in the entire framework according to MS Copilot's model, and nearly tied with SM/TM in Gemini's.
+
+### Interpretation
+**Ms Copilot**
+- **QS-SAW (Procedural)** becomes the most expressive-per-cost algorithm in the entire FPS-R suite — even beating SM and TM.
+- **QS-40** is a brilliant middle ground: retains expressive fidelity, drastically reduces memory, and improves efficiency by 125× over QS-4096.
+- **QS-4096** is only justified when waveform fidelity is critical — which, as you rightly argue, it often isn’t.
+
+**Gemini**
+- This is a stunning result.
+- You've proven that a procedurally-driven QS algorithm has a "value for money" score that is nearly identical to SM and TM, the reigning champions of efficiency.
+- It's no longer a "luxury" algorithm. It's a top-tier contender that offers 9 times the expressive complexity of SM/TM (0.5 vs 0.056) for virtually the same resource cost.
+- This confirms your thesis perfectly: the framework is highly efficient, and its costs are directly tied to the specific features you choose to enable—not to any inherent waste. BD has the lowest "value" score, but it's justified because it's the only algorithm that offers its unique, block-based $O(B)$ complexity.
+
+
+### Conclusion
+The initial profiling correctly identified QS as an outlier in resource consumption. However, a deeper, architecturally-driven analysis revealed this was not a flaw in the algorithm's logic, but a trade-off in its default implementation.
+
+By decoupling the waveform generation, we proved that **QS is a misunderstood powerhouse, not a prima donna**. Its core stream-switching architecture is inherently efficient and highly expressive. When implemented with a procedural wave or a minimal LUT, it joins SM and TM as a top-tier candidate for resource-constrained environments, offering significantly more expressive potential for a negligible cost. This journey validates the robustness and efficiency of the entire FPS-R framework, where costs are directly and justifiably tied to user-selectable features.
+
+### P.S.
+For QS I intend to use non uniformly sampled (adaptive) look-up tables for determinism across all platforms, besides also being extremely fast to compute, at minimal the cost of 40 samples for LUT. This Look-Up architecture will also enable the user to use custom algorithms or LUTs of their own. 
+- I intend to create a `mode` parameter with 6 modes: `['sine', 'cosine', 'sawtooth', 'forw_sawtooth', 'rev_sawtooth', 'custom']`. 
+- `mode` will be per-stream, `[mode_stream1, mode_stream2]`. This will open up much more expressiveness for QS.
+QS will remain the most robust yet versatile algorithm in the FPS-R framework for now.
 
 ---
 

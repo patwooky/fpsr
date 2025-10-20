@@ -25,13 +25,22 @@
 #include <alloca.h> // For alloca
 #endif
 
-
 // Bit-width used for chunked bit operations.
 // It must remain 64 for deterministic compatibility with SplitMix64. DO NOT MODIFY.
 #define CHUNK_BITS 64
 // Safety limit for stack allocation in fpsr_bd to prevent stack overflow.
 #define BD_MAX_STACK_BLOCK_SIZE 8192
 
+// --- Platform-Specific Includes for Thread-Safe Init ---
+#if defined(_WIN32) || defined(_WIN64)
+    #include <windows.h>
+#elif defined(__linux__) || defined(__APPLE__) || defined(__unix__)
+    #include <pthread.h>
+#else
+    #warning "Unsupported platform: Thread-safe LUT initialization is not available. Falling back to non-thread-safe."
+    // Define a fallback for unsupported platforms
+    #define UNSUPPORTED_PLATFORM
+#endif
 
 #define SINE_LUT_SIZE_100 100
 #define SINE_LUT_SIZE_500 500
@@ -47,14 +56,52 @@ static double _sine_lut_500[SINE_LUT_SIZE_500];
 static double _sine_lut_1000[SINE_LUT_SIZE_1000];
 static double _sine_lut_4096[SINE_LUT_SIZE_4096]; // Highest precision default
 
-// Flag to track if LUTs are initialized
-static int _luts_initialized = 0;
+// Forward declaration of the initialization function
+void initialize_sine_luts(void);
 
-// Function to initialize all sine lookup tables
-// THIS FUNCTION MUST BE CALLED ONCE AT PROGRAM STARTUP!
-void initialize_sine_luts() {
-    if (_luts_initialized) return; // Only initialize once
+// --- Thread-Safe "Call Once" Implementation ---
+#if defined(_WIN32) || defined(_WIN64)
+    // Windows implementation
+    static int os = 0;
+    static INIT_ONCE init_once_control = INIT_ONCE_STATIC_INIT;
+    
+    // Windows requires a specific callback signature
+    BOOL CALLBACK InitLutsCallback(PINIT_ONCE InitOnce, PVOID Parameter, PVOID *Context) {
+        initialize_sine_luts();
+        return TRUE;
+    }
 
+    static inline void init_once_func(void) {
+        InitOnceExecuteOnce(&init_once_control, InitLutsCallback, NULL, NULL);
+    }
+
+#elif defined(__linux__) || defined(__APPLE__) || defined(__unix__)
+    // POSIX (Linux, macOS, etc.) implementation
+    static int os = 1;
+    static pthread_once_t init_once_control = PTHREAD_ONCE_INIT;
+
+    static inline void init_once_func(void) {
+        pthread_once(&init_once_control, initialize_sine_luts);
+    }
+
+#else
+    // Fallback implementation for unsupported platforms
+    static int _luts_initialized_fallback = 0;
+    static inline void init_once_func(void) {
+        if (!_luts_initialized_fallback) {
+            initialize_sine_luts();
+            _luts_initialized_fallback = 1;
+        }
+    }
+#endif
+
+/**
+ * @brief Initializes all global sine lookup tables.
+ * @details This function is designed to be called exactly once, in a
+ * thread-safe manner, by the init_once_func().
+ * THIS FUNCTION MUST BE CALLED ONCE AT PROGRAM STARTUP (automatically handled by init_once_func)!
+ */
+void initialize_sine_luts(void) {
     for (int i = 0; i < SINE_LUT_SIZE_100; ++i) {
         _sine_lut_100[i] = sin((double)i / SINE_LUT_SIZE_100 * TWO_PI);
     }
@@ -67,18 +114,30 @@ void initialize_sine_luts() {
     for (int i = 0; i < SINE_LUT_SIZE_4096; ++i) {
         _sine_lut_4096[i] = sin((double)i / SINE_LUT_SIZE_4096 * TWO_PI);
     }
-    _luts_initialized = 1;
 }
 
 // Helper function to get sine value from a specific LUT with linear interpolation
 double _get_sine_from_lod_lut(double phase, int lut_size, const double* lut_array) {
-    if (!_luts_initialized) {
-        // Fallback or error if LUTs not initialized.
-        // For absolute determinism, this should ideally not happen in production.
-        fprintf(stderr, "WARNING: Sine LUTs not initialized. Falling back to sin(). Call initialize_sine_luts() once.\n");
-        return sin(phase); 
-    }
+    /*
+        * @brief Gets a sine value from a specific LUT with linear interpolation.
+        * @param phase The input phase angle in radians.
+        * @param lut_size The size of the lookup table.
+        * @param lut_array Pointer to the sine lookup table array.
+        * @return The interpolated sine value corresponding to the input phase.
+    */
 
+    // On unsupported platforms, fall back to direct sin() to avoid non-thread-safe LUT init.
+    #if defined(UNSUPPORTED_PLATFORM)
+        // Fallback or error if LUTs not initialized.
+        return sin(phase); // Fallback
+    #endif
+
+    // 1. GUARANTEED THREAD-SAFE CALL
+    // This will run initialize_sine_luts() on the first call across all threads
+    // and will do nothing on subsequent calls.
+    init_once_func();
+
+    // 2. Interpolation logic
     // Wrap phase to 0 to 2*PI range
     phase = fmod(phase, TWO_PI);
     if (phase < 0) phase += TWO_PI; // Ensure positive for fmod results
@@ -91,6 +150,8 @@ double _get_sine_from_lod_lut(double phase, int lut_size, const double* lut_arra
     double frac = fractional_index - index1;
     
     // Handle wrap-around for index2 (last point wraps to first)
+    // Guard against index1 being exactly lut_size (when frac is 0.0)
+    if (index1 >= lut_size) index1 = 0;
     int index2 = (index1 + 1) % lut_size;
 
     // Linear interpolation
@@ -100,7 +161,6 @@ double _get_sine_from_lod_lut(double phase, int lut_size, const double* lut_arra
 /******************************************************************************/
 /* Core Components (Deterministic PRNG and Integer Math)                      */
 /******************************************************************************/
-
 /**
  * Deterministic integer math helpers and PRNG
  *
@@ -180,17 +240,39 @@ static int get_bit(int64_t n, int64_t block_size, const uint64_t* chunks, int64_
 /******************************************************************************/
 /* FPS-R Output Structure                                                     */
 /******************************************************************************/
+/* * This structure holds the output of the FPS-R algorithms.
+* The LOD (Level of Detail) determines the computational overhead and the amount of information returned.
+* This structure is designed to be flexible and can be extended in the future.
+*
+* Different LODs will return different sets of fields:
+* - LOD 0: randVal
+* - LOD 1: randVal, has_changed
+* - LOD 2: randVal, has_changed, hold_progress, last_changed_frame, next_changed_frame,
+* randVal_next_changed_frame, randStreams[2], selected_stream (for QS algorithm)
+* Note: All fields will be set to 0 if the LOD is not applicable.
+*
+* The fields are:
+* float randVal: LOD 0, 1, 2. The random value generated by the FPS-R algorithm.
+* int has_changed: LOD 1, 2. A flag indicating whether randVal has changed from the previous frame.
+* int randVal_previous: LOD 1, 2. The random value from the previous frame for change detection.
+* float hold_progress: LOD 2. The progress of the hold duration, normalised to [0, 1].
+* int last_changed_frame: LOD 2. The precise frame (integer) when the random value last changed.
+* int next_changed_frame: LOD 2. The precise frame (integer) when the random value will next change.
+* float randVal_next_changed_frame: LOD 2. The value that the algorithm will jump to at next_changed_frame.
+* double randStreams[2]: LOD 2. (Exclusive to QS) The raw values of stream1_double and stream2_double.
+* int selected_stream: LOD 2. (Exclusive to QS) The index of the stream (0 for stream1, 1 for stream2) that was selected by the algorithm.
+* */
 typedef struct {
-    float randVal; 
-    int has_changed; 
-    float randVal_previous;
-    float hold_progress; 
-    int last_changed_frame; 
-    int next_changed_frame; 
-    float randVal_next_changed_frame; 
-    // New fields for QS details 
-    double randStreams[2]; 
-    int selected_stream_idx; // 0 for stream1, 1 for stream2 
+    float randVal; // The random value output of FPS-R algorithm. (LOD 0,1,2)
+    int has_changed; // Flag indicating if randVal changed from previous frame. (LOD 1,2)
+    float randVal_previous; // The random value from the previous frame. (LOD 1,2)
+    float hold_progress; // Normalised progress of the hold duration [0,1]. (LOD 2)
+    int last_changed_frame; // The frame when randVal last changed. (LOD 2)
+    int next_changed_frame; // The frame when randVal will next change. (LOD 2)
+    float randVal_next_changed_frame; // The value at next_changed_frame. (LOD 2)
+    // New fields for QS details (LOD 2)
+    double randStreams[2]; // stream1_double and stream2_double raw values (LOD 2)
+    int selected_stream_idx; // 0 for stream1, 1 for stream2 (LOD 2)
 } FPSR_Output;
 
 /******************************************************************************/
@@ -199,7 +281,38 @@ typedef struct {
 // These functions are the pure, canonical reference implementations. They operate
 // on a 64-bit integer timeline for absolute determinism.
 
-double fpsr_sm(
+//-----------------------------------------------------------------------------/
+// FPS-R: Stacked Modulo (SM)                                                  /
+//-----------------------------------------------------------------------------/
+// The pure 'base' version of SM for the wrapper. It returns just the float value.
+/*
+ * @brief Generates a persistent random value that holds for a calculated duration.
+ * @details This function uses a two-step process. First, it determines a random
+ * "hold duration". Second, it generates a stable integer for that duration,
+ * which is then used as a seed to produce the final, held random value.
+ *
+ * int frame: The current frame or time input.
+ * int minHold: The minimum duration (in frames) for a value to hold.
+ * int maxHold: The maximum duration (in frames) for a value to hold.
+ * int reseedInterval: The fixed interval at which a new hold duration is calculated.
+ * int seedInner: An offset for the random duration calculation to create unique sequences.
+ * int seedOuter: An offset for the final value calculation to create unique sequences.
+ * int finalRandSwitch: A flag that can turn off the final randomisation step.
+ * int lod: The level of detail (LOD) that controls computational overhead. Valid values are 0 to 2.
+ * * return 
+ * FPSR_Output struct containing the random value and other details.
+ * Output fields depend on the LOD level.
+ * Refer to the FPSR_Output structure for details on the return values.
+ *
+ * float randVal: this is the main output, which is a float value between [0.0, 1.0]
+ * when finalRandSwitch is 0: 
+    * randVal will be a whole number representing the currently held   frame 
+    * that remains constant for the hold duration.
+ * when finalRandSwitch is 1: 
+    * A float value between 0.0 and 1.0 that remains constant 
+    * for the held duration.
+ */
+double fpsr_sm_base(
     int64_t frame, int64_t minHold, int64_t maxHold,
     int64_t reseedInterval, int64_t seedInner, int64_t seedOuter, int finalRandSwitch)
 {
@@ -222,7 +335,30 @@ double fpsr_sm(
     return fpsr_output;
 }
 
-double fpsr_tm(
+//-----------------------------------------------------------------------------/
+// FPS-R: Toggle Modulo (TM)                                                   /
+//-----------------------------------------------------------------------------/
+// This is the pure 'base' version of TM for the wrapper. It returns just the float value.
+/**
+ * @brief Generates a persistent value that holds for a rhythmically toggled duration.
+ * @details This function uses a deterministic switch to toggle the hold duration
+ * between two fixed periods. This creates a predictable, rhythmic, or mechanical
+ * "move-and-hold" pattern, as opposed to the organic randomness of SM.
+ *
+ * int frame: The current frame or time input.
+ * int periodA: The first hold duration (in frames).
+ * int periodB: The second hold duration (in frames).
+ * int periodSwitch: The fixed interval at which the hold duration is toggled to switch between periodA and periodB.
+ * int seedInner: An offset for the toggle clock to de-sync it from the main clock.
+ * int seedOuter: An offset for the main clock to create unique sequences.
+ * int finalRandSwitch: A flag that can turn off the final randomisation step.
+ * return 
+ * when finalRandSwitch is 0: 
+ * An integer value representing the currently held frame state.
+ * when finalRandSwitch is 1: 
+ * A float value between 0.0 and 1.0 that holds for the toggled duration.
+ */
+double fpsr_tm_base(
     int64_t frame, int64_t periodA, int64_t periodB,
     int64_t periodSwitch, int64_t seedInner, int64_t seedOuter,
     int finalRandSwitch)
@@ -247,9 +383,36 @@ double fpsr_tm(
     return fpsr_output;
 }
 
+//-----------------------------------------------------------------------------/
+// FPS-R: Quantized Sine (QS)                                                  /
+//-----------------------------------------------------------------------------/
 // This special 'base' version of QS is for the wrapper. It returns the full
 // struct needed for rich output, and uses the Sine-LUT for determinism.
-FPSR_Output _fpsr_qs_base_canonical(
+/**
+ * @brief Generates a quantized sine-based persistent random value using two streams.
+ * @details This function creates two sine wave streams with configurable frequencies
+ * and offsets. For each stream, a new random quantisation level is chosen 
+ * from within the [min, max] range at a set interval, and the output alternates
+ * between the two streams based on a defined switch duration. The final output can
+ * optionally be further randomized.
+ *
+ * int64_t frame: The current frame or time input.
+ * double baseWaveFreq: The base frequency for the sine waves.
+ * double stream2FreqMult: A multiplier for the second stream's frequency.
+ * const int quantLevelsMinMax[2]: An array defining the minimum and maximum quantization levels.
+ * const int streamsOffset[2]: An array defining the phase offsets for each sine stream.
+ * const int quantOffsets[2]: An array defining the quantization seed offsets for each stream.
+ * int64_t streamSwitchDur: The duration (in frames) before switching between streams.
+ * int64_t stream1QuantDur: The quantization duration (in frames) for stream 1.
+ * int64_t stream2QuantDur: The quantization duration (in frames) for stream 2.
+ * int finalRandSwitch: A flag that can turn off the final randomisation step.
+ * int sine_lod_level: Level of detail for sine calculation (0=direct, 1=LUT100, 2=LUT500, 3=LUT1000, 4=LUT4096).
+ * return 
+ * FPSR_Output struct containing the random value and other details.
+ * Output fields depend on the LOD level.
+ * Refer to the FPSR_Output structure for details on the return values.
+ */
+FPSR_Output fpsr_qs_base(
     int64_t frame, double baseWaveFreq, double stream2FreqMult,
     const int quantLevelsMinMax[2], const int streamsOffset[2], const int quantOffsets[2],
     int64_t streamSwitchDur, int64_t stream1QuantDur, int64_t stream2QuantDur,
@@ -321,6 +484,34 @@ FPSR_Output _fpsr_qs_base_canonical(
     return output;
 }
 
+//-----------------------------------------------------------------------------/
+// FPS-R: Bitstream Distortion (BD)                                            /
+//-----------------------------------------------------------------------------/
+// This is the pure 'base' version of BD for the wrapper. It returns just the float value.
+/**
+ * @brief Generates a phrased random value by decoding a deterministically generated bitstream.
+ * @details This algorithm is stateless. For any given frame, it calculates its state by:
+ * 1. Finding the start of its macro-block (`outer_anchor`).
+ * 2. Generating one or more raw bitstreams for the block.
+ * 3. Applying transformations (intra-stream op) to each stream, possibly in pairs for dynamic ops.
+ * 4. Combining the transformed streams (inter-stream op).
+ * 5. Decoding the final bitstream to produce phrased holds and jumps based on bit-flips.
+ *
+ * int64_t frame: The current frame or time input.
+ * int64_t block_size: The size of the macro-rhythm in frames. Must be > 0.
+ * int streams_number: The number of parallel bitstreams to generate.
+ * int64_t streams_offset: The frame offset between each parallel stream's seed.
+ * const char* intra_op: The unary (intra-stream) operation.
+ *      Static ops: "none", "not", "lshift", "rshift", "rotl", "rotr".
+ *      Dynamic ops: "lshift_dynamic", "rshift_dynamic", "rotl_dynamic", "rotr_dynamic".
+ * int dynamic_shift_bits: For dynamic ops, the number of controller bits to read
+ *      to determine the shift/rotate amount (1-6 when chunk_bits=64).
+ * int static_shift_amount: For static ops, the fixed number of bits to shift/rotate.
+ * const char* inter_op: The binary (inter-stream) operation to combine multiple
+ *      transformed streams. Options: "xor", "or", "and".
+ * int64_t value_seed_offset: An additional seed offset for the final value calculation.
+ * @return A deterministic, phrased pseudo-random double between 0.0 and 1.0.
+ */
 double fpsr_bd(
     int64_t frame,
     int64_t block_size,
@@ -487,6 +678,8 @@ double fpsr_bd(
 /******************************************************************************/
 
 /**
+ * ---- SM: Stacked Modulo Wrapper with Details ----
+ * 
  * @brief Wrapper for fpsr_sm that returns a detailed FPSR_Output struct.
  * @param frame (int) The current frame or time input.
  * @param frame_multiplier (float) A float value to scale the frame input. (Currently unused).
@@ -512,12 +705,12 @@ FPSR_Output fpsr_sm_get_details(
     // All calculations are based on the integer `frame` input.
 
     // LOD 0: Get current value by calling the pure, canonical algorithm.
-    out.randVal = (float)fpsr_sm((int64_t)frame, (int64_t)minHold, (int64_t)maxHold, (int64_t)reseedInterval, (int64_t)seedInner, (int64_t)seedOuter, finalRandSwitch);
+    out.randVal = (float)fpsr_sm_base((int64_t)frame, (int64_t)minHold, (int64_t)maxHold, (int64_t)reseedInterval, (int64_t)seedInner, (int64_t)seedOuter, finalRandSwitch);
 
     if (lod < 1) return out;
 
     // LOD 1: Compare with previous frame to check for change.
-    float prev_val = (float)fpsr_sm((int64_t)(frame - 1), (int64_t)minHold, (int64_t)maxHold, (int64_t)reseedInterval, (int64_t)seedInner, (int64_t)seedOuter, finalRandSwitch);
+    float prev_val = (float)fpsr_sm_base((int64_t)(frame - 1), (int64_t)minHold, (int64_t)maxHold, (int64_t)reseedInterval, (int64_t)seedInner, (int64_t)seedOuter, finalRandSwitch);
     out.randVal_previous = prev_val; 
     out.has_changed = (out.randVal != prev_val);
 
@@ -535,7 +728,7 @@ FPSR_Output fpsr_sm_get_details(
         int bound_low_int = frame;
         step_int = 1;
         while (frame - step_int > frame - max_search_frames) { 
-            float val_at_probe = (float)fpsr_sm((int64_t)(frame - step_int), (int64_t)minHold, (int64_t)maxHold, (int64_t)reseedInterval, (int64_t)seedInner, (int64_t)seedOuter, finalRandSwitch);
+            float val_at_probe = (float)fpsr_sm_base((int64_t)(frame - step_int), (int64_t)minHold, (int64_t)maxHold, (int64_t)reseedInterval, (int64_t)seedInner, (int64_t)seedOuter, finalRandSwitch);
             if (val_at_probe != out.randVal) {
                 bound_low_int = frame - step_int;
                 break;
@@ -549,8 +742,8 @@ FPSR_Output fpsr_sm_get_details(
         result_int = frame - max_search_frames + 1;
         while(low_int <= high_int) {
             mid_int = low_int + (high_int - low_int) / 2; 
-            if ((float)fpsr_sm((int64_t)mid_int, (int64_t)minHold, (int64_t)maxHold, (int64_t)reseedInterval, (int64_t)seedInner, (int64_t)seedOuter, finalRandSwitch) == out.randVal) {
-                if ((float)fpsr_sm((int64_t)(mid_int - 1), (int64_t)minHold, (int64_t)maxHold, (int64_t)reseedInterval, (int64_t)seedInner, (int64_t)seedOuter, finalRandSwitch) != out.randVal) {
+            if ((float)fpsr_sm_base((int64_t)mid_int, (int64_t)minHold, (int64_t)maxHold, (int64_t)reseedInterval, (int64_t)seedInner, (int64_t)seedOuter, finalRandSwitch) == out.randVal) {
+                if ((float)fpsr_sm_base((int64_t)(mid_int - 1), (int64_t)minHold, (int64_t)maxHold, (int64_t)reseedInterval, (int64_t)seedInner, (int64_t)seedOuter, finalRandSwitch) != out.randVal) {
                     result_int = mid_int; break;
                 }
                 high_int = mid_int - 1; 
@@ -565,7 +758,7 @@ FPSR_Output fpsr_sm_get_details(
     int bound_high_int = frame;
     step_int = 1;
     while (frame + step_int < frame + max_search_frames) { 
-        float val_at_probe = (float)fpsr_sm((int64_t)(frame + step_int), (int64_t)minHold, (int64_t)maxHold, (int64_t)reseedInterval, (int64_t)seedInner, (int64_t)seedOuter, finalRandSwitch);
+        float val_at_probe = (float)fpsr_sm_base((int64_t)(frame + step_int), (int64_t)minHold, (int64_t)maxHold, (int64_t)reseedInterval, (int64_t)seedInner, (int64_t)seedOuter, finalRandSwitch);
         if (val_at_probe != out.randVal) {
             bound_high_int = frame + step_int;
             next_val_candidate = val_at_probe;
@@ -580,7 +773,7 @@ FPSR_Output fpsr_sm_get_details(
     result_int = frame + max_search_frames;
     while(low_int <= high_int) {
         mid_int = low_int + (high_int - low_int) / 2; 
-        float mid_val = (float)fpsr_sm((int64_t)mid_int, (int64_t)minHold, (int64_t)maxHold, (int64_t)reseedInterval, (int64_t)seedInner, (int64_t)seedOuter, finalRandSwitch);
+        float mid_val = (float)fpsr_sm_base((int64_t)mid_int, (int64_t)minHold, (int64_t)maxHold, (int64_t)reseedInterval, (int64_t)seedInner, (int64_t)seedOuter, finalRandSwitch);
         if (mid_val != out.randVal) {
             result_int = mid_int;
             next_val_candidate = mid_val;
@@ -603,6 +796,8 @@ FPSR_Output fpsr_sm_get_details(
 }
 
 /**
+ * ---- TM: Toggle Modulo Wrapper with Details ----
+ * 
  * @brief Wrapper for fpsr_tm that returns a detailed FPSR_Output struct.
  * @param frame (int) The current frame or time input.
  * @param frame_multiplier (float) A float value to scale the frame input. (Currently unused).
@@ -627,12 +822,12 @@ FPSR_Output fpsr_tm_get_details(
     // NOTE: frame_multiplier is currently unused.
     
     // LOD 0
-    out.randVal = (float)fpsr_tm((int64_t)frame, (int64_t)periodA, (int64_t)periodB, (int64_t)periodSwitch, (int64_t)seedInner, (int64_t)seedOuter, finalRandSwitch);
+    out.randVal = (float)fpsr_tm_base((int64_t)frame, (int64_t)periodA, (int64_t)periodB, (int64_t)periodSwitch, (int64_t)seedInner, (int64_t)seedOuter, finalRandSwitch);
     
     if (lod < 1) return out;
 
     // LOD 1
-    float prev_val = (float)fpsr_tm((int64_t)(frame - 1), (int64_t)periodA, (int64_t)periodB, (int64_t)periodSwitch, (int64_t)seedInner, (int64_t)seedOuter, finalRandSwitch);
+    float prev_val = (float)fpsr_tm_base((int64_t)(frame - 1), (int64_t)periodA, (int64_t)periodB, (int64_t)periodSwitch, (int64_t)seedInner, (int64_t)seedOuter, finalRandSwitch);
     out.randVal_previous = prev_val; 
     out.has_changed = (out.randVal != prev_val);
     
@@ -650,7 +845,7 @@ FPSR_Output fpsr_tm_get_details(
         int bound_low_int = frame;
         step_int = 1;
         while (frame - step_int > frame - max_search_frames) {
-            if ((float)fpsr_tm((int64_t)(frame - step_int), (int64_t)periodA, (int64_t)periodB, (int64_t)periodSwitch, (int64_t)seedInner, (int64_t)seedOuter, finalRandSwitch) != out.randVal) {
+            if ((float)fpsr_tm_base((int64_t)(frame - step_int), (int64_t)periodA, (int64_t)periodB, (int64_t)periodSwitch, (int64_t)seedInner, (int64_t)seedOuter, finalRandSwitch) != out.randVal) {
                 bound_low_int = frame - step_int;
                 break;
             }
@@ -662,8 +857,8 @@ FPSR_Output fpsr_tm_get_details(
         result_int = frame - max_search_frames + 1;
         while(low_int <= high_int) {
             mid_int = low_int + (high_int - low_int) / 2;
-            if ((float)fpsr_tm((int64_t)mid_int, (int64_t)periodA, (int64_t)periodB, (int64_t)periodSwitch, (int64_t)seedInner, (int64_t)seedOuter, finalRandSwitch) == out.randVal) {
-                if ((float)fpsr_tm((int64_t)(mid_int - 1), (int64_t)periodA, (int64_t)periodB, (int64_t)periodSwitch, (int64_t)seedInner, (int64_t)seedOuter, finalRandSwitch) != out.randVal) {
+            if ((float)fpsr_tm_base((int64_t)mid_int, (int64_t)periodA, (int64_t)periodB, (int64_t)periodSwitch, (int64_t)seedInner, (int64_t)seedOuter, finalRandSwitch) == out.randVal) {
+                if ((float)fpsr_tm_base((int64_t)(mid_int - 1), (int64_t)periodA, (int64_t)periodB, (int64_t)periodSwitch, (int64_t)seedInner, (int64_t)seedOuter, finalRandSwitch) != out.randVal) {
                     result_int = mid_int; break;
                 }
                 high_int = mid_int - 1; 
@@ -678,7 +873,7 @@ FPSR_Output fpsr_tm_get_details(
     int bound_high_int = frame;
     step_int = 1;
     while (frame + step_int < frame + max_search_frames) {
-        float val_at_probe = (float)fpsr_tm((int64_t)(frame + step_int), (int64_t)periodA, (int64_t)periodB, (int64_t)periodSwitch, (int64_t)seedInner, (int64_t)seedOuter, finalRandSwitch);
+        float val_at_probe = (float)fpsr_tm_base((int64_t)(frame + step_int), (int64_t)periodA, (int64_t)periodB, (int64_t)periodSwitch, (int64_t)seedInner, (int64_t)seedOuter, finalRandSwitch);
         if (val_at_probe != out.randVal) {
             bound_high_int = frame + step_int;
             next_val_candidate = val_at_probe;
@@ -692,7 +887,7 @@ FPSR_Output fpsr_tm_get_details(
     result_int = frame + max_search_frames;
     while(low_int <= high_int) {
         mid_int = low_int + (high_int - low_int) / 2;
-        float mid_val = (float)fpsr_tm((int64_t)mid_int, (int64_t)periodA, (int64_t)periodB, (int64_t)periodSwitch, (int64_t)seedInner, (int64_t)seedOuter, finalRandSwitch);
+        float mid_val = (float)fpsr_tm_base((int64_t)mid_int, (int64_t)periodA, (int64_t)periodB, (int64_t)periodSwitch, (int64_t)seedInner, (int64_t)seedOuter, finalRandSwitch);
         if (mid_val != out.randVal) {
             result_int = mid_int;
             next_val_candidate = mid_val;
@@ -715,6 +910,8 @@ FPSR_Output fpsr_tm_get_details(
 }
 
 /**
+ * ---- QS: Quantised Switching Wrapper with Details ----
+ * 
  * @brief Wrapper for fpsr_qs that returns a detailed FPSR_Output struct.
  * @param frame (int) The current frame or time input.
  * @param frame_multiplier (float) A float value to scale the frame input. (Currently unused).
@@ -745,7 +942,7 @@ FPSR_Output fpsr_qs_get_details(
     // NOTE: frame_multiplier is currently unused.
 
     // LOD 0
-    FPSR_Output base_qs_output = _fpsr_qs_base_canonical((int64_t)frame, (double)baseWaveFreq, (double)stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, (int64_t)streamSwitchDur, (int64_t)stream1QuantDur, (int64_t)stream2QuantDur, finalRandSwitch, sine_lod_level);
+    FPSR_Output base_qs_output = fpsr_qs_base((int64_t)frame, (double)baseWaveFreq, (double)stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, (int64_t)streamSwitchDur, (int64_t)stream1QuantDur, (int64_t)stream2QuantDur, finalRandSwitch, sine_lod_level);
     out.randVal = base_qs_output.randVal;
     out.randStreams[0] = base_qs_output.randStreams[0];
     out.randStreams[1] = base_qs_output.randStreams[1];
@@ -754,7 +951,7 @@ FPSR_Output fpsr_qs_get_details(
     if (lod < 1) return out;
 
     // LOD 1
-    FPSR_Output prev_qs_output = _fpsr_qs_base_canonical((int64_t)(frame - 1), (double)baseWaveFreq, (double)stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, (int64_t)streamSwitchDur, (int64_t)stream1QuantDur, (int64_t)stream2QuantDur, finalRandSwitch, sine_lod_level);
+    FPSR_Output prev_qs_output = fpsr_qs_base((int64_t)(frame - 1), (double)baseWaveFreq, (double)stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, (int64_t)streamSwitchDur, (int64_t)stream1QuantDur, (int64_t)stream2QuantDur, finalRandSwitch, sine_lod_level);
     out.randVal_previous = prev_qs_output.randVal;
     out.has_changed = (out.randVal != out.randVal_previous);
     
@@ -772,7 +969,7 @@ FPSR_Output fpsr_qs_get_details(
         int bound_low_int = frame;
         step_int = 1;
         while (frame - step_int > frame - max_search_frames) { 
-            FPSR_Output probe_qs_output = _fpsr_qs_base_canonical((int64_t)(frame - step_int), (double)baseWaveFreq, (double)stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, (int64_t)streamSwitchDur, (int64_t)stream1QuantDur, (int64_t)stream2QuantDur, finalRandSwitch, sine_lod_level);
+            FPSR_Output probe_qs_output = fpsr_qs_base((int64_t)(frame - step_int), (double)baseWaveFreq, (double)stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, (int64_t)streamSwitchDur, (int64_t)stream1QuantDur, (int64_t)stream2QuantDur, finalRandSwitch, sine_lod_level);
             if (probe_qs_output.randVal != out.randVal) {
                 bound_low_int = frame - step_int;
                 break;
@@ -785,9 +982,9 @@ FPSR_Output fpsr_qs_get_details(
         result_int = frame - max_search_frames + 1;
         while(low_int <= high_int) {
             mid_int = low_int + (high_int - low_int) / 2; 
-            FPSR_Output mid_qs_output = _fpsr_qs_base_canonical((int64_t)mid_int, (double)baseWaveFreq, (double)stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, (int64_t)streamSwitchDur, (int64_t)stream1QuantDur, (int64_t)stream2QuantDur, finalRandSwitch, sine_lod_level);
+            FPSR_Output mid_qs_output = fpsr_qs_base((int64_t)mid_int, (double)baseWaveFreq, (double)stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, (int64_t)streamSwitchDur, (int64_t)stream1QuantDur, (int64_t)stream2QuantDur, finalRandSwitch, sine_lod_level);
             if (mid_qs_output.randVal == out.randVal) {
-                FPSR_Output mid_minus_step_qs_output = _fpsr_qs_base_canonical((int64_t)(mid_int - 1), (double)baseWaveFreq, (double)stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, (int64_t)streamSwitchDur, (int64_t)stream1QuantDur, (int64_t)stream2QuantDur, finalRandSwitch, sine_lod_level);
+                FPSR_Output mid_minus_step_qs_output = fpsr_qs_base((int64_t)(mid_int - 1), (double)baseWaveFreq, (double)stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, (int64_t)streamSwitchDur, (int64_t)stream1QuantDur, (int64_t)stream2QuantDur, finalRandSwitch, sine_lod_level);
                 if (mid_minus_step_qs_output.randVal != out.randVal) {
                     result_int = mid_int; break;
                 }
@@ -803,7 +1000,7 @@ FPSR_Output fpsr_qs_get_details(
     int bound_high_int = frame;
     step_int = 1;
     while (frame + step_int < frame + max_search_frames) { 
-        FPSR_Output probe_qs_output = _fpsr_qs_base_canonical((int64_t)(frame + step_int), (double)baseWaveFreq, (double)stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, (int64_t)streamSwitchDur, (int64_t)stream1QuantDur, (int64_t)stream2QuantDur, finalRandSwitch, sine_lod_level);
+        FPSR_Output probe_qs_output = fpsr_qs_base((int64_t)(frame + step_int), (double)baseWaveFreq, (double)stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, (int64_t)streamSwitchDur, (int64_t)stream1QuantDur, (int64_t)stream2QuantDur, finalRandSwitch, sine_lod_level);
         if (probe_qs_output.randVal != out.randVal) {
             bound_high_int = frame + step_int;
             next_val_candidate = probe_qs_output.randVal;
@@ -817,7 +1014,7 @@ FPSR_Output fpsr_qs_get_details(
     result_int = frame + max_search_frames;
     while(low_int <= high_int) {
         mid_int = low_int + (high_int - low_int) / 2; 
-        FPSR_Output mid_qs_output = _fpsr_qs_base_canonical((int64_t)mid_int, (double)baseWaveFreq, (double)stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, (int64_t)streamSwitchDur, (int64_t)stream1QuantDur, (int64_t)stream2QuantDur, finalRandSwitch, sine_lod_level);
+        FPSR_Output mid_qs_output = fpsr_qs_base((int64_t)mid_int, (double)baseWaveFreq, (double)stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, (int64_t)streamSwitchDur, (int64_t)stream1QuantDur, (int64_t)stream2QuantDur, finalRandSwitch, sine_lod_level);
         if (mid_qs_output.randVal != out.randVal) {
             result_int = mid_int;
             next_val_candidate = mid_qs_output.randVal;
@@ -840,6 +1037,8 @@ FPSR_Output fpsr_qs_get_details(
 }
 
 /**
+ * ---- BD: Bitwise Decode Wrapper with Details ----
+ * 
  * @brief Wrapper for fpsr_bd that returns a detailed FPSR_Output struct.
  * @param frame (int) The current frame or time input.
  * @param frame_multiplier (float) A float value to scale the frame input. (Currently unused).
@@ -969,8 +1168,15 @@ FPSR_Output fpsr_bd_get_details(
 
 int main() {
     // Example usage of the FPSR algorithms with detailed output
-
-    initialize_sine_luts(); // Initialize sine lookup tables
+    
+    // Report OS type
+    if (os == 0) {
+        printf("Windows OS.\n");
+    } else if (os == 1) {
+        printf("POSIX OS.\n");
+    } else {
+        printf("Unknown OS.\n");
+    }
     
     // Algorithms: 0 - SM, 1 - TM, 2 - QS, 3 - BD
     int algo = 3; // Change this value to 0, 1, 2, or 3 to test different algorithms
@@ -985,57 +1191,66 @@ int main() {
         int frame = loop_frame + start_frames[algo];
         float frame_multiplier = 1.0f; // Currently unused, placeholder for next step
         FPSR_Output output = {0};
-
+        
         if (algo == 0) {
             // Parameters for FPS-R:SM
-            int minHoldFrames = 7; 
-            int maxHoldFrames = 9; 
-            int reseedFrames = 6; 
-            int offsetInner = -41;
-            int offsetOuter = 23;
-            int finalRandSwitch = 1;
-            int max_search_frames = 50;
+            int minHoldFrames = 7;      // Minimum hold duration
+            int maxHoldFrames = 9;      // Maximum hold duration
+            int reseedFrames = 6;       // Reseed interval
+            int offsetInner = -41;      // Inner seed offset
+            int offsetOuter = 23;       // Outer seed offset
+            int finalRandSwitch = 1;    // Final randomisation switch
+            int max_search_frames = 50; // Safety limit for search
 
             // Call fpsr_sm_get_details
             output = fpsr_sm_get_details(frame, frame_multiplier, minHoldFrames, maxHoldFrames, reseedFrames, offsetInner, offsetOuter, finalRandSwitch, lod, max_search_frames);
         } else if (algo == 1) {
             // Parameters for FPS-R:TM
-            int periodA = 8;      
-            int periodB = 5;      
-            int periodSwitch = 6; 
-            int offsetInner = 15;
-            int offsetOuter = 0;
-            int finalRandSwitch = 1;
-            int max_search_frames = 50;
+            int periodA = 8;            // First hold duration
+            int periodB = 5;            // Second hold duration
+            int periodSwitch = 6;       // Period switch interval
+            int offsetInner = 15;       // Inner seed offset
+            int offsetOuter = 0;        // Outer seed offset
+            int finalRandSwitch = 1;    // Final randomisation switch
+            int max_search_frames = 50; // Safety limit for search
 
             // Call fpsr_tm_get_details
-            output = fpsr_tm_get_details(frame, frame_multiplier, periodA, periodB, periodSwitch, offsetInner, offsetOuter, finalRandSwitch, lod, max_search_frames);
+            output = fpsr_tm_get_details(frame, frame_multiplier, 
+                periodA, periodB, periodSwitch, offsetInner, offsetOuter, 
+                finalRandSwitch, lod, max_search_frames);
         } else if (algo == 2) {
             // Parameters for FPS-R:QS
-            float baseWaveFreq = 0.012f;
-            float stream2FreqMult = 3.1f;
-            int quantLevelsMinMax[2] = {4, 12};
-            int streamsOffset[2] = {0, 76};
-            int quantOffsets[2] = {10, 81};
-            int streamSwitchDur = 8;  
-            int stream1QuantDur = 10; 
-            int stream2QuantDur = 13; 
-            int finalRandSwitch = 1;
-            int sine_lod_level = 4;
-            int max_search_frames = 50;
+            float baseWaveFreq = 0.012f;    // Base wave frequency for stream 1
+            float stream2FreqMult = 3.1f;   // Frequency multiplier for stream 2
+            int quantLevelsMinMax[2] = {4, 12}; // Min and max quantisation levels
+            int streamsOffset[2] = {0, 76}; // Frame offsets for each stream
+            int quantOffsets[2] = {10, 81}; // Quantisation level offsets
+            int streamSwitchDur = 8;        // Duration after which streams switch
+            int stream1QuantDur = 10;       // Duration for stream 1 quantisation hold
+            int stream2QuantDur = 13;       // Duration for stream 2 quantisation hold
+            int finalRandSwitch = 1;        // Final randomisation switch
+            int sine_lod_level = 4;         // Sine wave LOD level (0-4)
+            int max_search_frames = 50;     // Safety limit for search
 
             // Call fpsr_qs_get_details
-            output = fpsr_qs_get_details(frame, frame_multiplier, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, lod, max_search_frames);
+            output = fpsr_qs_get_details(frame, frame_multiplier, baseWaveFreq, stream2FreqMult, 
+                quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, 
+                stream1QuantDur, stream2QuantDur, finalRandSwitch, 
+                sine_lod_level, lod, max_search_frames);
         } else if (algo == 3) {
             // Parameters for FPS-R:BD
-            int p_block_size = 64;
-            int p_streams_number = 2;
-            int p_streams_offset = 10;
-            const char* p_intra_op = "rotl_dynamic";
-            int p_dynamic_shift_bits = 6;
-            int p_static_shift_amount = 1;
-            const char* p_inter_op = "xor";
-            int p_value_seed_offset = 78901;
+            int p_block_size = 64;           // Size of the macro-rhythm block
+            int p_streams_number = 2;        // Number of parallel bitstreams
+            int p_streams_offset = 10;       // Frame offset between each stream's seed
+            // Intra-stream operation operates on each stream individually
+            //      Static ops: "none", "not", "lshift", "rshift", "rotl", "rotr".
+            //      Dynamic ops: "lshift_dynamic", "rshift_dynamic", "rotl_dynamic", "rotr_dynamic".
+            const char* p_intra_op = "rotl_dynamic"; // Intra-stream operation on each stream
+            int p_dynamic_shift_bits = 6;    // Dynamic shift bits for intra-op
+            int p_static_shift_amount = 1;   // Static shift amount for intra-op
+            const char* p_inter_op = "xor";  // Inter-stream operation to combine transformed streams
+                                             //     Options: "xor", "or", "and".
+            int p_value_seed_offset = 78901; // Additional seed offset for final value
             int max_search_frames = 100; // BD blocks can be large
 
             output = fpsr_bd_get_details(

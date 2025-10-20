@@ -154,7 +154,7 @@ static inline uint64_t u64_circular_right_shift(uint64_t value, int shift) {
     * A float value between 0.0 and 1.0 that remains constant 
     * for the held duration.
  */
-double fpsr_sm(
+double fpsr_sm_base(
     int64_t frame, int64_t minHold, int64_t maxHold,
     int64_t reseedInterval, int64_t seedInner, int64_t seedOuter, int finalRandSwitch)
 {
@@ -215,7 +215,7 @@ double fpsr_sm(
  * when finalRandSwitch is 1: 
  * A float value between 0.0 and 1.0 that holds for the toggled duration.
  */
-double fpsr_tm(
+double fpsr_tm_base(
     int64_t frame, int64_t periodA, int64_t periodB,
     int64_t periodSwitch, int64_t seedInner, int64_t seedOuter,
     int finalRandSwitch)
@@ -577,23 +577,23 @@ int main() {
             // Sample code to call the FPS-R:SM function
             // --------------------------------------------------------------------------
             // Parameters
-            // int frame = 90; // Replace with the current frame value
-            int minHoldFrames = 10; // probable minimum held period
-            int maxHoldFrames = 13; // maximum held period before cycling
-            int reseedFrames = 5; // inner mod cycle timing
-            int offsetInner = -34; // offsets the inner frame
-            int offsetOuter = 22; // offsets the outer frame
+            // int frame = 90;       // Replace with the current frame value
+            int minHoldFrames = 10;  // probable minimum held period
+            int maxHoldFrames = 13;  // maximum held period before cycling
+            int reseedFrames = 5;    // inner mod cycle timing
+            int offsetInner = -34;   // offsets the inner frame
+            int offsetOuter = 22;    // offsets the outer frame
             int finalRandSwitch = 1; // 1 to apply the final randomisation step, 0 to skip it
             
             // Call the FPS-R:SM function
             // call to fpsr_sm for the current frame
             randVal = 
-                (float)fpsr_sm(
+                (float)fpsr_sm_base(
                     (int64_t)frame, (int64_t)minHoldFrames, (int64_t)maxHoldFrames, 
                     (int64_t)reseedFrames, (int64_t)offsetInner, (int64_t)offsetOuter, finalRandSwitch);
             // another call to fpsr_sm for the previous frame
             randVal_previous = 
-                (float)fpsr_sm(
+                (float)fpsr_sm_base(
                     (int64_t)(frame - 1), (int64_t)minHoldFrames, (int64_t)maxHoldFrames, 
                     (int64_t)reseedFrames, (int64_t)offsetInner, (int64_t)offsetOuter, finalRandSwitch);
             changed = 0;
@@ -607,23 +607,23 @@ int main() {
             // Sample code to call the FPS-R:TM function
             // --------------------------------------------------------------------------
             // Parameters
-            // int frame = 100; // Replace with the current frame value
-            int period_A = 10; // The first hold duration
-            int period_B = 16; // The second hold duration
-            int periodSwitch = 9; // The toggle happens every 30 frames
-            int offset_inner = 4; // offsets the inner (toggle) clock
-            int offset_outer = 0; // offsets the outer (hold) clock
+            // int frame = 100;        // Replace with the current frame value
+            int period_A = 10;         // The first hold duration
+            int period_B = 16;         // The second hold duration
+            int periodSwitch = 9;      // The toggle happens every 30 frames
+            int offset_inner = 4;      // offsets the inner (toggle) clock
+            int offset_outer = 0;      // offsets the outer (hold) clock
             int final_rand_switch = 1; // 1 to apply the final randomisation step, 0 to skip it
             
             // Call the FPS-R:TM function
             // call to fpsr_tm for the current frame
             randVal = 
-                (float)fpsr_tm(
+                (float)fpsr_tm_base(
                     (int64_t)frame, (int64_t)period_A, (int64_t)period_B, 
                     (int64_t)periodSwitch, (int64_t)offset_inner, (int64_t)offset_outer, final_rand_switch);
             // another call to fpsr_tm for the previous frame
             randVal_previous = 
-                (float)fpsr_tm(
+                (float)fpsr_tm_base(
                     (int64_t)(frame - 1), (int64_t)period_A, (int64_t)period_B, 
                     (int64_t)periodSwitch, (int64_t)offset_inner, (int64_t)offset_outer, final_rand_switch);
             changed = 0;
