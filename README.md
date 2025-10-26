@@ -201,7 +201,7 @@ FPS-R consists of 3 algorithms. Each one achieves the move-and-hold behaviour in
 ## Interactive FPS-R Visualiser!
 Here is an HTML visualiser of the four FPS-R algorithms! 
 Interact with the parameters and see the output values update in real-time.
-Check it out here: [FPS-R Algorithms Visualiser](./resources/code/html_javascript/fpsr_demo.html)
+Check it out here: [FPS-R Algorithms Visualiser](https://patwooky.github.io/fpsr/resources/code/html_javascript/fpsr_demo.html)
 
 ## Signal Analysis of FPS-R Algorithms
 The following graphs are sample output of each algorithm in the FPS-R framework, running for 400 time-steps. 
