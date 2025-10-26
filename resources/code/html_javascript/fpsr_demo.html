@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FPS-R Algorithms Visualizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* gray-900 */
+            color: #d1d5db; /* gray-300 */
+        }
+        canvas {
+            background-color: #1f2937; /* gray-800 */
+            border-radius: 0.5rem; /* rounded-lg */
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #3b82f6; /* blue-500 */
+            border-radius: 9999px; /* rounded-full */
+            cursor: pointer;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: #3b82f6; /* blue-500 */
+            border-radius: 9999px; /* rounded-full */
+            cursor: pointer;
+        }
+        .control-panel {
+            background-color: #1f2937; /* gray-800 */
+            border-radius: 0.5rem; /* rounded-lg */
+        }
+        .tab {
+            background-color: #374151; /* gray-700 */
+            border-bottom: 2px solid transparent;
+        }
+        .tab.active {
+            background-color: #1f2937; /* gray-800 */
+            border-color: #3b82f6; /* blue-500 */
+            color: #fff;
+        }
+        .param-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1rem 1.5rem;
+        }
+        .param-group {
+            background-color: #374151; /* gray-700 */
+            border-radius: 0.5rem; /* rounded-lg */
+            padding: 0.75rem;
+        }
+        .param-group label {
+            font-size: 0.75rem; /* text-xs */
+            font-weight: 500; /* font-medium */
+            color: #9ca3af; /* gray-400 */
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen p-4 md:p-8">
+
+    <div class="w-full max-w-7xl">
+        <h1 class="text-3xl font-bold text-center text-white mb-2">FPS-R Algorithms Visualizer</h1>
+        <p class="text-center text-gray-400 mb-6">Visualizing emergent complexity from the four core algorithms.</p>
+
+        <!-- Canvas for visualization -->
+        <canvas id="visualizerCanvas" class="w-full mb-6 shadow-lg" height="300"></canvas>
+
+        <!-- Algorithm Tabs -->
+        <div class="flex space-x-1 rounded-t-lg overflow-hidden">
+            <button id="tab-SM" data-algo="SM" class="tab active flex-1 py-3 px-4 font-semibold transition-colors duration-150">FPS-R: SM</button>
+            <button id="tab-TM" data-algo="TM" class="tab flex-1 py-3 px-4 font-semibold transition-colors duration-150">FPS-R: TM</button>
+            <button id="tab-QS" data-algo="QS" class="tab flex-1 py-3 px-4 font-semibold transition-colors duration-150">FPS-R: QS</button>
+            <button id="tab-BD" data-algo="BD" class="tab flex-1 py-3 px-4 font-semibold transition-colors duration-150">FPS-R: BD</button>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="control-panel w-full p-6 shadow-lg rounded-b-lg">
+            
+            <!-- SM Panel -->
+            <div id="panel-SM" class="param-grid">
+                <div class="param-group" title="The minimum duration (in frames) for a value to hold.">
+                    <label for="sm_minHold">minHoldFrames</label>
+                    <div class="flex items-center space-x-2">
+                        <input id="sm_minHold" type="range" min="1" max="100" value="4" class="w-full">
+                        <span id="sm_minHoldValue" class="text-sm text-white w-10 text-right">4</span>
+                    </div>
+                </div>
+                <div class="param-group" title="The maximum duration (in frames) for a value to hold.">
+                    <label for="sm_maxHold">maxHoldFrames</label>
+                    <div class="flex items-center space-x-2">
+                        <input id="sm_maxHold" type="range" min="2" max="300" value="60" class="w-full">
+                        <span id="sm_maxHoldValue" class="text-sm text-white w-10 text-right">60</span>
+                    </div>
+                </div>
+                <div class="param-group" title="The fixed interval at which a new hold duration is calculated.">
+                    <label for="sm_reseed">reseedInterval</label>
+                    <div class="flex items-center space-x-2">
+                        <input id="sm_reseed" type="range" min="1" max="500" value="108" class="w-full">
+                        <span id="sm_reseedValue" class="text-sm text-white w-10 text-right">108</span>
+                    </div>
+                </div>
+                <div class="param-group" title="An offset for the random duration calculation to create unique sequences.">
+                    <label for="sm_seedInner">seedInner</label>
+                    <input id="sm_seedInner" type="number" value="456" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="An offset for the final value calculation to create unique sequences.">
+                    <label for="sm_seedOuter">seedOuter</label>
+                    <input id="sm_seedOuter" type="number" value="123" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="If checked, runs the final held number through one last randomization.">
+                    <label for="sm_finalRandSwitch">finalRandSwitch</label>
+                    <input id="sm_finalRandSwitch" type="checkbox" checked class="w-6 h-6 bg-gray-700 text-blue-500 border-gray-600 rounded-md">
+                </div>
+            </div>
+
+            <!-- TM Panel -->
+            <div id="panel-TM" class="param-grid" style="display: none;">
+                <div class="param-group" title="The first hold duration (in frames).">
+                    <label for="tm_periodA">periodA</label>
+                    <div class="flex items-center space-x-2">
+                        <input id="tm_periodA" type="range" min="1" max="100" value="37" class="w-full">
+                        <span id="tm_periodAValue" class="text-sm text-white w-10 text-right">37</span>
+                    </div>
+                </div>
+                <div class="param-group" title="The second hold duration (in frames).">
+                    <label for="tm_periodB">periodB</label>
+                    <div class="flex items-center space-x-2">
+                        <input id="tm_periodB" type="range" min="1" max="100" value="25" class="w-full">
+                        <span id="tm_periodBValue" class="text-sm text-white w-10 text-right">25</span>
+                    </div>
+                </div>
+                <div class="param-group" title="The interval for toggling between periodA and periodB.">
+                    <label for="tm_periodSwitch">periodSwitch</label>
+                    <div class="flex items-center space-x-2">
+                        <input id="tm_periodSwitch" type="range" min="1" max="100" value="54" class="w-full">
+                        <span id="tm_periodSwitchValue" class="text-sm text-white w-10 text-right">54</span>
+                    </div>
+                </div>
+                <div class="param-group" title="An offset for the toggle clock to de-sync it from the main clock.">
+                    <label for="tm_seedInner">seedInner</label>
+                    <input id="tm_seedInner" type="number" value="15" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="An offset for the main clock to create unique sequences.">
+                    <label for="tm_seedOuter">seedOuter</label>
+                    <input id="tm_seedOuter" type="number" value="0" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="If checked, runs the final held number through one last randomization.">
+                    <label for="tm_finalRandSwitch">finalRandSwitch</label>
+                    <input id="tm_finalRandSwitch" type="checkbox" checked class="w-6 h-6 bg-gray-700 text-blue-500 border-gray-600 rounded-md">
+                </div>
+            </div>
+
+            <!-- QS Panel -->
+            <div id="panel-QS" class="param-grid" style="display: none;">
+                <div class="param-group" title="The base frequency for the sine waves.">
+                    <label for="qs_baseWaveFreq">baseWaveFreq</label>
+                    <input id="qs_baseWaveFreq" type="number" value="0.0015" step="0.001" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="A multiplier for the second stream's frequency.">
+                    <label for="qs_stream2FreqMult">stream2FreqMult</label>
+                    <input id="qs_stream2FreqMult" type="number" value="5.8" step="0.1" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="The minimum number of quantization levels.">
+                    <label for="qs_quantMin">quantLevelsMin</label>
+                    <input id="qs_quantMin" type="number" value="4" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="The maximum number of quantization levels.">
+                    <label for="qs_quantMax">quantLevelsMax</label>
+                    <input id="qs_quantMax" type="number" value="12" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                 <div class="param-group" title="The duration (in frames) before switching between streams.">
+                    <label for="qs_streamSwitchDur">streamSwitchDur</label>
+                    <input id="qs_streamSwitchDur" type="number" value="38" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="The duration (in frames) stream 1 holds its quantization level.">
+                    <label for="qs_stream1QuantDur">stream1QuantDur</label>
+                    <input id="qs_stream1QuantDur" type="number" value="12" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                 <div class="param-group" title="The duration (in frames) stream 2 holds its quantization level.">
+                    <label for="qs_stream2QuantDur">stream2QuantDur</label>
+                    <input id="qs_stream2QuantDur" type="number" value="43" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="Phase offset for stream 1's sine wave.">
+                    <label for="qs_streamOffset1">streamOffset1</label>
+                    <input id="qs_streamOffset1" type="number" value="10" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="Phase offset for stream 2's sine wave.">
+                    <label for="qs_streamOffset2">streamOffset2</label>
+                    <input id="qs_streamOffset2" type="number" value="46" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="Seed offset for stream 1's quantization selection.">
+                    <label for="qs_quantOffset1">quantOffset1</label>
+                    <input id="qs_quantOffset1" type="number" value="10" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="Seed offset for stream 2's quantization selection.">
+                    <label for="qs_quantOffset2">quantOffset2</label>
+                    <input id="qs_quantOffset2" type="number" value="81" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="If checked, runs the final quantized value through one last randomization.">
+                    <label for="qs_finalRandSwitch">finalRandSwitch</label>
+                    <input id="qs_finalRandSwitch" type="checkbox" checked class="w-6 h-6 bg-gray-700 text-blue-500 border-gray-600 rounded-md">
+                </div>
+            </div>
+
+            <!-- BD Panel -->
+            <div id="panel-BD" class="param-grid" style="display: none;">
+                <div class="param-group" title="The size of the macro-rhythm in frames. Defines the 'master loop' size.">
+                    <label for="bd_blockSize">blockSize</label>
+                    <input id="bd_blockSize" type="number" value="320" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="The number of parallel bitstreams to generate and combine.">
+                    <label for="bd_streamsNumber">streamsNumber</label>
+                    <input id="bd_streamsNumber" type="number" value="3" min="1" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="The frame offset between each parallel stream's seed.">
+                    <label for="bd_streamsOffset">streamsOffset</label>
+                    <input id="bd_streamsOffset" type="number" value="11" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="An additional seed offset for the final value calculation.">
+                    <label for="bd_valueSeedOffset">valueSeedOffset</label>
+                    <input id="bd_valueSeedOffset" type="number" value="78901" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="The unary (intra-stream) operation applied to each bitstream.">
+                    <label for="bd_intraOp">intraOp</label>
+                    <select id="bd_intraOp" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                        <option value="none">none</option>
+                        <option value="not">not</option>
+                        <option value="lshift">lshift</option>
+                        <option value="rshift">rshift</option>
+                        <option value="rotl">rotl</option>
+                        <option value="rotr">rotr</option>
+                        <option value="lshift_dynamic">lshift_dynamic</option>
+                        <option value="rshift_dynamic">rshift_dynamic</option>
+                        <option value="rotl_dynamic" selected>rotl_dynamic</option>
+                        <option value="rotr_dynamic">rotr_dynamic</option>
+                    </select>
+                </div>
+                <div class="param-group" title="The binary (inter-stream) operation to combine multiple transformed streams.">
+                    <label for="bd_interOp">interOp</label>
+                    <select id="bd_interOp" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                        <option value="xor" selected>xor</option>
+                        <option value="or">or</option>
+                        <option value="and">and</option>
+                    </select>
+                </div>
+                <div class="param-group" title="For static ops (lshift, rshift, etc.), the fixed number of bits to shift.">
+                    <label for="bd_staticShiftAmount">staticShiftAmount</label>
+                    <input id="bd_staticShiftAmount" type="number" value="1" min="0" max="63" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="For dynamic ops, the number of controller bits to read (1-6) to determine the shift amount.">
+                    <label for="bd_dynamicShiftBits">dynamicShiftBits</label>
+                    <input id="bd_dynamicShiftBits" type="number" value="6" min="1" max="6" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+            </div>
+
+            <!-- Shared Controls -->
+            <div class="flex flex-col md:flex-row gap-4 mt-6 pt-6 border-t border-gray-700">
+                <button id="resetButton" class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition duration-150">
+                    Reset (New Seeds)
+                </button>
+                <button id="rewindButton" class="w-full md:w-auto bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md transition duration-150 flex items-center justify-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12.066 11.209a1.001 1.001 0 00-1.414 0l-3 3a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414-1.414L9.414 16H18a1 1 0 100-2h-8.586l1.652-1.652a1 1 0 000-1.414zM18 18v-2"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 12V6a1 1 0 011-1h10a1 1 0 011 1v6"></path></svg>
+                    <span>Rewind</span>
+                </button>
+                <button id="pauseButton" class="w-full md:w-auto bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-md transition duration-150 flex items-center justify-center space-x-2">
+                    <!-- Pause Icon -->
+                    <svg id="pauseIcon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                    <!-- Play Icon -->
+                    <svg id="playIcon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" style="display: none;"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
+                    <span id="pauseButtonText">Pause</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Gemini API Response Area (REMOVED) -->
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('visualizerCanvas');
+            const ctx = canvas.getContext('2d');
+
+            let canvasWidth = canvas.clientWidth;
+            let canvasHeight = 300;
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+
+            let frame = 0;
+            let history = [];
+            let activeAlgorithm = 'SM';
+            let isPaused = false; // New state
+            let animationFrameId = null; // New state
+
+            // --- Global parameters object ---
+            let globalParams = {
+                sm: {},
+                tm: {},
+                qs: {},
+                bd: {}
+            };
+
+            // --- UI Elements ---
+            const allParamInputs = document.querySelectorAll('.control-panel input, .control-panel select');
+            const allTabs = document.querySelectorAll('.tab');
+            const allPanels = document.querySelectorAll('.control-panel > div[id^="panel-"]');
+            const resetButton = document.getElementById('resetButton');
+
+            // --- New UI Elements ---
+            const pauseButton = document.getElementById('pauseButton');
+            const pauseButtonText = document.getElementById('pauseButtonText');
+            const pauseIcon = document.getElementById('pauseIcon');
+            const playIcon = document.getElementById('playIcon');
+            const rewindButton = document.getElementById('rewindButton');
+
+            // --- Gemini API Elements (REMOVED) ---
+            
+            // --- Helper for range sliders ---
+            document.querySelectorAll('input[type="range"]').forEach(slider => {
+                const valueSpan = document.getElementById(slider.id + 'Value');
+                if (valueSpan) {
+                    slider.addEventListener('input', (e) => {
+                        valueSpan.textContent = e.target.value;
+                    });
+                }
+            });
+
+            // --- Helper for parsing inputs reliably ---
+            function parseBigIntInput(id, defaultValue = 0n) {
+                const value = document.getElementById(id).value;
+                try {
+                    // Handle empty string
+                    if (value === "") {
+                        return defaultValue;
+                    }
+                    return BigInt(value);
+                } catch (e) {
+                    return defaultValue;
+                }
+            }
+            
+            function parseIntInput(id, defaultValue = 0) {
+                const value = parseInt(document.getElementById(id).value, 10);
+                return isNaN(value) ? defaultValue : value;
+            }
+
+            function parseFloatInput(id, defaultValue = 0.0) {
+                const value = parseFloat(document.getElementById(id).value);
+                return isNaN(value) ? defaultValue : value;
+            }
+
+            // --- Event Listeners ---
+            function updateParams() {
+                // --- SM Params ---
+                globalParams.sm = {
+                    minHold: parseBigIntInput('sm_minHold', 5n),
+                    maxHold: parseBigIntInput('sm_maxHold', 60n),
+                    reseedInterval: parseBigIntInput('sm_reseed', 120n),
+                    seedInner: parseBigIntInput('sm_seedInner', 456n),
+                    seedOuter: parseBigIntInput('sm_seedOuter', 123n),
+                    finalRandSwitch: document.getElementById('sm_finalRandSwitch').checked ? 1 : 0,
+                };
+                if (globalParams.sm.minHold > globalParams.sm.maxHold) {
+                    globalParams.sm.minHold = globalParams.sm.maxHold;
+                    document.getElementById('sm_minHold').value = globalParams.sm.minHold.toString();
+                    document.getElementById('sm_minHoldValue').textContent = globalParams.sm.minHold.toString();
+                }
+
+                // --- TM Params ---
+                globalParams.tm = {
+                    periodA: parseBigIntInput('tm_periodA', 8n),
+                    periodB: parseBigIntInput('tm_periodB', 5n),
+                    periodSwitch: parseBigIntInput('tm_periodSwitch', 6n),
+                    seedInner: parseBigIntInput('tm_seedInner', 15n),
+                    seedOuter: parseBigIntInput('tm_seedOuter', 0n),
+                    finalRandSwitch: document.getElementById('tm_finalRandSwitch').checked ? 1 : 0,
+                };
+                
+                // --- QS Params ---
+                globalParams.qs = {
+                    baseWaveFreq: parseFloatInput('qs_baseWaveFreq', 0.012),
+                    stream2FreqMult: parseFloatInput('qs_stream2FreqMult', 3.1),
+                    quantLevelsMinMax: [
+                        parseIntInput('qs_quantMin', 4),
+                        parseIntInput('qs_quantMax', 12)
+                    ],
+                    streamsOffset: [
+                        parseIntInput('qs_streamOffset1', 0),
+                        parseIntInput('qs_streamOffset2', 76)
+                    ],
+                    quantOffsets: [
+                        parseIntInput('qs_quantOffset1', 10),
+                        parseIntInput('qs_quantOffset2', 81)
+                    ],
+                    streamSwitchDur: parseBigIntInput('qs_streamSwitchDur', 8n),
+                    stream1QuantDur: parseBigIntInput('qs_stream1QuantDur', 10n),
+                    stream2QuantDur: parseBigIntInput('qs_stream2QuantDur', 13n),
+                    finalRandSwitch: document.getElementById('qs_finalRandSwitch').checked ? 1 : 0,
+                    sine_lod_level: 0 // Use Math.sin()
+                };
+
+                // --- BD Params ---
+                globalParams.bd = {
+                    blockSize: parseBigIntInput('bd_blockSize', 64n),
+                    streamsNumber: parseIntInput('bd_streamsNumber', 2),
+                    streamsOffset: parseBigIntInput('bd_streamsOffset', 10n),
+                    intraOp: document.getElementById('bd_intraOp').value,
+                    dynamicShiftBits: parseIntInput('bd_dynamicShiftBits', 6),
+                    staticShiftAmount: parseIntInput('bd_staticShiftAmount', 1),
+                    interOp: document.getElementById('bd_interOp').value,
+                    valueSeedOffset: parseBigIntInput('bd_valueSeedOffset', 78901n),
+                };
+                
+                // Clear history on param change
+                frame = 0;
+                history = [];
+            }
+            
+            // Update params on any input change
+            allParamInputs.forEach(input => input.addEventListener('input', updateParams));
+            allParamInputs.forEach(input => input.addEventListener('change', updateParams)); // For selects/text inputs
+
+            // --- Tab Switching ---
+            allTabs.forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    activeAlgorithm = e.target.dataset.algo;
+                    
+                    // Update tabs
+                    allTabs.forEach(t => t.classList.remove('active'));
+                    e.target.classList.add('active');
+
+                    // Update panels
+                    allPanels.forEach(p => p.style.display = 'none');
+                    document.getElementById(`panel-${activeAlgorithm}`).style.display = 'grid';
+                    
+                    // Reset sim
+                    updateParams();
+                });
+            });
+
+            // --- Reset Button ---
+            resetButton.addEventListener('click', () => {
+                // Just randomize the common seeds
+                const newInner = Math.floor(Math.random() * 10000);
+                const newOuter = Math.floor(Math.random() * 10000);
+                document.getElementById('sm_seedInner').value = newInner;
+                document.getElementById('sm_seedOuter').value = newOuter;
+                document.getElementById('tm_seedInner').value = newInner;
+                document.getElementById('tm_seedOuter').value = newOuter;
+                
+                // And some others for fun
+                document.getElementById('qs_streamOffset1').value = Math.floor(Math.random() * 100);
+                document.getElementById('qs_quantOffset1').value = Math.floor(Math.random() * 100);
+                document.getElementById('bd_streamsOffset').value = Math.floor(Math.random() * 100);
+                document.getElementById('bd_valueSeedOffset').value = Math.floor(Math.random() * 10000);
+
+                updateParams();
+            });
+
+            // --- New Button Listeners ---
+            function togglePause() {
+                isPaused = !isPaused;
+                if (isPaused) {
+                    pauseButtonText.textContent = 'Play';
+                    pauseIcon.style.display = 'none';
+                    playIcon.style.display = 'block';
+                    if (animationFrameId) {
+                        cancelAnimationFrame(animationFrameId);
+                        animationFrameId = null;
+                    }
+                } else {
+                    pauseButtonText.textContent = 'Pause';
+                    pauseIcon.style.display = 'block';
+                    playIcon.style.display = 'none';
+                    animate(); // Restart the loop
+                }
+            }
+
+            function rewindAnimation() {
+                frame = 0;
+                history = [];
+                ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+                // If paused, we'll stay paused but the canvas is now clear.
+                // If playing, the animate loop will just restart from frame 0.
+            }
+
+            pauseButton.addEventListener('click', togglePause);
+            rewindButton.addEventListener('click', rewindAnimation);
+
+
+            // --- ✨ Gemini API Logic (REMOVED) ---
+            
+
+
+            // --- Core FPS-R Logic (64-bit BigInt Port) ---
+
+            const CHUNK_BITS = 64n;
+
+            // Floor-based modulo (matches Python's)
+            function i64_floor_mod(a, m) {
+                if (m === 0n) return 0n;
+                const r = a % m;
+                return r < 0n ? r + m : r;
+            }
+
+            // Align-down to the nearest multiple of m
+            function i64_align_down(a, m) {
+                if (m === 0n) return a;
+                return a - i64_floor_mod(a, m);
+            }
+
+            // SplitMix64 PRNG
+            function splitmix64(x) {
+                x = BigInt.asUintN(64, x + 0x9E3779B97F4A7C15n);
+                x = BigInt.asUintN(64, (x ^ (x >> 30n)) * 0xBF58476D1CE4E5B9n);
+                x = BigInt.asUintN(64, (x ^ (x >> 27n)) * 0x94D049BB133111EBn);
+                x = x ^ (x >> 31n);
+                return BigInt.asUintN(64, x);
+            }
+
+            // Map uint64_t to double [0,1)
+            function portable_rand_u64(seed) {
+                const r = splitmix64(BigInt(seed));
+                // Get top 53 bits (double mantissa width)
+                return Number(r >> 11n) * (1.0 / 9007199254740992.0);
+            }
+            
+            // --- Algorithm 1: FPS-R: SM (Stacked Modulo) ---
+            function fpsr_sm_base_js(frame, params) {
+                let { minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch } = params;
+                frame = BigInt(frame);
+
+                if (reseedInterval < 1n) { reseedInterval = 1n; }
+
+                const reseed_anchor = (seedInner + frame) - i64_floor_mod(seedInner + frame, reseedInterval);
+                const rand_for_duration = portable_rand_u64(reseed_anchor);
+                
+                let holdDuration = BigInt(Math.floor(Number(minHold) + rand_for_duration * Number(maxHold - minHold)));
+                if (holdDuration < 1n) { holdDuration = 1n; }
+
+                const held_integer_state = i64_align_down((seedOuter + frame), holdDuration);
+
+                if (finalRandSwitch) {
+                    const seed = BigInt.asUintN(64, held_integer_state * 100000n);
+                    return portable_rand_u64(seed);
+                } else {
+                    return Number(held_integer_state);
+                }
+            }
+            
+            // --- Algorithm 2: FPS-R: TM (Toggle Modulo) ---
+            function fpsr_tm_base_js(frame, params) {
+                let { periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch } = params;
+                frame = BigInt(frame);
+
+                if (periodSwitch < 1n) { periodSwitch = 1n; }
+
+                const inner_clock_frame = seedInner + frame;
+                const r = i64_floor_mod(inner_clock_frame, periodSwitch);
+                let holdDuration = (2n * r < periodSwitch) ? periodA : periodB;
+                if (holdDuration < 1n) { holdDuration = 1n; }
+
+                const outer_clock_frame = seedOuter + frame;
+                const held_integer_state = i64_align_down(outer_clock_frame, holdDuration);
+
+                if (finalRandSwitch) {
+                    const seed = BigInt.asUintN(64, held_integer_state * 100000n);
+                    return portable_rand_u64(seed);
+                } else {
+                    return Number(held_integer_state);
+                }
+            }
+            
+            // --- Algorithm 3: FPS-R: QS (Quantized Sine) ---
+            function fpsr_qs_base_js(frame, params) {
+                frame = BigInt(frame);
+                let {
+                    baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset,
+                    quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur,
+                    finalRandSwitch, sine_lod_level
+                } = params;
+                
+                if (streamSwitchDur < 1n) streamSwitchDur = 1n;
+                if (stream1QuantDur < 1n) stream1QuantDur = 1n;
+                if (stream2QuantDur < 1n) stream2QuantDur = 1n;
+                
+                const quant_min = BigInt(quantLevelsMinMax[0]);
+                const quant_max = BigInt(quantLevelsMinMax[1]);
+                const quant_range = quant_max - quant_min + 1n;
+
+                const s1_quant_seed_aligned = i64_align_down(BigInt(quantOffsets[0]) + frame, stream1QuantDur);
+                const s1_rand_for_quant = portable_rand_u64(s1_quant_seed_aligned);
+                let s1_quant_level = quant_min + BigInt(Math.floor(s1_rand_for_quant * Number(quant_range)));
+
+                const s2_quant_seed_aligned = i64_align_down(BigInt(quantOffsets[1]) + frame, stream2QuantDur);
+                const s2_rand_for_quant = portable_rand_u64(s2_quant_seed_aligned);
+                let s2_quant_level = quant_min + BigInt(Math.floor(s2_rand_for_quant * Number(quant_range)));
+
+                if (s1_quant_level < 1n) s1_quant_level = 1n;
+                if (s2_quant_level < 1n) s2_quant_level = 1n;
+
+                const angle1 = (Number(streamsOffset[0]) + Number(frame)) * baseWaveFreq;
+                const angle2 = (Number(streamsOffset[1]) + Number(frame)) * baseWaveFreq * stream2FreqMult;
+
+                // LOD 0: Direct Math.sin()
+                const stream1_raw_sine = Math.sin(angle1);
+                const stream2_raw_sine = Math.sin(angle2);
+                
+                const stream1_val = Math.floor((stream1_raw_sine * 0.5 + 0.5) * Number(s1_quant_level)) / Number(s1_quant_level);
+                const stream2_val = Math.floor((stream2_raw_sine * 0.5 + 0.5) * Number(s2_quant_level)) / Number(s2_quant_level);
+
+                const r = i64_floor_mod(frame, streamSwitchDur);
+                const selected_stream_idx = (2n * r < streamSwitchDur) ? 0 : 1;
+                const active_stream_val = (selected_stream_idx == 0) ? stream1_val : stream2_val;
+
+                if (finalRandSwitch == 1) {
+                    const hashed_int = BigInt(Math.floor(active_stream_val * 100000.0));
+                    return portable_rand_u64(hashed_int);
+                } else {
+                    // C code maps [0,1] to [0.5, 1.0], let's just return the [0,1] value
+                    // return (0.5 * active_stream_val + 0.5);
+                    return active_stream_val; // More visual range
+                }
+            }
+            
+            // --- Algorithm 4: FPS-R: BD (Bitstream Distortion) ---
+            
+            // Bitwise rotation helpers
+            function u64_circular_left_shift(value, shift) {
+                const s = BigInt(shift) % CHUNK_BITS;
+                if (s === 0n) return value;
+                return BigInt.asUintN(64, (value << s) | (value >> (CHUNK_BITS - s)));
+            }
+
+            function u64_circular_right_shift(value, shift) {
+                const s = BigInt(shift) % CHUNK_BITS;
+                if (s === 0n) return value;
+                return BigInt.asUintN(64, (value >> s) | (value << (CHUNK_BITS - s)));
+            }
+
+            // Get bit helper
+            function get_bit(n, block_size, chunks, num_chunks) {
+                if (n < 0n || n >= block_size) return 0n;
+                const chunk_index = n / CHUNK_BITS;
+                const bit_index = n % CHUNK_BITS;
+                if (chunk_index >= num_chunks) return 0n;
+                return (chunks[chunk_index] >> bit_index) & 1n;
+            }
+
+            function fpsr_bd_base_js(frame, params) {
+                frame = BigInt(frame);
+                let {
+                    blockSize, streamsNumber, streamsOffset, intraOp,
+                    dynamicShiftBits, staticShiftAmount, interOp, valueSeedOffset
+                } = params;
+
+                if (blockSize <= 0n) blockSize = 1n;
+                if (streamsNumber < 1) streamsNumber = 1;
+
+                const sanitized_static_shift = BigInt(staticShiftAmount) & (CHUNK_BITS - 1n);
+                
+                const outer_anchor = i64_align_down(frame, blockSize);
+                const num_chunks = (blockSize + (CHUNK_BITS - 1n)) / CHUNK_BITS;
+
+                let raw_streams = new Array(streamsNumber);
+                for (let i = 0; i < streamsNumber; i++) {
+                    raw_streams[i] = new Array(Number(num_chunks)).fill(0n);
+                }
+                
+                let transformed_streams = new Array(streamsNumber);
+                for (let i = 0; i < streamsNumber; i++) {
+                    transformed_streams[i] = new Array(Number(num_chunks)).fill(0n);
+                }
+                
+                let final_chunks = new Array(Number(num_chunks)).fill(0n);
+
+                // Step 2: Generate raw bitstreams
+                for (let i = 0; i < streamsNumber; i++) {
+                    let stream_seed = outer_anchor + (BigInt(i) * streamsOffset);
+                    for (let j = 0n; j < num_chunks; j++) {
+                        raw_streams[i][j] = splitmix64(stream_seed + j);
+                    }
+                }
+
+                // Step 3: Apply Intra-Stream Ops
+                const is_dynamic = (intraOp.endsWith("_dynamic"));
+                const num_transformed_streams = is_dynamic ? (Math.floor(streamsNumber / 2) + streamsNumber % 2) : streamsNumber;
+                
+                if (is_dynamic) {
+                    const max_bits_for_shift = 6n;
+                    let bit_mask_size = BigInt(dynamicShiftBits);
+                    if (bit_mask_size < 1n) bit_mask_size = 1n;
+                    if (bit_mask_size > max_bits_for_shift) bit_mask_size = max_bits_for_shift;
+                    const bit_mask = (1n << bit_mask_size) - 1n;
+
+                    for (let i = 0; i < Math.floor(streamsNumber / 2); i++) {
+                        const data_idx = i * 2;
+                        const controller_idx = i * 2 + 1;
+                        const target_idx = i;
+
+                        const data_stream = raw_streams[data_idx];
+                        const controller_stream = raw_streams[controller_idx];
+                        
+                        for (let j = 0n; j < num_chunks; j++) {
+                            const dynamic_shift = Number(controller_stream[j] & bit_mask);
+                            switch (intraOp) {
+                                case "lshift_dynamic": transformed_streams[target_idx][j] = BigInt.asUintN(64, data_stream[j] << BigInt(dynamic_shift % 64)); break;
+                                case "rshift_dynamic": transformed_streams[target_idx][j] = data_stream[j] >> BigInt(dynamic_shift % 64); break;
+                                case "rotl_dynamic": transformed_streams[target_idx][j] = u64_circular_left_shift(data_stream[j], dynamic_shift); break;
+                                case "rotr_dynamic": transformed_streams[target_idx][j] = u64_circular_right_shift(data_stream[j], dynamic_shift); break;
+                            }
+                        }
+                    }
+                    if (streamsNumber % 2 != 0) {
+                        transformed_streams[num_transformed_streams - 1] = raw_streams[streamsNumber - 1];
+                    }
+                } else { // Static operations
+                    for (let i = 0; i < streamsNumber; i++) {
+                        for (let j = 0n; j < num_chunks; j++) {
+                            switch (intraOp) {
+                                case "not": transformed_streams[i][j] = BigInt.asUintN(64, ~raw_streams[i][j]); break;
+                                case "lshift": transformed_streams[i][j] = BigInt.asUintN(64, raw_streams[i][j] << sanitized_static_shift); break;
+                                case "rshift": transformed_streams[i][j] = raw_streams[i][j] >> sanitized_static_shift; break;
+                                case "rotl": transformed_streams[i][j] = u64_circular_left_shift(raw_streams[i][j], Number(sanitized_static_shift)); break;
+                                case "rotr": transformed_streams[i][j] = u64_circular_right_shift(raw_streams[i][j], Number(sanitized_static_shift)); break;
+                                default: transformed_streams[i][j] = raw_streams[i][j]; // "none"
+                            }
+                        }
+                    }
+                }
+                
+                // Step 4: Combine Streams
+                if (num_transformed_streams > 0) {
+                    final_chunks = [...transformed_streams[0]];
+                    for (let i = 1; i < num_transformed_streams; i++) {
+                        for (let j = 0n; j < num_chunks; j++) {
+                            switch (interOp) {
+                                case "or": final_chunks[j] |= transformed_streams[i][j]; break;
+                                case "and": final_chunks[j] &= transformed_streams[i][j]; break;
+                                default: final_chunks[j] ^= transformed_streams[i][j]; // "xor"
+                            }
+                            final_chunks[j] = BigInt.asUintN(64, final_chunks[j]);
+                        }
+                    }
+                }
+
+                // Step 5: Decode
+                const current_pos_in_block = frame - outer_anchor;
+                let last_flip_pos = 0n;
+                for (let i = current_pos_in_block; i > 0n; i--) {
+                    if (get_bit(i, blockSize, final_chunks, num_chunks) != get_bit(i - 1n, blockSize, final_chunks, num_chunks)) {
+                        last_flip_pos = i;
+                        break;
+                    }
+                }
+                
+                // Step 6: Generate final value
+                const final_seed = outer_anchor + last_flip_pos + valueSeedOffset;
+                return portable_rand_u64(final_seed);
+            }
+
+
+            // --- Main Value Router ---
+            function getFpsrValue(currentFrame) {
+                switch(activeAlgorithm) {
+                    case 'SM':
+                        return fpsr_sm_base_js(currentFrame, globalParams.sm);
+                    case 'TM':
+                        return fpsr_tm_base_js(currentFrame, globalParams.tm);
+                    case 'QS':
+                        return fpsr_qs_base_js(currentFrame, globalParams.qs);
+                    case 'BD':
+                        return fpsr_bd_base_js(currentFrame, globalParams.bd);
+                    default:
+                        return 0.5;
+                }
+            }
+
+
+            // --- Animation Loop ---
+            function animate() {
+                if (isPaused) {
+                    if (animationFrameId) {
+                        cancelAnimationFrame(animationFrameId);
+                        animationFrameId = null;
+                    }
+                    return; // Stop the loop if paused
+                }
+
+                if (canvas.clientWidth !== canvasWidth) {
+                    canvasWidth = canvas.clientWidth;
+                    canvas.width = canvasWidth;
+                    history = [];
+                    frame = 0;
+                }
+
+                const newValue = getFpsrValue(frame);
+                history.push(newValue);
+
+                if (history.length > canvasWidth) {
+                    history.shift();
+                }
+
+                ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+                ctx.beginPath();
+                ctx.strokeStyle = '#3b82f6';
+                ctx.lineWidth = 2;
+
+                for (let i = 0; i < history.length; i++) {
+                    const x = i;
+                    const y = (1 - history[i]) * canvasHeight;
+
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        const prevY = (1 - history[i - 1]) * canvasHeight;
+                        if (y === prevY) {
+                            ctx.lineTo(x, y);
+                        } else {
+                            ctx.lineTo(x, prevY);
+                            ctx.lineTo(x, y);
+                        }
+                    }
+                }
+                ctx.stroke();
+                frame++;
+                animationFrameId = requestAnimationFrame(animate);
+            }
+
+            // Initial setup and start
+            updateParams();
+            animate();
+        });
+    </script>
+</body>
+</html>
+
+
+
+

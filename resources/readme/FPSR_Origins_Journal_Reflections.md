@@ -2781,12 +2781,12 @@ The methodology involved:
 1. **Estimating Resource Cost:** We established ballpark estimates for both computational complexity (CPU work per call) and memory footprint (static and dynamic). These scores were then normalised, with the most resource-intensive algorithm (BD for compute, initial QS for memory) set to a baseline of 1.0.  
 
 My initial estimates for compute and memory
-|Computation|Memory|
-|---|---|
-SM 0.02 | 0.01
-TM 0.02 | 0.01
-QS 0.3 | 1 (with LUT 4096)
-BD 1 | 0.7
+|Algorithm|Computation|Memory|
+|---|---|---
+SM | 0.02 | 0.01
+TM | 0.02 | 0.01
+QS (LUT 4096) | 0.3 | 1 
+BD | 1 | 0.7
 
 Copilot's estimates
 |Computation|Memory|
@@ -2888,10 +2888,10 @@ BD|1.0|0.82|~1.22
 #### Does the Complexity Justify the Cost?
 Gemini Pro commented that the complexity did justify the cost, but that justification creates a clear "tier list" of when and why we'd use each one.
 
-### Initial Analysis & Key Points Raised**
+### Initial Analysis & Key Points Raised
 Both AI assistants praised the framework's novel design, particularly its commitment to determinism and the elegant core-vs-wrapper architecture. However, they offered different perspectives on its strengths and weaknesses.
 
-#### **Points Raised by Gemini:**
+#### Points Raised by Gemini:
 * **Primary Strength:** The architecture itself. The separation of pure, stateless functions from the rich, analytical wrappers was identified as a standout feature.  
 * **Determinism:** Praised the use of Python-parity math, a deterministic PRNG, and crucially, the Sine Look-Up Tables (LUTs) for QS to guarantee cross-platform consistency.  
 * **Resource Profiles:** Characterized the algorithms by their cost nature:  
@@ -2899,7 +2899,7 @@ Both AI assistants praised the framework's novel design, particularly its commit
   * **QS:** "Buy Once" \- A heavy, one-time static memory cost (for LUTs), but fast per-call.  
   * **BD:** "Pay-as-you-go" \- A dynamic, linear cost that scales with block\_size on every call.
 
-#### **Points Raised by MS Copilot:**
+#### Points Raised by MS Copilot:
 * **Primary Focus:** Risk analysis and hardening. The feedback was more critical and focused on production-readiness.  
 * **Identified Risks:**  
   * **LUT Dependency:** The reliance on initialize\_sine\_luts() created a dependency and was not thread-safe.  
@@ -2984,4 +2984,22 @@ For QS I intend to use non uniformly sampled (adaptive) look-up tables for deter
 QS will remain the most robust yet versatile algorithm in the FPS-R framework for now.
 
 ---
+# Summary of Complexity Calculations for FPS-R
+26 Oct 2025
 
+To summarise, the method I used to compute the **Expressive Complexity to Cost Ratio** score.
+
+## Expressive Complexity to Cost Ratio (or EC-to-Cost Ratio)
+`complex_to_cost_ratio = complexity_score / total_cost`
+This is the "bang for buck" and "return on investment" calculation on how much "units of expressivity" we can get per "unit of resource" we commit to the process.
+
+### Total Impact
+`total_cost = computation * memory * (x for x in every cost_component)`
+
+- `total_cost` (can also be seen as total impact)
+- `computation * memory * components` these are any and all resource components that the operation consume, as long as they can be consistently and relatively scored across all comparing candidates. (eg, compute, memory, API calls, virtual machine hosting, rent, software licenses)
+
+### Expressive Complexity 
+`expressive_complexity = dials_count * modes_count`
+- parameter richness - number of dials and modes in the algorithm
+- combinatory flexibility, number dials count and modes count.
