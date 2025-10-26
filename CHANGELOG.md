@@ -20,6 +20,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Wrapper versions are placed back to `./resources/code/_WIP` to be re-worked since they are not fully working.
 
 ---
+[2.0.5] - 2025-10-26
+### Added
+- A new html visualiser of the four FPS-R algorithms! Check it out here! [FPS-R Algorithms Visualiser](./resources/code/html_javascript/fpsr_demo.html)
+
+---
 ## [2.0.4] - 2025-10-20
 ### Changed
 - **Breaking Change**:

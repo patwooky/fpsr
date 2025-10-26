@@ -22,7 +22,7 @@ Here is a high-level podcast audio commentary of the following content.
 
 FPS-R is a **time-aware** pseudo-random number generator that produces **practically non-repeating patterns**.  
 Given any series of incrementing input values (e.g., `frame`, `training-epoch`, `uv`, `latent-space`, `x-axis`), FPS-R produces a persistent sequence of **deterministic** random numbers.  
-These numbers hold their values for unpredictable, yet deterministic, time steps before changing.  
+These numbers hold their values for unpredictable, yet deterministic time steps before changing.  
 FPS-R is also **stateless**—it does not need to store state at each time-step, which avoids complex logic and state management.
 
 **The Grammar of FPS-R Across Domains**
@@ -35,7 +35,7 @@ At the core, FPS-R is a framework and a grammar that describes a behaviour and p
 - **move and hold**
 - **hold and jump**
 
-In other words, FPS-R introduces negentropy (reduction of entropy) across "time", injecting some temporal cohesion that is irregular and non-uniform across holding periods.
+In other words, FPS-R reduces entropy over time by adding temporal cohesion through irregular, non-uniform hold periods.
 
 These are pervasive phenomena that can be observed across domains.
 Here are a few examples of non-linearity found in various aspects of our reality, including physical systems, socio-economic systems, and emotional states:
@@ -175,7 +175,7 @@ The entries marked `jump` are changes in values. Subsequent entries after the ju
 
 These numbers and timing are unpredictable but totally deterministic, repeatable and stateless. By looking up the frame number with the same parameter values, FPS-R will always return the same output.
 
-# The 3 Algorithms: SM, TM and QS
+# The 4 Algorithms: SM, TM, QS and BD
 FPS-R consists of 3 algorithms. Each one achieves the move-and-hold behaviour in a slightly different way.
 ## SM (Stacked Modulo)
   - achieves stable integer holds through nested modulo, taming the over-enthusiastic `rand()`
@@ -189,8 +189,21 @@ FPS-R consists of 3 algorithms. Each one achieves the move-and-hold behaviour in
   - is the most lively, active, expressive and articulate of the algorithms.
   - produces more prounounced holds, unpredictability and fickleness in its jumps and flickers.
   - does not produce an even distribution of output values
+## BD (Bitwise Decode)
+- Generates complex, phrased rhythms by manipulating deterministic bitstreams directly.
+- Achieves holds and jumps based on the detection of "bit flips" within combined, transformed streams.
+- Offers the highest degree of structural complexity and expressive control over the phrasing "character" through combinatorial bitwise operations (shifts, rotates, logic gates, dynamic controllers).
+- Supports multiple-streams mode (optional) that combine to a final bitstream through selectable bitwise operations.
+- Can potentially be the most computationally intensive algorithm due to its block-based, multi-stream processing, but provides unparalleled expressive control over the emergent rhythmic structure. Complexity can be scaled.
+- Distribution of output values is highly dependent on the chosen operations and parameters, generally not uniform.
 
 # The Fingerprints of FPS-R
+## Interactive FPS-R Visualiser!
+Here is an HTML visualiser of the four FPS-R algorithms! 
+Interact with the parameters and see the output values update in real-time.
+Check it out here: [FPS-R Algorithms Visualiser](./resources/code/html_javascript/fpsr_demo.html)
+
+## Signal Analysis of FPS-R Algorithms
 The following graphs are sample output of each algorithm in the FPS-R framework, running for 400 time-steps. 
 
 How to read the graphs:
@@ -202,7 +215,7 @@ The graphs exist as a Jupyter notebook. Feel free to explore and try it out!
 
 ### `Portable_rand()`
 ![portable_rand](./resources/readme/images/fspr_data_analysis/fpsr_portablerand_output.png)
-This is the output of the `Portable_rand()` included in FPS-R. It works very much like a `rand()`. Every frame input into `portable_rand()` yields a very different output from the previous one. There is no holding behaviour.
+This is the output of the `Portable_rand()` included in FPS-R. It works very much like a `rand()`. Every frame input into `portable_rand()` yields a different output value from the previous one. There is no holding behaviour.
 
 By implementing our own pseudo random noise generator, we make sure that these values are generated consistently, resulting in deterministic outputs across different languages and operating environments.
 
@@ -274,7 +287,7 @@ FPS-R is a **glass-box framework** due to its **mathematical purity**, **determi
 
 ---
 # The Logic
-Out of the 3 algorithms, SM and TM are "less complex". They can each be expressed in a single line expression. QS has more complex logic than can be practically expressed in a single line.
+Out of the 4 algorithms, SM and TM are "less complex" but are really efficient, delivering highly expressive output. They can each be expressed in a single-line expression. QS has more complex logic than can be practically expressed in a single line.
 
 > **[fpsr_tech.md](resources/readme/FPSR_Tech.md)**
   Go straight to the technical document of each algorithm here. 
