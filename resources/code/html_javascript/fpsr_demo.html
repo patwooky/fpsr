@@ -212,11 +212,11 @@
             <div id="panel-BD" class="param-grid" style="display: none;">
                 <div class="param-group" title="The size of the macro-rhythm in frames. Defines the 'master loop' size.">
                     <label for="bd_blockSize">blockSize</label>
-                    <input id="bd_blockSize" type="number" value="128" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                    <input id="bd_blockSize" type="number" value="30" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
                 </div>
                 <div class="param-group" title="The number of parallel bitstreams to generate and combine.">
                     <label for="bd_streamsNumber">streamsNumber</label>
-                    <input id="bd_streamsNumber" type="number" value="4" min="1" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                    <input id="bd_streamsNumber" type="number" value="7" min="1" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
                 </div>
                 <div class="param-group" title="The frame offset between each parallel stream's seed.">
                     <label for="bd_streamsOffset">streamsOffset</label>
@@ -245,8 +245,8 @@
                     <label for="bd_interOp">interOp</label>
                     <select id="bd_interOp" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
                         <option value="xor">xor</option>
-                        <option value="or" selected>or</option>
-                        <option value="and">and</option>
+                        <option value="or">or</option>
+                        <option value="and" selected>and</option>
                     </select>
                 </div>
                 <div class="param-group" title="For static ops (lshift, rshift, etc.), the fixed number of bits to shift.">
