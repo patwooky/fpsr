@@ -140,7 +140,7 @@ float fpsr_tm_expression = portable_rand(
 /* FPS-R: Quantised Switching (QS)                                            */
 /******************************************************************************/
 /**
- * @brief The nature of QS does not support a single line implementation.
+ * @brief The nature of QS does not support a single-line implementation.
  * Instead, it requires a more complex function with multiple parameters.
  */
 
@@ -149,7 +149,7 @@ float fpsr_tm_expression = portable_rand(
 /* FPS-R: Bitwise Decode (BD)                                                 */
 /******************************************************************************/
 /**
- * @brief The nature of BD does not support a single line implementation.
+ * @brief The nature of BD does not support a single-line implementation.
  * Its procedural algorithm requires looping, intermediate data storage (arrays),
  * and iterative searching, which cannot be represented as a single mathematical expression.
  */
