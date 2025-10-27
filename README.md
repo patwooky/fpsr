@@ -203,6 +203,7 @@ Here is an HTML visualiser of the four FPS-R algorithms!
 Interact with the parameters and see the output values update in real-time.
 ![](./resources/readme/images/fpsr_html_visualiser.jpg)
 Check it out here: 
+
 [FPS-R Algorithms Visualiser on GitHub Pages](https://patwooky.github.io/fpsr/resources/code/html_javascript/fpsr_demo.html)
 
 [FPS-R Algorithms Visualiser HTML code in this repository](./resources/code/html_javascript/fpsr_demo.html)
