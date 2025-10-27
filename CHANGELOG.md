@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## Unreleased
 
 --- 
-## [2.0.5] - 2025-09-22
+## [2.0.6] - 2025-09-22
 ### Changed
 - **Breaking Change**: Determinism between C_reference and Python 
     - `fpsr_algorithms.py` and `fpsr_algorithms_reference.c` now 
@@ -20,9 +20,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Wrapper versions are placed back to `./resources/code/_WIP` to be re-worked since they are not fully working.
 
 ---
-[2.0.5] - 2025-10-26
+## [2.0.5] - 2025-10-26
 ### Added
-- A new html visualiser of the four FPS-R algorithms! Check it out here! [FPS-R Algorithms Visualiser](./resources/code/html_javascript/fpsr_demo.html)
+- A new html visualiser of the four FPS-R algorithms! Check it out here! [FPS-R Algorithms Visualiser on GitHub Pages](https://patwooky.github.io/fpsr/resources/code/html_javascript/fpsr_demo.html) ← interact with the page
+[FPS-R Algorithms Visualiser in this Repo](./resources/code/html_javascript/fpsr_demo.html) ← view the code
+
+### Changed
+- `fpsr_algorithms_wrap_reference.c` 
+    - moved to `./resources/code/C_reference` 
+    - renamed to `fpsr_algo_wrap_reference.c`
+    - the wrapped versions are working now, including the newly included BD.
+
 
 ---
 ## [2.0.4] - 2025-10-20

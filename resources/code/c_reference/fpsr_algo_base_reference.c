@@ -11,7 +11,7 @@
  * @file fpsr_algorithms.c
  * @brief Portable C implementation of FPS-R algorithms: 
  * Stacked Modulo (SM), Toggled Modulo (TM), Quantised Switching (QS), and Bitwise Decode (BD).
- * @details This file contains four stateless, frame-persistent randomisation algorithms.
+ * @details This file contains four stateless, Frame-Persistent Stateless Randomisation algorithms.
  * It uses a custom portable_rand() function to ensure deterministic and
  * consistent results across any platform.
  */
