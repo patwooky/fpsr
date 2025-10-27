@@ -201,7 +201,10 @@ FPS-R consists of 3 algorithms. Each one achieves the move-and-hold behaviour in
 ## Interactive FPS-R Visualiser!
 Here is an HTML visualiser of the four FPS-R algorithms! 
 Interact with the parameters and see the output values update in real-time.
-Check it out here: [FPS-R Algorithms Visualiser](https://patwooky.github.io/fpsr/resources/code/html_javascript/fpsr_demo.html)
+![](./resources/readme/images/fpsr_html_visualiser.jpg)
+Check it out here: 
+[FPS-R Algorithms Visualiser on GitHub Pages](https://patwooky.github.io/fpsr/resources/code/html_javascript/fpsr_demo.html)
+[FPS-R Algorithms Visualiser HTML code in this repository](./resources/code/html_javascript/fpsr_demo.html)
 
 ## Signal Analysis of FPS-R Algorithms
 The following graphs are sample output of each algorithm in the FPS-R framework, running for 400 time-steps. 
@@ -287,7 +290,7 @@ FPS-R is a **glass-box framework** due to its **mathematical purity**, **determi
 
 ---
 # The Logic
-Out of the 4 algorithms, SM and TM are "less complex" but are really efficient, delivering highly expressive output. They can each be expressed in a single-line expression. QS has more complex logic than can be practically expressed in a single line.
+Out of the 4 algorithms, SM and TM are "less complex" but are really efficient, delivering highly expressive output. They can each be expressed in a single-line expression. QS and BD have more complex logic than can be practically expressed in a single line, and thus do not have "single-line expression" versions.
 
 > **[fpsr_tech.md](resources/readme/FPSR_Tech.md)**
   Go straight to the technical document of each algorithm here. 

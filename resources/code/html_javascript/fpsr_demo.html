@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FPS-R Algorithms Visualizer</title>
+    <title>FPS-R Algorithms Visualiser</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -65,7 +65,7 @@
 <body class="flex flex-col items-center justify-center min-h-screen p-4 md:p-8">
 
     <div class="w-full max-w-7xl">
-        <h1 class="text-3xl font-bold text-center text-white mb-2">FPS-R Algorithms Visualizer</h1>
+        <h1 class="text-3xl font-bold text-center text-white mb-2">FPS-R Algorithms Visualiser</h1>
         <p class="text-center text-gray-400 mb-6">Visualizing emergent complexity from the four core algorithms.</p>
 
         <!-- Canvas for visualization -->
@@ -212,11 +212,11 @@
             <div id="panel-BD" class="param-grid" style="display: none;">
                 <div class="param-group" title="The size of the macro-rhythm in frames. Defines the 'master loop' size.">
                     <label for="bd_blockSize">blockSize</label>
-                    <input id="bd_blockSize" type="number" value="320" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                    <input id="bd_blockSize" type="number" value="128" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
                 </div>
                 <div class="param-group" title="The number of parallel bitstreams to generate and combine.">
                     <label for="bd_streamsNumber">streamsNumber</label>
-                    <input id="bd_streamsNumber" type="number" value="3" min="1" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                    <input id="bd_streamsNumber" type="number" value="4" min="1" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
                 </div>
                 <div class="param-group" title="The frame offset between each parallel stream's seed.">
                     <label for="bd_streamsOffset">streamsOffset</label>
@@ -244,8 +244,8 @@
                 <div class="param-group" title="The binary (inter-stream) operation to combine multiple transformed streams.">
                     <label for="bd_interOp">interOp</label>
                     <select id="bd_interOp" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
-                        <option value="xor" selected>xor</option>
-                        <option value="or">or</option>
+                        <option value="xor">xor</option>
+                        <option value="or" selected>or</option>
                         <option value="and">and</option>
                     </select>
                 </div>
