@@ -2765,8 +2765,124 @@ This discovery highlights a unique advantage (in this case) that comes from an u
 The discussion that began with a simple question about uniform distribution and random bitstream generation had culminated in the addition of yet another algorithm to my framework. I am still reeling in disbelief that FPS-R would turn from a trio to a quartet.
 
 ---
+## Solving the Rich Wrapper Output Problem
+_18 Oct 2025, Saturday_
+The discovery of the Bitwise Decode flowed into the discussion of whether BD is compatible with the way the wrapper is structured. I felt that this would mess up BD since it was not a continuous "stream" like the others (SM, TM, QS). These features turned out to still be compatible:
+- `has_changed`, `last_changed_frame`, `next_changed_frame`, `last_value`, `next_value`
+- the only except for one, the frame multipler.
+
+Gemini had the wrong impression that the seed had to be `floor`-ed, and this would lead to outputs being quantied and blocky. In fact how the `frame_multipler` works in the wrapper was that the input frame was inflated, then used as a seed to call `portable_rand()`. 
+
+I tried to explain the difference to Gemini, about how it was misunderstanding the logic, but in that process I realised that I was mishandling and misunderstanding the `frame_multiplier` process too.
+
+Here was my insight about inflating the input frame:
+`-- start quote --`
+I think generating the next bit from `5,000,000,000` to `5,050,000,000` are like giving it 2 different numbers, almost like reseeding it with 2 different seeds that are 50 million units apart. The bitwise generation mechanism is generating another block or bits that is altogether different. Even within non inflated space of `100` to next step `105`, looking up portable rand to get the bits, I think we already broke the continuity, at least for BD. Come to think about it, I think thats the reason why my other wrapped algorithms are also not behaving the way I thought they would. Huge integer with their jumps are not sampling a continuous rule that is scaled up. We're merely looking up very huge discontinuous and disconnected numbers. Hence the emergent spread-out hold and jumps I had hoped to see, are not there. The behavior of `hold-hold-jump` for first 3 frames scaled x2, is not going to give me. `hold(old_val) - hold (new_val) - hold (old val) - hold (new_val) - jump (old_val) - jump (new_val)`.
+
+To get this behaviour we'd need to sample the output at normal time step (without inflation), then stretch /inflate the _output_ instead of stretching, inflating or multiplying the seed.
+
+This has been disturbing me for quite a while, ever since I ran the wrapper version and didn't get the expected outputs.
+`-- end quote --`
+
+### Frame Multiplier Basic Understanding
+Here is a clarification of terms. 
+
+Imagine a boy bounding thru a flight of 20 steps at his normal rate of 2 steps at a time. Assume the speed of his strides must be the same, and assume that he can leap up to 4 steps at a time, without breaking stride. 
+- normal speed to complete the flight of stairs: 
+  - `(20-steps / 2-steps-per-stride)`
+  - total steps to clear the stairs: 10 steps 
+
+To get him to reach the end of the flight "twice as fast" he has to travel at 4 steps at a time. 
+- double-speed to complete the flight of stairs: 
+  - `(20-steps / 4-steps-per-stride)`
+  - total steps to clear the stairs: 5 steps 
+
+To get him to "slow down" his travel distance by half: 
+- half-speed to complete the flight of stairs:
+  - `(20-steps / 1-steps-per-stride)`
+  - total steps to clear the stairs: 20 steps 
+
+#### Slowing Down
+Speeding up is not as big a problem as slowing down. When we speeed up, we "eat up the steps", we "skip the steps"; we don't consider them at all.
+When we slow time, _**we need more steps** so that we take more strides to finish the same flight of steps_. 
+
+In the normal situations we cannot create steps, so we stay on the same steps during in-between strides.
+
+**Conclusion**
+This is exacly the definition of frames per second (fps), where seconds is the real-world measurement of time, and frames is the unit of time that advances the content (video clip, audio, etc).
+
+The boy's strides are the "real world time" (seconds), and the flight of steps are the "content" (frames).
+
+`Steps-per-stride directly` translates to `frames-per-second`.
+
+To get the content to "scroll faster" or "finish faster", we need to "speed up". To speed up we intuitively want to increase the multiplication factor (because of "up"). Inversely when we want to "slow down" we instinctively want to decrease the multiplier. But the truth is inverse. 
+
+What we are intuiting is the **_frequency_** of time passage. This is an inverse relationship, to speed up, is `frame * number_smaller_than_1`, to slow down is `frame * number_larger_than_1`. 
+
+When time speeds up, 
+- the material (frames) passes by faster (frame is compressed, squashed)
+- more frames are skipped or "dropped" per second 
+- we "reach the end" sooner, "that's the end? already? where did the time go?"
+
+When time slows down, 
+- the material (frames) passes slower,  (frame is expanded, stretched, dilated)
+- less frames are eaten up and skipped per second
+- we "have taken many steps still the end is nowhere near", "are we there yet?"
+
+In conclusion, the relationship between steps (frame) and strides (seconds) is:
+`content_speed = frame / speed_aka_steps_per_stride`
+The higher the speed, the larger the the divisor `speed_aka_steps_per_stride`. In the steps example, the higher the `speed_aka_steps_per_stride`, the less number of steps (faster) it takes to finish the flight of stairs. When `speed_aka_steps_per_stride` is 20, it just takes 1 stride to complete the entire flight of stairs.
+
+### The Problem with Inflated Frame as Seed
+1. The Core Flaw (What's Broken)
+
+The current wrapper's frame_multiplier implementation is fundamentally flawed. It works by scaling the input frame (e.g., frame 101 * 0.5 = 50.5) and then "inflating" this float into a massive, non-consecutive integer (5,050,000,000) to use as a seed.
+
+This breaks the core logic of FPS-R, which relies on the relationship between consecutive integers (like 100 and 101) to create its "hold-hold-jump" phrasing. By feeding the algorithms seeds that are billions of units apart, we destroy this phrasing, and the output degenerates into simple noise.
+
+2. The New Architecture (The Fix)
+
+The solution is to stop manipulating the input seed and instead call the pure, original algorithms with clean integers.
+
+WHAT GOES: The entire FPSR_INFLATION_FACTOR system and the specialized _fpsr_..._base functions within the wrapper file are obsolete and will be removed.
+
+WHAT STAYS: The wrapper will now call the pure, canonical algorithms (like fpsr_sm, fpsr_tm) directly from the fpsr_algorithms_reference.c implementation.
+
+REPURPOSED SINE-LUT: The Sine Look-Up Table (Sine-LUT) for the QS algorithm remains critical. Its primary purpose is no longer to handle tiny frequencies, but to guarantee cross-platform determinism. It ensures the sin() calculation is bit-for-bit identical on any CPU or compiler, which is essential for a "source of truth" implementation. It also provides a performance boost.
+
+3. The New frame_multiplier Philosophy (Hierarchical Coherence)
+
+This is the most brilliant part of the new design. Simply repeating a value to "stretch" time is predictable and boring. The new approach, Hierarchical Coherence, treats "zooming in" (a frame_multiplier < 1.0) as an opportunity to reveal new, finer-grained detail.
+
+The Principle: The original integer frames (the "master frames") must always remain anchored to their correct values. The "gaps" created between them by stretching are filled with new, procedurally generated values.
+
+The Consistency: This new detail must be consistent. The detail revealed at a 4x zoom must be a refinement of the detail seen at 2x zoom, not a completely different pattern. This is the "time-traveling historian" analogy: zooming in reveals the smaller events that led up to the major ones.
+
+4. Implementation: The Hierarchical Subdivision Algorithm
+
+To achieve this "fractal zoom," we will use the following logic when a frame_multiplier creates a stretch:
+
+Identify Frame Type: We determine if the current real_frame is a "master frame" or a "gap frame."
+
+Master Frames: If it's a master frame (i.e., it lands perfectly on an original integer), we simply call the base FPS-R algorithm with that integer. This keeps the main events "anchored."
+
+Gap Frames: If it's a "gap frame," we fill it hierarchically:
+
+Find Rank: We find the "importance" or "rank" of the frame's position within the gap. The checkpoint suggests a bit-manipulation trick (level = gap_position & -gap_position) to create a stable binary subdivision (midpoints are "ranked" higher than quarter-points, etc.).
+
+Generate Hierarchical Seed: We create a unique and stable seed for this exact point in the hierarchy (e.g., hash(source_frame, level, gap_position)).
+
+Make Nested Call: We perform a nested call to the same FPS-R algorithm, using the gap_position as its local "frame" and the hierarchical_seed as an offset.
+
+This method ensures that the midpoint of a x8 stretch is generated with the exact same seed as the midpoint of a x2 stretch, guaranteeing the coherence and stability of the "zoom."
+
+This new architecture is clear. It's a massive simplification of the wrapper's state (by removing inflation) and a powerful enhancement of its behavior (by adding hierarchical detail).
+
+
+
+---
 ## FPS-R Algorithm Profile & QS Optimization
-_19 Oct 2025_
+_19 Oct 2025, Sunday_
 
 I started to explore the structure and cost with both Gemini and MS Copilot.
 
