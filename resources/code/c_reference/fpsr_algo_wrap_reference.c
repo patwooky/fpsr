@@ -485,7 +485,11 @@ FPSR_Output fpsr_qs_base(
         int64_t hashed_int = (int64_t)floor(active_stream_val * 100000.0);
         output.randVal = (float)portable_rand_u64((uint64_t)hashed_int);
     } else {
-        output.randVal = (float)(0.5 * active_stream_val + 0.5);
+        // --- FIX: Correct range scaling ---
+        // active_stream_val is already mapped to [0, 1].
+        // The previous calculation incorrectly remapped it to [0.5, 1.0].
+        // Assign directly to use the full [0, 1] range.
+        output.randVal = (float)active_stream_val;
     }
     return output;
 }
@@ -540,17 +544,36 @@ double fpsr_bd(
     int64_t outer_anchor = i64_align_down(frame, block_size);
     int64_t num_chunks = (block_size + (CHUNK_BITS - 1)) / CHUNK_BITS;
 
-    // --- Safer Memory Allocation ---
+    // --- Safer Memory Allocation with comprehensive overflow checks ---
     // Calculate total memory needed for all buffers to make one contiguous allocation.
-    // This is safer than multiple alloca() calls and simplifies cleanup.
     size_t chunk_data_sz = num_chunks * sizeof(uint64_t);
-    // Check for overflow before calculating total size, though unlikely with realistic params.
-    if (streams_number > 0 && (SIZE_MAX / streams_number < chunk_data_sz)) return 0.0; // Overflow
-    size_t total_chunk_data_sz = streams_number * chunk_data_sz;
 
-    // Allocate a single contiguous buffer on the heap for pointer arrays and chunk data to avoid alloca().
+    // --- FIX: Added comprehensive overflow checks ---
+    // Check multiplication for total_chunk_data_sz
+    if (streams_number > 0 && (SIZE_MAX / (size_t)streams_number < chunk_data_sz)) {
+        fprintf(stderr, "ERROR in fpsr_bd: Overflow calculating total_chunk_data_sz. Returning 0.0.\n");
+        return 0.0; // Overflow
+    }
+    size_t total_chunk_data_sz = (size_t)streams_number * chunk_data_sz;
+
+    // Check multiplication for ptr_arrays_sz
+    if ((SIZE_MAX / sizeof(uint64_t*)) / 2 < (size_t)streams_number) {
+        fprintf(stderr, "ERROR in fpsr_bd: Overflow calculating ptr_arrays_sz. Returning 0.0.\n");
+        return 0.0; // Overflow check
+    }
     size_t ptr_arrays_sz = (size_t)streams_number * sizeof(uint64_t*) * 2; // raw_streams pointers + transformed_streams pointers
-    size_t total_alloc_size = ptr_arrays_sz + (2 * total_chunk_data_sz) + chunk_data_sz; // pointer arrays + raw_streams + transformed_streams + final_chunks
+
+    // Check additions for total_alloc_size
+    if (SIZE_MAX - ptr_arrays_sz < chunk_data_sz) {
+        fprintf(stderr, "ERROR in fpsr_bd: Overflow calculating total_alloc_size (step 1). Returning 0.0.\n");
+        return 0.0; // Overflow check
+    }
+    size_t temp_size = ptr_arrays_sz + chunk_data_sz; // Size for pointers + final_chunks
+    if (SIZE_MAX - temp_size < 2 * total_chunk_data_sz) {
+        fprintf(stderr, "ERROR in fpsr_bd: Overflow calculating total_alloc_size (step 2). Returning 0.0.\n");
+        return 0.0; // Overflow check (adding space for raw_streams + transformed_streams)
+    }
+    size_t total_alloc_size = temp_size + (2 * total_chunk_data_sz); // final calculation
 
     void* buffer_base = malloc(total_alloc_size);
     if (!buffer_base) { 
@@ -714,13 +737,15 @@ static inline uint64_t _get_hierarchical_seed(int64_t master_frame, double sub_f
 
         if (current_pos > boundary) {
             // "Right" branch
-            seed = splitmix64(seed + 1ULL); // Add 1 for the right branch
+            seed += 1ULL; // Add 1 for the right branch
             boundary += step;
         } else {
             // "Left" branch
-            seed = splitmix64(seed); // Add 0 (or nothing) for the left branch
+            // Add 0 (or nothing) for the left branch
             boundary -= step;
         }
+        // --- FIX: Apply hashing symmetrically AFTER branch decision ---
+        seed = splitmix64(seed);
         
         // If the step is too small, we've reached the limit of precision.
         if (step < 1e-9) {
@@ -736,23 +761,11 @@ static inline uint64_t _get_hierarchical_seed(int64_t master_frame, double sub_f
 /* High-Level Wrapper Functions with Hierarchical Time                        */
 /******************************************************************************/
 
-/**
- * @brief Helper to get the scaled frame position, used for hold_progress.
- * @details This is a tiny helper to avoid duplicating the frame_multiplier logic.
- * We wrap the call to _get_details in this to get the scaled_frame_pos.
- */
-static inline FPSR_Output _get_details_with_scaled_pos(
-    int64_t frame, double frame_multiplier,
-    int (*get_details_func)(), // This is a placeholder, C limitations...
-    // ... C doesn't support easy generic function pointers like this.
-    // We will duplicate the logic instead.
-    double* p_scaled_frame_pos_out) 
-{
-    // This helper is not feasible without complex void* pointers.
-    // The logic will be duplicated in each _get_details function instead.
-    FPSR_Output out = {0};
-    return out;
-}
+// --- Forward declarations are needed for recursive calls ---
+FPSR_Output fpsr_sm_get_details(int64_t frame, double frame_multiplier, double* p_scaled_frame_pos_out, int minHold, int maxHold, int reseedInterval, int seedInner, int seedOuter, int finalRandSwitch, int lod, int max_search_frames);
+FPSR_Output fpsr_tm_get_details(int64_t frame, double frame_multiplier, double* p_scaled_frame_pos_out, int periodA, int periodB, int periodSwitch, int seedInner, int seedOuter, int finalRandSwitch, int lod, int max_search_frames);
+FPSR_Output fpsr_qs_get_details(int64_t frame, double frame_multiplier, double* p_scaled_frame_pos_out, float baseWaveFreq, float stream2FreqMult, const int quantLevelsMinMax[2], const int streamsOffset[2], const int quantOffsets[2], int streamSwitchDur, int stream1QuantDur, int stream2QuantDur, int finalRandSwitch, int sine_lod_level, int lod, int max_search_frames);
+FPSR_Output fpsr_bd_get_details(int64_t frame, double frame_multiplier, double* p_scaled_frame_pos_out, int block_size, int streams_number, int streams_offset, const char* intra_op, int dynamic_shift_bits, int static_shift_amount, const char* inter_op, int value_seed_offset, int lod, int max_search_frames);
 
 
 /**
@@ -780,11 +793,14 @@ FPSR_Output fpsr_sm_get_details(
 {
     FPSR_Output out = {0};
     
+    // --- FIX: Sanitize frame_multiplier once at the start ---
+    double fm = (frame_multiplier == 0.0) ? 1.0 : frame_multiplier;
+
     // --- HIERARCHICAL COHERENCE LOGIC (LOD 0) ---
     // This is the new "frame_zoom" logic.
     
     // 1. Calculate the 'true' floating-point position on the content timeline.
-    double scaled_frame_position = (double)frame / (frame_multiplier == 0.0 ? 1.0 : frame_multiplier);
+    double scaled_frame_position = (double)frame / fm; // Use sanitized fm
     if (p_scaled_frame_pos_out) {
         *p_scaled_frame_pos_out = scaled_frame_position;
     }
@@ -804,12 +820,12 @@ FPSR_Output fpsr_sm_get_details(
         // We are in a 'fractal zoom' gap.
         
         // 1. Find the hierarchical seed for this exact fractional position.
-        int64_t hierarchical_seed = _get_hierarchical_seed(master_frame, sub_frame_fraction);
+        uint64_t hierarchical_seed = _get_hierarchical_seed(master_frame, sub_frame_fraction);
         
         // 2. Make the nested call.
         // We use '0' as the frame (as it's a "local" event) and pass the
         // unique hierarchical_seed as the 'seedInner' to generate the value.
-        out.randVal = (float)fpsr_sm_base(0, (int64_t)minHold, (int64_t)maxHold, (int64_t)reseedInterval, hierarchical_seed, (int64_t)seedOuter, finalRandSwitch);
+        out.randVal = (float)fpsr_sm_base(0, (int64_t)minHold, (int64_t)maxHold, (int64_t)reseedInterval, (int64_t)hierarchical_seed, (int64_t)seedOuter, finalRandSwitch);
     }
     
     if (lod < 1) return out;
@@ -898,16 +914,11 @@ FPSR_Output fpsr_sm_get_details(
     out.next_changed_frame = (int)result_int;
     out.randVal_next_changed_frame = next_val_candidate; 
     
-    // --- MODIFIED hold_progress Calculation ---
-    // We need the *true scaled time* at the change boundaries
-    // to calculate progress correctly in the "content time" domain.
-    double scaled_last_changed = 0.0;
-    double scaled_next_changed = 0.0;
+    // --- FIX: OPTIMIZED hold_progress Calculation ---
+    // We can calculate the scaled time at the boundaries directly, using sanitized fm.
+    double scaled_last_changed = (double)out.last_changed_frame / fm;
+    double scaled_next_changed = (double)out.next_changed_frame / fm;
     
-    // We re-call (LOD 0) at the boundaries we found, just to get their scaled time.
-    fpsr_sm_get_details(out.last_changed_frame, frame_multiplier, &scaled_last_changed, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0);
-    fpsr_sm_get_details(out.next_changed_frame, frame_multiplier, &scaled_next_changed, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0);
-
     double hold_duration = scaled_next_changed - scaled_last_changed;
     if (hold_duration > 0.0) { 
         // Use the scaled_frame_position we got from LOD 0
@@ -944,8 +955,11 @@ FPSR_Output fpsr_tm_get_details(
 {
     FPSR_Output out = {0};
     
+    // --- FIX: Sanitize frame_multiplier once at the start ---
+    double fm = (frame_multiplier == 0.0) ? 1.0 : frame_multiplier;
+
     // --- HIERARCHICAL COHERENCE LOGIC (LOD 0) ---
-    double scaled_frame_position = (double)frame / (frame_multiplier == 0.0 ? 1.0 : frame_multiplier);
+    double scaled_frame_position = (double)frame / fm; // Use sanitized fm
     if (p_scaled_frame_pos_out) {
         *p_scaled_frame_pos_out = scaled_frame_position;
     }
@@ -957,9 +971,9 @@ FPSR_Output fpsr_tm_get_details(
         out.randVal = (float)fpsr_tm_base(master_frame, (int64_t)periodA, (int64_t)periodB, (int64_t)periodSwitch, (int64_t)seedInner, (int64_t)seedOuter, finalRandSwitch);
     } else {
         // --- GAP FRAME ---
-        int64_t hierarchical_seed = _get_hierarchical_seed(master_frame, sub_frame_fraction);
+        uint64_t hierarchical_seed = _get_hierarchical_seed(master_frame, sub_frame_fraction);
         // Use '0' as the frame, pass hierarchical_seed as 'seedInner'
-        out.randVal = (float)fpsr_tm_base(0, (int64_t)periodA, (int64_t)periodB, (int64_t)periodSwitch, hierarchical_seed, (int64_t)seedOuter, finalRandSwitch);
+        out.randVal = (float)fpsr_tm_base(0, (int64_t)periodA, (int64_t)periodB, (int64_t)periodSwitch, (int64_t)hierarchical_seed, (int64_t)seedOuter, finalRandSwitch);
     }
     
     if (lod < 1) return out;
@@ -1040,11 +1054,9 @@ FPSR_Output fpsr_tm_get_details(
     out.next_changed_frame = (int)result_int;
     out.randVal_next_changed_frame = next_val_candidate;
     
-    // --- MODIFIED hold_progress Calculation ---
-    double scaled_last_changed = 0.0;
-    double scaled_next_changed = 0.0;
-    fpsr_tm_get_details(out.last_changed_frame, frame_multiplier, &scaled_last_changed, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0);
-    fpsr_tm_get_details(out.next_changed_frame, frame_multiplier, &scaled_next_changed, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0);
+    // --- FIX: OPTIMIZED hold_progress Calculation ---
+    double scaled_last_changed = (double)out.last_changed_frame / fm;
+    double scaled_next_changed = (double)out.next_changed_frame / fm;
 
     double hold_duration = scaled_next_changed - scaled_last_changed;
     if (hold_duration > 0.0) {
@@ -1087,8 +1099,11 @@ FPSR_Output fpsr_qs_get_details(
 {
     FPSR_Output out = {0};
 
+    // --- FIX: Sanitize frame_multiplier once at the start ---
+    double fm = (frame_multiplier == 0.0) ? 1.0 : frame_multiplier;
+
     // --- HIERARCHICAL COHERENCE LOGIC (LOD 0) ---
-    double scaled_frame_position = (double)frame / (frame_multiplier == 0.0 ? 1.0 : frame_multiplier);
+    double scaled_frame_position = (double)frame / fm; // Use sanitized fm
     if (p_scaled_frame_pos_out) {
         *p_scaled_frame_pos_out = scaled_frame_position;
     }
@@ -1101,7 +1116,7 @@ FPSR_Output fpsr_qs_get_details(
         base_qs_output = fpsr_qs_base(master_frame, (double)baseWaveFreq, (double)stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, (int64_t)streamSwitchDur, (int64_t)stream1QuantDur, (int64_t)stream2QuantDur, finalRandSwitch, sine_lod_level);
     } else {
         // --- GAP FRAME ---
-        int64_t hierarchical_seed = _get_hierarchical_seed(master_frame, sub_frame_fraction);
+        uint64_t hierarchical_seed = _get_hierarchical_seed(master_frame, sub_frame_fraction);
         
         // For QS, we modify the 'quantOffsets' to inject the hierarchical seed.
         // This makes the quantization level ("the event") unique to this gap.
@@ -1199,11 +1214,9 @@ FPSR_Output fpsr_qs_get_details(
     out.next_changed_frame = (int)result_int;
     out.randVal_next_changed_frame = next_val_candidate; 
     
-    // --- MODIFIED hold_progress Calculation ---
-    double scaled_last_changed = 0.0;
-    double scaled_next_changed = 0.0;
-    fpsr_qs_get_details(out.last_changed_frame, frame_multiplier, &scaled_last_changed, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0);
-    fpsr_qs_get_details(out.next_changed_frame, frame_multiplier, &scaled_next_changed, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0);
+    // --- FIX: OPTIMIZED hold_progress Calculation ---
+    double scaled_last_changed = (double)out.last_changed_frame / fm;
+    double scaled_next_changed = (double)out.next_changed_frame / fm;
 
     double hold_duration = scaled_next_changed - scaled_last_changed;
     if (hold_duration > 0.0) { 
@@ -1249,8 +1262,11 @@ FPSR_Output fpsr_bd_get_details(
 {
     FPSR_Output out = {0};
     
+    // --- FIX: Sanitize frame_multiplier once at the start ---
+    double fm = (frame_multiplier == 0.0) ? 1.0 : frame_multiplier;
+
     // --- HIERARCHICAL COHERENCE LOGIC (LOD 0) ---
-    double scaled_frame_position = (double)frame / (frame_multiplier == 0.0 ? 1.0 : frame_multiplier);
+    double scaled_frame_position = (double)frame / fm; // Use sanitized fm
     if (p_scaled_frame_pos_out) {
         *p_scaled_frame_pos_out = scaled_frame_position;
     }
@@ -1265,14 +1281,14 @@ FPSR_Output fpsr_bd_get_details(
         );
     } else {
         // --- GAP FRAME ---
-        int64_t hierarchical_seed = _get_hierarchical_seed(master_frame, sub_frame_fraction);
+        uint64_t hierarchical_seed = _get_hierarchical_seed(master_frame, sub_frame_fraction);
         
         // For BD, we replace the 'value_seed_offset' with the hierarchical seed.
         // We also pass '0' as the frame, since the 'master_frame' context
         // is now contained within the hierarchical seed.
         out.randVal = (float)fpsr_bd(
             0, (int64_t)block_size, streams_number, (int64_t)streams_offset,
-            intra_op, dynamic_shift_bits, static_shift_amount, inter_op, hierarchical_seed
+            intra_op, dynamic_shift_bits, static_shift_amount, inter_op, (int64_t)hierarchical_seed // Cast seed to int64_t
         );
     }
     
@@ -1354,11 +1370,9 @@ FPSR_Output fpsr_bd_get_details(
     out.next_changed_frame = (int)result_int;
     out.randVal_next_changed_frame = next_val_candidate;
     
-    // --- MODIFIED hold_progress Calculation ---
-    double scaled_last_changed = 0.0;
-    double scaled_next_changed = 0.0;
-    fpsr_bd_get_details(out.last_changed_frame, frame_multiplier, &scaled_last_changed, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0);
-    fpsr_bd_get_details(out.next_changed_frame, frame_multiplier, &scaled_next_changed, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0);
+    // --- FIX: OPTIMIZED hold_progress Calculation ---
+    double scaled_last_changed = (double)out.last_changed_frame / fm;
+    double scaled_next_changed = (double)out.next_changed_frame / fm;
 
     double hold_duration = scaled_next_changed - scaled_last_changed;
     if (hold_duration > 0.0) {
@@ -1480,3 +1494,4 @@ int main() {
 
     return 0;
 }
+
