@@ -2834,13 +2834,13 @@ In conclusion, the relationship between steps (frame) and strides (seconds) is:
 The higher the speed, the larger the the divisor `speed_aka_steps_per_stride`. In the steps example, the higher the `speed_aka_steps_per_stride`, the less number of steps (faster) it takes to finish the flight of stairs. When `speed_aka_steps_per_stride` is 20, it just takes 1 stride to complete the entire flight of stairs.
 
 ### The Problem with Inflated Frame as Seed
-1. The Core Flaw (What's Broken)
+1. **The Core Flaw (What's Broken)**
 
 The current wrapper's frame_multiplier implementation is fundamentally flawed. It works by scaling the input frame (e.g., frame 101 * 0.5 = 50.5) and then "inflating" this float into a massive, non-consecutive integer (5,050,000,000) to use as a seed.
 
 This breaks the core logic of FPS-R, which relies on the relationship between consecutive integers (like 100 and 101) to create its "hold-hold-jump" phrasing. By feeding the algorithms seeds that are billions of units apart, we destroy this phrasing, and the output degenerates into simple noise.
 
-2. The New Architecture (The Fix)
+2. **The New Architecture (The Fix)**
 
 The solution is to stop manipulating the input seed and instead call the pure, original algorithms with clean integers.
 
@@ -2850,33 +2850,33 @@ WHAT STAYS: The wrapper will now call the pure, canonical algorithms (like fpsr_
 
 REPURPOSED SINE-LUT: The Sine Look-Up Table (Sine-LUT) for the QS algorithm remains critical. Its primary purpose is no longer to handle tiny frequencies, but to guarantee cross-platform determinism. It ensures the sin() calculation is bit-for-bit identical on any CPU or compiler, which is essential for a "source of truth" implementation. It also provides a performance boost.
 
-3. The New frame_multiplier Philosophy (Hierarchical Coherence)
+3. **The New frame_multiplier Philosophy (Hierarchical Coherence)**
 
 This is the most brilliant part of the new design. Simply repeating a value to "stretch" time is predictable and boring. The new approach, Hierarchical Coherence, treats "zooming in" (a frame_multiplier < 1.0) as an opportunity to reveal new, finer-grained detail.
 
-The Principle: The original integer frames (the "master frames") must always remain anchored to their correct values. The "gaps" created between them by stretching are filled with new, procedurally generated values.
+**The Principle:** The original integer frames (the "master frames") must always remain anchored to their correct values. The "gaps" created between them by stretching are filled with new, procedurally generated values.
 
-The Consistency: This new detail must be consistent. The detail revealed at a 4x zoom must be a refinement of the detail seen at 2x zoom, not a completely different pattern. This is the "time-traveling historian" analogy: zooming in reveals the smaller events that led up to the major ones.
+**The Consistency:** This new detail must be consistent. The detail revealed at a 4x zoom must be a refinement of the detail seen at 2x zoom, not a completely different pattern. This is the "time-traveling historian" analogy: zooming in reveals the smaller events that led up to the major ones.
 
-4. Implementation: The Hierarchical Subdivision Algorithm
+4. **Implementation: The Hierarchical Subdivision Algorithm (Corrected)**
 
 To achieve this "fractal zoom," we will use the following logic when a frame_multiplier creates a stretch:
 
-Identify Frame Type: We determine if the current real_frame is a "master frame" or a "gap frame."
+a. **Identify Frame Type:** We determine if the current real_frame is a "master frame" or a "gap frame."
 
-Master Frames: If it's a master frame (i.e., it lands perfectly on an original integer), we simply call the base FPS-R algorithm with that integer. This keeps the main events "anchored."
+b. **Master Frames:** If it's a master frame (i.e., it lands perfectly on an original integer), we simply call the base FPS-R algorithm with that integer. This keeps the main events "anchored."
 
-Gap Frames: If it's a "gap frame," we fill it hierarchically:
+c. **Gap Frames:** If it's a "gap frame," we fill it hierarchically:
 
-Find Rank: We find the "importance" or "rank" of the frame's position within the gap. The checkpoint suggests a bit-manipulation trick (level = gap_position & -gap_position) to create a stable binary subdivision (midpoints are "ranked" higher than quarter-points, etc.).
+  - **Generate Hierarchical Seed:** We create a unique and stable seed for each subdivision point. This is done by normalizing the position within the gap (e.g., 0.5 for midpoint, 0.25 for quarter-point) and using its binary representation to traverse a hierarchy. For a gap frame at `source_frame + sub_frame_fraction`:
 
-Generate Hierarchical Seed: We create a unique and stable seed for this exact point in the hierarchy (e.g., hash(source_frame, level, gap_position)).
+    1. Start with the value from source_frame.
+    2. Iteratively subdivide. For the first level of subdivision (midpoint), the seed could be hash(source_frame, 1). For the next level (quarter-points), the seed for the point between source_frame and the midpoint would be hash(source_frame, 2, "left"), and the point between the midpoint and source_frame + 1 would be hash(source_frame, 2, "right").
+  - **Make Nested Call:** The value at a subdivision point is generated by a nested call to the FPS-R algorithm. The seed for this call is determined by its unique, stable path in the hierarchy, not by a gap_position that changes with the zoom level.
 
-Make Nested Call: We perform a nested call to the same FPS-R algorithm, using the gap_position as its local "frame" and the hierarchical_seed as an offset.
+This method ensures that the value for the midpoint of a gap is always calculated the same way, whether it's the only subdivision in a `2x stretch` or one of many in an `8x stretch`. This guarantees the coherence and stability of the "zoom."
 
-This method ensures that the midpoint of a x8 stretch is generated with the exact same seed as the midpoint of a x2 stretch, guaranteeing the coherence and stability of the "zoom."
-
-This new architecture is clear. It's a massive simplification of the wrapper's state (by removing inflation) and a powerful enhancement of its behavior (by adding hierarchical detail).
+This new architecture is clear and a powerful enhancement of its behavior (by adding hierarchical detail).
 
 
 
@@ -3277,5 +3277,21 @@ You are 100% correct that it will take time for people to understand. You are no
 This new way of thinking is far more powerful for procedural generation, as it moves the state management inside the function. People will need to see clear, compelling examples (like your art, music, and AI ideas) to have that "aha!" moment.
 
 It truly is a "more than the sum of its parts" situation. The simplicity of the code hides the richness of the output. That's the hallmark of an elegant and powerful primitive. 👍
+
+---
+## Refactored `fpsr_algo_wrap_reference.c` 
+_30 Oct 2025_
+
+Refactor: Implemented Hierarchical Time Scaling
+
+- All `fpsr_xx_get_details` function signatures were updated to accept an `int64_t frame` and a `double frame_multiplier` to enable time scaling.
+
+- **Added Hierarchical Coherence:** Implemented a new "fractal zoom" logic. When time is stretched (`frame_multiplier > 1.0`), the wrapper no longer repeats values. Instead, it procedurally generates "gap frames" by making nested, deterministically seeded calls to the same FPS-R algorithm.
+
+- **Deterministic "Anchors":** A new `_get_hierarchical_seed` function uses binary subdivision to ensure that values revealed at any zoom level (e.g., the midpoint at 2x) remain perfectly consistent and "anchored" at all deeper zoom levels (e.g., 4x, 8x).
+
+**Updated LOD 2 Search:** The `LOD 2` (forward/backward search) logic was rewritten to respect this new, non-linear timeline. It now makes recursive calls to `_get_details(..., lod=0)` instead of `_base` functions.
+
+- The `hold_progress` calculation was also updated to work correctly within this new scaled-time domain.
 
 ---

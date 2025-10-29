@@ -6,7 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## Unreleased
 
---- 
+---
+## [2.0.6] - 2025-10-30
+### Changed
+- `fpsr_algorithms_wrap_reference.c` 
+    - **Added `frame_multiplier` and Hierarchical Time:** All `_get_details` wrappers now support time scaling.
+    - Instead of repeating values, slowing down (`frame_multiplier > 1.0`) now "zooms in," procedurally generating new, consistent detail in the gaps between the original frames.
+    - `LOD 2` search logic was updated to use recursive calls, allowing it to find change-points on this new, non-linear timeline.
+
+---
 ## [2.0.5] - 2025-10-26
 ### Added
 - A new html visualiser of the four FPS-R algorithms! Check it out here! [FPS-R Algorithms Visualiser on GitHub Pages](https://patwooky.github.io/fpsr/resources/code/html_javascript/fpsr_demo.html) ← interact with the page
