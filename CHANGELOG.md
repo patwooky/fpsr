@@ -20,6 +20,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
         - `frame_multiplier > 1.0` is now **Fast-Motion (Time Compression)**.
     - **Simplified `LOD 2` Logic**: As a direct result of the HPQ refactor, the `hold_progress` calculation is no longer based on complex scaled math. It is now a simple, robust, linear percentage calculated purely on the "Application Timeline" (`(frame - last) / (next - last)`).
     - **Removed `_get_hierarchical_seed`**: This function, central to the old "fractal" model, is no longer needed by HPQ and has been deleted.
+- `fpsr_demo.html`
+    - **Propagated HPQ Frame_Multilpier logic to HTML visualiser**: HTML visualiser now features `Global HPQ Time Controls` section that features
+        - **Playback speed `frame_multiplier`**: The speed that the "Application Timeline" (visualizer) plays back the "Content Timeline" (algorithm). Values `< 1.0` are Slow-Motion (stretch), and values `> 1.0` are Fast-Motion (compress).
+        - **Segment Length `seg_block_length`**: The "runway" size for time-stretched segments. This defines the duration (in application frames) of the Tier 1 "Tape Varispeed" (hold) before the Tier 2 "Generative Extension" (new phrase) logic is triggered.
+    - **Added UI features for `frame_multiplier`**:
+        - Implemented "snap-to-value" logic for the slider, making it easy to select common increments like `0.25`, `0.5`, `1.0`, etc.
+        - Added a "1.0x" reset button for instantly returning to normal speed.
+    - Fixed `BigInt` error: Replaced the `JSON.stringify` copy method (which crashes on `BigInt`) with `structuredClone()` to correctly deep-copy parameters for the Tier 2 generative logic.
 
 ---
 ## [2.0.6] - 2025-10-30
