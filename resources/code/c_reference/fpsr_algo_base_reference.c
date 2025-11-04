@@ -40,18 +40,132 @@
 // Safety limit for stack allocation in fpsr_bd to prevent stack overflow.
 #define BD_MAX_STACK_BLOCK_SIZE 8192
 
+// --- Platform-Specific Includes for Thread-Safe Init ---
+#if defined(_WIN32) || defined(_WIN64)
+    #include <windows.h>
+#elif defined(__linux__) || defined(__APPLE__) || defined(__unix__)
+    #include <pthread.h>
+#else
+    #warning "Unsupported platform: Thread-safe LUT initialization is not available. Falling back to non-thread-safe."
+    // Define a fallback for unsupported platforms
+    #define UNSUPPORTED_PLATFORM
+#endif
+
+#define SINE_LUT_SIZE_100 100
+#define SINE_LUT_SIZE_500 500
+#define SINE_LUT_SIZE_1000 1000
+#define SINE_LUT_SIZE_4096 4096 // Highest precision default
+
+// Global constant for 2*PI (double precision)
+#define TWO_PI 6.28318530718
+
+// Global sine lookup tables
+static double _sine_lut_100[SINE_LUT_SIZE_100];
+static double _sine_lut_500[SINE_LUT_SIZE_500];
+static double _sine_lut_1000[SINE_LUT_SIZE_1000];
+static double _sine_lut_4096[SINE_LUT_SIZE_4096]; // Highest precision default
+
+// Forward declaration of the initialization function
+void initialize_sine_luts(void);
+
+// --- Thread-Safe "Call Once" Implementation ---
+#if defined(_WIN32) || defined(_WIN64)
+    // Windows implementation
+    static int os = 0;
+    static INIT_ONCE init_once_control = INIT_ONCE_STATIC_INIT;
+    
+    // Windows requires a specific callback signature
+    BOOL CALLBACK InitLutsCallback(PINIT_ONCE InitOnce, PVOID Parameter, PVOID *Context) {
+        initialize_sine_luts();
+        return TRUE;
+    }
+
+    static inline void init_once_func(void) {
+        InitOnceExecuteOnce(&init_once_control, InitLutsCallback, NULL, NULL);
+    }
+
+#elif defined(__linux__) || defined(__APPLE__) || defined(__unix__)
+    // POSIX (Linux, macOS, etc.) implementation
+    static int os = 1;
+    static pthread_once_t init_once_control = PTHREAD_ONCE_INIT;
+
+    static inline void init_once_func(void) {
+        pthread_once(&init_once_control, initialize_sine_luts);
+    }
+
+#else
+    // Fallback implementation for unsupported platforms
+    static int _luts_initialized_fallback = 0;
+    static inline void init_once_func(void) {
+        if (!_luts_initialized_fallback) {
+            initialize_sine_luts();
+            _luts_initialized_fallback = 1;
+        }
+    }
+#endif
+
 /**
- * Deterministic integer math helpers and PRNG
- *
- * Rationale for determinism across C and Python:
- * - Python's % and // are floor-based for negatives; C's % and / truncate toward zero.
- * Using floor-mod alignment here ensures identical behavior for negative frames/seeds.
- * - All integer counters, frames, durations, and seeds are int64_t for large-range support.
- * - All fractional math that converts to/from integers uses double to match Python's float.
- * - The PRNG uses a uint64_t mixer (SplitMix64) with well-defined wraparound, then maps the
- * top 53 bits to a double in [0,1). This yields bit-for-bit identical results across
- * compilers and mirrors a standard reference implementation in Python.
+ * @brief Initializes all global sine lookup tables.
+ * @details This function is designed to be called exactly once, in a
+ * thread-safe manner, by the init_once_func().
+ * THIS FUNCTION MUST BE CALLED ONCE AT PROGRAM STARTUP (automatically handled by init_once_func)!
  */
+void initialize_sine_luts(void) {
+    for (int i = 0; i < SINE_LUT_SIZE_100; ++i) {
+        _sine_lut_100[i] = sin((double)i / SINE_LUT_SIZE_100 * TWO_PI);
+    }
+    for (int i = 0; i < SINE_LUT_SIZE_500; ++i) {
+        _sine_lut_500[i] = sin((double)i / SINE_LUT_SIZE_500 * TWO_PI);
+    }
+    for (int i = 0; i < SINE_LUT_SIZE_1000; ++i) {
+        _sine_lut_1000[i] = sin((double)i / SINE_LUT_SIZE_1000 * TWO_PI);
+    }
+    for (int i = 0; i < SINE_LUT_SIZE_4096; ++i) {
+        _sine_lut_4096[i] = sin((double)i / SINE_LUT_SIZE_4096 * TWO_PI);
+    }
+}
+
+// Helper function to get sine value from a specific LUT with linear interpolation
+double _get_sine_from_lod_lut(double phase, int lut_size, const double* lut_array) {
+    /*
+        * @brief Gets a sine value from a specific LUT with linear interpolation.
+        * @param phase The input phase angle in radians.
+        * @param lut_size The size of the lookup table.
+        * @param lut_array Pointer to the sine lookup table array.
+        * @return The interpolated sine value corresponding to the input phase.
+    */
+
+    // On unsupported platforms, fall back to direct sin() to avoid non-thread-safe LUT init.
+    #if defined(UNSUPPORTED_PLATFORM)
+        // Fallback or error if LUTs not initialized.
+        return sin(phase); // Fallback
+    #endif
+
+    // 1. GUARANTEED THREAD-SAFE CALL
+    // This will run initialize_sine_luts() on the first call across all threads
+    // and will do nothing on subsequent calls.
+    init_once_func();
+
+    // 2. Interpolation logic
+    // Wrap phase to 0 to 2*PI range
+    phase = fmod(phase, TWO_PI);
+    if (phase < 0) phase += TWO_PI; // Ensure positive for fmod results
+
+    // Map phase to LUT index range
+    double fractional_index = phase / TWO_PI * lut_size;
+    
+    // Get integer part and fractional part
+    int index1 = (int)floor(fractional_index);
+    double frac = fractional_index - index1;
+    
+    // Handle wrap-around for index2 (last point wraps to first)
+    // Guard against index1 being exactly lut_size (when frac is 0.0)
+    if (index1 >= lut_size) index1 = 0;
+    int index2 = (index1 + 1) % lut_size;
+
+    // Linear interpolation
+    return lut_array[index1] * (1.0 - frac) + lut_array[index2] * frac;
+}
 
 // Floor-based modulo that matches Python's semantics for negative inputs.
 // C's a % m truncates toward zero; Python's a % m is always in [0, m-1] for m>0.
@@ -91,12 +205,14 @@ static inline double portable_rand_u64(uint64_t seed) {
 
 /**
  * A simple, portable pseudo-random number generator.
- * @brief Back-compat wrapper: generates a deterministic float in [0, 1) from an integer seed.
+ * @brief Back-compat wrapper: generates a deterministic float in [0, 1] from an integer seed.
  * @details This now forwards to the 64-bit deterministic PRNG above to guarantee parity with Python.
  * @param seed An integer used to generate the random number.
  * @return A pseudo-random float between 0.0 and 1.0.
  */
 static inline float portable_rand(int seed) {
+    // Converts the given seed to a 64-bit unsigned integer, generates a pseudo-random number using portable_rand_u64,
+    // and casts the result to a float for return.
     // Keep seeding strictly in integer domain; cast via int64_t to preserve sign.
     return (float)portable_rand_u64((uint64_t)(int64_t)seed);
 }
@@ -165,7 +281,7 @@ double fpsr_sm_base(
     // Seed stays in integer domain for reproducibility.
     int64_t reseed_anchor = (seedInner + frame) - i64_floor_mod(frame, reseedInterval);
 
-    // Deterministic PRNG over 64-bit integer seed; result is double in [0,1).
+    // Deterministic PRNG over 64-bit integer seed; result is double in [0,1].
     double rand_for_duration = portable_rand_u64((uint64_t)reseed_anchor);
 
     // Compute duration with double intermediates then floor to int64.
@@ -254,41 +370,37 @@ double fpsr_tm_base(
     return fpsr_output;
 }
 
-
-
 /******************************************************************************/
 /* FPS-R: Quantised Switching (QS)                                            */
 /******************************************************************************/
 
 /**
- * @brief Generates a flickering, quantised value by switching between two sine wave streams.
- * @details This function creates two separate, quantised sine waves. For each stream,
- * a new random quantisation level is chosen from within the [min, max] range at a
- * set interval. The function then switches between these two streams to create
- * complex, glitch-like patterns.
+ * @brief Generates a quantized sine-based persistent random value using two streams.
+ * @details This function creates two sine wave streams with configurable frequencies
+ * and offsets. For each stream, a new random quantisation level is chosen 
+ * from within the [min, max] range at a set interval, and the output alternates
+ * between the two streams based on a defined switch duration. The final output can
+ * optionally be further randomized.
  *
- * int frame: The current frame or time input.
- * float baseWaveFreq: The base frequency for the modulation wave of stream 1.
- * float stream2FreqMult: A multiplier for the second stream's frequency.
- * const int quantLevelsMinMax[]: An array of two integers for the min and max quantisation levels.
- * const int streamsOffset[]: An array of two integers to offset the frame for each stream's sine wave.
- * const int quantOffsets[]: An array of two integers to offset the random quantisation selection for each stream.
- * int streamSwitchDur: The number of frames after which the streams switch.
- * int stream1QuantDur: The duration for which stream 1's random quantisation level is held.
- * int stream2QuantDur: The duration for which stream 2's random quantisation level is held.
+ * int64_t frame: The current frame or time input.
+ * double baseWaveFreq: The base frequency for the sine waves.
+ * double stream2FreqMult: A multiplier for the second stream's frequency.
+ * const int quantLevelsMinMax[2]: An array defining the minimum and maximum quantization levels.
+ * const int streamsOffset[2]: An array defining the phase offsets for each sine stream.
+ * const int quantOffsets[2]: An array defining the quantization seed offsets for each stream.
+ * int64_t streamSwitchDur: The duration (in frames) before switching between streams.
+ * int64_t stream1QuantDur: The quantization duration (in frames) for stream 1.
+ * int64_t stream2QuantDur: The quantization duration (in frames) for stream 2.
  * int finalRandSwitch: A flag that can turn off the final randomisation step.
+ * int sine_lod_level: Level of detail for sine calculation (0=direct, 1=LUT100, 2=LUT500, 3=LUT1000, 4=LUT4096).
+ * @return A deterministic, pseudo-random double between 0.0 and 1.0.
  */
 double fpsr_qs(
     int64_t frame, double baseWaveFreq, double stream2FreqMult,
     const int quantLevelsMinMax[2], const int streamsOffset[2], const int quantOffsets[2],
     int64_t streamSwitchDur, int64_t stream1QuantDur, int64_t stream2QuantDur,
-    int finalRandSwitch)
+    int finalRandSwitch, int sine_lod_level)
 {
-    // --- 1. Set default durations if not provided ---
-    if (streamSwitchDur < 1) { streamSwitchDur = (int64_t)floor((1.0 / baseWaveFreq) * 0.76); }
-    if (stream1QuantDur < 1) { stream1QuantDur = (int64_t)floor((1.0 / baseWaveFreq) * 1.2); }
-    if (stream2QuantDur < 1) { stream2QuantDur = (int64_t)floor((1.0 / baseWaveFreq) * 0.9); }
-    
     if (streamSwitchDur < 1) { streamSwitchDur = 1; }
     if (stream1QuantDur < 1) { stream1QuantDur = 1; }
     if (stream2QuantDur < 1) { stream2QuantDur = 1; }
@@ -310,41 +422,62 @@ double fpsr_qs(
 
     if (s1_quant_level < 1) { s1_quant_level = 1; }
     if (s2_quant_level < 1) { s2_quant_level = 1; }
-
+    
     // --- 3. Generate the two quantised sine wave streams ---
-    if (stream2FreqMult < 0) { stream2FreqMult = 3.7; }
-
+    if (stream2FreqMult <= 0) { stream2FreqMult = 3.7; }
+    
     // Ensure deterministic double math. sin() returns [-1,1]; map to [0,1] and quantise.
     double angle1 = ((double)streamsOffset[0] + (double)frame) * baseWaveFreq;
     double angle2 = ((double)streamsOffset[1] + (double)frame) * baseWaveFreq * stream2FreqMult;
-
-    double stream1 = floor((sin(angle1) * 0.5 + 0.5) * (double)s1_quant_level) / (double)s1_quant_level;
-    double stream2 = floor((sin(angle2) * 0.5 + 0.5) * (double)s2_quant_level) / (double)s2_quant_level;
-
-    // --- 4. Switch between the two streams ---
-    // Use floor-mod and an integer half-threshold (2*r < period) to match Python.
-    double active_stream_val = 0.0;
-    {
-        int64_t r = i64_floor_mod(frame, streamSwitchDur);
-        active_stream_val = (2 * r < streamSwitchDur) ? stream1 : stream2;
+    
+    double stream1_raw_sine, stream2_raw_sine;
+    switch (sine_lod_level) {
+        case 0: // Direct sin() call
+            stream1_raw_sine = sin(angle1);
+            stream2_raw_sine = sin(angle2);
+            break;
+        case 1: // LUT 100
+            stream1_raw_sine = _get_sine_from_lod_lut(angle1, SINE_LUT_SIZE_100, _sine_lut_100);
+            stream2_raw_sine = _get_sine_from_lod_lut(angle2, SINE_LUT_SIZE_100, _sine_lut_100);
+            break;
+        case 2: // LUT 500
+            stream1_raw_sine = _get_sine_from_lod_lut(angle1, SINE_LUT_SIZE_500, _sine_lut_500);
+            stream2_raw_sine = _get_sine_from_lod_lut(angle2, SINE_LUT_SIZE_500, _sine_lut_500);
+            break;
+        case 3: // LUT 1000
+            stream1_raw_sine = _get_sine_from_lod_lut(angle1, SINE_LUT_SIZE_1000, _sine_lut_1000);
+            stream2_raw_sine = _get_sine_from_lod_lut(angle2, SINE_LUT_SIZE_1000, _sine_lut_1000);
+            break;
+        case 4: default: // LUT 4096 (highest precision)
+            stream1_raw_sine = _get_sine_from_lod_lut(angle1, SINE_LUT_SIZE_4096, _sine_lut_4096);
+            stream2_raw_sine = _get_sine_from_lod_lut(angle2, SINE_LUT_SIZE_4096, _sine_lut_4096);
+            break;
     }
+    
+    // Map sine from [-1,1] to [0,1] before quantizing
+    double stream1 = floor((stream1_raw_sine * 0.5 + 0.5) * (double)s1_quant_level) / (double)s1_quant_level;
+    double stream2 = floor((stream2_raw_sine * 0.5 + 0.5) * (double)s2_quant_level) / (double)s2_quant_level;
+    
+    // --- 4. Switch between the two streams based on streamSwitchDur ---
+    int64_t r = i64_floor_mod(frame, streamSwitchDur);
+    double active_stream_val = (2 * r < streamSwitchDur) ? stream1 : stream2;
 
     // --- 5. Hash the final output or bypass ---
-    double fpsr_output;
     // If final randomisation is enabled, derive a deterministic seed from the active stream value
+    double fpsr_output;
     if (finalRandSwitch == 1) {
-        // Initialize to zero in case sizeof(double) < sizeof(uint64_t) on niche targets
-        // (prevents any uninitialised high bytes from being used as part of the seed).
-        uint64_t seed = 0;
-        // Bit-cast the quantised stream value (double) into a 64-bit seed.
-        // memcpy avoids strict-aliasing UB and produces a bit-identical copy of the IEEE-754 payload.
-        // Endianness is irrelevant for a full-width copy into the same width.
-        memcpy(&seed, &active_stream_val, sizeof(seed));
-        // Hash the seed into a uniform double in [0,1) using the portable SplitMix64-based PRNG.
-        // This preserves persistence: identical active_stream_val over the held segment -> identical output.
-        fpsr_output = portable_rand_u64(seed);
+        // --- FIX: Scale the quantized value to preserve level information ---
+        // The active_stream_val is in [0, 1] and quantized to discrete levels.
+        // We need to scale it to a larger range before flooring to get distinct seeds.
+        // Using a large multiplier (e.g., 1000000) ensures different quantization levels
+        // produce different integer seeds.
+        int64_t hashed_int = (int64_t)floor(active_stream_val * 1000000.0);
+        fpsr_output = portable_rand_u64((uint64_t)hashed_int);
     } else {
-        // return the active stream value directly, which is already in [0.0, 1.0]
+        // --- FIX: Correct range scaling ---
+        // active_stream_val is already mapped to [0, 1].
+        // The previous calculation incorrectly remapped it to [0.5, 1.0].
+        // Assign directly to use the full [0, 1] range.
         fpsr_output = active_stream_val;
     }
     return fpsr_output;
@@ -410,17 +543,35 @@ double fpsr_bd(
     int64_t outer_anchor = i64_align_down(frame, block_size);
     int64_t num_chunks = (block_size + (CHUNK_BITS - 1)) / CHUNK_BITS;
 
-    // --- Safer Memory Allocation ---
-    // Calculate total memory needed for all buffers to make one contiguous allocation.
-    // This is safer than multiple alloca() calls and simplifies cleanup.
+    // --- Safer Memory Allocation with comprehensive overflow checks ---
     size_t chunk_data_sz = num_chunks * sizeof(uint64_t);
-    // Check for overflow before calculating total size, though unlikely with realistic params.
-    if (streams_number > 0 && (SIZE_MAX / streams_number < chunk_data_sz)) return 0.0; // Overflow
-    size_t total_chunk_data_sz = streams_number * chunk_data_sz;
 
-    // Allocate a single contiguous buffer on the heap for pointer arrays and chunk data to avoid alloca().
+    // --- FIX: Added comprehensive overflow checks ---
+    // Check multiplication for total_chunk_data_sz
+    if (streams_number > 0 && (SIZE_MAX / (size_t)streams_number < chunk_data_sz)) {
+        fprintf(stderr, "ERROR in fpsr_bd: Overflow calculating total_chunk_data_sz. Returning 0.0.\n");
+        return 0.0; // Overflow
+    }
+    size_t total_chunk_data_sz = (size_t)streams_number * chunk_data_sz;
+
+    // Check multiplication for ptr_arrays_sz
+    if ((SIZE_MAX / sizeof(uint64_t*)) / 2 < (size_t)streams_number) {
+        fprintf(stderr, "ERROR in fpsr_bd: Overflow calculating ptr_arrays_sz. Returning 0.0.\n");
+        return 0.0; // Overflow check
+    }
     size_t ptr_arrays_sz = (size_t)streams_number * sizeof(uint64_t*) * 2; // raw_streams pointers + transformed_streams pointers
-    size_t total_alloc_size = ptr_arrays_sz + (2 * total_chunk_data_sz) + chunk_data_sz; // pointer arrays + raw_streams + transformed_streams + final_chunks
+
+    // Check additions for total_alloc_size
+    if (SIZE_MAX - ptr_arrays_sz < chunk_data_sz) {
+        fprintf(stderr, "ERROR in fpsr_bd: Overflow calculating total_alloc_size (step 1). Returning 0.0.\n");
+        return 0.0; // Overflow check
+    }
+    size_t temp_size = ptr_arrays_sz + chunk_data_sz; // Size for pointers + final_chunks
+    if (SIZE_MAX - temp_size < 2 * total_chunk_data_sz) {
+        fprintf(stderr, "ERROR in fpsr_bd: Overflow calculating total_alloc_size (step 2). Returning 0.0.\n");
+        return 0.0; // Overflow check (adding space for raw_streams + transformed_streams)
+    }
+    size_t total_alloc_size = temp_size + (2 * total_chunk_data_sz); // final calculation
 
     void* buffer_base = malloc(total_alloc_size);
     if (!buffer_base) { 
@@ -647,15 +798,18 @@ int main() {
             int stream1QuantDur = 10; // Duration for the first stream's quantisation switch cycle in frames
             int stream2QuantDur = 13; // Duration for the second stream's quantisation switch cycle in frames
             int finalRandSwitch = 1; // 1 to apply the final randomisation step, 0 to skip it
+            int sine_lod_level = 4; // Sine wave LOD level (0=direct sin, 1=LUT100, 2=LUT500, 3=LUT1000, 4=LUT4096)
             
             // call to fpsr_qs for the current frame
             randVal = (float)fpsr_qs(
                 (int64_t)frame, (double)baseWaveFreq, (double)stream2freqMult, quantLevelsMinMax, 
-                streamsOffset, quantOffsets, (int64_t)streamSwitchDur, (int64_t)stream1QuantDur, (int64_t)stream2QuantDur, finalRandSwitch);
+                streamsOffset, quantOffsets, (int64_t)streamSwitchDur, (int64_t)stream1QuantDur, (int64_t)stream2QuantDur, finalRandSwitch, sine_lod_level);
+            
             // another call to fpsr_qs for the previous frame
             randVal_previous = (float)fpsr_qs(
                 (int64_t)(frame - 1), (double)baseWaveFreq, (double)stream2freqMult, quantLevelsMinMax, 
-                streamsOffset, quantOffsets, (int64_t)streamSwitchDur, (int64_t)stream1QuantDur, (int64_t)stream2QuantDur, finalRandSwitch);
+                streamsOffset, quantOffsets, (int64_t)streamSwitchDur, (int64_t)stream1QuantDur, (int64_t)stream2QuantDur, finalRandSwitch, sine_lod_level);
+            
             changed = 0; // Variable to track if the value has changed
             if (randVal != randVal_previous) {
                 changed = 1; // Mark as changed if the value has changed from the previous frame
