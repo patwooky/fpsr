@@ -7,6 +7,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## Unreleased
 
 ---
+## [2.0.7] - 2025-11-04
+## Changed
+- `fpsr_algorithms_wrap_reference.c` 
+    - **Major Refactor: Replaced "Fractal Coherence" with "Hierarchical Phrased Quantisation" (HPQ)**: The "fractal zoom" logic from `[2.0.6]` was found to be musically incoherent. It caused a chaotic "flicker" of values when time was stretched, rather than "stretching" the phrase. It has been completely replaced by the new, constructive HPQ algorithm.
+    - **Added `seg_block_length` Parameter**: All _get_details functions now accept an int seg_block_length. This new parameter defines a "runway" or "chunk size" for quantizing time.
+    - **New Two-Tier Stretch Logic (HPQ)**: The new algorithm for slow-motion (`frame_multiplier < 1.0`) is a two-mode system:
+        - **Tier 1: "Tape Varispeed" (Anchor Block)**: For simple stretches (`segment_index == 0`), the logic now **repeats the `master_frame`'s value**. This provides the intuitive, musically-preserve "tape stretch" effect that was previously missing.
+        - **Tier 2: "Telescopic Extension" (Generative Blocks)**: For extreme stretches (`segment_index > 0`), the algorithm generates a unique `gap_seed` for each new "runway" block. It then calls the `_base` function using the `local_progress_in_segment` as the frame input, generating new, coherent, and fully-phrased content.
+    - **Inverted frame_multiplier Convention**: The `frame_multiplier` logic has been inverted to match the common, intuitive "playback speed" convention:
+        - `frame_multiplier < 1.0` is now **Slow-Motion (Time Stretch)**.
+        - `frame_multiplier > 1.0` is now **Fast-Motion (Time Compression)**.
+    - **Simplified `LOD 2` Logic**: As a direct result of the HPQ refactor, the `hold_progress` calculation is no longer based on complex scaled math. It is now a simple, robust, linear percentage calculated purely on the "Application Timeline" (`(frame - last) / (next - last)`).
+    - **Removed `_get_hierarchical_seed`**: This function, central to the old "fractal" model, is no longer needed by HPQ and has been deleted.
+
+---
 ## [2.0.6] - 2025-10-30
 ### Changed
 - `fpsr_algorithms_wrap_reference.c` 

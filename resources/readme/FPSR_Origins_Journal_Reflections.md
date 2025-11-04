@@ -3295,3 +3295,63 @@ Refactor: Implemented Hierarchical Time Scaling
 - The `hold_progress` calculation was also updated to work correctly within this new scaled-time domain.
 
 ---
+
+### Major Refinement: The "Hierarchical Phrased Quantisation" (HPQ) Algorithm
+_4 Nov 2025, Tuesday_
+
+Here is a new dev journal entry that chronicles the critical pivot from the "Fractal" model to the new "Hierarchical Phrased Quantisation" (HPQ) algorithm and other refinements.
+
+The "Fractal Hierarchical Coherence" implementation from Oct 30, while mathematically pure, proved to be a failure in practice. Its purely subdivisive, "fractal" logic was **musically and expressively incoherent**.
+
+The core problem was that any slight time stretch (e.g., `fm = 1.01` in the old inverse logic) would cause almost every application frame to land on a unique fractional coordinate. This triggered the generation of a new, unique seed for almost every single frame, resulting in a chaotic, high-frequency "flicker" of random values. It didn't *stretch* a phrase; it completely *destroyed* it.
+
+This required a fundamental pivot away from a *subdivisive* model ("what value exists at coordinate 100.5?") and toward a *constructive, quantized* model ("what should we build in the gap after frame 100?").
+
+This new model is **"Hierarchical Phrased Quantisation" (HPQ)**.
+
+- **Core Change:** The `_get_hierarchical_seed` function has been **removed entirely**. It is incompatible with this new model.
+
+- **New Parameter:** All `_get_details` functions now accept an `int seg_block_length` (e.g., 5). This integer defines the "quantum" or "runway length" for all time-stretch operations.
+
+- **New Hybrid Mechanism:** The HPQ logic is a hybrid, two-mode system that constantly translates between the "Application Timeline" (the user's `frame`) and the "Content Timeline" (the original `master_frame`).
+
+The new mechanism for determining a value at any given `frame` is as follows:
+
+1.  **Find Content Anchor:** First, translate from the Application Timeline to the Content Timeline to find the "anchor" frame.
+    * `scaled_frame_position = (double)frame * fm`
+    * `master_frame = (int64_t)floor(scaled_frame_position)`
+
+2.  **Find Application Start:** Second, translate *back* to the Application Timeline to find the *first* `frame` that maps to that anchor. This is the "start line" for the entire stretched block.
+    * `master_frame_start_app_frame = (int64_t)ceil((double)master_frame / fm)`
+
+3.  **Find Local Coordinates:** Third, all subsequent calculations are performed *in integer application frames*, which is what preserves phrasing.
+    * `app_frames_into_gap = frame - master_frame_start_app_frame`
+    * `segment_index = app_frames_into_gap / seg_block_length`
+    * `local_progress_in_segment = app_frames_into_gap % seg_block_length`
+
+This `segment_index` is the key that triggers the new two-tier generative system.
+
+### The Two Tiers of HPQ (Time Stretch)
+
+When `fm < 1.0` (Slow-Motion), the logic splits into two distinct modes:
+
+- **Tier 1: "Tape Varispeed" (Anchor Block) - `segment_index == 0`**
+    This is the first "tier" of the stretch. For all application frames that fall within the first "runway" (e.g., 0-4 frames if `seg_block_length = 5`), the logic **simply repeats the value of the `master_frame`**. This provides the intuitive, musically coherent "tape stretch" or "varispeed" effect that was missing. The original phrase is held and preserved.
+
+- **Tier 2: "Telescopic Extension" (Generative Blocks) - `segment_index > 0`**
+    This is the "generative self-similar extension." When a time stretch is so extreme that `app_frames_into_gap` exceeds the `seg_block_length`, this mode kicks in.
+    1.  A new, deterministic `gap_seed` is generated based on *both* the `master_frame` and the `segment_index`.
+    2.  The `_base` FPS-R function is called, but its `frame` input is now the `local_progress_in_segment` (e.g., 0, 1, 2, 3, 4...).
+    3.  The `gap_seed` is injected (e.g., into `seedInner` for SM/TM, `quantOffsets` for QS, or `value_seed_offset` for BD).
+    This generates a *brand new, fully-phrased* block of content that is deterministically appended to the end of the anchor block, like a "telescopic runway."
+
+### Final Refinements
+
+- **Inverted `frame_multiplier` Logic:** A major point of confusion was that the `frame_multiplier` was mathematically implemented as a *divisor*. This was counter-intuitive. The logic has been **inverted** to match common convention.
+    -   `scaled_pos = (double)frame * fm`
+    -   `start_app_frame = (int64_t)ceil((double)master_frame / fm)`
+    -   **New Convention:**
+        -   `fm < 1.0` (e.g., 0.5) = **Slow-Motion (Stretch)**
+        -   `fm > 1.0` (e.g., 2.0) = **Fast-Motion (Compress)**
+
+- **Simplified LOD 2 Logic:** Because the new HPQ logic is "quantized" to the Application Timeline, the `LOD 2` search logic and `hold_progress` calculation became much simpler and more robust. The search now operates purely in integer application frames, and `hold_progress` is a direct, linear percentage: `(frame - last) / (next - last)`.
