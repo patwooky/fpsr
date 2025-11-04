@@ -16,6 +16,10 @@ details:
 
 import math
 import functools
+# [PORT UPDATE] Import 'struct' module. This is needed for fpsr_qs to perform
+# a bit-for-bit cast from a float (double) to a 64-bit integer,
+# matching the C version's 'memcpy' logic.
+import struct
 
 # -----------------------------------------------------------------------------
 # Deterministic helpers and PRNG matching the C reference implementation
@@ -74,6 +78,8 @@ def _splitmix64(x: int) -> int:
 # Uses the top 53 bits of the 64-bit output to match IEEE-754 double mantissa size.
 # Implemented identically in C and Python to yield bit-for-bit identical floats.
 def portable_rand_u64(seed: int) -> float:
+    # [PORT UPDATE] C-version passes a uint64_t. We emulate this by masking
+    # the input seed *first* before passing to splitmix64.
     r = _splitmix64(_to_uint64(seed))
     return float((r >> 11)) * (1.0 / 9007199254740992.0)  # 2^53
 
@@ -103,12 +109,18 @@ def portable_rand(seed):
 
 def _circular_left_shift(value: int, shift: int) -> int:
     """Performs a _CHUNK_BITS-wide circular left shift (rotate left)."""
+    # [PORT UPDATE] Ensure shift is within [0, CHUNK_BITS-1]
+    # to match C's modulo behavior.
     shift %= _CHUNK_BITS
+    if shift == 0: return _to_uint64(value)
     return _to_uint64((value << shift) | (value >> (_CHUNK_BITS - shift)))
 
 def _circular_right_shift(value: int, shift: int) -> int:
     """Performs a _CHUNK_BITS-wide circular right shift (rotate right)."""
+    # [PORT UPDATE] Ensure shift is within [0, CHUNK_BITS-1]
+    # to match C's modulo behavior.
     shift %= _CHUNK_BITS
+    if shift == 0: return _to_uint64(value)
     return _to_uint64((value >> shift) | (value << (_CHUNK_BITS - shift)))
 
 
@@ -135,14 +147,15 @@ def fpsr_sm(frame, minHold, maxHold, reseedInterval, seedInner, seedOuter, final
 
     Returns:
         float: If finalRandSwitch is True, a random value between 0.0 and 1.0. 
-               If False, the raw integer state value.
+               If False, the raw integer state value (as a float).
     """
     # --- 1. Calculate the random hold duration ---
     if reseedInterval < 1:
         reseedInterval = 1  # Prevent division by zero.
 
     # Use floor-based modulo to match C helper and Python semantics for negatives.
-    reseed_anchor = (seedInner + frame) - i64_floor_mod(frame, reseedInterval)
+    # [PORT UPDATE] Cast seed to int to ensure portable_rand_u64 receives an int
+    reseed_anchor = int(seedInner + frame) - i64_floor_mod(int(frame), int(reseedInterval))
 
     # Deterministic PRNG over 64-bit integer seed; result is double in [0,1).
     rand_for_duration = portable_rand_u64(reseed_anchor)
@@ -155,14 +168,16 @@ def fpsr_sm(frame, minHold, maxHold, reseedInterval, seedInner, seedOuter, final
 
     # --- 2. Generate the stable integer "state" for the hold period ---
     # Align down using floor-mod semantics for negative inputs to ensure parity.
-    held_integer_state = i64_align_down((seedOuter + frame), holdDuration)
+    held_integer_state = i64_align_down(int(seedOuter + frame), int(holdDuration))
 
     # --- 3. Use the stable state as a seed for the final random value (or bypass) ---
     if finalRandSwitch:
-        # Keep seed math in 64-bit integer space; emulate uint64 wraparound.
-        seed_u64 = _to_uint64(held_integer_state) * 100000
-        seed_u64 &= _UINT64_MASK
-        fpsr_output = portable_rand_u64(seed_u64)
+        # [PORT UPDATE] Match the canonical C implementation.
+        # The C version directly uses the 64-bit 'held_integer_state' as the
+        # seed. The previous Python version multiplied this by 100,000.
+        # This update removes that multiplication to align with the C reference.
+        # portable_rand_u64 will handle casting to uint64 internally.
+        fpsr_output = portable_rand_u64(held_integer_state)
     else:
         # Return the raw integer state as a float (matches C's cast).
         fpsr_output = float(held_integer_state)
@@ -218,17 +233,17 @@ def fpsr_tm(frame, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRa
 
     Returns:
         float: If finalRandSwitch is True, a random value between 0.0 and 1.0. 
-               If False, the raw integer state value.
+               If False, the raw integer state value (as a float).
     """
     # --- 1. Determine the hold duration by toggling between two periods ---
     if periodSwitch < 1:
         periodSwitch = 1  # Prevent division by zero.
 
     # The "inner clock" is offset by seedInner to de-correlate it from the main frame.
-    inner_clock_frame = seedInner + frame
+    inner_clock_frame = int(seedInner + frame)
     
     # Use floor-based modulo for cross-language consistency with the C helper.
-    r = i64_floor_mod(inner_clock_frame, periodSwitch)
+    r = i64_floor_mod(inner_clock_frame, int(periodSwitch))
 
     # Toggle threshold at exactly half the period using integer math (no FP rounding).
     holdDuration = periodA if (2 * r) < periodSwitch else periodB
@@ -237,14 +252,17 @@ def fpsr_tm(frame, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRa
         holdDuration = 1  # Prevent division by zero.
 
     # --- 2. Generate the stable integer "state" for the hold period ---
-    outer_clock_frame = seedOuter + frame
-    held_integer_state = i64_align_down(outer_clock_frame, holdDuration)
+    outer_clock_frame = int(seedOuter + frame)
+    held_integer_state = i64_align_down(outer_clock_frame, int(holdDuration))
 
     # --- 3. Use the stable state as a seed for the final random value (or bypass) ---
     if finalRandSwitch:
-        # Deterministic seeding in the uint64 domain with wraparound, mirroring C.
-        seed_u64 = (_to_uint64(held_integer_state) * 100000) & _UINT64_MASK
-        fpsr_output = portable_rand_u64(seed_u64)
+        # [PORT UPDATE] Match the canonical C implementation.
+        # The C version directly uses the 64-bit 'held_integer_state' as the
+        # seed. The previous Python version multiplied this by 100,000.
+        # This update removes that multiplication to align with the C reference.
+        # portable_rand_u64 will handle casting to uint64 internally.
+        fpsr_output = portable_rand_u64(held_integer_state)
     else:
         fpsr_output = float(held_integer_state)
     
@@ -312,22 +330,22 @@ def fpsr_qs(frame, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffs
     if stream2QuantDur < 1: stream2QuantDur = math.floor((1.0 / baseWaveFreq) * 0.9)
     
     # Ensure durations are at least 1 frame to prevent division by zero.
-    streamSwitchDur = max(streamSwitchDur, 1)
-    stream1QuantDur = max(stream1QuantDur, 1)
-    stream2QuantDur = max(stream2QuantDur, 1)
+    streamSwitchDur = max(int(streamSwitchDur), 1)
+    stream1QuantDur = max(int(stream1QuantDur), 1)
+    stream2QuantDur = max(int(stream2QuantDur), 1)
 
     # --- 2. Calculate random quantisation levels for each stream ---
-    quant_min = quantLevelsMinMax[0]
-    quant_max = quantLevelsMinMax[1]
+    quant_min = int(quantLevelsMinMax[0])
+    quant_max = int(quantLevelsMinMax[1])
     quant_range = quant_max - quant_min + 1
 
     # --- Stream 1 Quant Level ---
-    s1_quant_seed_aligned = i64_align_down((quantOffsets[0] + frame), stream1QuantDur)
+    s1_quant_seed_aligned = i64_align_down(int(quantOffsets[0] + frame), stream1QuantDur)
     s1_rand_for_quant = portable_rand_u64(s1_quant_seed_aligned)
     s1_quant_level = quant_min + math.floor(s1_rand_for_quant * float(quant_range))
 
     # --- Stream 2 Quant Level ---
-    s2_quant_seed_aligned = i64_align_down((quantOffsets[1] + frame), stream2QuantDur)
+    s2_quant_seed_aligned = i64_align_down(int(quantOffsets[1] + frame), stream2QuantDur)
     s2_rand_for_quant = portable_rand_u64(s2_quant_seed_aligned)
     s2_quant_level = quant_min + math.floor(s2_rand_for_quant * float(quant_range))
 
@@ -338,23 +356,38 @@ def fpsr_qs(frame, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffs
     if stream2FreqMult < 0: stream2FreqMult = 3.7
 
     # Deterministic double math: sin() -> [-1,1], map to [0,1], quantise via floor.
-    stream1 = math.floor((math.sin((streamsOffset[0] + frame) * baseWaveFreq) * 0.5 + 0.5) * s1_quant_level) / s1_quant_level
-    stream2 = math.floor((math.sin((streamsOffset[1] + frame) * baseWaveFreq * stream2FreqMult) * 0.5 + 0.5) * s2_quant_level) / s2_quant_level
+    angle1 = (float(streamsOffset[0]) + float(frame)) * float(baseWaveFreq)
+    angle2 = (float(streamsOffset[1]) + float(frame)) * float(baseWaveFreq) * float(stream2FreqMult)
+    
+    stream1 = math.floor((math.sin(angle1) * 0.5 + 0.5) * float(s1_quant_level)) / float(s1_quant_level)
+    stream2 = math.floor((math.sin(angle2) * 0.5 + 0.5) * float(s2_quant_level)) / float(s2_quant_level)
 
     # --- 4. Switch between the two streams ---
     # Use floor-mod and an integer half-threshold (2*r < period) to match C.
-    r = i64_floor_mod(frame, streamSwitchDur)
+    r = i64_floor_mod(int(frame), streamSwitchDur)
     active_stream_val = stream1 if (2 * r) < streamSwitchDur else stream2
 
     # --- 5. Hash the final output to create a random-looking value (or bypass) ---
     if finalRandSwitch:
-        # Derive a stable integer seed from the double stream using floor(), then hash.
-        # This avoids ambiguous float->int casts and reproduces exactly in C.
-        hashed_int = math.floor(active_stream_val * 100000.0)
-        fpsr_output = portable_rand_u64(_to_uint64(hashed_int))
+        # [PORT UPDATE] Match the canonical C implementation.
+        # The C version performs a 'memcpy' of the double 'active_stream_val'
+        # into a uint64_t to use its raw bits as a seed.
+        # The Python equivalent is struct.pack/unpack, which does the same
+        # bit-for-bit cast from a float (C double) to an unsigned 64-bit int.
+        # The old Python code (math.floor(active_stream_val * 100000.0))
+        # was a different hashing logic.
+        try:
+            seed_bytes = struct.pack('d', active_stream_val) # 'd' = C double (8 bytes)
+            seed_u64 = struct.unpack('Q', seed_bytes)[0] # 'Q' = C unsigned long long (8 bytes / uint64_t)
+            fpsr_output = portable_rand_u64(seed_u64)
+        except (struct.error, OverflowError):
+             # Fallback in case of a highly unusual float value
+            fpsr_output = portable_rand_u64(int(active_stream_val * 1e9))
     else:
-        # If finalRandSwitch is false, scale the [0,1] stream value to [0,1] as in C.
-        fpsr_output = 0.5 * active_stream_val + 0.5
+        # If finalRandSwitch is false, return the active stream value directly.
+        # The quantised streams `stream1` and `stream2` (and thus `active_stream_val`)
+        # are already in the correct [0.0, 1.0] range.
+        fpsr_output = active_stream_val
         
     return fpsr_output
 
@@ -436,6 +469,13 @@ def fpsr_bd(
     """
     if block_size <= 0:
         block_size = 1
+    if streams_number < 1:
+        streams_number = 1
+
+    # [PORT UPDATE] Match C's 'sanitized_static_shift'.
+    # This ensures static shift amounts are always in the valid [0, 63] range
+    # by masking, preventing undefined/inconsistent behavior for large shifts.
+    sanitized_static_shift = static_shift_amount & (_CHUNK_BITS - 1)
 
     # --- Step 1: Find the Outer Anchor for the macro-block ---
     outer_anchor = i64_align_down(frame, block_size)
@@ -445,7 +485,8 @@ def fpsr_bd(
     raw_streams = []
     for i in range(streams_number):
         stream_seed = outer_anchor + (i * streams_offset)
-        chunks = [_splitmix64(_to_uint64(stream_seed + j)) for j in range(num_chunks)]
+        # [PORT UPDATE] Ensure seed components are int for uint64 emulation
+        chunks = [_splitmix64(_to_uint64(int(stream_seed) + j)) for j in range(num_chunks)]
         raw_streams.append(chunks)
 
     # --- Step 3: Apply Intra-Stream Transformations ---
@@ -453,13 +494,17 @@ def fpsr_bd(
     unary_op = intra_op.lower()
     
     dynamic_ops = ["lshift_dynamic", "rshift_dynamic", "rotl_dynamic", "rotr_dynamic"]
+    is_dynamic = unary_op in dynamic_ops
 
-    if unary_op in dynamic_ops:
+    if is_dynamic:
+        num_transformed_streams = (streams_number // 2) + (streams_number % 2)
         for i in range(0, streams_number // 2):
             data_stream = raw_streams[i * 2]
             controller_stream = raw_streams[i * 2 + 1]
             
-            max_bits_for_shift = max(1, math.ceil(math.log2(_CHUNK_BITS)) if _CHUNK_BITS > 1 else 1)
+            # [PORT UPDATE] Match C's logic for max_bits_for_shift
+            # C: int max_bits_for_shift = 6; (for CHUNK_BITS=64)
+            max_bits_for_shift = 6
             bit_mask_size = max(1, min(max_bits_for_shift, dynamic_shift_bits))
             bit_mask = (1 << bit_mask_size) - 1
             
@@ -467,69 +512,91 @@ def fpsr_bd(
             for j in range(num_chunks):
                 data_chunk = data_stream[j]
                 controller_chunk = controller_stream[j]
-                dynamic_shift = (controller_chunk & bit_mask) % _CHUNK_BITS
+                # [PORT UPDATE] Match C's logic: dynamic_shift is just the masked value
+                dynamic_shift = (controller_chunk & bit_mask)
+                # The modulo is applied during the shift/rotate call
                 
                 if unary_op == "lshift_dynamic":
-                    transformed_chunks.append(_to_uint64(data_chunk << dynamic_shift))
+                    # [PORT UPDATE] Apply modulo inside shift call to match C
+                    transformed_chunks.append(_to_uint64(data_chunk << (dynamic_shift % _CHUNK_BITS)))
                 elif unary_op == "rshift_dynamic":
-                    transformed_chunks.append(_to_uint64(data_chunk >> dynamic_shift))
+                    # [PORT UPDATE] Apply modulo inside shift call to match C
+                    transformed_chunks.append(_to_uint64(data_chunk >> (dynamic_shift % _CHUNK_BITS)))
                 elif unary_op == "rotl_dynamic":
+                    # [PORT UPDATE] Pass raw dynamic_shift to helper, which will modulo
                     transformed_chunks.append(_circular_left_shift(data_chunk, dynamic_shift))
                 elif unary_op == "rotr_dynamic":
+                    # [PORT UPDATE] Pass raw dynamic_shift to helper, which will modulo
                     transformed_chunks.append(_circular_right_shift(data_chunk, dynamic_shift))
             transformed_streams.append(transformed_chunks)
         
+        # [PORT UPDATE] Match C's logic for handling odd number of streams
         if streams_number % 2 != 0:
-            transformed_streams.append(raw_streams[-1])
+            transformed_streams.append(raw_streams[-1]) # Copy last stream as-is
 
     else: # Apply static operations
+        num_transformed_streams = streams_number
         for stream_chunks in raw_streams:
             if unary_op == "not":
                 transformed_chunks = [_to_uint64(~chunk) for chunk in stream_chunks]
             elif unary_op == "lshift":
-                transformed_chunks = [_to_uint64(chunk << static_shift_amount) for chunk in stream_chunks]
+                # [PORT UPDATE] Use sanitized_static_shift
+                transformed_chunks = [_to_uint64(chunk << sanitized_static_shift) for chunk in stream_chunks]
             elif unary_op == "rshift":
-                transformed_chunks = [_to_uint64(chunk >> static_shift_amount) for chunk in stream_chunks]
+                # [PORT UPDATE] Use sanitized_static_shift
+                transformed_chunks = [_to_uint64(chunk >> sanitized_static_shift) for chunk in stream_chunks]
             elif unary_op == "rotl":
-                transformed_chunks = [_circular_left_shift(chunk, static_shift_amount) for chunk in stream_chunks]
+                # [PORT UPDATE] Use sanitized_static_shift
+                transformed_chunks = [_circular_left_shift(chunk, sanitized_static_shift) for chunk in stream_chunks]
             elif unary_op == "rotr":
-                transformed_chunks = [_circular_right_shift(chunk, static_shift_amount) for chunk in stream_chunks]
+                # [PORT UPDATE] Use sanitized_static_shift
+                transformed_chunks = [_circular_right_shift(chunk, sanitized_static_shift) for chunk in stream_chunks]
             else: # "none"
-                transformed_chunks = stream_chunks
+                transformed_chunks = list(stream_chunks) # "none", copy the stream
             transformed_streams.append(transformed_chunks)
         
     # --- Step 4: Combine Streams with Inter-Stream Operation ---
-    if len(transformed_streams) > 1:
-        op_map = { "xor": (lambda a, b: a ^ b), "or": (lambda a, b: a | b), "and": (lambda a, b: a & b) }
-        chosen_op = op_map.get(inter_op.lower(), lambda a, b: a ^ b)
+    # [PORT UPDATE] Match C's inter-op logic exactly.
+    if num_transformed_streams > 0:
+        # Start with a copy of the first transformed stream's chunks
+        final_chunks = list(transformed_streams[0])
         
-        combined_chunks = []
-        for chunk_idx in range(num_chunks):
-            chunks_to_combine = [stream[chunk_idx] for stream in transformed_streams]
-            combined_chunk = functools.reduce(chosen_op, chunks_to_combine)
-            combined_chunks.append(combined_chunk)
-        final_chunks = combined_chunks
-    elif transformed_streams:
-        final_chunks = transformed_streams[0]
+        op_map = { "xor": (lambda a, b: a ^ b), "or": (lambda a, b: a | b), "and": (lambda a, b: a & b) }
+        chosen_op = op_map.get(inter_op.lower(), lambda a, b: a ^ b) # Default to xor
+
+        # Loop from the *second* stream onwards
+        for i in range(1, num_transformed_streams):
+            for j in range(num_chunks):
+                final_chunks[j] = chosen_op(final_chunks[j], transformed_streams[i][j])
+                # Emulate uint64 wraparound
+                final_chunks[j] = _to_uint64(final_chunks[j])
     else:
+        # No streams, result is all zeros
         final_chunks = [0] * num_chunks
+
 
     # --- Step 5: Decode the final bitstream ---
     def get_bit(n):
+        # Helper to get a specific bit, matching C's logic
         if not (0 <= n < block_size): return 0
         chunk_index, bit_index = n // _CHUNK_BITS, n % _CHUNK_BITS
+        if chunk_index >= num_chunks: return 0
         return (final_chunks[chunk_index] >> bit_index) & 1
 
     current_pos_in_block = frame - outer_anchor
     last_flip_pos = 0
     
+    # Scan backwards from current position to find the last bit-flip
     for i in range(current_pos_in_block, 0, -1):
         if get_bit(i) != get_bit(i - 1):
             last_flip_pos = i
             break
             
     # --- Step 6: Generate the final random value from the last bit-flip position ---
-    final_seed = _to_uint64(outer_anchor) + _to_uint64(last_flip_pos) + _to_uint64(value_seed_offset)
+    # [PORT UPDATE] C logic relies on uint64 wraparound for the final seed addition.
+    # We emulate this by summing the components as standard Python ints,
+    # and portable_rand_u64 will handle the final _to_uint64 mask.
+    final_seed = int(outer_anchor) + int(last_flip_pos) + int(value_seed_offset)
     
     return portable_rand_u64(final_seed)
 
@@ -587,6 +654,10 @@ p_value_seed_offset = 78901 # Additional seed offset for the final value calcula
 # /* Main function to demonstrate usage of FPS-R algorithms                     */
 # /******************************************************************************/
 if __name__ == "__main__":
+    # [PORT UPDATE] This entire test block has been updated to use the
+    # exact same parameters and loop logic as the C 'main' function
+    # for 1-to-1 comparison and verification of the port.
+    
     # algorithms: 0 - sm, 1 - tm, 2 - qs, 3 - bd
     algo = 3  # Change this value to 0, 1, 2, or 3 to test different algorithms
     algo_name = ["SM", "TM", "QS", "BD"]  # Names for the algorithms
@@ -597,6 +668,7 @@ if __name__ == "__main__":
     
     # create main for loop to demonstrate changes
     for loop_frame in range(num_frames):
+        # [PORT UPDATE] Use the same frame logic as C for ALL algorithms
         frame = loop_frame + start_frames[algo]  # starting frame for the selected algorithm
         randVal = 0.0  # variable to hold the random value output
         randVal_previous = 0.0  # variable to hold the previous frame's random value
@@ -605,23 +677,24 @@ if __name__ == "__main__":
         if algo == 0:
             # --------------------------------------------------------------------------
             # Sample code to call the FPS-R:SM function
+            # [PORT UPDATE] Parameters now match the C main() function
             # --------------------------------------------------------------------------
             # Parameters
-            minHoldFrames = 12  # probable minimum held period
-            maxHoldFrames = 21  # maximum held period before cycling
-            reseedFrames = 7  # inner mod cycle timing
-            offsetInner = -41  # offsets the inner frame
-            offsetOuter = 23  # offsets the outer frame
-            finalRandSwitch = 1  # 1 to apply the final randomisation step, 0 to skip it
+            minHoldFrames = 10  # probable minimum held period
+            maxHoldFrames = 13  # maximum held period before cycling
+            reseedFrames = 5    # inner mod cycle timing
+            offsetInner = -34   # offsets the inner frame
+            offsetOuter = 22    # offsets the outer frame
+            finalRandSwitch = 1 # 1 to apply the final randomisation step, 0 to skip it
             
             # Call the FPS-R:SM function        
             # call to fpsr_sm for the current frame
             randVal = float(fpsr_sm(
-                int(loop_frame), int(minHoldFrames), int(maxHoldFrames), 
+                int(frame), int(minHoldFrames), int(maxHoldFrames), 
                 int(reseedFrames), int(offsetInner), int(offsetOuter), bool(finalRandSwitch)))
             # another call to fpsr_sm for the previous frame
             randVal_previous = float(fpsr_sm(
-                int(loop_frame - 1), int(minHoldFrames), int(maxHoldFrames), 
+                int(frame - 1), int(minHoldFrames), int(maxHoldFrames), 
                 int(reseedFrames), int(offsetInner), int(offsetOuter), bool(finalRandSwitch)))
             changed = 0
             if randVal != randVal_previous:
@@ -630,23 +703,24 @@ if __name__ == "__main__":
         elif algo == 1:
             # --------------------------------------------------------------------------
             # Sample code to call the FPS-R:TM function
+            # [PORT UPDATE] Parameters now match the C main() function
             # --------------------------------------------------------------------------
             # Parameters
-            period_A = 6  # The first hold duration
-            period_B = 8  # The second hold duration
-            periodSwitch = 10  # The toggle duration between periods A and B in frames
-            offset_inner = 15  # offsets the inner (toggle) clock
-            offset_outer = 0  # offsets the outer (hold) clock
-            final_rand_switch = 1  # 1 to apply the final randomisation step, 0 to skip it
+            period_A = 10         # The first hold duration
+            period_B = 16         # The second hold duration
+            periodSwitch = 9      # The toggle happens every 30 frames
+            offset_inner = 4      # offsets the inner (toggle) clock
+            offset_outer = 0      # offsets the outer (hold) clock
+            final_rand_switch = 1 # 1 to apply the final randomisation step, 0 to skip it
             
             # Call the FPS-R:TM function
             # call to fpsr_tm for the current frame
             randVal = float(fpsr_tm(
-                int(loop_frame), int(period_A), int(period_B), 
+                int(frame), int(period_A), int(period_B), 
                 int(periodSwitch), int(offset_inner), int(offset_outer), bool(final_rand_switch)))
             # another call to fpsr_tm for the previous frame
             randVal_previous = float(fpsr_tm(
-                int(loop_frame - 1), int(period_A), int(period_B), 
+                int(frame - 1), int(period_A), int(period_B), 
                 int(periodSwitch), int(offset_inner), int(offset_outer), bool(final_rand_switch)))
             changed = 0
             if randVal != randVal_previous:
@@ -655,25 +729,26 @@ if __name__ == "__main__":
         elif algo == 2:
             # --------------------------------------------------------------------------
             # Sample code to call the FPS-R:QS function
+            # [PORT UPDATE] Parameters now match the C main() function
             # --------------------------------------------------------------------------
             # Parameters
-            baseWaveFreq = 0.012  # Base frequency for the modulation wave of stream 1
-            stream2freqMult = 3.1  # Multiplier for the second stream's frequency
-            quantLevelsMinMax = [4, 12]  # Min, Max quantisation levels for the two streams
-            streamsOffset = [0, 76]  # Offset for the two streams
-            quantOffsets = [10, 81]  # Offset for the random quantisation selection
-            streamSwitchDur = 14  # Duration for switching streams in frames
-            stream1QuantDur = 6  # Duration for the first stream's quantisation switch cycle in frames
-            stream2QuantDur = 9  # Duration for the second stream's quantisation switch cycle in frames
-            finalRandSwitch = 1  # 1 to apply the final randomisation step, 0 to skip it
+            baseWaveFreq = 0.012 # Base frequency for the modulation wave of stream 1
+            stream2freqMult = 3.1 # Multiplier for the second stream's frequency
+            quantLevelsMinMax = [4, 12] # Min, Max quantisation levels for the two streams
+            streamsOffset = [0, 72] # Offset for the two streams
+            quantOffsets = [9, 81] # Offset for the random quantisation selection
+            streamSwitchDur = 11 # Duration for switching streams in frames
+            stream1QuantDur = 13 # Duration for the first stream's quantisation switch cycle in frames
+            stream2QuantDur = 20 # Duration for the second stream's quantisation switch cycle in frames
+            finalRandSwitch = 1 # 1 to apply the final randomisation step, 0 to skip it
             
             # call to fpsr_qs for the current frame
             randVal = float(fpsr_qs(
-                int(loop_frame), float(baseWaveFreq), float(stream2freqMult), quantLevelsMinMax, 
+                int(frame), float(baseWaveFreq), float(stream2freqMult), quantLevelsMinMax, 
                 streamsOffset, quantOffsets, int(streamSwitchDur), int(stream1QuantDur), int(stream2QuantDur), bool(finalRandSwitch)))
             # another call to fpsr_qs for the previous frame
             randVal_previous = float(fpsr_qs(
-                int(loop_frame - 1), float(baseWaveFreq), float(stream2freqMult), quantLevelsMinMax, 
+                int(frame - 1), float(baseWaveFreq), float(stream2freqMult), quantLevelsMinMax, 
                 streamsOffset, quantOffsets, int(streamSwitchDur), int(stream1QuantDur), int(stream2QuantDur), bool(finalRandSwitch)))
             changed = 0  # Variable to track if the value has changed
             if randVal != randVal_previous:
@@ -682,6 +757,7 @@ if __name__ == "__main__":
         elif algo == 3:
             # --------------------------------------------------------------------------
             # Sample code to call the FPS-R:BD function
+            # [PORT UPDATE] Parameters already matched C, no change needed here.
             # --------------------------------------------------------------------------
             # Parameters
             p_block_size = 64 # Size of the macro-rhythm in frames
@@ -710,6 +786,6 @@ if __name__ == "__main__":
 
             if randVal != randVal_previous: changed = 1
         
-        # Mirror C printf formatting and two-step print for the suffix
+        # [PORT UPDATE] Mirror C printf formatting (%.6f) and two-step print
         print(f"Frame {frame}: randVal {randVal:.6f}, randVal_previous {randVal_previous:.6f}, changed {changed} ", end="")
         print("(jumped)" if changed else "")

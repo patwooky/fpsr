@@ -179,18 +179,25 @@ double _get_sine_from_lod_lut(double phase, int lut_size, const double* lut_arra
  */
 
 // Floor-based modulo that matches Python's semantics for negative inputs.
+// C's a % m truncates toward zero; Python's a % m is always in [0, m-1] for m>0.
+// By normalizing remainders this way, all alignments and toggles match Python exactly.
 static inline int64_t i64_floor_mod(int64_t a, int64_t m) {
+    // assume m > 0
     int64_t r = a % m;
     if (r < 0) r += m;
     return r;
 }
 
 // Align-down to the nearest multiple of m using floor-mod semantics.
+// This mirrors Python's a - (a % m) even when a is negative, guaranteeing parity
+// between C and Python for all frame-alignment logic.
 static inline int64_t i64_align_down(int64_t a, int64_t m) {
     return a - i64_floor_mod(a, m);
 }
 
 // SplitMix64: simple, robust 64-bit mixer using well-defined uint64_t wraparound.
+// Produces identical bit patterns across platforms/compilers. Suitable for hashing
+// integer seeds into pseudo-random 64-bit values.
 static inline uint64_t splitmix64(uint64_t x) {
     x += 0x9E3779B97F4A7C15ULL;
     x = (x ^ (x >> 30)) * 0xBF58476D1CE4E5B9ULL;
@@ -200,6 +207,8 @@ static inline uint64_t splitmix64(uint64_t x) {
 }
 
 // Map a uint64_t to a double in [0,1) by taking the top 53 bits (double mantissa width).
+// Using the identical bit-extraction and scale factor (2^-53) in Python ensures that
+// both languages produce the exact same floating value for the same 64-bit seed.
 static inline double portable_rand_u64(uint64_t seed) {
     uint64_t r = splitmix64(seed);
     return (double)(r >> 11) * (1.0 / 9007199254740992.0); // 2^53
@@ -215,21 +224,29 @@ static inline double portable_rand_u64(uint64_t seed) {
 static inline float portable_rand(int seed) {
     // Converts the given seed to a 64-bit unsigned integer, generates a pseudo-random number using portable_rand_u64,
     // and casts the result to a float for return.
+    // Keep seeding strictly in integer domain; cast via int64_t to preserve sign.
     return (float)portable_rand_u64((uint64_t)(int64_t)seed);
 }
 
 // --- Bitwise Rotation Helpers ---
-// Circular left shift for uint64_t
+// Performs a circular (rotate) left shift on a 64-bit unsigned integer.
 static inline uint64_t u64_circular_left_shift(uint64_t value, int shift) {
+    // The modulo operator ensures the shift amount is always within [0, CHUNK_BITS-1],
+    // preventing undefined behavior from shifts >= the type's bit-width.
     int s = shift % CHUNK_BITS;
     if (s == 0) return value;
+    // The C standard guarantees that for unsigned types, right-shift is a logical shift
+    // (fills with zeros), which is the correct behavior for rotation.
     return (value << s) | (value >> (CHUNK_BITS - s));
 }
 
-// Circular right shift for uint64_t
+// Performs a circular (rotate) right shift on a 64-bit unsigned integer.
 static inline uint64_t u64_circular_right_shift(uint64_t value, int shift) {
+    // The modulo operator ensures the shift amount is always within [0, CHUNK_BITS-1],
+    // preventing undefined behavior.
     int s = shift % CHUNK_BITS;
     if (s == 0) return value;
+    // The right-shift on the unsigned 'value' is a well-defined logical shift.
     return (value >> s) | (value << (CHUNK_BITS - s));
 }
 
@@ -322,27 +339,43 @@ double fpsr_sm_base(
     int64_t frame, int64_t minHold, int64_t maxHold,
     int64_t reseedInterval, int64_t seedInner, int64_t seedOuter, int finalRandSwitch)
 {
-    if (reseedInterval < 1) { reseedInterval = 1; }
+    // --- 1. Calculate the random hold duration ---
+    if (reseedInterval < 1) { reseedInterval = 1; } // Prevent division by zero.
 
+    // Use floor-based modulo to match Python for negative frames.
+    // Seed stays in integer domain for reproducibility.
     int64_t reseed_anchor = (seedInner + frame) - i64_floor_mod(frame, reseedInterval);
+    
+    // Deterministic PRNG over 64-bit integer seed; result is double in [0,1].
     double rand_for_duration = portable_rand_u64((uint64_t)reseed_anchor);
+    
+    // Compute duration with double intermediates then floor to int64.
+    // Double math here mirrors Python's float behavior for cross-language parity.
     int64_t holdDuration = (int64_t)floor((double)minHold + rand_for_duration * (double)(maxHold - minHold));
-    if (holdDuration < 1) { holdDuration = 1; }
+    if (holdDuration < 1) { holdDuration = 1; } // Prevent division by zero.
 
+    // --- 2. Generate the stable integer "state" for the hold period ---
+    // Align down using floor-mod semantics for negative inputs.
     int64_t held_integer_state = i64_align_down((seedOuter + frame), holdDuration);
 
+    // --- 3. Use the stable state as a seed for the final random value ---
+    // Keep all seed math in 64-bit integer space; rely on uint64 wraparound (well-defined).
     double fpsr_output = 0.0;
     if (finalRandSwitch) {
-        uint64_t seed = (uint64_t)held_integer_state * 100000ULL;
+        // The held_integer_state is already the unique identifier for this hold segment.
+        // We pass it directly to the SplitMix64 hasher without needing an additional multiplier.
+        // --- FIX: Removed `* 100000ULL` to match canonical _base.c implementation ---
+        uint64_t seed = (uint64_t)held_integer_state;
         fpsr_output = portable_rand_u64(seed);
     } else {
+        // Return the active stream value directly as a double (cast by caller if needed).
         fpsr_output = (double)held_integer_state; 
     }
     return fpsr_output;
 }
 
 //-----------------------------------------------------------------------------/
-// FPS-R: Toggle Modulo (TM)                                                   /
+// FPS-R: Toggled Modulo (TM)                                                  /
 //-----------------------------------------------------------------------------/
 // This is the pure 'base' version of TM for the wrapper. It returns just the float value.
 /**
@@ -369,28 +402,43 @@ double fpsr_tm_base(
     int64_t periodSwitch, int64_t seedInner, int64_t seedOuter,
     int finalRandSwitch)
 {
-    if (periodSwitch < 1) { periodSwitch = 1; }
+    // --- 1. Determine the hold duration by toggling between two periods ---
+    if (periodSwitch < 1) { periodSwitch = 1; } // Prevent division by zero.
 
+    
+    // The "inner clock" is offset by seedInner to de-correlate it from the main frame.
     int64_t inner_clock_frame = seedInner + frame;
-    int64_t r = i64_floor_mod(inner_clock_frame, periodSwitch);
-    int64_t holdDuration = (2 * r < periodSwitch) ? periodA : periodB;
-    if (holdDuration < 1) { holdDuration = 1; }
 
+    // Use floor-based modulo for cross-language consistency.
+    int64_t r = i64_floor_mod(inner_clock_frame, periodSwitch);
+
+    // Toggle threshold at exactly half the period using integer math.
+    // Equivalent to: (r < 0.5 * periodSwitch) without floating-point rounding.
+    int64_t holdDuration = (2 * r < periodSwitch) ? periodA : periodB;
+    if (holdDuration < 1) { holdDuration = 1; } // Prevent division by zero.
+
+    // --- 2. Generate the stable integer "state" for the hold period ---
+    // The "outer clock" is offset by seedOuter to create unique output sequences.
     int64_t outer_clock_frame = seedOuter + frame;
     int64_t held_integer_state = i64_align_down(outer_clock_frame, holdDuration);
-
+    
+    // --- 3. Use the stable state as a seed for the final random value (or bypass) ---
     double fpsr_output;
     if (finalRandSwitch) {
-        uint64_t seed = (uint64_t)held_integer_state * 100000ULL;
+        // The held_integer_state is the unique identifier for the hold segment.
+        // Pass it directly to the SplitMix64 hasher for a well-distributed random value.
+        // --- FIX: Removed `* 100000ULL` to match canonical _base.c implementation ---
+        uint64_t seed = (uint64_t)held_integer_state;
         fpsr_output = portable_rand_u64(seed);
     } else {
+        // Return the raw integer state directly.
         fpsr_output = (double)held_integer_state; 
     }
     return fpsr_output;
 }
 
 //-----------------------------------------------------------------------------/
-// FPS-R: Quantized Sine (QS)                                                  /
+// FPS-R: Quantised Switching (QS)                                             /
 //-----------------------------------------------------------------------------/
 // This special 'base' version of QS is for the wrapper. It returns the full
 // struct needed for rich output, and uses the Sine-LUT for determinism.
@@ -430,22 +478,28 @@ FPSR_Output fpsr_qs_base(
     if (stream1QuantDur < 1) { stream1QuantDur = 1; }
     if (stream2QuantDur < 1) { stream2QuantDur = 1; }
 
+    // --- 2. Calculate random quantisation levels for each stream ---
     int64_t quant_min = (int64_t)quantLevelsMinMax[0];
     int64_t quant_max = (int64_t)quantLevelsMinMax[1];
     int64_t quant_range = quant_max - quant_min + 1;
 
+    // --- Stream 1 Quant Level ---
     int64_t s1_quant_seed_aligned = i64_align_down((int64_t)quantOffsets[0] + frame, stream1QuantDur);
     double s1_rand_for_quant = portable_rand_u64((uint64_t)s1_quant_seed_aligned);
     int64_t s1_quant_level = quant_min + (int64_t)floor(s1_rand_for_quant * (double)quant_range);
 
+    // --- Stream 2 Quant Level ---
     int64_t s2_quant_seed_aligned = i64_align_down((int64_t)quantOffsets[1] + frame, stream2QuantDur);
     double s2_rand_for_quant = portable_rand_u64((uint64_t)s2_quant_seed_aligned);
     int64_t s2_quant_level = quant_min + (int64_t)floor(s2_rand_for_quant * (double)quant_range);
 
     if (s1_quant_level < 1) { s1_quant_level = 1; }
     if (s2_quant_level < 1) { s2_quant_level = 1; }
-    if (stream2FreqMult < 0) { stream2FreqMult = 3.7; }
     
+    // --- 3. Generate the two quantised sine wave streams ---
+    if (stream2FreqMult <= 0) { stream2FreqMult = 3.7; }
+    
+    // Ensure deterministic double math. sin() returns [-1,1]; map to [0,1] and quantise.
     double angle1 = ((double)streamsOffset[0] + (double)frame) * baseWaveFreq;
     double angle2 = ((double)streamsOffset[1] + (double)frame) * baseWaveFreq * stream2FreqMult;
     
@@ -477,12 +531,20 @@ FPSR_Output fpsr_qs_base(
     output.randStreams[0] = floor((stream1_raw_sine * 0.5 + 0.5) * (double)s1_quant_level) / (double)s1_quant_level;
     output.randStreams[1] = floor((stream2_raw_sine * 0.5 + 0.5) * (double)s2_quant_level) / (double)s2_quant_level;
     
+    // --- 4. Switch between the two streams based on streamSwitchDur ---
     int64_t r = i64_floor_mod(frame, streamSwitchDur);
     output.selected_stream_idx = (2 * r < streamSwitchDur) ? 0 : 1;
     double active_stream_val = (output.selected_stream_idx == 0) ? output.randStreams[0] : output.randStreams[1];
 
+    // --- 5. Hash the final output or bypass ---
+    // If final randomisation is enabled, derive a deterministic seed from the active stream value
     if (finalRandSwitch == 1) {
-        int64_t hashed_int = (int64_t)floor(active_stream_val * 100000.0);
+        // --- FIX: Scale the quantized value to preserve level information ---
+        // The active_stream_val is in [0, 1] and quantized to discrete levels.
+        // We need to scale it to a larger range before flooring to get distinct seeds.
+        // Using a large multiplier (e.g., 1000000) ensures different quantization levels
+        // produce different integer seeds.
+        int64_t hashed_int = (int64_t)floor(active_stream_val * 1000000.0);
         output.randVal = (float)portable_rand_u64((uint64_t)hashed_int);
     } else {
         // --- FIX: Correct range scaling ---
@@ -495,7 +557,7 @@ FPSR_Output fpsr_qs_base(
 }
 
 //-----------------------------------------------------------------------------/
-// FPS-R: Bitstream Distortion (BD)                                            /
+// FPS-R: Bitwise Decode (BD)                                                  /
 //-----------------------------------------------------------------------------/
 // This is the pure 'base' version of BD for the wrapper. It returns just the float value.
 /**
