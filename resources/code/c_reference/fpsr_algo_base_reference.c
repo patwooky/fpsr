@@ -344,8 +344,8 @@ double fpsr_qs(
         // This preserves persistence: identical active_stream_val over the held segment -> identical output.
         fpsr_output = portable_rand_u64(seed);
     } else {
-        // return the active stream value directly, mapped to [0.0, 1.0]
-        fpsr_output = 0.5 * active_stream_val + 0.5;
+        // return the active stream value directly, which is already in [0.0, 1.0]
+        fpsr_output = active_stream_val;
     }
     return fpsr_output;
 }
@@ -578,11 +578,11 @@ int main() {
             // --------------------------------------------------------------------------
             // Parameters
             // int frame = 90;       // Replace with the current frame value
-            int minHoldFrames = 10;  // probable minimum held period
-            int maxHoldFrames = 13;  // maximum held period before cycling
-            int reseedFrames = 5;    // inner mod cycle timing
-            int offsetInner = -34;   // offsets the inner frame
-            int offsetOuter = 22;    // offsets the outer frame
+            int minHoldFrames = 7;   // probable minimum held period
+            int maxHoldFrames = 9;   // maximum held period before cycling
+            int reseedFrames = 6;    // inner mod cycle timing
+            int offsetInner = -41;   // offsets the inner frame
+            int offsetOuter = 23;    // offsets the outer frame
             int finalRandSwitch = 1; // 1 to apply the final randomisation step, 0 to skip it
             
             // Call the FPS-R:SM function
@@ -608,10 +608,10 @@ int main() {
             // --------------------------------------------------------------------------
             // Parameters
             // int frame = 100;        // Replace with the current frame value
-            int period_A = 10;         // The first hold duration
-            int period_B = 16;         // The second hold duration
-            int periodSwitch = 9;      // The toggle happens every 30 frames
-            int offset_inner = 4;      // offsets the inner (toggle) clock
+            int period_A = 8;          // The first hold duration
+            int period_B = 5;          // The second hold duration
+            int periodSwitch = 6;      // The toggle happens every 30 frames
+            int offset_inner = 15;     // offsets the inner (toggle) clock
             int offset_outer = 0;      // offsets the outer (hold) clock
             int final_rand_switch = 1; // 1 to apply the final randomisation step, 0 to skip it
             
@@ -638,14 +638,14 @@ int main() {
             // --------------------------------------------------------------------------
             // Parameters
             // int frame = 103; // Current frame number
-            float baseWaveFreq = 0.012; // Base frequency for the modulation wave of stream 1
-            float stream2freqMult = 3.1; // Multiplier for the second stream's frequency
+            float baseWaveFreq = 0.012f;  // Base frequency for the modulation wave of stream 1
+            float stream2freqMult = 3.1f; // Multiplier for the second stream's frequency
             int quantLevelsMinMax[2] = {4, 12}; // Min, Max quantisation levels for the two streams
-            int streamsOffset[2] = {0, 72}; // Offset for the two streams
-            int quantOffsets[2] = {9, 81}; // Offset for the random quantisation selection
-            int streamSwitchDur = 11; // Duration for switching streams in frames
-            int stream1QuantDur = 13; // Duration for the first stream's quantisation switch cycle in frames
-            int stream2QuantDur = 20; // Duration for the second stream's quantisation switch cycle in frames
+            int streamsOffset[2] = {0, 76}; // Offset for the two streams
+            int quantOffsets[2] = {10, 81}; // Offset for the random quantisation selection
+            int streamSwitchDur = 8; // Duration for switching streams in frames
+            int stream1QuantDur = 10; // Duration for the first stream's quantisation switch cycle in frames
+            int stream2QuantDur = 13; // Duration for the second stream's quantisation switch cycle in frames
             int finalRandSwitch = 1; // 1 to apply the final randomisation step, 0 to skip it
             
             // call to fpsr_qs for the current frame

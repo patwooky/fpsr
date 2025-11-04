@@ -333,7 +333,8 @@ double fpsr_sm_base(
 
     double fpsr_output = 0.0;
     if (finalRandSwitch) {
-        uint64_t seed = (uint64_t)held_integer_state * 100000ULL;
+        // --- FIX: Removed `* 100000ULL` to match canonical _base.c implementation ---
+        uint64_t seed = (uint64_t)held_integer_state;
         fpsr_output = portable_rand_u64(seed);
     } else {
         fpsr_output = (double)held_integer_state; 
@@ -381,7 +382,8 @@ double fpsr_tm_base(
 
     double fpsr_output;
     if (finalRandSwitch) {
-        uint64_t seed = (uint64_t)held_integer_state * 100000ULL;
+        // --- FIX: Removed `* 100000ULL` to match canonical _base.c implementation ---
+        uint64_t seed = (uint64_t)held_integer_state;
         fpsr_output = portable_rand_u64(seed);
     } else {
         fpsr_output = (double)held_integer_state; 
@@ -390,7 +392,7 @@ double fpsr_tm_base(
 }
 
 //-----------------------------------------------------------------------------/
-// FPS-R: Quantized Sine (QS)                                                  /
+// FPS-R: Quantised Switching (QS)                                                  /
 //-----------------------------------------------------------------------------/
 // This special 'base' version of QS is for the wrapper. It returns the full
 // struct needed for rich output, and uses the Sine-LUT for determinism.
@@ -482,7 +484,8 @@ FPSR_Output fpsr_qs_base(
     double active_stream_val = (output.selected_stream_idx == 0) ? output.randStreams[0] : output.randStreams[1];
 
     if (finalRandSwitch == 1) {
-        int64_t hashed_int = (int64_t)floor(active_stream_val * 100000.0);
+        // --- FIX: Removed `* 100000ULL` to match canonical _base.c implementation ---
+        int64_t hashed_int = (int64_t)floor(active_stream_val);
         output.randVal = (float)portable_rand_u64((uint64_t)hashed_int);
     } else {
         // --- FIX: Correct range scaling ---
@@ -495,7 +498,7 @@ FPSR_Output fpsr_qs_base(
 }
 
 //-----------------------------------------------------------------------------/
-// FPS-R: Bitstream Distortion (BD)                                            /
+// FPS-R: Bitwise Decode (BD)                                            /
 //-----------------------------------------------------------------------------/
 // This is the pure 'base' version of BD for the wrapper. It returns just the float value.
 /**
