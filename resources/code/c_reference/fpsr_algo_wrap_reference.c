@@ -12,8 +12,8 @@
  * populate the FPSR_Output struct. This method is highly efficient and avoids
  * "false positive" value collisions.
  *
- * This version includes the "Hierarchical Coherence" wrapper logic, which
- * implements a "fractal zoom" for time scaling (frame_multiplier).
+ * This version includes the "Hierarchical Phrased Quantisation" (HPQ) wrapper logic,
+ * which implements a "stretch-and-generate" model for time scaling (frame_multiplier).
  */
 
 #include <math.h> // For sin(), floor(), ceil(), log2(), fabs()
@@ -702,86 +702,41 @@ double fpsr_bd(
 }
 
 /******************************************************************************/
-/* Hierarchical Coherence Helper                                              */
+/* Hierarchical Coherence Helper (REMOVED)                                    */
 /******************************************************************************/
 
-/**
- * @brief Generates a stable, hierarchical seed for a "gap frame".
- * @details This function traverses a binary subdivision of the gap between
- * master_frame and master_frame + 1, based on the sub_frame_fraction.
- * It generates a unique, stable seed for any fractional position, ensuring
- * that the midpoint of a 2x zoom is identical to the midpoint of an 8x zoom.
- *
- * @param master_frame The integer "anchor" frame to the left of the gap.
- * @param sub_frame_fraction The fractional component [0.0, 1.0) of the scaled time.
- * @return A unique and stable uint64_t seed for this specific hierarchical position.
- */
-static inline uint64_t _get_hierarchical_seed(int64_t master_frame, double sub_frame_fraction) {
-    // Start with the master_frame as the root seed for this gap.
-    uint64_t seed = (uint64_t)master_frame;
-    
-    double current_pos = sub_frame_fraction;
-    double boundary = 0.5;
-    double step = 0.25;
+/*
+* The _get_hierarchical_seed function has been removed as it is part of the
+* old "fractal" logic and is replaced by the new
+* "Hierarchical Phrased Quantisation" (HPQ) model.
+*/
 
-    // Iterate down the binary tree. 53 levels is the max precision for a 64-bit double.
-    for (int level = 1; level < 53; ++level) {
-        // Hash the current seed with the level to create a unique seed for this tier.
-        seed = splitmix64(seed + (uint64_t)level);
-
-        // Check if we've hit the exact position.
-        // Use a small epsilon for floating-point comparison.
-        if (fabs(current_pos - boundary) < 1e-9) {
-            break; 
-        }
-
-        if (current_pos > boundary) {
-            // "Right" branch
-            seed += 1ULL; // Add 1 for the right branch
-            boundary += step;
-        } else {
-            // "Left" branch
-            // Add 0 (or nothing) for the left branch
-            boundary -= step;
-        }
-        // --- FIX: Apply hashing symmetrically AFTER branch decision ---
-        seed = splitmix64(seed);
-        
-        // If the step is too small, we've reached the limit of precision.
-        if (step < 1e-9) {
-            break;
-        }
-        step *= 0.5;
-    }
-    
-    return seed;
-}
 
 /******************************************************************************/
 /* High-Level Wrapper Functions with Hierarchical Time                        */
 /******************************************************************************/
 
 // --- Forward declarations are needed for recursive calls ---
-FPSR_Output fpsr_sm_get_details(int64_t frame, double frame_multiplier, double* p_scaled_frame_pos_out, int minHold, int maxHold, int reseedInterval, int seedInner, int seedOuter, int finalRandSwitch, int lod, int max_search_frames);
-FPSR_Output fpsr_tm_get_details(int64_t frame, double frame_multiplier, double* p_scaled_frame_pos_out, int periodA, int periodB, int periodSwitch, int seedInner, int seedOuter, int finalRandSwitch, int lod, int max_search_frames);
-FPSR_Output fpsr_qs_get_details(int64_t frame, double frame_multiplier, double* p_scaled_frame_pos_out, float baseWaveFreq, float stream2FreqMult, const int quantLevelsMinMax[2], const int streamsOffset[2], const int quantOffsets[2], int streamSwitchDur, int stream1QuantDur, int stream2QuantDur, int finalRandSwitch, int sine_lod_level, int lod, int max_search_frames);
-FPSR_Output fpsr_bd_get_details(int64_t frame, double frame_multiplier, double* p_scaled_frame_pos_out, int block_size, int streams_number, int streams_offset, const char* intra_op, int dynamic_shift_bits, int static_shift_amount, const char* inter_op, int value_seed_offset, int lod, int max_search_frames);
+// *** MODIFIED: Added seg_block_length parameter ***
+FPSR_Output fpsr_sm_get_details(int64_t frame, double frame_multiplier, double* p_scaled_frame_pos_out, int minHold, int maxHold, int reseedInterval, int seedInner, int seedOuter, int finalRandSwitch, int lod, int max_search_frames, int seg_block_length);
+FPSR_Output fpsr_tm_get_details(int64_t frame, double frame_multiplier, double* p_scaled_frame_pos_out, int periodA, int periodB, int periodSwitch, int seedInner, int seedOuter, int finalRandSwitch, int lod, int max_search_frames, int seg_block_length);
+FPSR_Output fpsr_qs_get_details(int64_t frame, double frame_multiplier, double* p_scaled_frame_pos_out, float baseWaveFreq, float stream2FreqMult, const int quantLevelsMinMax[2], const int streamsOffset[2], const int quantOffsets[2], int streamSwitchDur, int stream1QuantDur, int stream2QuantDur, int finalRandSwitch, int sine_lod_level, int lod, int max_search_frames, int seg_block_length);
+FPSR_Output fpsr_bd_get_details(int64_t frame, double frame_multiplier, double* p_scaled_frame_pos_out, int block_size, int streams_number, int streams_offset, const char* intra_op, int dynamic_shift_bits, int static_shift_amount, const char* inter_op, int value_seed_offset, int lod, int max_search_frames, int seg_block_length);
 
 
 /**
  * ---- SM: Stacked Modulo Wrapper with Details ----
  * @brief Wrapper for fpsr_sm that returns a detailed FPSR_Output struct.
  * @param frame (int64_t) The current frame or time input.
- * @param frame_multiplier (double) The time scaling factor. >1.0 is slow-mo, <1.0 is fast-mo.
+ * @param frame_multiplier (double) The time scaling factor.
+ * < 1.0 = Slow-Motion (Time Stretch)
+ * = 1.0 = Normal Speed
+ * > 1.0 = Fast-Motion (Time Compression)
  * @param p_scaled_frame_pos_out (double*) Optional output pointer to get the scaled frame position.
- * @param minHold (int) The minimum duration (in frames) for a value to hold.
- * @param maxHold (int) The maximum duration (in frames) for a value to hold.
- * @param reseedInterval (int) The fixed interval at which a new hold duration is calculated.
- * @param seedInner (int) An offset for the random duration calculation.
- * @param seedOuter (int) An offset for the final value calculation.
- * @param finalRandSwitch (int) A flag that can turn off the final randomisation step.
+ * @param ... (algo params) ...
  * @param lod (int) The level of detail to calculate.
  * @param max_search_frames (int) A safety limit for the backward/forward search.
+ * @param seg_block_length (int) *** NEW *** The "runway" length for HPQ logic.
  * @return FPSR_Output struct with metadata populated based on the LOD.
  */
 FPSR_Output fpsr_sm_get_details(
@@ -789,73 +744,109 @@ FPSR_Output fpsr_sm_get_details(
     double* p_scaled_frame_pos_out, // Optional pointer to get the scaled time
     int minHold, int maxHold,
     int reseedInterval, int seedInner, int seedOuter, int finalRandSwitch,
-    int lod, int max_search_frames)
+    int lod, int max_search_frames,
+    int seg_block_length) // *** NEW HPQ PARAMETER ***
 {
     FPSR_Output out = {0};
     
-    // --- FIX: Sanitize frame_multiplier once at the start ---
+    // *** NEW: HPQ Timeline Definitions ***
+    /*
+    * --- HPQ Timeline Definitions ---
+    * This logic maps between two distinct timelines:
+    *
+    * 1. "Application Timeline":
+    * - This is the `frame` parameter (e.g., 0, 1, 2, 3...).
+    * - It's the "wall clock" of the user's application.
+    * - All LOD 2 outputs (`last_changed_frame`, `next_changed_frame`,
+    * `hold_progress`) are returned relative to this timeline.
+    *
+    * 2. "Content Timeline":
+    * - This is the *original* algorithm's timeline (e.g., `master_frame` 0, 1, 2...).
+    * - `scaled_frame_position` is the floating-point coordinate on this timeline.
+    *
+    * - `frame_multiplier` (fm) is the ratio that maps between them:
+    * (Application Timeline Frame) * fm = (Content Timeline Frame)
+    */
+    
+    // --- Sanitize frame_multiplier (now "playback_speed") once at the start ---
+    // Use 1.0 if 0.0 is passed to avoid division by zero later.
     double fm = (frame_multiplier == 0.0) ? 1.0 : frame_multiplier;
 
-    // --- HIERARCHICAL COHERENCE LOGIC (LOD 0) ---
-    // This is the new "frame_zoom" logic.
+    // --- (START) REPLACEMENT: HIERARCHICAL PHRASED QUANTISATION (HPQ) LOGIC ---
     
-    // 1. Calculate the 'true' floating-point position on the content timeline.
-    double scaled_frame_position = (double)frame / fm; // Use sanitized fm
+    // --- 1. Find coordinate on "Content Timeline" ---
+    // *** MODIFIED: Changed from division to multiplication ***
+    // This calculation now matches the intuitive "playback_speed" convention.
+    // e.g., fm = 0.5 (slow-mo): App frame 1 -> Content frame 0.5
+    // e.g., fm = 2.0 (fast-mo): App frame 1 -> Content frame 2.0
+    double scaled_frame_position = (double)frame * fm;
     if (p_scaled_frame_pos_out) {
         *p_scaled_frame_pos_out = scaled_frame_position;
     }
-
-    // 2. Get the integer part ('master frame') and fractional part ('gap').
+    // `master_frame` is the integer "anchor" on the Content Timeline.
     int64_t master_frame = (int64_t)floor(scaled_frame_position);
-    double sub_frame_fraction = scaled_frame_position - (double)master_frame;
 
-    // 3. Check if we are on a 'Master Frame' or in a 'Gap Frame'.
-    if (sub_frame_fraction == 0.0) {
-        // --- MASTER FRAME ---
-        // We landed perfectly on an integer.
-        // Just call the base algorithm with that integer.
+    // --- 2. Find "Start Line" on "Application Timeline" ---
+    // This finds the *first* application frame that maps to this master_frame.
+    // *** MODIFIED: Changed from multiplication to division ***
+    // e.g., fm = 0.5 (slow-mo), master_frame = 1.0. Start line = ceil(1.0 / 0.5) = 2.
+    int64_t master_frame_start_app_frame = (int64_t)ceil((double)master_frame / fm);
+
+    // --- 3. Calculate Local Coordinates (all on "Application Timeline") ---
+    // How many application frames has it been since this master_frame began?
+    int64_t app_frames_into_gap = frame - master_frame_start_app_frame;
+    int64_t segment_index = 0;
+    int64_t local_progress_in_segment = 0;
+
+    if (seg_block_length > 0) {
+        segment_index = app_frames_into_gap / seg_block_length;
+        local_progress_in_segment = app_frames_into_gap % seg_block_length;
+    } else {
+        segment_index = 0; 
+        local_progress_in_segment = 0;
+    }
+
+    // --- 4. Execute Two-Mode Logic ---
+    if (segment_index == 0) {
+        // --- MODE 1: "Tape Varispeed" (Anchor) ---
+        // Repeat the value of the `master_frame` from the Content Timeline.
         out.randVal = (float)fpsr_sm_base(master_frame, (int64_t)minHold, (int64_t)maxHold, (int64_t)reseedInterval, (int64_t)seedInner, (int64_t)seedOuter, finalRandSwitch);
     } else {
-        // --- GAP FRAME ---
-        // We are in a 'fractal zoom' gap.
-        
-        // 1. Find the hierarchical seed for this exact fractional position.
-        uint64_t hierarchical_seed = _get_hierarchical_seed(master_frame, sub_frame_fraction);
-        
-        // 2. Make the nested call.
-        // We use '0' as the frame (as it's a "local" event) and pass the
-        // unique hierarchical_seed as the 'seedInner' to generate the value.
-        out.randVal = (float)fpsr_sm_base(0, (int64_t)minHold, (int64_t)maxHold, (int64_t)reseedInterval, (int64_t)hierarchical_seed, (int64_t)seedOuter, finalRandSwitch);
+        // --- MODE 2: "Telescopic Extension" (Generative Phrase) ---
+        uint64_t gap_seed = splitmix64((uint64_t)master_frame + (uint64_t)segment_index);
+
+        // Call using `local_progress_in_segment` (from Application Timeline)
+        // and inject the unique `gap_seed` as 'seedInner'.
+        out.randVal = (float)fpsr_sm_base(local_progress_in_segment, (int64_t)minHold, (int64_t)maxHold, (int64_t)reseedInterval, (int64_t)gap_seed, (int64_t)seedOuter, finalRandSwitch);
     }
+    // --- (END) REPLACEMENT: HIERARCHICAL PHRASED QUANTISATION (HPQ) LOGIC ---
     
     if (lod < 1) return out;
 
     // LOD 1: Compare with previous frame to check for change.
-    // This is now a recursive call to THIS function, ensuring the
-    // previous value is also calculated using the hierarchical logic.
-    FPSR_Output prev_out = fpsr_sm_get_details(frame - 1, frame_multiplier, NULL, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0);
+    // This call is on the "Application Timeline".
+    // *** MODIFIED: Pass seg_block_length ***
+    FPSR_Output prev_out = fpsr_sm_get_details(frame - 1, frame_multiplier, NULL, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length);
     out.randVal_previous = prev_out.randVal; 
     out.has_changed = (out.randVal != prev_out.randVal);
 
     if (lod < 2) return out;
 
     // --- LOD 2: MODIFIED Robust Two-Phase Search ---
-    // The search logic MUST now call this _get_details function (with lod=0)
-    // to get values, not the _base function.
+    // The search logic operates entirely on the "Application Timeline".
     int64_t low_int, high_int, mid_int, result_int; 
     float next_val_candidate = 0.0f;
     int64_t step_int = 1;
 
-    // --- Backwards Search for last_changed_frame ---
+    // --- Backwards Search for last_changed_frame (on Application Timeline) ---
     if (out.has_changed) {
         out.last_changed_frame = (int)frame;
     } else {
         int64_t bound_low_int = frame;
         step_int = 1;
-        // Search in "app time"
         while (frame - step_int > frame - max_search_frames) { 
-            // Call this function recursively (LOD 0) to get the hierarchical value
-            float val_at_probe = fpsr_sm_get_details(frame - step_int, frame_multiplier, NULL, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0).randVal;
+            // *** MODIFIED: Pass seg_block_length ***
+            float val_at_probe = fpsr_sm_get_details(frame - step_int, frame_multiplier, NULL, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length).randVal;
             if (val_at_probe != out.randVal) {
                 bound_low_int = frame - step_int;
                 break;
@@ -869,9 +860,11 @@ FPSR_Output fpsr_sm_get_details(
         result_int = frame - max_search_frames + 1;
         while(low_int <= high_int) {
             mid_int = low_int + (high_int - low_int) / 2; 
-            float mid_val = fpsr_sm_get_details(mid_int, frame_multiplier, NULL, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0).randVal;
+            // *** MODIFIED: Pass seg_block_length ***
+            float mid_val = fpsr_sm_get_details(mid_int, frame_multiplier, NULL, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length).randVal;
             if (mid_val == out.randVal) {
-                float prev_mid_val = fpsr_sm_get_details(mid_int - 1, frame_multiplier, NULL, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0).randVal;
+                // *** MODIFIED: Pass seg_block_length ***
+                float prev_mid_val = fpsr_sm_get_details(mid_int - 1, frame_multiplier, NULL, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length).randVal;
                 if (prev_mid_val != out.randVal) {
                     result_int = mid_int; break;
                 }
@@ -883,11 +876,12 @@ FPSR_Output fpsr_sm_get_details(
         out.last_changed_frame = (int)result_int;
     }
 
-    // --- Forwards Search for next_changed_frame ---
+    // --- Forwards Search for next_changed_frame (on Application Timeline) ---
     int64_t bound_high_int = frame;
     step_int = 1;
     while (frame + step_int < frame + max_search_frames) { 
-        float val_at_probe = fpsr_sm_get_details(frame + step_int, frame_multiplier, NULL, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0).randVal;
+        // *** MODIFIED: Pass seg_block_length ***
+        float val_at_probe = fpsr_sm_get_details(frame + step_int, frame_multiplier, NULL, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length).randVal;
         if (val_at_probe != out.randVal) {
             bound_high_int = frame + step_int;
             next_val_candidate = val_at_probe;
@@ -902,7 +896,8 @@ FPSR_Output fpsr_sm_get_details(
     result_int = frame + max_search_frames;
     while(low_int <= high_int) {
         mid_int = low_int + (high_int - low_int) / 2; 
-        float mid_val = fpsr_sm_get_details(mid_int, frame_multiplier, NULL, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0).randVal;
+        // *** MODIFIED: Pass seg_block_length ***
+        float mid_val = fpsr_sm_get_details(mid_int, frame_multiplier, NULL, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length).randVal;
         if (mid_val != out.randVal) {
             result_int = mid_int;
             next_val_candidate = mid_val;
@@ -914,18 +909,15 @@ FPSR_Output fpsr_sm_get_details(
     out.next_changed_frame = (int)result_int;
     out.randVal_next_changed_frame = next_val_candidate; 
     
-    // --- FIX: OPTIMIZED hold_progress Calculation ---
-    // We can calculate the scaled time at the boundaries directly, using sanitized fm.
-    double scaled_last_changed = (double)out.last_changed_frame / fm;
-    double scaled_next_changed = (double)out.next_changed_frame / fm;
-    
-    double hold_duration = scaled_next_changed - scaled_last_changed;
-    if (hold_duration > 0.0) { 
-        // Use the scaled_frame_position we got from LOD 0
-        out.hold_progress = (float)((scaled_frame_position - scaled_last_changed) / hold_duration); 
+    // --- (START) REPLACEMENT: UPDATED hold_progress Calculation ---
+    // This calculation is now performed *purely* on the "Application Timeline"
+    double hold_duration_app_frames = (double)out.next_changed_frame - (double)out.last_changed_frame;
+    if (hold_duration_app_frames > 0.0) {
+        out.hold_progress = (float)(((double)frame - (double)out.last_changed_frame) / hold_duration_app_frames);
     } else {
         out.hold_progress = 0.0f;
     }
+    // --- (END) REPLACEMENT: UPDATED hold_progress Calculation ---
     
     return out;
 }
@@ -934,16 +926,15 @@ FPSR_Output fpsr_sm_get_details(
  * ---- TM: Toggle Modulo Wrapper with Details ----
  * @brief Wrapper for fpsr_tm that returns a detailed FPSR_Output struct.
  * @param frame (int64_t) The current frame or time input.
- * @param frame_multiplier (double) The time scaling factor. >1.0 is slow-mo, <1.0 is fast-mo.
+ * @param frame_multiplier (double) The time scaling factor.
+ * < 1.0 = Slow-Motion (Time Stretch)
+ * = 1.0 = Normal Speed
+ * > 1.0 = Fast-Motion (Time Compression)
  * @param p_scaled_frame_pos_out (double*) Optional output pointer to get the scaled frame position.
- * @param periodA (int) The first hold duration (in frames).
- * @param periodB (int) The second hold duration (in frames).
- * @param periodSwitch (int) The fixed interval at which the hold duration is toggled.
- * @param seedInner (int) An offset for the toggle clock.
- * @param seedOuter (int) An offset for the main clock.
- * @param finalRandSwitch (int) A flag that can turn off the final randomisation step.
+ * @param ... (algo params) ...
  * @param lod (int) The level of detail to calculate.
  * @param max_search_frames (int) A safety limit for the backward/forward search.
+ * @param seg_block_length (int) *** NEW *** The "runway" length for HPQ logic.
  * @return FPSR_Output struct with metadata populated based on the LOD.
  */
 FPSR_Output fpsr_tm_get_details(
@@ -951,41 +942,76 @@ FPSR_Output fpsr_tm_get_details(
     double* p_scaled_frame_pos_out, // Optional pointer to get the scaled time
     int periodA, int periodB,
     int periodSwitch, int seedInner, int seedOuter, int finalRandSwitch,
-    int lod, int max_search_frames)
+    int lod, int max_search_frames,
+    int seg_block_length) // *** NEW HPQ PARAMETER ***
 {
     FPSR_Output out = {0};
     
-    // --- FIX: Sanitize frame_multiplier once at the start ---
+    // *** NEW: HPQ Timeline Definitions ***
+    /*
+    * --- HPQ Timeline Definitions ---
+    * 1. "Application Timeline": The user's `frame` (e.g., 0, 1, 2...).
+    * 2. "Content Timeline": The *original* algorithm's timeline (e.g., `master_frame` 0, 1, 2...).
+    * `frame_multiplier` (fm) is the ratio that maps between them:
+    * (Application Timeline Frame) * fm = (Content Timeline Frame)
+    */
+    
+    // --- Sanitize frame_multiplier (now "playback_speed") ---
     double fm = (frame_multiplier == 0.0) ? 1.0 : frame_multiplier;
 
-    // --- HIERARCHICAL COHERENCE LOGIC (LOD 0) ---
-    double scaled_frame_position = (double)frame / fm; // Use sanitized fm
+    // --- (START) REPLACEMENT: HIERARCHICAL PHRASED QUANTISATION (HPQ) LOGIC ---
+    
+    // --- 1. Find coordinate on "Content Timeline" ---
+    // *** MODIFIED: Changed from division to multiplication ***
+    double scaled_frame_position = (double)frame * fm;
     if (p_scaled_frame_pos_out) {
         *p_scaled_frame_pos_out = scaled_frame_position;
     }
     int64_t master_frame = (int64_t)floor(scaled_frame_position);
-    double sub_frame_fraction = scaled_frame_position - (double)master_frame;
 
-    if (sub_frame_fraction == 0.0) {
-        // --- MASTER FRAME ---
+    // --- 2. Find "Start Line" on "Application Timeline" ---
+    // *** MODIFIED: Changed from multiplication to division ***
+    int64_t master_frame_start_app_frame = (int64_t)ceil((double)master_frame / fm);
+
+    // --- 3. Calculate Local Coordinates (all on "Application Timeline") ---
+    int64_t app_frames_into_gap = frame - master_frame_start_app_frame;
+    int64_t segment_index = 0;
+    int64_t local_progress_in_segment = 0;
+
+    if (seg_block_length > 0) {
+        segment_index = app_frames_into_gap / seg_block_length;
+        local_progress_in_segment = app_frames_into_gap % seg_block_length;
+    } else {
+        segment_index = 0;
+        local_progress_in_segment = 0;
+    }
+
+    // --- 4. Execute Two-Mode Logic ---
+    if (segment_index == 0) {
+        // --- MODE 1: "Tape Varispeed" (Anchor) ---
+        // Repeat the value of the `master_frame` from the Content Timeline.
         out.randVal = (float)fpsr_tm_base(master_frame, (int64_t)periodA, (int64_t)periodB, (int64_t)periodSwitch, (int64_t)seedInner, (int64_t)seedOuter, finalRandSwitch);
     } else {
-        // --- GAP FRAME ---
-        uint64_t hierarchical_seed = _get_hierarchical_seed(master_frame, sub_frame_fraction);
-        // Use '0' as the frame, pass hierarchical_seed as 'seedInner'
-        out.randVal = (float)fpsr_tm_base(0, (int64_t)periodA, (int64_t)periodB, (int64_t)periodSwitch, (int64_t)hierarchical_seed, (int64_t)seedOuter, finalRandSwitch);
+        // --- MODE 2: "Telescopic Extension" (Generative Phrase) ---
+        uint64_t gap_seed = splitmix64((uint64_t)master_frame + (uint64_t)segment_index);
+        
+        // Call using `local_progress_in_segment` (from Application Timeline)
+        // and inject the unique `gap_seed` as 'seedInner'.
+        out.randVal = (float)fpsr_tm_base(local_progress_in_segment, (int64_t)periodA, (int64_t)periodB, (int64_t)periodSwitch, (int64_t)gap_seed, (int64_t)seedOuter, finalRandSwitch);
     }
+    // --- (END) REPLACEMENT: HIERARCHICAL PHRASED QUANTISATION (HPQ) LOGIC ---
     
     if (lod < 1) return out;
 
     // LOD 1
-    FPSR_Output prev_out = fpsr_tm_get_details(frame - 1, frame_multiplier, NULL, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0);
+    // *** MODIFIED: Pass seg_block_length ***
+    FPSR_Output prev_out = fpsr_tm_get_details(frame - 1, frame_multiplier, NULL, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length);
     out.randVal_previous = prev_out.randVal; 
     out.has_changed = (out.randVal != prev_out.randVal);
     
     if (lod < 2) return out;
 
-    // --- LOD 2: MODIFIED Robust Search ---
+    // --- LOD 2: MODIFIED Robust Search (on Application Timeline) ---
     int64_t low_int, high_int, mid_int, result_int; 
     float next_val_candidate = 0.0f;
     int64_t step_int = 1;
@@ -997,7 +1023,8 @@ FPSR_Output fpsr_tm_get_details(
         int64_t bound_low_int = frame;
         step_int = 1;
         while (frame - step_int > frame - max_search_frames) {
-            float val_at_probe = fpsr_tm_get_details(frame - step_int, frame_multiplier, NULL, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0).randVal;
+            // *** MODIFIED: Pass seg_block_length ***
+            float val_at_probe = fpsr_tm_get_details(frame - step_int, frame_multiplier, NULL, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length).randVal;
             if (val_at_probe != out.randVal) {
                 bound_low_int = frame - step_int;
                 break;
@@ -1010,9 +1037,11 @@ FPSR_Output fpsr_tm_get_details(
         result_int = frame - max_search_frames + 1;
         while(low_int <= high_int) {
             mid_int = low_int + (high_int - low_int) / 2;
-            float mid_val = fpsr_tm_get_details(mid_int, frame_multiplier, NULL, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0).randVal;
+            // *** MODIFIED: Pass seg_block_length ***
+            float mid_val = fpsr_tm_get_details(mid_int, frame_multiplier, NULL, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length).randVal;
             if (mid_val == out.randVal) {
-                float prev_mid_val = fpsr_tm_get_details(mid_int - 1, frame_multiplier, NULL, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0).randVal;
+                // *** MODIFIED: Pass seg_block_length ***
+                float prev_mid_val = fpsr_tm_get_details(mid_int - 1, frame_multiplier, NULL, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length).randVal;
                 if (prev_mid_val != out.randVal) {
                     result_int = mid_int; break;
                 }
@@ -1028,7 +1057,8 @@ FPSR_Output fpsr_tm_get_details(
     int64_t bound_high_int = frame;
     step_int = 1;
     while (frame + step_int < frame + max_search_frames) {
-        float val_at_probe = fpsr_tm_get_details(frame + step_int, frame_multiplier, NULL, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0).randVal;
+        // *** MODIFIED: Pass seg_block_length ***
+        float val_at_probe = fpsr_tm_get_details(frame + step_int, frame_multiplier, NULL, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length).randVal;
         if (val_at_probe != out.randVal) {
             bound_high_int = frame + step_int;
             next_val_candidate = val_at_probe;
@@ -1042,7 +1072,8 @@ FPSR_Output fpsr_tm_get_details(
     result_int = frame + max_search_frames;
     while(low_int <= high_int) {
         mid_int = low_int + (high_int - low_int) / 2;
-        float mid_val = fpsr_tm_get_details(mid_int, frame_multiplier, NULL, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0).randVal;
+        // *** MODIFIED: Pass seg_block_length ***
+        float mid_val = fpsr_tm_get_details(mid_int, frame_multiplier, NULL, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length).randVal;
         if (mid_val != out.randVal) {
             result_int = mid_int;
             next_val_candidate = mid_val;
@@ -1054,16 +1085,15 @@ FPSR_Output fpsr_tm_get_details(
     out.next_changed_frame = (int)result_int;
     out.randVal_next_changed_frame = next_val_candidate;
     
-    // --- FIX: OPTIMIZED hold_progress Calculation ---
-    double scaled_last_changed = (double)out.last_changed_frame / fm;
-    double scaled_next_changed = (double)out.next_changed_frame / fm;
-
-    double hold_duration = scaled_next_changed - scaled_last_changed;
-    if (hold_duration > 0.0) {
-        out.hold_progress = (float)((scaled_frame_position - scaled_last_changed) / hold_duration);
+    // --- (START) REPLACEMENT: UPDATED hold_progress Calculation ---
+    // Calculate progress based *purely* on the "Application Timeline".
+    double hold_duration_app_frames = (double)out.next_changed_frame - (double)out.last_changed_frame;
+    if (hold_duration_app_frames > 0.0) {
+        out.hold_progress = (float)(((double)frame - (double)out.last_changed_frame) / hold_duration_app_frames);
     } else {
         out.hold_progress = 0.0f;
     }
+    // --- (END) REPLACEMENT: UPDATED hold_progress Calculation ---
 
     return out;
 }
@@ -1072,20 +1102,15 @@ FPSR_Output fpsr_tm_get_details(
  * ---- QS: Quantised Switching Wrapper with Details ----
  * @brief Wrapper for fpsr_qs that returns a detailed FPSR_Output struct.
  * @param frame (int64_t) The current frame or time input.
- * @param frame_multiplier (double) The time scaling factor. >1.0 is slow-mo, <1.0 is fast-mo.
+ * @param frame_multiplier (double) The time scaling factor.
+ * < 1.0 = Slow-Motion (Time Stretch)
+ * = 1.0 = Normal Speed
+ * > 1.0 = Fast-Motion (Time Compression)
  * @param p_scaled_frame_pos_out (double*) Optional output pointer to get the scaled frame position.
- * @param baseWaveFreq (float) The base frequency for the modulation wave of stream 1.
- * @param stream2FreqMult (float) A multiplier for the second stream's frequency.
- * @param quantLevelsMinMax (const int[2]) An array for min and max quantisation levels.
- * @param streamsOffset (const int[2]) An array to offset the frame for each stream's sine wave.
- * @param quantOffsets (const int[2]) An array to offset random quantisation selection.
- * @param streamSwitchDur (int) The number of frames after which the streams switch.
- * @param stream1QuantDur (int) The duration for stream 1's random quantisation level hold.
- * @param stream2QuantDur (int) The duration for stream 2's random quantisation level hold.
- * @param finalRandSwitch (int) A flag that can turn off the final randomisation step.
- * @param sine_lod_level (int) Level of detail for sine wave generation (0: direct sin(), 1-4: LUTs).
+ * @param ... (algo params) ...
  * @param lod (int) The level of detail to calculate.
  * @param max_search_frames (int) A safety limit for the backward/forward search.
+ * @param seg_block_length (int) *** NEW *** The "runway" length for HPQ logic.
  * @return FPSR_Output struct with metadata populated based on the LOD.
  */
 FPSR_Output fpsr_qs_get_details(
@@ -1095,41 +1120,69 @@ FPSR_Output fpsr_qs_get_details(
     const int quantLevelsMinMax[2], const int streamsOffset[2], const int quantOffsets[2],
     int streamSwitchDur, int stream1QuantDur, int stream2QuantDur, int finalRandSwitch,
     int sine_lod_level,
-    int lod, int max_search_frames)
+    int lod, int max_search_frames,
+    int seg_block_length) // *** NEW HPQ PARAMETER ***
 {
     FPSR_Output out = {0};
+    
+    // *** NEW: HPQ Timeline Definitions ***
+    /*
+    * --- HPQ Timeline Definitions ---
+    * 1. "Application Timeline": The user's `frame` (e.g., 0, 1, 2...).
+    * 2. "Content Timeline": The *original* algorithm's timeline (e.g., `master_frame` 0, 1, 2...).
+    * `frame_multiplier` (fm) is the ratio that maps between them:
+    * (Application Timeline Frame) * fm = (Content Timeline Frame)
+    */
 
-    // --- FIX: Sanitize frame_multiplier once at the start ---
+    // --- Sanitize frame_multiplier (now "playback_speed") ---
     double fm = (frame_multiplier == 0.0) ? 1.0 : frame_multiplier;
 
-    // --- HIERARCHICAL COHERENCE LOGIC (LOD 0) ---
-    double scaled_frame_position = (double)frame / fm; // Use sanitized fm
+    // --- (START) REPLACEMENT: HIERARCHICAL PHRASED QUANTISATION (HPQ) LOGIC ---
+    
+    // --- 1. Find coordinate on "Content Timeline" ---
+    // *** MODIFIED: Changed from division to multiplication ***
+    double scaled_frame_position = (double)frame * fm;
     if (p_scaled_frame_pos_out) {
         *p_scaled_frame_pos_out = scaled_frame_position;
     }
     int64_t master_frame = (int64_t)floor(scaled_frame_position);
-    double sub_frame_fraction = scaled_frame_position - (double)master_frame;
+    
+    // --- 2. Find "Start Line" on "Application Timeline" ---
+    // *** MODIFIED: Changed from multiplication to division ***
+    int64_t master_frame_start_app_frame = (int64_t)ceil((double)master_frame / fm);
+
+    // --- 3. Calculate Local Coordinates (all on "Application Timeline") ---
+    int64_t app_frames_into_gap = frame - master_frame_start_app_frame;
+    int64_t segment_index = 0;
+    int64_t local_progress_in_segment = 0;
+
+    if (seg_block_length > 0) {
+        segment_index = app_frames_into_gap / seg_block_length;
+        local_progress_in_segment = app_frames_into_gap % seg_block_length;
+    } else {
+        segment_index = 0;
+        local_progress_in_segment = 0;
+    }
 
     FPSR_Output base_qs_output;
-    if (sub_frame_fraction == 0.0) {
-        // --- MASTER FRAME ---
+    if (segment_index == 0) {
+        // --- MODE 1: "Tape Varispeed" (Anchor) ---
+        // Repeat the value of the `master_frame` from the Content Timeline.
         base_qs_output = fpsr_qs_base(master_frame, (double)baseWaveFreq, (double)stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, (int64_t)streamSwitchDur, (int64_t)stream1QuantDur, (int64_t)stream2QuantDur, finalRandSwitch, sine_lod_level);
     } else {
-        // --- GAP FRAME ---
-        uint64_t hierarchical_seed = _get_hierarchical_seed(master_frame, sub_frame_fraction);
+        // --- MODE 2: "Telescopic Extension" (Generative Phrase) ---
+        uint64_t gap_seed = splitmix64((uint64_t)master_frame + (uint64_t)segment_index);
         
-        // For QS, we modify the 'quantOffsets' to inject the hierarchical seed.
-        // This makes the quantization level ("the event") unique to this gap.
+        // For QS, we inject the unique seed into the 'quantOffsets'.
         int new_quantOffsets[2] = {
-            quantOffsets[0] + (int)(hierarchical_seed & 0xFFFFFFFF), 
-            quantOffsets[1] + (int)((hierarchical_seed >> 32) & 0xFFFFFFFF)
+            quantOffsets[0] + (int)(gap_seed & 0xFFFFFFFF), 
+            quantOffsets[1] + (int)((gap_seed >> 32) & 0xFFFFFFFF)
         };
         
-        // We still use '0' as the frame, as the 'streamsOffset' would be wrong,
-        // but the sine wave freq at frame 0 is fine as a "local" event.
-        // The *real* uniqueness comes from the new quant offsets.
-        base_qs_output = fpsr_qs_base(0, (double)baseWaveFreq, (double)stream2FreqMult, quantLevelsMinMax, streamsOffset, new_quantOffsets, (int64_t)streamSwitchDur, (int64_t)stream1QuantDur, (int64_t)stream2QuantDur, finalRandSwitch, sine_lod_level);
+        // Use `local_progress_in_segment` (from Application Timeline) as the "frame"
+        base_qs_output = fpsr_qs_base(local_progress_in_segment, (double)baseWaveFreq, (double)stream2FreqMult, quantLevelsMinMax, streamsOffset, new_quantOffsets, (int64_t)streamSwitchDur, (int64_t)stream1QuantDur, (int64_t)stream2QuantDur, finalRandSwitch, sine_lod_level);
     }
+    // --- (END) REPLACEMENT: HIERARCHICAL PHRASED QUANTISATION (HPQ) LOGIC ---
     
     out.randVal = base_qs_output.randVal;
     out.randStreams[0] = base_qs_output.randStreams[0];
@@ -1139,13 +1192,14 @@ FPSR_Output fpsr_qs_get_details(
     if (lod < 1) return out;
 
     // LOD 1
-    FPSR_Output prev_out = fpsr_qs_get_details(frame - 1, frame_multiplier, NULL, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0);
+    // *** MODIFIED: Pass seg_block_length ***
+    FPSR_Output prev_out = fpsr_qs_get_details(frame - 1, frame_multiplier, NULL, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0, seg_block_length);
     out.randVal_previous = prev_out.randVal;
     out.has_changed = (out.randVal != out.randVal_previous);
     
     if (lod < 2) return out;
 
-    // --- LOD 2: MODIFIED Robust Search ---
+    // --- LOD 2: MODIFIED Robust Search (on Application Timeline) ---
     int64_t low_int, high_int, mid_int, result_int; 
     float next_val_candidate = 0.0f;
     int64_t step_int = 1;
@@ -1157,7 +1211,8 @@ FPSR_Output fpsr_qs_get_details(
         int64_t bound_low_int = frame;
         step_int = 1;
         while (frame - step_int > frame - max_search_frames) { 
-            FPSR_Output probe_qs_output = fpsr_qs_get_details(frame - step_int, frame_multiplier, NULL, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0);
+            // *** MODIFIED: Pass seg_block_length ***
+            FPSR_Output probe_qs_output = fpsr_qs_get_details(frame - step_int, frame_multiplier, NULL, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0, seg_block_length);
             if (probe_qs_output.randVal != out.randVal) {
                 bound_low_int = frame - step_int;
                 break;
@@ -1170,9 +1225,11 @@ FPSR_Output fpsr_qs_get_details(
         result_int = frame - max_search_frames + 1;
         while(low_int <= high_int) {
             mid_int = low_int + (high_int - low_int) / 2; 
-            FPSR_Output mid_qs_output = fpsr_qs_get_details(mid_int, frame_multiplier, NULL, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0);
+            // *** MODIFIED: Pass seg_block_length ***
+            FPSR_Output mid_qs_output = fpsr_qs_get_details(mid_int, frame_multiplier, NULL, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0, seg_block_length);
             if (mid_qs_output.randVal == out.randVal) {
-                FPSR_Output mid_minus_step_qs_output = fpsr_qs_get_details(mid_int - 1, frame_multiplier, NULL, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0);
+                // *** MODIFIED: Pass seg_block_length ***
+                FPSR_Output mid_minus_step_qs_output = fpsr_qs_get_details(mid_int - 1, frame_multiplier, NULL, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0, seg_block_length);
                 if (mid_minus_step_qs_output.randVal != out.randVal) {
                     result_int = mid_int; break;
                 }
@@ -1188,7 +1245,8 @@ FPSR_Output fpsr_qs_get_details(
     int64_t bound_high_int = frame;
     step_int = 1;
     while (frame + step_int < frame + max_search_frames) { 
-        FPSR_Output probe_qs_output = fpsr_qs_get_details(frame + step_int, frame_multiplier, NULL, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0);
+        // *** MODIFIED: Pass seg_block_length ***
+        FPSR_Output probe_qs_output = fpsr_qs_get_details(frame + step_int, frame_multiplier, NULL, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0, seg_block_length);
         if (probe_qs_output.randVal != out.randVal) {
             bound_high_int = frame + step_int;
             next_val_candidate = probe_qs_output.randVal;
@@ -1202,7 +1260,8 @@ FPSR_Output fpsr_qs_get_details(
     result_int = frame + max_search_frames;
     while(low_int <= high_int) {
         mid_int = low_int + (high_int - low_int) / 2; 
-        FPSR_Output mid_qs_output = fpsr_qs_get_details(mid_int, frame_multiplier, NULL, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0);
+        // *** MODIFIED: Pass seg_block_length ***
+        FPSR_Output mid_qs_output = fpsr_qs_get_details(mid_int, frame_multiplier, NULL, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0, seg_block_length);
         if (mid_qs_output.randVal != out.randVal) {
             result_int = mid_int;
             next_val_candidate = mid_qs_output.randVal;
@@ -1214,16 +1273,15 @@ FPSR_Output fpsr_qs_get_details(
     out.next_changed_frame = (int)result_int;
     out.randVal_next_changed_frame = next_val_candidate; 
     
-    // --- FIX: OPTIMIZED hold_progress Calculation ---
-    double scaled_last_changed = (double)out.last_changed_frame / fm;
-    double scaled_next_changed = (double)out.next_changed_frame / fm;
-
-    double hold_duration = scaled_next_changed - scaled_last_changed;
-    if (hold_duration > 0.0) { 
-        out.hold_progress = (float)((scaled_frame_position - scaled_last_changed) / hold_duration); 
+    // --- (START) REPLACEMENT: UPDATED hold_progress Calculation ---
+    // Calculate progress based *purely* on the "Application Timeline".
+    double hold_duration_app_frames = (double)out.next_changed_frame - (double)out.last_changed_frame;
+    if (hold_duration_app_frames > 0.0) {
+        out.hold_progress = (float)(((double)frame - (double)out.last_changed_frame) / hold_duration_app_frames);
     } else {
         out.hold_progress = 0.0f;
     }
+    // --- (END) REPLACEMENT: UPDATED hold_progress Calculation ---
 
     return out;
 }
@@ -1232,18 +1290,15 @@ FPSR_Output fpsr_qs_get_details(
  * ---- BD: Bitwise Decode Wrapper with Details ----
  * @brief Wrapper for fpsr_bd that returns a detailed FPSR_Output struct.
  * @param frame (int64_t) The current frame or time input.
- * @param frame_multiplier (double) The time scaling factor. >1.0 is slow-mo, <1.0 is fast-mo.
+ * @param frame_multiplier (double) The time scaling factor.
+ * < 1.0 = Slow-Motion (Time Stretch)
+ * = 1.0 = Normal Speed
+ * > 1.0 = Fast-Motion (Time Compression)
  * @param p_scaled_frame_pos_out (double*) Optional output pointer to get the scaled frame position.
- * @param block_size (int) The size of the macro-rhythm in frames.
- * @param streams_number (int) The number of parallel bitstreams to generate.
- * @param streams_offset (int) The frame offset between each parallel stream's seed.
- * @param intra_op (const char*) The unary (intra-stream) operation ("none", "not", "lshift", etc.).
- * @param dynamic_shift_bits (int) For dynamic ops, the number of controller bits to read.
- * @param static_shift_amount (int) For static ops, the fixed number of bits to shift/rotate.
- * @param inter_op (const char*) The binary (inter-stream) operation ("xor", "or", "and").
- * @param value_seed_offset (int) An additional seed offset for the final value calculation.
+ * @param ... (algo params) ...
  * @param lod (int) The level of detail to calculate.
  * @param max_search_frames (int) A safety limit for the backward/forward search.
+ * @param seg_block_length (int) *** NEW *** The "runway" length for HPQ logic.
  * @return FPSR_Output struct with metadata populated based on the LOD.
  */
 FPSR_Output fpsr_bd_get_details(
@@ -1257,51 +1312,81 @@ FPSR_Output fpsr_bd_get_details(
     int static_shift_amount,
     const char* inter_op,
     int value_seed_offset,
-    int lod, int max_search_frames
-)
+    int lod, int max_search_frames,
+    int seg_block_length) // *** NEW HPQ PARAMETER ***
 {
     FPSR_Output out = {0};
     
-    // --- FIX: Sanitize frame_multiplier once at the start ---
+    // *** NEW: HPQ Timeline Definitions ***
+    /*
+    * --- HPQ Timeline Definitions ---
+    * 1. "Application Timeline": The user's `frame` (e.g., 0, 1, 2...).
+    * 2. "Content Timeline": The *original* algorithm's timeline (e.g., `master_frame` 0, 1, 2...).
+    * `frame_multiplier` (fm) is the ratio that maps between them:
+    * (Application Timeline Frame) * fm = (Content Timeline Frame)
+    */
+    
+    // --- Sanitize frame_multiplier (now "playback_speed") ---
     double fm = (frame_multiplier == 0.0) ? 1.0 : frame_multiplier;
 
-    // --- HIERARCHICAL COHERENCE LOGIC (LOD 0) ---
-    double scaled_frame_position = (double)frame / fm; // Use sanitized fm
+    // --- (START) REPLACEMENT: HIERARCHICAL PHRASED QUANTISATION (HPQ) LOGIC ---
+    
+    // --- 1. Find coordinate on "Content Timeline" ---
+    // *** MODIFIED: Changed from division to multiplication ***
+    double scaled_frame_position = (double)frame * fm;
     if (p_scaled_frame_pos_out) {
         *p_scaled_frame_pos_out = scaled_frame_position;
     }
     int64_t master_frame = (int64_t)floor(scaled_frame_position);
-    double sub_frame_fraction = scaled_frame_position - (double)master_frame;
+    
+    // --- 2. Find "Start Line" on "Application Timeline" ---
+    // *** MODIFIED: Changed from multiplication to division ***
+    int64_t master_frame_start_app_frame = (int64_t)ceil((double)master_frame / fm);
 
-    if (sub_frame_fraction == 0.0) {
-        // --- MASTER FRAME ---
+    // --- 3. Calculate Local Coordinates (all on "Application Timeline") ---
+    int64_t app_frames_into_gap = frame - master_frame_start_app_frame;
+    int64_t segment_index = 0;
+    int64_t local_progress_in_segment = 0;
+
+    if (seg_block_length > 0) {
+        segment_index = app_frames_into_gap / seg_block_length;
+        local_progress_in_segment = app_frames_into_gap % seg_block_length;
+    } else {
+        segment_index = 0;
+        local_progress_in_segment = 0;
+    }
+
+    if (segment_index == 0) {
+        // --- MODE 1: "Tape Varispeed" (Anchor) ---
+        // Repeat the value of the `master_frame` from the Content Timeline.
         out.randVal = (float)fpsr_bd(
             master_frame, (int64_t)block_size, streams_number, (int64_t)streams_offset,
             intra_op, dynamic_shift_bits, static_shift_amount, inter_op, (int64_t)value_seed_offset
         );
     } else {
-        // --- GAP FRAME ---
-        uint64_t hierarchical_seed = _get_hierarchical_seed(master_frame, sub_frame_fraction);
+        // --- MODE 2: "Telescopic Extension" (Generative Phrase) ---
+        uint64_t gap_seed = splitmix64((uint64_t)master_frame + (uint64_t)segment_index);
         
-        // For BD, we replace the 'value_seed_offset' with the hierarchical seed.
-        // We also pass '0' as the frame, since the 'master_frame' context
-        // is now contained within the hierarchical seed.
+        // For BD, we inject the unique seed as the 'value_seed_offset'.
+        // We also pass `local_progress_in_segment` (from Application Timeline) as the frame.
         out.randVal = (float)fpsr_bd(
-            0, (int64_t)block_size, streams_number, (int64_t)streams_offset,
-            intra_op, dynamic_shift_bits, static_shift_amount, inter_op, (int64_t)hierarchical_seed // Cast seed to int64_t
+            local_progress_in_segment, (int64_t)block_size, streams_number, (int64_t)streams_offset,
+            intra_op, dynamic_shift_bits, static_shift_amount, inter_op, (int64_t)gap_seed // Cast seed to int64_t
         );
     }
+    // --- (END) REPLACEMENT: HIERARCHICAL PHRASED QUANTISATION (HPQ) LOGIC ---
     
     if (lod < 1) return out;
 
     // LOD 1
-    FPSR_Output prev_out = fpsr_bd_get_details(frame - 1, frame_multiplier, NULL, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0);
+    // *** MODIFIED: Pass seg_block_length ***
+    FPSR_Output prev_out = fpsr_bd_get_details(frame - 1, frame_multiplier, NULL, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0, seg_block_length);
     out.randVal_previous = prev_out.randVal;
     out.has_changed = (out.randVal != out.randVal_previous);
 
     if (lod < 2) return out;
 
-    // --- LOD 2: MODIFIED Robust Search ---
+    // --- LOD 2: MODIFIED Robust Search (on Application Timeline) ---
     int64_t low_int, high_int, mid_int, result_int; 
     float next_val_candidate = 0.0f;
     int64_t step_int = 1;
@@ -1313,7 +1398,8 @@ FPSR_Output fpsr_bd_get_details(
         int64_t bound_low_int = frame;
         step_int = 1;
         while (frame - step_int > frame - max_search_frames) {
-            float val_at_probe = fpsr_bd_get_details(frame - step_int, frame_multiplier, NULL, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0).randVal;
+            // *** MODIFIED: Pass seg_block_length ***
+            float val_at_probe = fpsr_bd_get_details(frame - step_int, frame_multiplier, NULL, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0, seg_block_length).randVal;
             if (val_at_probe != out.randVal) {
                 bound_low_int = frame - step_int;
                 break;
@@ -1326,9 +1412,11 @@ FPSR_Output fpsr_bd_get_details(
         result_int = frame - max_search_frames + 1;
         while(low_int <= high_int) {
             mid_int = low_int + (high_int - low_int) / 2;
-            float mid_val = fpsr_bd_get_details(mid_int, frame_multiplier, NULL, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0).randVal;
+            // *** MODIFIED: Pass seg_block_length ***
+            float mid_val = fpsr_bd_get_details(mid_int, frame_multiplier, NULL, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0, seg_block_length).randVal;
             if (mid_val == out.randVal) {
-                float prev_mid_val = fpsr_bd_get_details(mid_int - 1, frame_multiplier, NULL, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0).randVal;
+                // *** MODIFIED: Pass seg_block_length ***
+                float prev_mid_val = fpsr_bd_get_details(mid_int - 1, frame_multiplier, NULL, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0, seg_block_length).randVal;
                 if (prev_mid_val != out.randVal) {
                     result_int = mid_int; break;
                 }
@@ -1344,7 +1432,8 @@ FPSR_Output fpsr_bd_get_details(
     int64_t bound_high_int = frame;
     step_int = 1;
     while (frame + step_int < frame + max_search_frames) {
-        float val_at_probe = fpsr_bd_get_details(frame + step_int, frame_multiplier, NULL, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0).randVal;
+        // *** MODIFIED: Pass seg_block_length ***
+        float val_at_probe = fpsr_bd_get_details(frame + step_int, frame_multiplier, NULL, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0, seg_block_length).randVal;
         if (val_at_probe != out.randVal) {
             bound_high_int = frame + step_int;
             next_val_candidate = val_at_probe;
@@ -1358,7 +1447,8 @@ FPSR_Output fpsr_bd_get_details(
     result_int = frame + max_search_frames;
     while(low_int <= high_int) {
         mid_int = low_int + (high_int - low_int) / 2;
-        float mid_val = fpsr_bd_get_details(mid_int, frame_multiplier, NULL, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0).randVal;
+        // *** MODIFIED: Pass seg_block_length ***
+        float mid_val = fpsr_bd_get_details(mid_int, frame_multiplier, NULL, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0, seg_block_length).randVal;
         if (mid_val != out.randVal) {
             result_int = mid_int;
             next_val_candidate = mid_val;
@@ -1370,16 +1460,15 @@ FPSR_Output fpsr_bd_get_details(
     out.next_changed_frame = (int)result_int;
     out.randVal_next_changed_frame = next_val_candidate;
     
-    // --- FIX: OPTIMIZED hold_progress Calculation ---
-    double scaled_last_changed = (double)out.last_changed_frame / fm;
-    double scaled_next_changed = (double)out.next_changed_frame / fm;
-
-    double hold_duration = scaled_next_changed - scaled_last_changed;
-    if (hold_duration > 0.0) {
-        out.hold_progress = (float)((scaled_frame_position - scaled_last_changed) / hold_duration);
+    // --- (START) REPLACEMENT: UPDATED hold_progress Calculation ---
+    // Calculate progress based *purely* on the "Application Timeline".
+    double hold_duration_app_frames = (double)out.next_changed_frame - (double)out.last_changed_frame;
+    if (hold_duration_app_frames > 0.0) {
+        out.hold_progress = (float)(((double)frame - (double)out.last_changed_frame) / hold_duration_app_frames);
     } else {
         out.hold_progress = 0.0f;
     }
+    // --- (END) REPLACEMENT: UPDATED hold_progress Calculation ---
 
     return out;
 }
@@ -1405,10 +1494,33 @@ int main() {
     int start_frames[] = {90, 100, 103, 100}; // Starting frames for each algorithm
     int num_frames = 30; // Run a loop of 30 frames to demonstrate changes
     int lod = 2; // Level of detail (0, 1, or 2) for rich output
+    
+    // *** MODIFIED: This comment now reflects the new, intuitive logic ***
+    // 1.0 = normal speed
+    // 0.5 = 0.5x speed (slow motion / time stretch)
+    // 2.0 = 2.0x speed (fast motion / time compression)
+    double main_frame_multiplier = 1.0; // Default value representing "Normal Speed"
+    // create a string to indicate speed up or slow down comment
+    char speed_mode_description[20];
+    // Check if the frame multiplier is less than 1.0, indicating "Slow-Down" mode
+    if (main_frame_multiplier < 1.0) {
+        snprintf(speed_mode_description, sizeof(speed_mode_description), "Slow-Down");
+    } else if (main_frame_multiplier > 1.0) { // Speed-Up mode
+        snprintf(speed_mode_description, sizeof(speed_mode_description), "Speed-Up");
+    } else {
+        snprintf(speed_mode_description, sizeof(speed_mode_description), "Normal Speed");
+    }
+    printf("Frame Multiplier: %.2f (%s)\n", main_frame_multiplier, speed_mode_description);
+    
+    // *** NEW: HPQ Parameter ***
+    // A value of 5 means "tape varispeed" holds until a 5x stretch
+    // (i.e., frame_multiplier <= 0.2), at which point new generative
+    // phrases kick in. (5 = 1.0 / 0.2)
+    int seg_block_length = 5;
 
     for (int loop_frame = 0; loop_frame < num_frames; loop_frame++) {
         int64_t frame = (int64_t)loop_frame + (int64_t)start_frames[algo]; // Use int64_t for frame
-        double frame_multiplier = 1.0; // Use double for multiplier
+        double frame_multiplier = main_frame_multiplier; // Use double for multiplier
         FPSR_Output output = {0};
         
         if (algo == 0) {
@@ -1422,7 +1534,8 @@ int main() {
             int max_search_frames = 50; // Safety limit for search
 
             // Call fpsr_sm_get_details
-            output = fpsr_sm_get_details(frame, frame_multiplier, NULL, minHoldFrames, maxHoldFrames, reseedFrames, offsetInner, offsetOuter, finalRandSwitch, lod, max_search_frames);
+            // *** MODIFIED: Pass seg_block_length ***
+            output = fpsr_sm_get_details(frame, frame_multiplier, NULL, minHoldFrames, maxHoldFrames, reseedFrames, offsetInner, offsetOuter, finalRandSwitch, lod, max_search_frames, seg_block_length);
         } else if (algo == 1) {
             // Parameters for FPS-R:TM
             int periodA = 8;            // First hold duration
@@ -1434,9 +1547,10 @@ int main() {
             int max_search_frames = 50; // Safety limit for search
 
             // Call fpsr_tm_get_details
+            // *** MODIFIED: Pass seg_block_length ***
             output = fpsr_tm_get_details(frame, frame_multiplier, NULL,
                 periodA, periodB, periodSwitch, offsetInner, offsetOuter, 
-                finalRandSwitch, lod, max_search_frames);
+                finalRandSwitch, lod, max_search_frames, seg_block_length);
         } else if (algo == 2) {
             // Parameters for FPS-R:QS
             float baseWaveFreq = 0.012f;    // Base wave frequency for stream 1
@@ -1452,10 +1566,11 @@ int main() {
             int max_search_frames = 50;     // Safety limit for search
 
             // Call fpsr_qs_get_details
+            // *** MODIFIED: Pass seg_block_length ***
             output = fpsr_qs_get_details(frame, frame_multiplier, NULL, baseWaveFreq, stream2FreqMult, 
                 quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, 
                 stream1QuantDur, stream2QuantDur, finalRandSwitch, 
-                sine_lod_level, lod, max_search_frames);
+                sine_lod_level, lod, max_search_frames, seg_block_length);
         } else if (algo == 3) {
             // Parameters for FPS-R:BD
             int p_block_size = 64;           // Size of the macro-rhythm block
@@ -1472,10 +1587,11 @@ int main() {
             int p_value_seed_offset = 78901; // Additional seed offset for final value
             int max_search_frames = 100; // BD blocks can be large
 
+            // *** MODIFIED: Pass seg_block_length ***
             output = fpsr_bd_get_details(
                 frame, frame_multiplier, NULL, p_block_size, p_streams_number, p_streams_offset,
                 p_intra_op, p_dynamic_shift_bits, p_static_shift_amount,
-                p_inter_op, p_value_seed_offset, lod, max_search_frames
+                p_inter_op, p_value_seed_offset, lod, max_search_frames, seg_block_length
             );
         }
 
@@ -1494,4 +1610,3 @@ int main() {
 
     return 0;
 }
-
