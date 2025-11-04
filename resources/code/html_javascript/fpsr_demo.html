@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FPS-R Algorithms Visualiser</title>
+    <title>FPS-R Algorithms Visualiser (HPQ)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -65,8 +65,8 @@
 <body class="flex flex-col items-center justify-center min-h-screen p-4 md:p-8">
 
     <div class="w-full max-w-7xl">
-        <h1 class="text-3xl font-bold text-center text-white mb-2">FPS-R Algorithms Visualiser</h1>
-        <p class="text-center text-gray-400 mb-6">Visualizing emergent complexity from the four core algorithms.</p>
+        <h1 class="text-3xl font-bold text-center text-white mb-2">FPS-R HPQ Visualiser</h1>
+        <p class="text-center text-gray-400 mb-6">Visualizing the Hierarchical Phrased Quantisation (HPQ) logic.</p>
 
         <!-- Canvas for visualization -->
         <canvas id="visualizerCanvas" class="w-full mb-6 shadow-lg" height="300"></canvas>
@@ -259,6 +259,29 @@
                 </div>
             </div>
 
+            <!-- *** MODIFIED: Global HPQ Controls *** -->
+            <div class="mt-6 pt-6 border-t border-gray-700">
+                <h3 class="text-lg font-semibold text-white mb-4">Global HPQ Time Controls</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="param-group" title="Global playback speed. < 1.0 = Slow-Motion (Stretch), > 1.0 = Fast-Motion (Compress)">
+                        <label for="global_frameMultiplier">Playback Speed (frame_multiplier)</label>
+                        <div class="flex items-center space-x-2">
+                            <input id="global_frameMultiplier" type="range" min="0.1" max="4.0" value="1.0" step="0.05" class="w-full">
+                            <span id="global_frameMultiplierValue" class="text-sm text-white w-12 text-right">1.00x</span>
+                            <!-- *** NEW: Reset Button *** -->
+                            <button id="resetFrameMultiplierButton" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-1 px-2 rounded-md text-xs transition duration-150" title="Reset to 1.0x">
+                                1.0x
+                            </button>
+                        </div>
+                    </div>
+                    <div class="param-group" title="HPQ 'runway' size. Defines length of 'Tape Varispeed' block before generative content begins.">
+                        <label for="global_segBlockLength">Segment Length (seg_block_length)</label>
+                        <input id="global_segBlockLength" type="number" value="5" min="1" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                    </div>
+                </div>
+            </div>
+
+
             <!-- Shared Controls -->
             <div class="flex flex-col md:flex-row gap-4 mt-6 pt-6 border-t border-gray-700">
                 <button id="resetButton" class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition duration-150">
@@ -278,7 +301,6 @@
             </div>
         </div>
 
-        <!-- Gemini API Response Area (REMOVED) -->
     </div>
 
     <script>
@@ -291,14 +313,16 @@
             canvas.width = canvasWidth;
             canvas.height = canvasHeight;
 
-            let frame = 0;
+            let frame = 0; // This is the "Application Timeline" frame
             let history = [];
             let activeAlgorithm = 'SM';
-            let isPaused = false; // New state
-            let animationFrameId = null; // New state
+            let isPaused = false;
+            let animationFrameId = null;
 
             // --- Global parameters object ---
             let globalParams = {
+                frameMultiplier: 1.0, // NEW
+                segBlockLength: 5,   // NEW
                 sm: {},
                 tm: {},
                 qs: {},
@@ -310,22 +334,56 @@
             const allTabs = document.querySelectorAll('.tab');
             const allPanels = document.querySelectorAll('.control-panel > div[id^="panel-"]');
             const resetButton = document.getElementById('resetButton');
-
-            // --- New UI Elements ---
             const pauseButton = document.getElementById('pauseButton');
             const pauseButtonText = document.getElementById('pauseButtonText');
             const pauseIcon = document.getElementById('pauseIcon');
             const playIcon = document.getElementById('playIcon');
             const rewindButton = document.getElementById('rewindButton');
-
-            // --- Gemini API Elements (REMOVED) ---
             
+            // --- New Global HPQ UI ---
+            const frameMultiplierSlider = document.getElementById('global_frameMultiplier');
+            const frameMultiplierValue = document.getElementById('global_frameMultiplierValue');
+            const resetFrameMultiplierButton = document.getElementById('resetFrameMultiplierButton'); // NEW
+
             // --- Helper for range sliders ---
             document.querySelectorAll('input[type="range"]').forEach(slider => {
                 const valueSpan = document.getElementById(slider.id + 'Value');
                 if (valueSpan) {
                     slider.addEventListener('input', (e) => {
-                        valueSpan.textContent = e.target.value;
+                        let currentValue = parseFloat(e.target.value);
+
+                        if (slider.id === 'global_frameMultiplier') {
+                            
+                            // --- NEW: Snap Logic ---
+                            const snapThreshold = 0.05; // Snap if within this range
+                            const snapIncrement = 0.25;
+                            const remainder = currentValue % snapIncrement;
+                            
+                            // Snap to increments of 0.25
+                            // Check if close to the low end (e.g., 0.28 -> 0.25)
+                            if (remainder < snapThreshold) {
+                                currentValue = Math.floor(currentValue / snapIncrement) * snapIncrement;
+                            } 
+                            // Check if close to the high end (e.g., 0.48 -> 0.50)
+                            else if ((snapIncrement - remainder) < snapThreshold) {
+                                currentValue = Math.ceil(currentValue / snapIncrement) * snapIncrement;
+                            }
+                            
+                            // Handle edge case for 0.1 min
+                            if (currentValue < 0.25 && currentValue > 0.1) currentValue = 0.25;
+                            
+                            // Special hard-snap for 1.0
+                            if (Math.abs(currentValue - 1.0) < snapThreshold) {
+                                currentValue = 1.0;
+                            }
+                            
+                            e.target.value = currentValue.toString();
+                            valueSpan.textContent = currentValue.toFixed(2) + 'x';
+                            // --- End Snap Logic ---
+
+                        } else {
+                            valueSpan.textContent = e.target.value;
+                        }
                     });
                 }
             });
@@ -334,10 +392,7 @@
             function parseBigIntInput(id, defaultValue = 0n) {
                 const value = document.getElementById(id).value;
                 try {
-                    // Handle empty string
-                    if (value === "") {
-                        return defaultValue;
-                    }
+                    if (value === "") return defaultValue;
                     return BigInt(value);
                 } catch (e) {
                     return defaultValue;
@@ -356,6 +411,10 @@
 
             // --- Event Listeners ---
             function updateParams() {
+                // --- NEW: Read Global HPQ Params ---
+                globalParams.frameMultiplier = parseFloatInput('global_frameMultiplier', 1.0);
+                globalParams.segBlockLength = parseIntInput('global_segBlockLength', 5);
+
                 // --- SM Params ---
                 globalParams.sm = {
                     minHold: parseBigIntInput('sm_minHold', 5n),
@@ -429,40 +488,36 @@
             allTabs.forEach(tab => {
                 tab.addEventListener('click', (e) => {
                     activeAlgorithm = e.target.dataset.algo;
-                    
-                    // Update tabs
                     allTabs.forEach(t => t.classList.remove('active'));
                     e.target.classList.add('active');
-
-                    // Update panels
                     allPanels.forEach(p => p.style.display = 'none');
                     document.getElementById(`panel-${activeAlgorithm}`).style.display = 'grid';
-                    
-                    // Reset sim
                     updateParams();
                 });
             });
 
             // --- Reset Button ---
             resetButton.addEventListener('click', () => {
-                // Just randomize the common seeds
                 const newInner = Math.floor(Math.random() * 10000);
                 const newOuter = Math.floor(Math.random() * 10000);
                 document.getElementById('sm_seedInner').value = newInner;
                 document.getElementById('sm_seedOuter').value = newOuter;
                 document.getElementById('tm_seedInner').value = newInner;
                 document.getElementById('tm_seedOuter').value = newOuter;
-                
-                // And some others for fun
                 document.getElementById('qs_streamOffset1').value = Math.floor(Math.random() * 100);
                 document.getElementById('qs_quantOffset1').value = Math.floor(Math.random() * 100);
                 document.getElementById('bd_streamsOffset').value = Math.floor(Math.random() * 100);
                 document.getElementById('bd_valueSeedOffset').value = Math.floor(Math.random() * 10000);
+                
+                // Reset global controls
+                document.getElementById('global_frameMultiplier').value = 1.0;
+                document.getElementById('global_frameMultiplierValue').textContent = "1.00x";
+                document.getElementById('global_segBlockLength').value = 5;
 
                 updateParams();
             });
 
-            // --- New Button Listeners ---
+            // --- Button Listeners ---
             function togglePause() {
                 isPaused = !isPaused;
                 if (isPaused) {
@@ -477,7 +532,7 @@
                     pauseButtonText.textContent = 'Pause';
                     pauseIcon.style.display = 'block';
                     playIcon.style.display = 'none';
-                    animate(); // Restart the loop
+                    animate();
                 }
             }
 
@@ -485,36 +540,35 @@
                 frame = 0;
                 history = [];
                 ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-                // If paused, we'll stay paused but the canvas is now clear.
-                // If playing, the animate loop will just restart from frame 0.
             }
 
             pauseButton.addEventListener('click', togglePause);
             rewindButton.addEventListener('click', rewindAnimation);
 
-
-            // --- ✨ Gemini API Logic (REMOVED) ---
-            
-
+            // --- NEW: Reset Frame Multiplier Button ---
+            resetFrameMultiplierButton.addEventListener('click', () => {
+                frameMultiplierSlider.value = "1.0";
+                frameMultiplierValue.textContent = "1.00x";
+                // Manually trigger the 'input' event on the slider to update params
+                // and reset the simulation, just like updateParams() does.
+                frameMultiplierSlider.dispatchEvent(new Event('input'));
+            });
 
             // --- Core FPS-R Logic (64-bit BigInt Port) ---
 
             const CHUNK_BITS = 64n;
 
-            // Floor-based modulo (matches Python's)
             function i64_floor_mod(a, m) {
                 if (m === 0n) return 0n;
                 const r = a % m;
                 return r < 0n ? r + m : r;
             }
 
-            // Align-down to the nearest multiple of m
             function i64_align_down(a, m) {
                 if (m === 0n) return a;
                 return a - i64_floor_mod(a, m);
             }
 
-            // SplitMix64 PRNG
             function splitmix64(x) {
                 x = BigInt.asUintN(64, x + 0x9E3779B97F4A7C15n);
                 x = BigInt.asUintN(64, (x ^ (x >> 30n)) * 0xBF58476D1CE4E5B9n);
@@ -523,28 +577,21 @@
                 return BigInt.asUintN(64, x);
             }
 
-            // Map uint64_t to double [0,1)
             function portable_rand_u64(seed) {
                 const r = splitmix64(BigInt(seed));
-                // Get top 53 bits (double mantissa width)
                 return Number(r >> 11n) * (1.0 / 9007199254740992.0);
             }
             
             // --- Algorithm 1: FPS-R: SM (Stacked Modulo) ---
             function fpsr_sm_base_js(frame, params) {
                 let { minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch } = params;
-                frame = BigInt(frame);
-
-                if (reseedInterval < 1n) { reseedInterval = 1n; }
-
+                frame = BigInt(frame); // Ensure frame is BigInt for base logic
+                if (reseedInterval < 1n) reseedInterval = 1n;
                 const reseed_anchor = (seedInner + frame) - i64_floor_mod(seedInner + frame, reseedInterval);
                 const rand_for_duration = portable_rand_u64(reseed_anchor);
-                
                 let holdDuration = BigInt(Math.floor(Number(minHold) + rand_for_duration * Number(maxHold - minHold)));
-                if (holdDuration < 1n) { holdDuration = 1n; }
-
+                if (holdDuration < 1n) holdDuration = 1n;
                 const held_integer_state = i64_align_down((seedOuter + frame), holdDuration);
-
                 if (finalRandSwitch) {
                     const seed = BigInt.asUintN(64, held_integer_state * 100000n);
                     return portable_rand_u64(seed);
@@ -557,17 +604,13 @@
             function fpsr_tm_base_js(frame, params) {
                 let { periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch } = params;
                 frame = BigInt(frame);
-
-                if (periodSwitch < 1n) { periodSwitch = 1n; }
-
+                if (periodSwitch < 1n) periodSwitch = 1n;
                 const inner_clock_frame = seedInner + frame;
                 const r = i64_floor_mod(inner_clock_frame, periodSwitch);
                 let holdDuration = (2n * r < periodSwitch) ? periodA : periodB;
-                if (holdDuration < 1n) { holdDuration = 1n; }
-
+                if (holdDuration < 1n) holdDuration = 1n;
                 const outer_clock_frame = seedOuter + frame;
                 const held_integer_state = i64_align_down(outer_clock_frame, holdDuration);
-
                 if (finalRandSwitch) {
                     const seed = BigInt.asUintN(64, held_integer_state * 100000n);
                     return portable_rand_u64(seed);
@@ -582,7 +625,7 @@
                 let {
                     baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset,
                     quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur,
-                    finalRandSwitch, sine_lod_level
+                    finalRandSwitch
                 } = params;
                 
                 if (streamSwitchDur < 1n) streamSwitchDur = 1n;
@@ -607,7 +650,6 @@
                 const angle1 = (Number(streamsOffset[0]) + Number(frame)) * baseWaveFreq;
                 const angle2 = (Number(streamsOffset[1]) + Number(frame)) * baseWaveFreq * stream2FreqMult;
 
-                // LOD 0: Direct Math.sin()
                 const stream1_raw_sine = Math.sin(angle1);
                 const stream2_raw_sine = Math.sin(angle2);
                 
@@ -622,15 +664,11 @@
                     const hashed_int = BigInt(Math.floor(active_stream_val * 100000.0));
                     return portable_rand_u64(hashed_int);
                 } else {
-                    // C code maps [0,1] to [0.5, 1.0], let's just return the [0,1] value
-                    // return (0.5 * active_stream_val + 0.5);
-                    return active_stream_val; // More visual range
+                    return active_stream_val;
                 }
             }
             
             // --- Algorithm 4: FPS-R: BD (Bitstream Distortion) ---
-            
-            // Bitwise rotation helpers
             function u64_circular_left_shift(value, shift) {
                 const s = BigInt(shift) % CHUNK_BITS;
                 if (s === 0n) return value;
@@ -643,13 +681,12 @@
                 return BigInt.asUintN(64, (value >> s) | (value << (CHUNK_BITS - s)));
             }
 
-            // Get bit helper
             function get_bit(n, block_size, chunks, num_chunks) {
                 if (n < 0n || n >= block_size) return 0n;
                 const chunk_index = n / CHUNK_BITS;
                 const bit_index = n % CHUNK_BITS;
                 if (chunk_index >= num_chunks) return 0n;
-                return (chunks[chunk_index] >> bit_index) & 1n;
+                return (chunks[Number(chunk_index)] >> bit_index) & 1n;
             }
 
             function fpsr_bd_base_js(frame, params) {
@@ -679,15 +716,13 @@
                 
                 let final_chunks = new Array(Number(num_chunks)).fill(0n);
 
-                // Step 2: Generate raw bitstreams
                 for (let i = 0; i < streamsNumber; i++) {
                     let stream_seed = outer_anchor + (BigInt(i) * streamsOffset);
                     for (let j = 0n; j < num_chunks; j++) {
-                        raw_streams[i][j] = splitmix64(stream_seed + j);
+                        raw_streams[i][Number(j)] = splitmix64(stream_seed + j);
                     }
                 }
 
-                // Step 3: Apply Intra-Stream Ops
                 const is_dynamic = (intraOp.endsWith("_dynamic"));
                 const num_transformed_streams = is_dynamic ? (Math.floor(streamsNumber / 2) + streamsNumber % 2) : streamsNumber;
                 
@@ -702,54 +737,51 @@
                         const data_idx = i * 2;
                         const controller_idx = i * 2 + 1;
                         const target_idx = i;
-
                         const data_stream = raw_streams[data_idx];
                         const controller_stream = raw_streams[controller_idx];
                         
                         for (let j = 0n; j < num_chunks; j++) {
-                            const dynamic_shift = Number(controller_stream[j] & bit_mask);
+                            const dynamic_shift = Number(controller_stream[Number(j)] & bit_mask);
                             switch (intraOp) {
-                                case "lshift_dynamic": transformed_streams[target_idx][j] = BigInt.asUintN(64, data_stream[j] << BigInt(dynamic_shift % 64)); break;
-                                case "rshift_dynamic": transformed_streams[target_idx][j] = data_stream[j] >> BigInt(dynamic_shift % 64); break;
-                                case "rotl_dynamic": transformed_streams[target_idx][j] = u64_circular_left_shift(data_stream[j], dynamic_shift); break;
-                                case "rotr_dynamic": transformed_streams[target_idx][j] = u64_circular_right_shift(data_stream[j], dynamic_shift); break;
+                                case "lshift_dynamic": transformed_streams[target_idx][Number(j)] = BigInt.asUintN(64, data_stream[Number(j)] << BigInt(dynamic_shift % 64)); break;
+                                case "rshift_dynamic": transformed_streams[target_idx][Number(j)] = data_stream[Number(j)] >> BigInt(dynamic_shift % 64); break;
+                                case "rotl_dynamic": transformed_streams[target_idx][Number(j)] = u64_circular_left_shift(data_stream[Number(j)], dynamic_shift); break;
+                                case "rotr_dynamic": transformed_streams[target_idx][Number(j)] = u64_circular_right_shift(data_stream[Number(j)], dynamic_shift); break;
                             }
                         }
                     }
                     if (streamsNumber % 2 != 0) {
                         transformed_streams[num_transformed_streams - 1] = raw_streams[streamsNumber - 1];
                     }
-                } else { // Static operations
+                } else {
                     for (let i = 0; i < streamsNumber; i++) {
                         for (let j = 0n; j < num_chunks; j++) {
                             switch (intraOp) {
-                                case "not": transformed_streams[i][j] = BigInt.asUintN(64, ~raw_streams[i][j]); break;
-                                case "lshift": transformed_streams[i][j] = BigInt.asUintN(64, raw_streams[i][j] << sanitized_static_shift); break;
-                                case "rshift": transformed_streams[i][j] = raw_streams[i][j] >> sanitized_static_shift; break;
-                                case "rotl": transformed_streams[i][j] = u64_circular_left_shift(raw_streams[i][j], Number(sanitized_static_shift)); break;
-                                case "rotr": transformed_streams[i][j] = u64_circular_right_shift(raw_streams[i][j], Number(sanitized_static_shift)); break;
-                                default: transformed_streams[i][j] = raw_streams[i][j]; // "none"
+                                case "not": transformed_streams[i][Number(j)] = BigInt.asUintN(64, ~raw_streams[i][Number(j)]); break;
+                                case "lshift": transformed_streams[i][Number(j)] = BigInt.asUintN(64, raw_streams[i][Number(j)] << sanitized_static_shift); break;
+                                case "rshift": transformed_streams[i][Number(j)] = raw_streams[i][Number(j)] >> sanitized_static_shift; break;
+                                case "rotl": transformed_streams[i][Number(j)] = u64_circular_left_shift(raw_streams[i][Number(j)], Number(sanitized_static_shift)); break;
+                                case "rotr": transformed_streams[i][Number(j)] = u64_circular_right_shift(raw_streams[i][Number(j)], Number(sanitized_static_shift)); break;
+                                default: transformed_streams[i][Number(j)] = raw_streams[i][Number(j)]; // "none"
                             }
                         }
                     }
                 }
                 
-                // Step 4: Combine Streams
                 if (num_transformed_streams > 0) {
                     final_chunks = [...transformed_streams[0]];
                     for (let i = 1; i < num_transformed_streams; i++) {
                         for (let j = 0n; j < num_chunks; j++) {
                             switch (interOp) {
-                                case "or": final_chunks[j] |= transformed_streams[i][j]; break;
-                                case "and": final_chunks[j] &= transformed_streams[i][j]; break;
-                                default: final_chunks[j] ^= transformed_streams[i][j]; // "xor"
+                                case "or": final_chunks[Number(j)] |= transformed_streams[i][Number(j)]; break;
+                                case "and": final_chunks[Number(j)] &= transformed_streams[i][Number(j)]; break;
+                                default: final_chunks[Number(j)] ^= transformed_streams[i][Number(j)]; // "xor"
                             }
-                            final_chunks[j] = BigInt.asUintN(64, final_chunks[j]);
+                            final_chunks[Number(j)] = BigInt.asUintN(64, final_chunks[Number(j)]);
                         }
                     }
                 }
 
-                // Step 5: Decode
                 const current_pos_in_block = frame - outer_anchor;
                 let last_flip_pos = 0n;
                 for (let i = current_pos_in_block; i > 0n; i--) {
@@ -759,25 +791,98 @@
                     }
                 }
                 
-                // Step 6: Generate final value
                 const final_seed = outer_anchor + last_flip_pos + valueSeedOffset;
                 return portable_rand_u64(final_seed);
             }
 
 
             // --- Main Value Router ---
-            function getFpsrValue(currentFrame) {
+            // This function routes to the correct _base_js function.
+            // The HPQ logic will call this function.
+            function routeToBaseFunction(frame, params) {
                 switch(activeAlgorithm) {
                     case 'SM':
-                        return fpsr_sm_base_js(currentFrame, globalParams.sm);
+                        return fpsr_sm_base_js(frame, params.sm);
                     case 'TM':
-                        return fpsr_tm_base_js(currentFrame, globalParams.tm);
+                        return fpsr_tm_base_js(frame, params.tm);
                     case 'QS':
-                        return fpsr_qs_base_js(currentFrame, globalParams.qs);
+                        return fpsr_qs_base_js(frame, params.qs);
                     case 'BD':
-                        return fpsr_bd_base_js(currentFrame, globalParams.bd);
+                        return fpsr_bd_base_js(frame, params.bd);
                     default:
                         return 0.5;
+                }
+            }
+            
+            // --- *** NEW: HPQ Wrapper Logic *** ---
+            // This is the new "get_details" wrapper, implemented in JS.
+            // It takes the "Application Timeline" frame and handles all time scaling.
+            function getFpsrValue(appFrame) {
+                const appFrameBigInt = BigInt(appFrame);
+                const fm = globalParams.frameMultiplier;
+                const segBlockLength = globalParams.segBlockLength;
+
+                // Sanitize fm
+                const effectiveFm = (fm === 0.0) ? 1.0 : fm;
+                
+                // --- 1. Find coordinate on "Content Timeline" ---
+                // (Application Timeline Frame) * fm = (Content Timeline Frame)
+                const scaled_frame_position = Number(appFrameBigInt) * effectiveFm;
+                const master_frame = BigInt(Math.floor(scaled_frame_position));
+
+                // --- 2. Find "Start Line" on "Application Timeline" ---
+                // (Content Timeline Frame) / fm = (Application Timeline Frame)
+                const master_frame_start_app_frame = BigInt(Math.ceil(Number(master_frame) / effectiveFm));
+
+                // --- 3. Calculate Local Coordinates (on Application Timeline) ---
+                const app_frames_into_gap = appFrameBigInt - master_frame_start_app_frame;
+                let segment_index = 0n;
+                let local_progress_in_segment = 0n;
+                const segBlockLengthBigInt = BigInt(segBlockLength);
+
+                if (segBlockLengthBigInt > 0n) {
+                    segment_index = app_frames_into_gap / segBlockLengthBigInt;
+                    local_progress_in_segment = app_frames_into_gap % segBlockLengthBigInt;
+                }
+
+                // --- 4. Execute Two-Mode Logic ---
+                if (segment_index === 0n) {
+                    // --- MODE 1: "Tape Varispeed" (Anchor) ---
+                    // Use the master_frame and original params
+                    return routeToBaseFunction(master_frame, globalParams);
+                } else {
+                    // --- MODE 2: "Telescopic Extension" (Generative Phrase) ---
+                    const gap_seed = splitmix64(master_frame + segment_index);
+                    
+                    // --- FIX: Use structuredClone for deep copy ---
+                    // This correctly handles BigInt values without crashing JSON.stringify
+                    const gapParams = structuredClone(globalParams);
+                    
+                    // The BigInts are already correctly copied.
+                    // We can now modify the gapParams directly.
+                    switch(activeAlgorithm) {
+                        case 'SM':
+                            gapParams.sm.seedInner = gap_seed;
+                            break;
+                        case 'TM':
+                            gapParams.tm.seedInner = gap_seed;
+                            break;
+                        case 'QS':
+                            // QS params are Numbers, so this is fine
+                            const seedPart1 = Number(gap_seed & 0xFFFFFFFFn);
+                            const seedPart2 = Number((gap_seed >> 32n) & 0xFFFFFFFFn);
+                            gapParams.qs.quantOffsets = [
+                                globalParams.qs.quantOffsets[0] + seedPart1,
+                                globalParams.qs.quantOffsets[1] + seedPart2
+                            ];
+                            break;
+                        case 'BD':
+                            gapParams.bd.valueSeedOffset = gap_seed;
+                            break;
+                    }
+                    
+                    // Use local_progress_in_segment and the modified gapParams
+                    return routeToBaseFunction(local_progress_in_segment, gapParams);
                 }
             }
 
@@ -799,6 +904,7 @@
                     frame = 0;
                 }
 
+                // *** MODIFIED: Call the new HPQ wrapper function ***
                 const newValue = getFpsrValue(frame);
                 history.push(newValue);
 
@@ -822,13 +928,14 @@
                         if (y === prevY) {
                             ctx.lineTo(x, y);
                         } else {
+                            // Draw vertical line for jumps
                             ctx.lineTo(x, prevY);
                             ctx.lineTo(x, y);
                         }
                     }
                 }
                 ctx.stroke();
-                frame++;
+                frame++; // Increment the "Application Timeline" frame
                 animationFrameId = requestAnimationFrame(animate);
             }
 
@@ -839,7 +946,4 @@
     </script>
 </body>
 </html>
-
-
-
 
