@@ -229,7 +229,7 @@ This is "time" axis encoded in FPS-R.
 These graphs are not synced to time. Every data point expresses the number of frames that a generated random value holds until it jumps.  
 
 ### `portable_rand()`
-By implementing our own pseudo random number generator, we ensure the resuls are deterministic across different languages and operating environments.
+By implementing our own pseudo random number generator, we ensure the results are deterministic across different languages and operating environments.
 
 #### `portable_rand` Output Values
 ![portable_rand](./resources/readme/images/fspr_data_analysis/fpsr_portablerand_output.png)
