@@ -297,7 +297,7 @@ The BD algorithm is the most expressive FPS-R algorithm as a result of the combi
 
 #### BD Output Distribution
 ![fpsr_qs_distri](./resources/readme/images/fspr_data_analysis/fpsr_bd_distri.png)
-The distribution graph of BD's output after 100,000 time-steps shows a relatively flat result. The eveness is comparable to SM and TM.
+The distribution graph of BD's output after 100,000 time-steps shows a relatively flat result. The evenness is comparable to SM and TM.
 
 #### BD Output Timing
 `3.0` seconds for `100,000` frames with 1 stream.
