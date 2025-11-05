@@ -240,10 +240,14 @@ This is the distribution graph of TM's output after 100,000 time-steps. TM can a
 
 ## FPS-R: QS
 ![fpsr_qs](./resources/readme/images/fspr_data_analysis/fpsr_qs_output.png)
-The last algorithm is perhaps the most expressive, able to produce a wide range of phrasing patterns and the strongest contrast between short bursts of stuttering or glitching and long periods of holding. QS has the highest number of parameters. 
+The QS algorithm is perhaps the most expressive; able to produce a wide range of phrasing patterns and the strongest contrast between short bursts of stuttering or glitching and long periods of holding. QS has the highest number of parameters. 
 
 ![fpsr_qs_distri](./resources/readme/images/fspr_data_analysis/fpsr_qs_distri.png)
 This is the distribution graph of QS's output after 100,000 time-steps. The distribution of the output values from QS are not evenly distributed. This is the nature of the algorithm. The distribution shape (ie, which bands of values will be the prominent, resonant ones) will differ depending on the parameters.
+
+## FPS-R: BD
+![fpsr_qs](./resources/readme/images/fspr_data_analysis/fpsr_bd_output.png)
+This is the distribution graph of the output values of BD.
 
 ## Great Flexibility
 The graphs shown above are example outputs. With different parameters, each algorithm can achieve a wide variety of holding patterns and random values. This is especially true of FPS-R QS.
