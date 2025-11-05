@@ -290,7 +290,7 @@ This is the distribution graph of QS's output after 100,000 time-steps. The dist
 ## FPS-R: BD
 #### BD Output Values
 ![fpsr_qs](./resources/readme/images/fspr_data_analysis/fpsr_bd_output.png)
-The BD algorithm is the most expressive FPS-R algorith as a result of the combinatory possibilities of implemented parameters in the algorithm. It also has quirky jumps and twitches, perhaps more so than QS due to the bit-flipping nature of the algorithm.
+The BD algorithm is the most expressive FPS-R algorithm as a result of the combinatory possibilities of implemented parameters in the algorithm. It also has quirky jumps and twitches, perhaps more so than QS due to the bit-flipping nature of the algorithm.
 
 #### BD Held Steps
 ![portable_rand](./resources/readme/images/fspr_data_analysis/fpsr_bd_heldSteps.png) This graph shows the varying number frames (or steps) that each random value holds in BD. Each period is different from the last, expressing randomness in the time dimension.
