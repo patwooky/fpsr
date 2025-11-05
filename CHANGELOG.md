@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## Unreleased
 
+
+
+## [2.0.8] - 2025-11-05
+## Changed
+- Add thread-safe sine lookup tables with platform-specific initialization
+- Align Python FPSR algorithms with C reference implementation for deterministic parity
+- Fix quantization seeding logic in fpsr_qs to preserve level information
+- Add comprehensive overflow checks in fpsr_bd memory allocation
+- Implement flexible sine level-of-detail Look-up Table system for fpsr_qs
+- Remove incorrect seed multipliers in fpsr_sm and fpsr_tm to match C canonical logic
+- Update test parameters in main() to match C reference for direct comparison
+
+
 ---
 ## [2.0.7] - 2025-11-04
 ## Changed
