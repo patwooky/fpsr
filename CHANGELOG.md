@@ -7,6 +7,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## Unreleased
 
 
+## [2.0.9] - 2025-11-06
+## Changed
+- `code/data_analysis/fpsr_algoAnalysis.ipynb`
+    - Refactored to improve 
+        - deterministic helper functions, 
+        - add sine LUTs, 
+        - update all FPS-R base algorithm implementations for clarity and portability. 
+    - Added FPS-R Bitwise Decode (BD) algorithm
+    - enhanced Quantised Switching (QS) logic. 
+    - Improved code comments and structure for maintainability.
+- Expanded and clarified the README with detailed explanations and new images for FPS-R algorithm output analysis. 
 
 ## [2.0.8] - 2025-11-05
 ## Changed
@@ -28,9 +39,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## Added
 - `fpsr_algorithms_wrap.py`
     - ported the `wrap` version over from C
-
-
-
 
 ---
 ## [2.0.7] - 2025-11-04
