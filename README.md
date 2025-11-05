@@ -211,43 +211,98 @@ Check it out here:
 ## Signal Analysis of FPS-R Algorithms
 The following graphs are sample output of each algorithm in the FPS-R framework, running for 400 time-steps. 
 
-How to read the graphs:
-**Blue Solid Lines** - These are the output values across time.
-**Red Dotted Lines** - These are 0 and 1 values, goes to 1 when a new "jump" occurs, goes back to 0 when values are holding. Every spike is a jump.
-
 > **[fpsr_algoAnalysis.ipynb](./resources/code/data_analysis/fpsr_algoAnalysis.ipynb)** 
-The graphs exist as a Jupyter notebook. Feel free to explore and try it out! 
+The following graphs exist inside a Jupyter notebook. Feel free to explore the codes and try them out! 
 
-### `Portable_rand()`
+### How to Read the Graphs
+FPS-R is the rich output of 2 folded and collapsed axes. It expresses randomness in both value and time.
+
+#### Output Values Graphs
+This is the "value" axis in the collapsed randomness. 
+
+**Blue Solid Lines** - These are the output values across time, normalised between 0.0 to 1.0.
+**Red Dotted Lines** - These are binary 0 and 1 values. 1 indicates a new "jump", 0 indicates a values that is held-over from the previous frame. Every spike is a jump.
+
+#### Held Steps Graphs
+This is "time" axis encoded in FPS-R. 
+
+These graphs are not synced to time. Every data point expresses the number of frames that a generated random value holds until it jumps.  
+
+### `portable_rand()`
+By implementing our own pseudo random number generator, we ensure the results are deterministic across different languages and operating environments.
+
+#### `portable_rand` Output Values
 ![portable_rand](./resources/readme/images/fspr_data_analysis/fpsr_portablerand_output.png)
-This is the output of the `Portable_rand()` included in FPS-R. It works very much like a `rand()`. Every frame input into `portable_rand()` yields a different output value from the previous one. There is no holding behaviour.
+This is the output of the `Portable_rand()` included in FPS-R. It works very much like a `rand()`. Every frame input into `portable_rand()` yields a different output value from the previous one. Every frame is a jump with no holds.
 
-By implementing our own pseudo random noise generator, we make sure that these values are generated consistently, resulting in deterministic outputs across different languages and operating environments.
+#### `portable_rand` Held Steps
+![portable_rand](./resources/readme/images/fspr_data_analysis/fpsr_portablerand_heldSteps.png)
+This graph is constantly showing 1.0 steps, indicating that the held frame length for each value to the next value that jumps is 1 frame exactly. Because every frame is a "jump", every value constantly holds for 1 frame.
+
+#### `portable_rand` Output Timing
+`0.3` seconds for `100,000` frames.
 
 ## FPS-R: SM
+#### SM Output Values
 ![fpsr_sm](./resources/readme/images/fspr_data_analysis/fpsr_sm_output.png)
-The random output values are varied, and their hold durations for each stretch are different. By watching the spacing between the red spikes, we can see different and irregular hold times. Timing and spacing are configurable through parameters.
+The random output values are varied, and their hold durations for each stretch are different. By watching the spacing between the red spikes, we can see different and irregular hold times. Timing and spacing can be configured using parameters.
 
+#### SM Held Steps
+![portable_rand](./resources/readme/images/fspr_data_analysis/fpsr_sm_heldSteps.png) This graph shows the varying number frames (or steps) that each random value holds in SM. Each period is different from the last, expressing randomness in the time dimension.
+
+#### SM Output Distribution
 ![fpsr_sm_distri](./resources/readme/images/fspr_data_analysis/fpsr_sm_distri.png)
 This is the distribution graph of SM's output after 100,000 time-steps. SM can achieve even distribution after many time-steps.
 
+#### SM Output Timing
+`1.9` seconds for `100,000` frames.
+
 ## FPS-R: TM
+#### TM Output Values
 ![fpsr_tm](./resources/readme/images/fspr_data_analysis/fpsr_tm_output.png)
 Here we see another seemingly even distribution of random values. In TM, there appears to be an underlying rhythm, alternating between three types of spacings: a large spacing of about 30 frames, another spacing of approximately 15 frames, and a short, glitchy spacing of 3 to 5 frames. Timing and spacing are configurable through parameters.
 
+#### TM Held Steps
+![portable_rand](./resources/readme/images/fspr_data_analysis/fpsr_tm_heldSteps.png) This graph shows the varying number frames (or steps) that each random value holds in TM. Each period is different from the last, expressing randomness in the time dimension.
+
+#### TM Output Distribution
 ![fpsr_tm_distri](./resources/readme/images/fspr_data_analysis/fpsr_tm_distri.png)
 This is the distribution graph of TM's output after 100,000 time-steps. TM can achieve even distribution after many time-steps.
 
-## FPS-R: QS
-![fpsr_qs](./resources/readme/images/fspr_data_analysis/fpsr_qs_output.png)
-The QS algorithm is perhaps the most expressive; able to produce a wide range of phrasing patterns and the strongest contrast between short bursts of stuttering or glitching and long periods of holding. QS has the highest number of parameters. 
+#### TM Output Timing
+`1.6` seconds for `100,000` frames.
 
+## FPS-R: QS
+#### QS Output Values
+![fpsr_qs](./resources/readme/images/fspr_data_analysis/fpsr_qs_output.png)
+The QS algorithm is the second most expressive algorithm in the FPS-R framework; able to produce a wide range of phrasing patterns and the strongest contrast between short bursts of stuttering or glitching and long periods of holding. QS has the highest number of parameters. 
+
+#### TM Held Steps
+![portable_rand](./resources/readme/images/fspr_data_analysis/fpsr_qs_heldSteps.png) This graph shows the varying number frames (or steps) that each random value holds in QS. Each period is different from the last, expressing randomness in the time dimension.
+
+#### QS Output Distribution
 ![fpsr_qs_distri](./resources/readme/images/fspr_data_analysis/fpsr_qs_distri.png)
 This is the distribution graph of QS's output after 100,000 time-steps. The distribution of the output values from QS are not evenly distributed. This is the nature of the algorithm. The distribution shape (ie, which bands of values will be the prominent, resonant ones) will differ depending on the parameters.
 
+#### QS Output Timing
+`3.2` seconds for `100,000` frames.
+
 ## FPS-R: BD
+#### BD Output Values
 ![fpsr_qs](./resources/readme/images/fspr_data_analysis/fpsr_bd_output.png)
-This is the distribution graph of the output values of BD.
+The BD algorithm is the most expressive FPS-R algorithm as a result of the combinatory possibilities of implemented parameters in the algorithm. It also has quirky jumps and twitches, perhaps more so than QS due to the bit-flipping nature of the algorithm.
+
+#### BD Held Steps
+![portable_rand](./resources/readme/images/fspr_data_analysis/fpsr_bd_heldSteps.png) This graph shows the varying number frames (or steps) that each random value holds in BD. Each period is different from the last, expressing randomness in the time dimension.
+
+#### BD Output Distribution
+![fpsr_qs_distri](./resources/readme/images/fspr_data_analysis/fpsr_bd_distri.png)
+The distribution graph of BD's output after 100,000 time-steps shows a relatively flat result. The evenness is comparable to SM and TM.
+
+#### BD Output Timing
+`3.0` seconds for `100,000` frames with 1 stream.
+`3.8` seconds for `100,000` frames with 2 streams.
+`6.2` seconds for `100,000` frames with 5 streams.
 
 ## Great Flexibility
 The graphs shown above are example outputs. With different parameters, each algorithm can achieve a wide variety of holding patterns and random values. This is especially true of FPS-R QS.
