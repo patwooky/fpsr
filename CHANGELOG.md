@@ -24,6 +24,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
     - Implement flexible sine level-of-detail system in fpsr_qs with sine_lod_level parameter
     - Update hashing logic in fpsr_qs to use floor-based multiplier instead of struct.pack
     - Fix quantization seeding and add overflow guards in fpsr_qs
+
+## Added
 - `fpsr_algorithms_wrap.py`
     - ported the `wrap` version over from C
 
