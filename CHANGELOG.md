@@ -10,13 +10,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [2.0.8] - 2025-11-05
 ## Changed
-- Add thread-safe sine lookup tables with platform-specific initialization
-- Align Python FPSR algorithms with C reference implementation for deterministic parity
-- Fix quantization seeding logic in fpsr_qs to preserve level information
-- Add comprehensive overflow checks in fpsr_bd memory allocation
-- Implement flexible sine level-of-detail Look-up Table system for fpsr_qs
-- Remove incorrect seed multipliers in fpsr_sm and fpsr_tm to match C canonical logic
-- Update test parameters in main() to match C reference for direct comparison
+- `fpsr_algorithms_base_reference.c` and `fpsr_algorithms_wrap_reference.c`
+    - Add thread-safe sine lookup tables with platform-specific initialization
+    - Align Python FPSR algorithms with C reference implementation for deterministic parity
+    - Fix quantization seeding logic in fpsr_qs to preserve level information
+    - Add comprehensive overflow checks in fpsr_bd memory allocation
+    - Implement flexible sine level-of-detail Look-up Table system for fpsr_qs
+    - Remove incorrect seed multipliers in fpsr_sm and fpsr_tm to match C canonical logic
+    - Update test parameters in main() to match C reference for direct comparison
+- `fpsr_algorithms.py`
+    - Add thread-safe sine lookup tables (LUTs) with platform-agnostic initialization
+    - Rename fpsr_sm and fpsr_tm to fpsr_sm_base and fpsr_tm_base for C reference alignment
+    - Implement flexible sine level-of-detail system in fpsr_qs with sine_lod_level parameter
+    - Update hashing logic in fpsr_qs to use floor-based multiplier instead of struct.pack
+    - Fix quantization seeding and add overflow guards in fpsr_qs
+- `fpsr_algorithms_wrap.py`
+    - ported the `wrap` version over from C
+
+
 
 
 ---
