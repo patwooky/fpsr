@@ -10,10 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [2.0.9] - 2025-11-06
 ## Changed
 - `code/data_analysis/fpsr_algoAnalysis.ipynb`
-    - Refactored to improve 
-        - deterministic helper functions, 
-        - add sine LUTs, 
-        - update all FPS-R base algorithm implementations for clarity and portability. 
+    - Refactored:
+        - Made helper functions deterministic,
+        - Added sine LUTs,
+        - Updated all FPS-R base algorithm implementations for clarity and portability.
     - Added FPS-R Bitwise Decode (BD) algorithm
     - enhanced Quantised Switching (QS) logic. 
     - Improved code comments and structure for maintainability.
