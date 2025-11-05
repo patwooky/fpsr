@@ -16,9 +16,13 @@ details:
 
 import math
 import functools
+# [PORT UPDATE] Import 'threading' for thread-safe Sine LUT initialization,
+# matching the C version's 'pthread_once' / 'InitOnceExecuteOnce'.
+import threading
 # [PORT UPDATE] Import 'struct' module. This is needed for fpsr_qs to perform
 # a bit-for-bit cast from a float (double) to a 64-bit integer,
 # matching the C version's 'memcpy' logic.
+# This import was removed during my incorrect abbreviation. Restoring it.
 import struct
 
 # -----------------------------------------------------------------------------
@@ -123,6 +127,85 @@ def _circular_right_shift(value: int, shift: int) -> int:
     if shift == 0: return _to_uint64(value)
     return _to_uint64((value >> shift) | (value << (_CHUNK_BITS - shift)))
 
+# [PORT UPDATE] Added Sine LUTS and thread-safe initialization from C
+# -----------------------------------------------------------------------------
+# Sine Lookup Table (LUT) Implementation
+# -----------------------------------------------------------------------------
+# This logic mirrors the C reference's thread-safe, one-time initialization
+# of sine lookup tables for use in fpsr_qs.
+
+_SINE_LUT_SIZE_100 = 100
+_SINE_LUT_SIZE_500 = 500
+_SINE_LUT_SIZE_1000 = 1000
+_SINE_LUT_SIZE_4096 = 4096
+
+_TWO_PI = 6.28318530718
+
+# Global sine lookup tables (initialized as empty lists)
+_sine_lut_100 = []
+_sine_lut_500 = []
+_sine_lut_1000 = []
+_sine_lut_4096 = []
+
+# Thread-safe initialization control (Python equivalent of C's 'init_once')
+_sine_luts_initialized = False
+_sine_luts_lock = threading.Lock()
+
+def initialize_sine_luts():
+    """
+    Initializes all global sine lookup tables.
+    This function is called exactly once by _init_once_func.
+    """
+    global _sine_lut_100, _sine_lut_500, _sine_lut_1000, _sine_lut_4096
+    
+    _sine_lut_100 = [math.sin(i / _SINE_LUT_SIZE_100 * _TWO_PI) for i in range(_SINE_LUT_SIZE_100)]
+    _sine_lut_500 = [math.sin(i / _SINE_LUT_SIZE_500 * _TWO_PI) for i in range(_SINE_LUT_SIZE_500)]
+    _sine_lut_1000 = [math.sin(i / _SINE_LUT_SIZE_1000 * _TWO_PI) for i in range(_SINE_LUT_SIZE_1000)]
+    _sine_lut_4096 = [math.sin(i / _SINE_LUT_SIZE_4096 * _TWO_PI) for i in range(_SINE_LUT_SIZE_4096)]
+
+def _init_once_func():
+    """
+    Ensures initialize_sine_luts() is called exactly once, in a thread-safe manner.
+    """
+    global _sine_luts_initialized
+    # Double-checked locking pattern for efficiency
+    if not _sine_luts_initialized:
+        with _sine_luts_lock:
+            if not _sine_luts_initialized:
+                initialize_sine_luts()
+                _sine_luts_initialized = True
+
+def _get_sine_from_lod_lut(phase: float, lut_size: int, lut_array: list) -> float:
+    """
+    Gets a sine value from a specific LUT with linear interpolation.
+    Matches the C reference implementation.
+    """
+    # 1. Guaranteed thread-safe call
+    _init_once_func()
+
+    # 2. Interpolation logic
+    # Wrap phase to 0 to 2*PI range
+    phase = phase % _TWO_PI
+    if phase < 0:
+        phase += _TWO_PI  # Ensure positive
+
+    # Map phase to LUT index range
+    fractional_index = (phase / _TWO_PI) * lut_size
+    
+    # Get integer part and fractional part
+    index1 = math.floor(fractional_index)
+    frac = fractional_index - index1
+    
+    # Handle wrap-around for index2 (last point wraps to first)
+    index1 = int(index1)
+    if index1 >= lut_size:
+        index1 = 0
+    index2 = (index1 + 1) % lut_size
+
+    # Linear interpolation
+    return lut_array[index1] * (1.0 - frac) + lut_array[index2] * frac
+
+# -----------------------------------------------------------------------------
 
 """
 --------------------------
@@ -130,7 +213,8 @@ FPS-R: Stacked Modulo (SM)
 --------------------------
 """
 
-def fpsr_sm(frame, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch=True):
+# [PORT UPDATE] Renamed to fpsr_sm_base to match C reference
+def fpsr_sm_base(frame, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch=True):
     """
     Produces a pseudo-random value that persists across multiple frames, held for a calculated duration.
     The hold timing varies over time, driven by deterministic interference between reseeded modular rhythms.
@@ -195,9 +279,9 @@ offsetOuter = 23    # offsets the outer frame
 use_final_random = True # Set to False to bypass final randomization
 
 # # Call the FPS-R:SM function
-# randVal = fpsr_sm(frame, minHoldFrames, maxHoldFrames, reseedFrames, offsetInner, offsetOuter, use_final_random)
+# randVal = fpsr_sm_base(frame, minHoldFrames, maxHoldFrames, reseedFrames, offsetInner, offsetOuter, use_final_random)
 # # Another call to fpsr_sm for the previous frame
-# randVal_previous = fpsr_sm(frame - 1, minHoldFrames, maxHoldFrames, reseedFrames, offsetInner, offsetOuter, use_final_random)
+# randVal_previous = fpsr_sm_base(frame - 1, minHoldFrames, maxHoldFrames, reseedFrames, offsetInner, offsetOuter, use_final_random)
 # # Check if the value has changed
 # changed = 1 if randVal != randVal_previous else 0
 
@@ -215,7 +299,8 @@ FPS-R: Toggled Modulo (TM)
 ---------------------------
 """
 
-def fpsr_tm(frame, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch=True):
+# [PORT UPDATE] Renamed to fpsr_tm_base to match C reference
+def fpsr_tm_base(frame, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch=True):
     """
     Generates a persistent value that holds for a rhythmically toggled duration.
     This function uses a deterministic switch to toggle the hold duration
@@ -279,9 +364,9 @@ offset_outer = 0  # offsets the outer (hold) clock
 use_final_random = True  # Set to False to bypass final randomization
 
 # # Call the FPS-R:TM function
-# randVal = fpsr_tm(frame, period_A, period_B, switch_duration, offset_inner, offset_outer, use_final_random)
+# randVal = fpsr_tm_base(frame, period_A, period_B, switch_duration, offset_inner, offset_outer, use_final_random)
 # # Another call to fpsr_tm for the previous frame
-# randVal_previous = fpsr_tm(frame - 1, period_A, period_B, switch_duration, offset_inner, offset_outer, use_final_random)
+# randVal_previous = fpsr_tm_base(frame - 1, period_A, period_B, switch_duration, offset_inner, offset_outer, use_final_random)
 # # Check if the value has changed
 # changed = 1 if randVal != randVal_previous else 0
 
@@ -300,8 +385,9 @@ FPS-R: Quantised Switching (QS)
 -------------------------------
 """
 
+# [PORT UPDATE] Added new 'sine_lod_level' parameter to match C
 def fpsr_qs(frame, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets,
-            streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch=True):
+            streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch=True, sine_lod_level: int = 4):
     """
     Generates a flickering, quantised value by switching between two sine wave streams.
     For each stream, a new random quantisation level is chosen from within the [min, max] 
@@ -319,15 +405,19 @@ def fpsr_qs(frame, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffs
         stream1QuantDur (int): The duration for which stream 1's random quantisation level is held.
         stream2QuantDur (int): The duration for which stream 2's random quantisation level is held.
         finalRandSwitch (bool): A flag to enable/disable the final randomisation step.
+        sine_lod_level (int): Level of detail for sine calculation (0=direct math.sin, 1-4=use LUTs).
 
     Returns:
         float: If finalRandSwitch is True, a random value between 0.0 and 1.0. 
                If False, the raw stepped signal value, scaled to the [0, 1] range.
     """
     # --- 1. Set default durations if not provided ---
-    if streamSwitchDur < 1: streamSwitchDur = math.floor((1.0 / baseWaveFreq) * 0.76)
-    if stream1QuantDur < 1: stream1QuantDur = math.floor((1.0 / baseWaveFreq) * 1.2)
-    if stream2QuantDur < 1: stream2QuantDur = math.floor((1.0 / baseWaveFreq) * 0.9)
+    # [PORT UPDATE] C code does not set defaults, it relies on caller.
+    # We will keep the Python-side guards for safety.
+    if baseWaveFreq == 0: baseWaveFreq = 0.01 # Avoid division by zero
+    if streamSwitchDur < 1: streamSwitchDur = max(1, math.floor((1.0 / baseWaveFreq) * 0.76))
+    if stream1QuantDur < 1: stream1QuantDur = max(1, math.floor((1.0 / baseWaveFreq) * 1.2))
+    if stream2QuantDur < 1: stream2QuantDur = max(1, math.floor((1.0 / baseWaveFreq) * 0.9))
     
     # Ensure durations are at least 1 frame to prevent division by zero.
     streamSwitchDur = max(int(streamSwitchDur), 1)
@@ -338,6 +428,7 @@ def fpsr_qs(frame, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffs
     quant_min = int(quantLevelsMinMax[0])
     quant_max = int(quantLevelsMinMax[1])
     quant_range = quant_max - quant_min + 1
+    if quant_range < 1: quant_range = 1
 
     # --- Stream 1 Quant Level ---
     s1_quant_seed_aligned = i64_align_down(int(quantOffsets[0] + frame), stream1QuantDur)
@@ -353,14 +444,35 @@ def fpsr_qs(frame, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffs
     s2_quant_level = max(s2_quant_level, 1)
 
     # --- 3. Generate the two quantised sine wave streams ---
-    if stream2FreqMult < 0: stream2FreqMult = 3.7
+    if stream2FreqMult <= 0: stream2FreqMult = 3.7
 
     # Deterministic double math: sin() -> [-1,1], map to [0,1], quantise via floor.
     angle1 = (float(streamsOffset[0]) + float(frame)) * float(baseWaveFreq)
     angle2 = (float(streamsOffset[1]) + float(frame)) * float(baseWaveFreq) * float(stream2FreqMult)
     
-    stream1 = math.floor((math.sin(angle1) * 0.5 + 0.5) * float(s1_quant_level)) / float(s1_quant_level)
-    stream2 = math.floor((math.sin(angle2) * 0.5 + 0.5) * float(s2_quant_level)) / float(s2_quant_level)
+    # [PORT UPDATE] Use Sine LOD logic from C
+    stream1_raw_sine = 0.0
+    stream2_raw_sine = 0.0
+    
+    if sine_lod_level == 0:
+        stream1_raw_sine = math.sin(angle1)
+        stream2_raw_sine = math.sin(angle2)
+    elif sine_lod_level == 1:
+        stream1_raw_sine = _get_sine_from_lod_lut(angle1, _SINE_LUT_SIZE_100, _sine_lut_100)
+        stream2_raw_sine = _get_sine_from_lod_lut(angle2, _SINE_LUT_SIZE_100, _sine_lut_100)
+    elif sine_lod_level == 2:
+        stream1_raw_sine = _get_sine_from_lod_lut(angle1, _SINE_LUT_SIZE_500, _sine_lut_500)
+        stream2_raw_sine = _get_sine_from_lod_lut(angle2, _SINE_LUT_SIZE_500, _sine_lut_500)
+    elif sine_lod_level == 3:
+        stream1_raw_sine = _get_sine_from_lod_lut(angle1, _SINE_LUT_SIZE_1000, _sine_lut_1000)
+        stream2_raw_sine = _get_sine_from_lod_lut(angle2, _SINE_LUT_SIZE_1000, _sine_lut_1000)
+    else: # Default to 4
+        stream1_raw_sine = _get_sine_from_lod_lut(angle1, _SINE_LUT_SIZE_4096, _sine_lut_4096)
+        stream2_raw_sine = _get_sine_from_lod_lut(angle2, _SINE_LUT_SIZE_4096, _sine_lut_4096)
+
+    # Map sine from [-1,1] to [0,1] before quantizing
+    stream1 = math.floor((stream1_raw_sine * 0.5 + 0.5) * float(s1_quant_level)) / float(s1_quant_level)
+    stream2 = math.floor((stream2_raw_sine * 0.5 + 0.5) * float(s2_quant_level)) / float(s2_quant_level)
 
     # --- 4. Switch between the two streams ---
     # Use floor-mod and an integer half-threshold (2*r < period) to match C.
@@ -369,24 +481,16 @@ def fpsr_qs(frame, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffs
 
     # --- 5. Hash the final output to create a random-looking value (or bypass) ---
     if finalRandSwitch:
-        # [PORT UPDATE] Match the canonical C implementation.
-        # The C version performs a 'memcpy' of the double 'active_stream_val'
-        # into a uint64_t to use its raw bits as a seed.
-        # The Python equivalent is struct.pack/unpack, which does the same
-        # bit-for-bit cast from a float (C double) to an unsigned 64-bit int.
-        # The old Python code (math.floor(active_stream_val * 100000.0))
-        # was a different hashing logic.
-        try:
-            seed_bytes = struct.pack('d', active_stream_val) # 'd' = C double (8 bytes)
-            seed_u64 = struct.unpack('Q', seed_bytes)[0] # 'Q' = C unsigned long long (8 bytes / uint64_t)
-            fpsr_output = portable_rand_u64(seed_u64)
-        except (struct.error, OverflowError):
-             # Fallback in case of a highly unusual float value
-            fpsr_output = portable_rand_u64(int(active_stream_val * 1e9))
+        # [PORT UPDATE] Match the canonical C implementation's 'FIX'.
+        # The C version performs a hash based on floor(val * multiplier).
+        # This replaces the previous 'struct.pack' (memcpy) logic.
+        hashed_int = math.floor(active_stream_val * 1000000.0)
+        fpsr_output = portable_rand_u64(hashed_int)
     else:
-        # If finalRandSwitch is false, return the active stream value directly.
-        # The quantised streams `stream1` and `stream2` (and thus `active_stream_val`)
-        # are already in the correct [0.0, 1.0] range.
+        # [PORT UPDATE] Match the canonical C implementation's 'FIX'.
+        # The C version now returns the active_stream_val directly,
+        # which is already in the [0, 1] range.
+        # This replaces the old logic of '0.5 * val + 0.5'.
         fpsr_output = active_stream_val
         
     return fpsr_output
@@ -677,23 +781,24 @@ if __name__ == "__main__":
         if algo == 0:
             # --------------------------------------------------------------------------
             # Sample code to call the FPS-R:SM function
-            # [PORT UPDATE] Parameters now match the C main() function
+            # [PORT UPDATE] Parameters now match the new C main() function
             # --------------------------------------------------------------------------
             # Parameters
-            minHoldFrames = 10  # probable minimum held period
-            maxHoldFrames = 13  # maximum held period before cycling
-            reseedFrames = 5    # inner mod cycle timing
-            offsetInner = -34   # offsets the inner frame
-            offsetOuter = 22    # offsets the outer frame
+            minHoldFrames = 7  # probable minimum held period
+            maxHoldFrames = 9  # maximum held period before cycling
+            reseedFrames = 6    # inner mod cycle timing
+            offsetInner = -41   # offsets the inner frame
+            offsetOuter = 23    # offsets the outer frame
             finalRandSwitch = 1 # 1 to apply the final randomisation step, 0 to skip it
             
             # Call the FPS-R:SM function        
             # call to fpsr_sm for the current frame
-            randVal = float(fpsr_sm(
+            # [PORT UPDATE] Calling renamed function fpsr_sm_base
+            randVal = float(fpsr_sm_base(
                 int(frame), int(minHoldFrames), int(maxHoldFrames), 
                 int(reseedFrames), int(offsetInner), int(offsetOuter), bool(finalRandSwitch)))
             # another call to fpsr_sm for the previous frame
-            randVal_previous = float(fpsr_sm(
+            randVal_previous = float(fpsr_sm_base(
                 int(frame - 1), int(minHoldFrames), int(maxHoldFrames), 
                 int(reseedFrames), int(offsetInner), int(offsetOuter), bool(finalRandSwitch)))
             changed = 0
@@ -703,23 +808,24 @@ if __name__ == "__main__":
         elif algo == 1:
             # --------------------------------------------------------------------------
             # Sample code to call the FPS-R:TM function
-            # [PORT UPDATE] Parameters now match the C main() function
+            # [PORT UPDATE] Parameters now match the new C main() function
             # --------------------------------------------------------------------------
             # Parameters
-            period_A = 10         # The first hold duration
-            period_B = 16         # The second hold duration
-            periodSwitch = 9      # The toggle happens every 30 frames
-            offset_inner = 4      # offsets the inner (toggle) clock
+            period_A = 8         # The first hold duration
+            period_B = 5         # The second hold duration
+            periodSwitch = 6      # The toggle happens every 30 frames
+            offset_inner = 15      # offsets the inner (toggle) clock
             offset_outer = 0      # offsets the outer (hold) clock
             final_rand_switch = 1 # 1 to apply the final randomisation step, 0 to skip it
             
             # Call the FPS-R:TM function
+            # [PORT UPDATE] Calling renamed function fpsr_tm_base
             # call to fpsr_tm for the current frame
-            randVal = float(fpsr_tm(
+            randVal = float(fpsr_tm_base(
                 int(frame), int(period_A), int(period_B), 
                 int(periodSwitch), int(offset_inner), int(offset_outer), bool(final_rand_switch)))
             # another call to fpsr_tm for the previous frame
-            randVal_previous = float(fpsr_tm(
+            randVal_previous = float(fpsr_tm_base(
                 int(frame - 1), int(period_A), int(period_B), 
                 int(periodSwitch), int(offset_inner), int(offset_outer), bool(final_rand_switch)))
             changed = 0
@@ -729,27 +835,30 @@ if __name__ == "__main__":
         elif algo == 2:
             # --------------------------------------------------------------------------
             # Sample code to call the FPS-R:QS function
-            # [PORT UPDATE] Parameters now match the C main() function
+            # [PORT UPDATE] Parameters now match the new C main() function
             # --------------------------------------------------------------------------
             # Parameters
             baseWaveFreq = 0.012 # Base frequency for the modulation wave of stream 1
             stream2freqMult = 3.1 # Multiplier for the second stream's frequency
             quantLevelsMinMax = [4, 12] # Min, Max quantisation levels for the two streams
-            streamsOffset = [0, 72] # Offset for the two streams
-            quantOffsets = [9, 81] # Offset for the random quantisation selection
-            streamSwitchDur = 11 # Duration for switching streams in frames
-            stream1QuantDur = 13 # Duration for the first stream's quantisation switch cycle in frames
-            stream2QuantDur = 20 # Duration for the second stream's quantisation switch cycle in frames
+            streamsOffset = [0, 76] # Offset for the two streams
+            quantOffsets = [10, 81] # Offset for the random quantisation selection
+            streamSwitchDur = 8 # Duration for switching streams in frames
+            stream1QuantDur = 10 # Duration for the first stream's quantisation switch cycle in frames
+            stream2QuantDur = 13 # Duration for the second stream's quantisation switch cycle in frames
             finalRandSwitch = 1 # 1 to apply the final randomisation step, 0 to skip it
+            sine_lod_level = 4 # [PORT UPDATE] Added sine_lod_level
             
             # call to fpsr_qs for the current frame
             randVal = float(fpsr_qs(
                 int(frame), float(baseWaveFreq), float(stream2freqMult), quantLevelsMinMax, 
-                streamsOffset, quantOffsets, int(streamSwitchDur), int(stream1QuantDur), int(stream2QuantDur), bool(finalRandSwitch)))
+                streamsOffset, quantOffsets, int(streamSwitchDur), int(stream1QuantDur), int(stream2QuantDur), 
+                bool(finalRandSwitch), int(sine_lod_level)))
             # another call to fpsr_qs for the previous frame
             randVal_previous = float(fpsr_qs(
                 int(frame - 1), float(baseWaveFreq), float(stream2freqMult), quantLevelsMinMax, 
-                streamsOffset, quantOffsets, int(streamSwitchDur), int(stream1QuantDur), int(stream2QuantDur), bool(finalRandSwitch)))
+                streamsOffset, quantOffsets, int(streamSwitchDur), int(stream1QuantDur), int(stream2QuantDur), 
+                bool(finalRandSwitch), int(sine_lod_level)))
             changed = 0  # Variable to track if the value has changed
             if randVal != randVal_previous:
                 changed = 1  # Mark as changed if the value has changed from the previous frame
@@ -787,5 +896,6 @@ if __name__ == "__main__":
             if randVal != randVal_previous: changed = 1
         
         # [PORT UPDATE] Mirror C printf formatting (%.6f) and two-step print
+        # Note: C `printf` with %f prints 6 decimal places by default.
         print(f"Frame {frame}: randVal {randVal:.6f}, randVal_previous {randVal_previous:.6f}, changed {changed} ", end="")
         print("(jumped)" if changed else "")
