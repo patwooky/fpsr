@@ -182,7 +182,7 @@ These numbers and timing are unpredictable but totally deterministic, repeatable
 
 # The Curious Properties of FPS-R
 ## The Curious Contradictions
-These are the 2 pillars of FPS-R. They will be detailed in the [Pillars of FPS-R](#pillars-of-fps-r) section.
+The following are 2 of the pillars of FPS-R. They will be detailed in the [Pillars of FPS-R](#pillars-of-fps-r) section.
 
 **Predictable Surprise**
 FPS-R is surpising in its values that hold and jump across time, but the value at each time step is perfectly deterministic. It only needs an incrementing or changing frame number as an input to achieve this move-and-hold behaviour, but the same input frame will always yield the same predictable output.
@@ -203,7 +203,7 @@ FPS-R output is a single stream of values. This seemingly simplistic list of val
   ```
   The output shows the same kind of random, discontinuous values like our sample output above.
 - **Axis 2: Randomness in Time**
-  - Now if we take the holding duration of each value that holds across multiple frames, ie, 3 (for 0.9947), 2 (for 0.4560), 3 (for 0.6687), etc. Will get `[3, 2, 3, 1, 2]`
+  - Now if we take the holding duration of each value that holds across multiple frames, ie, 3 (for 0.9947), 2 (for 0.4560), 3 (for 0.6687), etc. We get `[3, 2, 3, 1, 2]`.
   
   Here is a sample line of Python code to generate 5 random numbers from 1 to 5:
   ```py
@@ -269,7 +269,7 @@ This is the "value" axis in the collapsed randomness.
 #### Held Steps Graphs
 This is "time" axis encoded in FPS-R. 
 
-These graphs are not synced to time. Every data point expresses the number of frames that a generated random value holds until it jumps.  
+Held Steps graphs are not synced to time. Every data point expresses the number of frames that a generated random value holds until it jumps.  
 
 ### `portable_rand()`
 By implementing our own pseudo random number generator, we ensure the results are deterministic across different languages and operating environments.
@@ -348,7 +348,7 @@ The distribution graph of BD's output after 100,000 time-steps shows a relativel
 `6.2` seconds for `100,000` frames with 5 streams.
 
 ## Great Flexibility
-The graphs shown above are example outputs. With different parameters, each algorithm can achieve a wide variety of holding patterns and random values. This is especially true of FPS-R QS.
+The graphs shown above are example outputs. With different parameters, each algorithm can achieve a wide variety of holding patterns and random values. This is especially true of FPS-R QS and FPS-R BD.
 
 ---
 ## Pillars of FPS-R
