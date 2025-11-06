@@ -795,7 +795,12 @@ FPSR_Output fpsr_bd_get_details(int64_t frame, double frame_multiplier, double* 
  * = 1.0 = Normal Speed
  * > 1.0 = Fast-Motion (Time Compression)
  * @param p_scaled_frame_pos_out (double*) Optional output pointer to get the scaled frame position.
- * @param ... (algo params) ...
+ * @param minHold (int) The minimum duration (in frames) for a value to hold.
+ * @param maxHold (int) The maximum duration (in frames) for a value to hold.
+ * @param reseedInterval (int) The fixed interval at which a new hold duration is calculated.
+ * @param seedInner (int) An offset for the random duration calculation to create unique sequences.
+ * @param seedOuter (int) An offset for the final value calculation to create unique sequences.
+ * @param finalRandSwitch (bool) A flag that can turn off the final randomisation step.
  * @param lod (int) The level of detail to calculate.
  * @param max_search_frames (int) A safety limit for the backward/forward search.
  * @param seg_block_length (int) *** NEW *** The "runway" length for HPQ logic.
@@ -993,7 +998,12 @@ FPSR_Output fpsr_sm_get_details(
  * = 1.0 = Normal Speed
  * > 1.0 = Fast-Motion (Time Compression)
  * @param p_scaled_frame_pos_out (double*) Optional output pointer to get the scaled frame position.
- * @param ... (algo params) ...
+ * @param periodA (int) The first hold duration (in frames).
+ * @param periodB (int) The second hold duration (in frames).
+ * @param periodSwitch (int) The fixed interval at which the hold duration is toggled.
+ * @param seedInner (int) An offset for the toggle clock to de-sync it from the main clock.
+ * @param seedOuter (int) An offset for the main clock to create unique output sequences.
+ * @param finalRandSwitch (bool) A flag to enable/disable the final randomisation step.
  * @param lod (int) The level of detail to calculate.
  * @param max_search_frames (int) A safety limit for the backward/forward search.
  * @param seg_block_length (int) *** NEW *** The "runway" length for HPQ logic.
@@ -1162,14 +1172,22 @@ FPSR_Output fpsr_tm_get_details(
 
 /**
  * ---- QS: Quantised Switching Wrapper with Details ----
- * @brief Wrapper for fpsr_qs that returns a detailed FPSR_Output struct.
+ * @brief Wrapper for fpsr_qs that returns a detailed FPSR_Output struct. Please refer to the base function for parameter explanations.
  * @param frame (int64_t) The current frame or time input.
  * @param frame_multiplier (double) The time scaling factor.
  * < 1.0 = Slow-Motion (Time Stretch)
  * = 1.0 = Normal Speed
  * > 1.0 = Fast-Motion (Time Compression)
  * @param p_scaled_frame_pos_out (double*) Optional output pointer to get the scaled frame position.
- * @param ... (algo params) ...
+ * @param baseWaveFreq (double) The base frequency for the sine waves.
+ * @param stream2FreqMult (double) A multiplier for the second stream's frequency.
+ * @param quantLevelsMinMax (int[2]) A list [min, max] quantization levels.
+ * @param streamsOffset (int[2]) A list [offset1, offset2] for each sine stream.
+ * @param quantOffsets (int[2]) A list [q_offset1, q_offset2] for each stream.
+ * @param streamSwitchDur (int) The duration (in frames) before switching between streams.
+ * @param stream1QuantDur (int) The quantization duration (in frames) for stream 1.
+ * @param stream2QuantDur (int) The quantization duration (in frames) for stream 2.
+ * @param finalRandSwitch (bool) A flag that can turn off the final randomisation step.
  * @param lod (int) The level of detail to calculate.
  * @param max_search_frames (int) A safety limit for the backward/forward search.
  * @param seg_block_length (int) *** NEW *** The "runway" length for HPQ logic.
@@ -1350,14 +1368,25 @@ FPSR_Output fpsr_qs_get_details(
 
 /**
  * ---- BD: Bitwise Decode Wrapper with Details ----
- * @brief Wrapper for fpsr_bd that returns a detailed FPSR_Output struct.
+ * @brief Wrapper for fpsr_bd that returns a detailed FPSR_Output struct. Please refer to the base function for parameter explanations.
  * @param frame (int64_t) The current frame or time input.
  * @param frame_multiplier (double) The time scaling factor.
  * < 1.0 = Slow-Motion (Time Stretch)
  * = 1.0 = Normal Speed
  * > 1.0 = Fast-Motion (Time Compression)
  * @param p_scaled_frame_pos_out (double*) Optional output pointer to get the scaled frame position.
- * @param ... (algo params) ...
+ * @param block_size (int) The size of the macro-rhythm in frames. Must be > 0.
+ * @param streams_number (int) The number of parallel bitstreams to generate.
+ * @param streams_offset (int) The frame offset between each parallel stream's seed.
+ * @param intra_op (str) The unary (intra-stream) operation.
+ *     Static ops: "none", "not", "lshift", "rshift", "rotl", "rotr".
+ *     Dynamic ops: "lshift_dynamic", "rshift_dynamic", "rotl_dynamic", "rotr_dynamic".
+ * @param dynamic_shift_bits (int) For dynamic ops, the number of controller bits to read
+ *              to determine the shift/rotate amount (1-6 when chunk_bits=64).
+ * @param static_shift_amount (int) For static ops, the fixed number of bits to shift/rotate.
+ * @param inter_op (str) The binary (inter-stream) operation to combine multiple
+ *              transformed streams. Options: "xor", "or", "and".
+ * @param value_seed_offset (int) An additional seed offset for the final value calculation.
  * @param lod (int) The level of detail to calculate.
  * @param max_search_frames (int) A safety limit for the backward/forward search.
  * @param seg_block_length (int) *** NEW *** The "runway" length for HPQ logic.
