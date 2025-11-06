@@ -947,6 +947,7 @@ def fpsr_tm_get_details(
     out.randVal_next_changed_frame = float(next_val_candidate)
     
     # --- UPDATED hold_progress Calculation ---
+    # This calculation is now performed *purely* on the "Application Timeline"
     hold_duration_app_frames = float(out.next_changed_frame) - float(out.last_changed_frame)
     if (hold_duration_app_frames > 0.0):
         out.hold_progress = float((float(frame) - float(out.last_changed_frame)) / hold_duration_app_frames)
@@ -1103,6 +1104,7 @@ def fpsr_qs_get_details(
     out.randVal_next_changed_frame = float(next_val_candidate)
     
     # --- UPDATED hold_progress Calculation ---
+    # This calculation is now performed *purely* on the "Application Timeline"
     hold_duration_app_frames = float(out.next_changed_frame) - float(out.last_changed_frame)
     if (hold_duration_app_frames > 0.0):
         out.hold_progress = float((float(frame) - float(out.last_changed_frame)) / hold_duration_app_frames)
@@ -1258,6 +1260,7 @@ def fpsr_bd_get_details(
     out.randVal_next_changed_frame = float(next_val_candidate)
     
     # --- UPDATED hold_progress Calculation ---
+    # This calculation is now performed *purely* on the "Application Timeline"
     hold_duration_app_frames = float(out.next_changed_frame) - float(out.last_changed_frame)
     if (hold_duration_app_frames > 0.0):
         out.hold_progress = float((float(frame) - float(out.last_changed_frame)) / hold_duration_app_frames)
@@ -1365,8 +1368,9 @@ if __name__ == "__main__":
             p_intra_op = "rotl_dynamic" # Intra-stream operation on each stream
             p_dynamic_shift_bits = 6    # Dynamic shift bits for intra-op
             p_static_shift_amount = 1   # Static shift amount for intra-op
-            p_inter_op = "xor"  # Inter-stream operation to combine transformed streams
-                                #     Options: "xor", "or", "and".
+            # Inter-stream operation to combine transformed streams
+            #     Options: "xor", "or", "and".    
+            p_inter_op = "xor"  # Inter-stream operation
             p_value_seed_offset = 78901 # Additional seed offset for final value
             max_search_frames = 100 # BD blocks can be large
 
