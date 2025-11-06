@@ -17,6 +17,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
     - Added FPS-R Bitwise Decode (BD) algorithm
     - enhanced Quantised Switching (QS) logic. 
     - Improved code comments and structure for maintainability.
+    - restored missing comment blocks from the main `fpsr_algorithms_wrap.py` file.
+- `fpsr_algorithms_wrap_reference.c`
+    - `fpsr_xx_get_details()` functions have abbreviated comments like `... algo params ...`. Replaced it with meaningful and parameter descriptions.
 - Expanded and clarified the README with detailed explanations and new images for FPS-R algorithm output analysis. 
 
 ## [2.0.8] - 2025-11-05
