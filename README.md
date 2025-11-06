@@ -52,13 +52,17 @@ Here are a few examples of non-linearity found in various aspects of our reality
 
 **Socio-Economic Systems**
   - **Financial Market Crashes**: Market dynamics are often non-linear. Small changes can lead to rapid and significant chain reactions, resulting in crashes.
+  - **Economic Growth Models**: Rapid policy shifts after long periods of debates and deliberation among opposing parties, perhaps caused by small changes and accumulated tensions.
+  - **Employment Maket**: Relatively rapid increase or shrinking of jobs based on various factors such as shifts in political stability, establishing of govenment incentives and passing of immigration laws.
+
+**Geology/Astronomical Systems**
   - **Plate Tectonic Movements**: Stress gradually builds up in tectonic activities and is then released suddenly and violently during earthquakes.
   - **Planetary Collapses**: Gravitational instability over time can result in the sudden, rapid collapse of planets and stars. This process may sometimes lead to the formation of black holes.
 
 **Emotional Drifts and Shifts**
-  - **Building Anger to Outburst**: Anger often accumulates over time due to various triggers, building up to a final trigger the leads to a sudden outburst. 
-  - **Hesitation to Sudden Courage**: Individuals may experience prolonged periods of hesitation or doubt before suddenly acting with courage. 
-  - **Learning and Internalising to Moments of Understanding**: Learning is a non-linear process, where individuals may struggle with concepts for a period before suddenly achieving clarity and understanding.
+  - **Building Anger to Outburst**: Anger often accumulates relatively slowly over time due to various triggers, building up to a final, often sudden trigger the leads to a sudden outburst. 
+  - **Hesitation to Sudden Courage**: Prolonged hesitation may suddenly shift to courageous action. 
+  - **Learning and Internalising to Moments of Understanding**: Learning is non-linear, where individuals may struggle for a time before achieving clarity.
 
 > **[fpsr_unifying_theory.md](resources/readme/FPSR_Unifying_Theory.md)**
   Read more about the thoughts and research behind the principle of move-hold and surprise.
@@ -168,12 +172,51 @@ Example output of `FPS-R: QS` (one of the FPS-R algorithms):
  0.6687, # jump
  0.6687,
  0.6687,
+ 0.2174, # jump
  0.3755, # jump
  0.3755]
 ```
 The entries marked `jump` are changes in values. Subsequent entries after the jumps are held-values.
 
 These numbers and timing are unpredictable but totally deterministic, repeatable and stateless. By looking up the frame number with the same parameter values, FPS-R will always return the same output.
+
+# The Curious Properties of FPS-R
+## The Curious Contradictions
+These are the 2 pillars of FPS-R. They will be detailed in the [Pillars of FPS-R](#pillars-of-fps-r) section.
+
+**Predictable Surprise**
+FPS-R is surpising in its values that hold and jump across time, but the value at each time step is perfectly deterministic. It only needs an incrementing or changing frame number as an input to achieve this move-and-hold behaviour, but the same input frame will always yield the same predictable output.
+
+**Remembering Without Memory**
+While almost all current methods will employ stateful techniques to achieve stateful "memory" (variables) for storing and holding previous values, FPS-R's pure mathematical construct enables it to exhibit the appearance of having memory when the mechanism holds no variables across time.
+
+## The Curious Multi-Axial Nature of FPS-R Outputs
+FPS-R output is a single stream of values. This seemingly simplistic list of values are a richly encoded result expressing _two streams of randomness_:  
+- **Axis 1: Randomness in Value**
+  - if we ignore the repeated holding values and take only the unique values from the sample output list above, we get `[0.9947, 0.4560, 0.6687, 0.2174, 0.3755]`. This looks like what a random number generator returns when we call it 5 times sequentially.
+
+  Here is a sample line of Python code to generate 5 random numbers from 0 to 1:
+  ```py
+  # Generate a list of 5 random numbers, truncated to 2 decimal places
+  [float(f'{random.random():.4f}') for x in range(5)]
+  result: [0.9362, 0.007, 0.3853, 0.8503, 0.1027]
+  ```
+  The output shows the same kind of random, discontinuous values like our sample output above.
+- **Axis 2: Randomness in Time**
+  - Now if we take the holding duration of each value that holds across multiple frames, ie, 3 (for 0.9947), 2 (for 0.4560), 3 (for 0.6687), etc. Will get `[3, 2, 3, 1, 2]`
+  
+  Here is a sample line of Python code to generate 5 random numbers from 1 to 5:
+  ```py
+  # Generate a list of 5 random integers in the range of 1 to 5.
+  [random.randint(1,5) for x in range(5)]
+  # result: [3, 5, 3, 4, 1]
+  ```
+  This reflects the same patterns of randomness and value ranges reflected in our example output
+
+### Summary of Curiosities
+The **deterministic statelessness of FPS-R** makes the framework repeatable and inspectable. Its output is laid out before us like an infinitely extending timeline. We can "time-travel" as far as we want to in either direction, forward and backwards without accumulating state like current stateful methods. This is an invaluable in areas of simulation and traceable audit. It makes FPS-R performant and reliable.
+
+**FPS-R's output is a rich multi-axial stream** that simultaneously carries 2 orthogonal axes of randomness, collapsed and folded into a single stream.
 
 # The 4 Algorithms: SM, TM, QS and BD
 FPS-R consists of 3 algorithms. Each one achieves the move-and-hold behaviour in a slightly different way.
@@ -312,7 +355,7 @@ The graphs shown above are example outputs. With different parameters, each algo
 - **Deterministic** - *predictable unpredictability*
   - FPS-R is *predictable*. While its output and timing are "unpredictable" and "surprising" in their values, holds and jumps, FPS-R always produces the same result given the same inputs (time, parameters, etc)
 
-- **Stateless** - *remembering without knowing the past*
+- **Stateless** - *remembering without needing to know the past*
   - no dependency on historical states, no need to "start from the beginning", or to perform any run-up tasks. Pure "current frame look-up".
   - critical for use in **parallel processing** environments and **functional programming** paradigms
 
@@ -402,27 +445,47 @@ fpsr_sm_expression = portable_rand(
 Each algorithm is also expressed as a function, enabling flexible interaction with parent systems and richer outputs.
 
 ### Wrapper Version with Rich Output
-There are "wrapper versions" of the algorithms with rich output structures that are able to generate output that is more **insightful**, **meaningful**, **analytic**, at an increased computation cost. These features are organised into leve-of-details (LOD) from 0 (lowest computation cost) to 2 (highest computation cost). Setting a LOD will enable the respective set of rich outputs associated with the LOD.
+There are "wrapper versions" of the algorithms with rich output structures that are able to generate output that is more **insightful**, **meaningful**, **analytic**, at an increased computation cost. These features are organised into level-of-details (LOD) from 0 (lowest computation cost) to 2 (highest computation cost). Setting a LOD will enable the respective set of rich outputs associated with the LOD.
+
+#### The Frame Multiplier
+This is significant wrapper-level feature is available across all LOD levels. A lot of work and thought was put into the design to achieve **bit-for-bit** determinism and accuracy in the output values.
+
+The `frame_multiplier` feature is built on a "stretch-and-generate" model called **Hierarchical Phrased Quantisation (HPQ)**. This model cleverly splits the timeline into two modes to handle time scaling:
+1. **"Tape Varispeed" (Anchor) Mode**: When time is stretched (e.g., `frame_multiplier < 1.0`), the algorithm will repeat the value from the original "Content Timeline" for the duration of the stretch. This is like slowing down a tape: the pitch/value is held, but it lasts longer.
+2. **"Telescopic Extension" (Generative Phrase) Mode**: The HPQ model has a "runway" parameter (`seg_block_length`) that defines a threshold for this stretch. If the time-stretch is so extreme that it exceeds this runway, the algorithm switches modes. It _stops_ stretching the original value and instead generates a new, unique phrase of random values to fill the gap. 
+
+The optimised design also results in an almost negigible costs even at very low speeds where more frames need to be generated and inserted between the regular "real-time, master" frames.
+
+This two-mode system ensures that slow-motion feels natural and "sticky" at first, but avoids becoming static and boring by introducing new, deterministically generated content during extreme time-stretches.
+
+#### The LOD System and Features
 
 In broad terms these information include:
-- LOD 0 
-  - What is the current random value?
-- LOD 1
-  - Is the current value different from the one from the frame before?
-- LOD 2
-  - How far along am I in this hold period? 
-  - What was the frame number of the last jump? 
-  - What is the frame number of the upcoming jump? 
-  - What will be the random value of the next hold?
+- **LOD 0** 
+  - What is the current random value? `randVal`
+- **LOD 1**
+  - Is the current value different from the frame before? `has_changed`
+  - What is the value at the previous frame? `randVal_previous`
+- **LOD 2**
+  - How far along am I in this hold period? `hold_progress`
+  - What was the frame number of the last jump? `last_changed_frame`
+  - What is the frame number of the upcoming jump? `next_changed_frame`
+  - What will be the random value of the next hold? `randVal_next_changed_frame`
   - For QS only
-    - What are the raw values of stream 1 and stream 2?
-    - Which is the currently selected stream?
+    - What are the raw values of stream 1 and stream 2? `randStreams`
+    - Which is the currently selected stream? `selected_stream_idx`
 
-The wrapper version also has a huge feature: a frame multiplier. A lot of work and thought was put into the design to keep the output determinism and accuracy **bit-for-bit**.
+##### LOD 2's Search Feature - Time Traveling
+The higher computational cost of LOD 2 is due to its robust, stateless search. The process of "searching through time" is to iteratively look ahead to find `next_changed_frame` and `last_changed_frame`. 
 
-These enhancements make for very meaningful analysis, transparency, traceability and audit workflows.
+To do this, the wrapper performs a two-phase search (an exponential probe followed by a binary search) by recursively calling the base algorithm at LOD 0. This stateless "discovery" method is what guarantees accuracy without relying on memory or state, but it requires re-calculating values for surrounding frames.
 
-(**Wrapper version with rich output is currently Work in progress**.)
+Obtaining `next_changed_frame` and `last_changed_frame` unlocks the following:
+- `randVal_next_changed_frame` the random value at the next jump.
+- `hold_progress` can be evaluted, expressed as a normalised value
+
+#### Wrapper Version Conclusion
+These enhancements enable meaningful analysis of FPS-R outputs for transparency, traceability and auditable workflows.
 
 > **[fpsr_tech.md](resources/readme/FPSR_Tech.md)**
   Read more about the technical detail of each algorithm here.
