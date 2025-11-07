@@ -2,7 +2,7 @@ Apache License 2.0 — 详情请见 LICENSE。
 Copyright (c) 2025 Woo Ker Yang (Patrick Woo) patrickwoo.1976@gmail.com
 若您引用或改编此框架，请注明 Patrick Woo 及此代码仓库。
 此文档仍在开发中。
-虽然每次更新都力求更准确，但仍会有部分内容不完整或不准确。
+尽管每次更新都旨在确保准确性，但部分内容可能仍然存在不完整或不准确之处。对此我们非常感谢您的理解，并为可能造成的任何不便表示歉意。
 
 # 🎲 FPS-R: Frame-Persistent Stateless Randomisation (静态律动算法)
 

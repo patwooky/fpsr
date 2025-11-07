@@ -1,4 +1,4 @@
-# Announcements
+# FPS-R Announcements
 
 This file contains major announcements and important updates about the project.
 
