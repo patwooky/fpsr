@@ -188,7 +188,7 @@ The following are 2 of the pillars of FPS-R. They will be detailed in the [Pilla
 FPS-R is surpising in its values that hold and jump across time, but the value at each time step is perfectly deterministic. It only needs an incrementing or changing frame number as an input to achieve this move-and-hold behaviour, but the same input frame will always yield the same predictable output.
 
 **Remembering Without Memory**
-While almost all current methods will employ stateful techniques to achieve stateful "memory" (variables) for storing and holding previous values, FPS-R's pure mathematical construct enables it to exhibit the appearance of having memory when the mechanism holds no variables across time.
+Most current methods for achieving a move-and-hold behavior utilise stateful techniques, relying on "memory" (variables) to store and maintain previous values, using the previous value state to make decisions on the current frame. In contrast, FPS-R's purely mathematical construct creates the illusion of memory without retaining variables over time. By inputting 100 frame numbers into FPS-R running on 100 separate threads and assembling the outputs sequentially, we observe a hold-and-jump behavior. The output values appear to hold and jump, giving the impression of remembering previous states, despite lacking any stored variables. This characteristic is highly advantageous in parallel processing environments.
 
 ## The Curious Multi-Axial Nature of FPS-R Outputs
 FPS-R output is a single stream of values. This seemingly simplistic list of values are a richly encoded result expressing _two streams of randomness_:  
