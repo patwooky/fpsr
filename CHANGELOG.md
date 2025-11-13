@@ -7,6 +7,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## Unreleased
 
 
+## [3.0.1] - 2025-01-14
+
+### Changed
+- `resources/readme/FPSR_Unifying_Theory.md`
+    - Expanded the theoretical foundation with concrete, multi-level analogies that make abstract concepts more accessible
+    - Strengthened the argument that "hold-then-break" is the fundamental, recursive signature of how work, thought, and all biological activity unfolds
+    - Enhanced the connection between abstract theory and observable reality through biological evidence
+
+
 ## [3.0.0] - 2025-11-11
 
 ### Major Release Summary
