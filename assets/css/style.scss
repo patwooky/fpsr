@@ -53,3 +53,47 @@ pre code {
 .highlight pre {
   background-color: #2d2d2d !important;
 }
+
+/* Chinese language badge styling */
+/* This targets text that looks like language tags or badges */
+a[href*="README-CH"], 
+a[href*="Chinese"], 
+.language-badge {
+  background-color: #333333 !important;
+  color: #00bfff !important;
+  padding: 2px 8px !important;
+  border-radius: 3px !important;
+  text-decoration: none !important;
+  font-size: 0.9em !important;
+  border: 1px solid #555 !important;
+}
+
+/* Syntax highlighting for code keywords */
+/* These target specific syntax highlighting classes that Jekyll/Rouge generates */
+.highlight .k,     /* keywords like 'def', 'if', 'for', 'while' */
+.highlight .kd,    /* keyword declarations */
+.highlight .kn,    /* keyword namespace */
+.highlight .kp,    /* keyword pseudo */
+.highlight .kr,    /* keyword reserved */
+.highlight .kt,    /* keyword type */
+.highlight .ow {   /* operator words like 'and', 'or', 'not' */
+  color: #00ccff !important; /* cyan-light-blue for keywords */
+  font-weight: bold !important;
+}
+
+.highlight .nf {   /* function names */
+  color: #ffcc00 !important; /* yellow for function names */
+}
+
+.highlight .s,     /* strings */
+.highlight .s1,    /* single quoted strings */
+.highlight .s2 {   /* double quoted strings */
+  color: #98d982 !important; /* light green for strings */
+}
+
+.highlight .c,     /* comments */
+.highlight .c1,    /* single line comments */
+.highlight .cm {   /* multi-line comments */
+  color: #888888 !important; /* gray for comments */
+  font-style: italic !important;
+}
