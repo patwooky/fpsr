@@ -1,6 +1,17 @@
 ---
 ---
 
+/*
+    Explanation:
+
+---: These two lines of three dashes are called front matter. They must be at the very top of the file. This tells Jekyll to process the file.
+
+@import "{{ site.theme }}";: This line imports all the original CSS from the theme you selected in your repository settings. This way, you're adding to the theme, not replacing it entirely.
+
+Your Custom CSS: Below the import line, you can add any CSS rules you want. The rules you add here will override the theme's default styles. The !important tag helps ensure your style takes precedence, though it's best used sparingly.
+
+*/
+
 @import "{{ site.theme }}";
 
 /* Your custom CSS rules go here */
@@ -13,13 +24,32 @@ a {
   color: #00bfff !important; /* A bright blue for links */
 }
 
-/*
-    Explanation:
+/* Code styling for better readability */
+/* 'code' = inline code within text (like `this`) */
+/* 'pre' = preformatted text blocks that preserve whitespace and line breaks */
+/* This targets both HTML elements used for displaying code */
+code, pre {
+  background-color: #2d2d2d !important; /* Very dark gray background for code */
+  color: #f0f0f0 !important;             /* Light text for contrast */
+  border: 1px solid #444 !important;    /* Subtle border */
+  border-radius: 4px !important;        /* Rounded corners */
+}
 
----: These two lines of three dashes are called front matter. They must be at the very top of the file. This tells Jekyll to process the file.
+/* Targets <code> elements that are inside <pre> elements */
+/* Prevents double backgrounds when markdown creates <pre><code>...</code></pre> structure */
+pre code {
+  background-color: transparent !important; /* Avoid double backgrounds */
+  border: none !important;
+}
 
-@import "{{ site.theme }}";: This line imports all the original CSS from the theme you selected in your repository settings. This way, you're adding to the theme, not replacing it entirely.
+/* '.highlight' = CSS class wrapper around syntax-highlighted code blocks */
+/* GitHub Pages/Jekyll automatically wraps code blocks with this class */
+.highlight {
+  background-color: #2d2d2d !important; /* Dark background for syntax highlighted blocks */
+}
 
-Your Custom CSS: Below the import line, you can add any CSS rules you want. The rules you add here will override the theme's default styles. The !important tag helps ensure your style takes precedence, though it's best used sparingly.
-
-*/
+/* Targets <pre> elements specifically inside .highlight wrappers */
+/* Ensures consistent styling for all code block variations */
+.highlight pre {
+  background-color: #2d2d2d !important;
+}
