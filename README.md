@@ -6,7 +6,7 @@ While every update aims for accuracy, some parts may still be incomplete or cont
 
 # 🎲 FPS-R: Frame-Persistent Stateless Randomisation
 
-中文版 | [Chinese README](./README-CH.md)
+[中文版](./README-CH.md) | [Chinese README](./README-CH.md)
 
 ---
 ## An Audio Introduction: Podcast-Style
