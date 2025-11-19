@@ -21,8 +21,8 @@ Here is a high-level podcast audio commentary of the following content.
 **FPS-R** is **Frame Persistent Stateless Randomisation**.
 
 FPS-R is a **time-aware** pseudo-random number generator that produces **practically non-repeating patterns**.  
-Given any series of incrementing input values (e.g., `frame`, `training-epoch`, `uv`, `latent-space`, `x-axis`), FPS-R produces a persistent sequence of **deterministic** random numbers.  
-These numbers hold their values for unpredictable, yet deterministic time steps before changing.  
+Given any series of incrementing input values (e.g., `frame`, `training-epoch`, `uv`, `latent-space`, `x-axis`), FPS-R produces a persistent sequence of deterministic random numbers.  
+These numbers hold their values for **unpredictable**, yet **deterministic** time steps before changing.  
 FPS-R is also **stateless**—it does not need to store state at each time-step, which avoids complex logic and state management.
 
 **The Grammar of FPS-R Across Domains**
