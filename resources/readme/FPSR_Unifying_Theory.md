@@ -103,7 +103,12 @@ In this respect, FPS-R is not just a tool for simulating organic behaviour. It i
 ### Non-Linearity is Fractal and Recursive
 To make the "Illusion of Linearity" and the recursive nature of non-linear progress more tangible, consider this simple analogy:
 
-Imagine a boy who sets out to complete three jigsaw puzzles (A, B, and C) over two weeks. He works diligently, and if we chart the total _progress_ of "all puzzles," we might see a perfectly smooth, linear graph trending towards 100% completion.
+Imagine a boy who sets out to complete three jigsaw puzzles (A, B, and C) over two weeks. The next day, he is free to choose to continue working on the same puzzle, or one of the other two puzzles, according to his inspiration and preference that day. Hence, the order of the puzzles that the boy works on may be A, C, B, B, C, C, A. He will keep working day after day until all puzzles are complete.
+
+Let us assume that he makes the same progress each day on the puzzle of his choice.
+
+### Level 0: The Superficial Linear Progress (All Puzzles)
+If we chart the total _progress_ of "all puzzles," we might see a perfectly smooth, linear graph steadily trending towards 100% completion.
 
 This high-level graph is the **Illusion of Linearity**. It is the project manager's Gantt chart, the executive summary. It is a useful abstraction, but it is not the _reality_ of the work. The "hold-then-break" dynamic, which is the true signature of the work, is hidden by this perspective.
 
