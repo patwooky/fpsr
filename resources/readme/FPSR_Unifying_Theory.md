@@ -107,14 +107,14 @@ Imagine a boy who sets out to complete three jigsaw puzzles (A, B, and C) over t
 
 Let us assume that he makes the same progress each day on the puzzle of his choice.
 
-### Level 0: The Superficial Linear Progress (All Puzzles)
+### Level 0: All Puzzles - The Superficial Linear Progress 
 If we chart the total _progress_ of "all puzzles," we might see a perfectly smooth, linear graph steadily trending towards 100% completion.
 
 This high-level graph is the **Illusion of Linearity**. It is the project manager's Gantt chart, the executive summary. It is a useful abstraction, but it is not the _reality_ of the work. The "hold-then-break" dynamic, which is the true signature of the work, is hidden by this perspective.
 
 To find reality, we must change our "camera" and zoom in.
 
-### Level 1: The Reality of Phrasing (The Single Puzzle)
+### Level 1: The Single Puzzle - The Reality of Phrasing 
 If we change our focus to the progress of just **Puzzle B**, the picture changes instantly.
 - **Scenario 1: Cyclical Work (A, B, C, A, B, C...)**
 The progress graph for Puzzle B is no longer linear. It becomes a series of "jumps" (bursts of progress on Day 2, Day 5, etc.) followed by "holds" (the two-day stalls while the boy works on A and C). This is a _predictable_ "move-and-hold" pattern.
@@ -123,10 +123,16 @@ If the boy follows his whims, the graph for Puzzle B becomes even more sporadic:
 
 This second scenario is a far more accurate model for real-world projects. The boy's "whim" represents shifting priorities, a new request from a manager, or a sudden, urgent bug that pulls focus from the planned task. The "hold-then-break" dynamic is the _actual_ experience of the puzzle itself.
 
-### Level 2: The Recursive Process and Fractal Pattern of 'Work'
-The analogy becomes even more powerful when we zoom in again, this time on a single "move" phase for Puzzle B.
+### Level 2: The Single Day - Recursive Process and Fractal Pattern of 'Work'
+The analogy gains even more significance as we zoom in on a single day during the "move" phase of working on Puzzle B. At the beginning of the day, the puzzle is 4% complete; by the end of the 8-hour day, it reaches 8% completion. If we could view a time-lapse video of the puzzle board over the course of these 8 hours, would we see the pieces filling in at a linear rate, such as 20 pieces per hour?
 
-This reveals a deeper insight. The non-linearity we observe is not just fractal (the _pattern_ of self-similarity at different scales); it is **recursive** (the _generative_ process that builds the pattern).
+Consider the boy. Let us assume he is highly skilled at solving puzzles, consistently and effectively placing each piece. Even under these ideal conditions, there will still be pauses in his progress.
+
+Each piece he picks up requires a slightly different amount of pause time as he contemplates the shapes and references the picture on the box. He has "floating islands and clusters" of pieces that can fit together independently but are not yet connected to the final puzzle. After making several moves, he may spend time rearranging these clusters, breaking them apart and rejoining them. Between placing pieces, he scratches at an insect bite from the night before, shifts his weight, absently flexes his fingers, scratches his head in thought, taps his fingers against the pieces, reverses his last move, and perhaps takes a bathroom break. At midday, his mother calls him for lunch.
+
+In essence, the timing of placement from piece to piece is likely to vary significantly.
+
+This leads to a deeper insight: the non-linearity we observe is not purely fractal; it reflects a _pattern_ of self-similarity at different scales. It is **recursive** (the _generative_ process that builds the pattern).
 - **Fractal is what we _see_**: The "hold-then-break" rhythm of the entire _project_ looks just like the "hold-then-break" rhythm of a single _session_.
 - **Recursive is what we _do_**: The process of "work" is literally defined by smaller versions of itself, like a set of Matryoshka nesting dolls.
 1. The task `Complete_Project` is defined by a series of `Complete_Session` calls.
