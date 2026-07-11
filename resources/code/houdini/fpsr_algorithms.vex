@@ -300,3 +300,200 @@ float randVal_previous = fpsr_qs(int(@Frame - 1), baseWaveFreq, stream2freqMult,
 // Example Usage
 @P.y = randVal; // Use the random value to drive the Y-position of a point
 @changed = (randVal != randVal_previous); // Create an attribute to show when the value changes
+
+
+/******************************************************************************/
+/* FPS-R: Bitwise Decode (BD)                                                 */
+/******************************************************************************/
+
+// --- Bitwise Operations Helpers ---
+
+// Helper: Unsigned Right Shift for 32-bit integers
+int _urshift(int a; int b) {
+    if (b >= 32 || b < 0) return 0;
+    if (b == 0) return a;
+    return (a >> b) & ~(0x80000000 >> (b - 1));
+}
+
+// Helper: Circular Left Shift (32-bit)
+int _rotl(int value; int shift) {
+    int s = shift % 32;
+    if (s == 0) return value;
+    return (value << s) | _urshift(value, (32 - s));
+}
+
+// Helper: Circular Right Shift (32-bit)
+int _rotr(int value; int shift) {
+    int s = shift % 32;
+    if (s == 0) return value;
+    return _urshift(value, s) | (value << (32 - s));
+}
+
+// Helper: Extract a single bit from an array of 32-bit chunks
+int _get_bit(int n; int block_size; int chunks[]; int num_chunks) {
+    if (n < 0 || n >= block_size) return 0;
+    int chunk_index = n / 32;
+    int bit_index = n % 32;
+    if (chunk_index >= num_chunks) return 0;
+    return (chunks[chunk_index] >> bit_index) & 1;
+}
+
+// Helper: Generate a deterministic 32-bit chunk using portable_rand
+int _get_chunk(int seed) {
+    // Generate two 16-bit spans using the float-based portable_rand to fill a 32-bit integer
+    int low16 = int(portable_rand(seed) * 65535.0) & 0xFFFF;
+    int high16 = int(portable_rand(seed + 12345) * 65535.0) & 0xFFFF;
+    return (high16 << 16) | low16;
+}
+
+/**
+ * @brief Generates a phrased random value by decoding a deterministically generated bitstream.
+ *
+ * int frame: The current frame or time input.
+ * int block_size: The size of the macro-rhythm in frames. Must be > 0.
+ * int streams_number: The number of parallel bitstreams to generate.
+ * int streams_offset: The frame offset between each parallel stream's seed.
+ * string intra_op: The unary (intra-stream) operation. ("none", "not", "lshift", "rotl", "lshift_dynamic", etc.)
+ * int dynamic_shift_bits: For dynamic ops, the number of controller bits to read (Max ~5 for 32-bit chunks).
+ * int static_shift_amount: For static ops, the fixed number of bits to shift/rotate.
+ * string inter_op: The binary (inter-stream) operation. ("xor", "or", "and").
+ * int value_seed_offset: An additional seed offset for the final value calculation.
+ * return: A float value between 0.0 and 1.0.
+ */
+float fpsr_bd(int frame; int block_size; int streams_number; int streams_offset; string intra_op; int dynamic_shift_bits; int static_shift_amount; string inter_op; int value_seed_offset)
+{
+    if (block_size < 1) block_size = 1;
+    if (streams_number < 1) streams_number = 1;
+    
+    int sanitized_static_shift = static_shift_amount & 31; // Mask for 32-bit operations
+
+    // --- 1. Find Outer Anchor ---
+    int outer_anchor = frame - (frame % block_size);
+    int num_chunks = (block_size + 31) / 32;
+
+    // --- 2. Generate the raw bitstream(s) for the entire block ---
+    // Emulate a 2D array using a single 1D flat array [streams_number * num_chunks]
+    int raw_streams[];
+    resize(raw_streams, streams_number * num_chunks);
+    
+    for (int i = 0; i < streams_number; ++i) {
+        int stream_seed = outer_anchor + (i * streams_offset);
+        for (int j = 0; j < num_chunks; ++j) {
+            raw_streams[i * num_chunks + j] = _get_chunk(stream_seed + j);
+        }
+    }
+
+    // --- 3. Apply Intra-Stream Transformations ---
+    int is_dynamic = (intra_op == "lshift_dynamic" || intra_op == "rshift_dynamic" || intra_op == "rotl_dynamic" || intra_op == "rotr_dynamic");
+    int num_transformed = is_dynamic ? (streams_number / 2 + streams_number % 2) : streams_number;
+    
+    int transformed_streams[];
+    resize(transformed_streams, num_transformed * num_chunks);
+
+    if (is_dynamic) {
+        int max_bits_for_shift = 5; // max 31 shift
+        int bit_mask_size = clamp(dynamic_shift_bits, 1, max_bits_for_shift);
+        int bit_mask = (1 << bit_mask_size) - 1;
+
+        for (int i = 0; i < streams_number / 2; ++i) {
+            int data_idx = i * 2;
+            int ctrl_idx = i * 2 + 1;
+            
+            for (int j = 0; j < num_chunks; ++j) {
+                int data_val = raw_streams[data_idx * num_chunks + j];
+                int ctrl_val = raw_streams[ctrl_idx * num_chunks + j];
+                int dynamic_shift = ctrl_val & bit_mask;
+                int target_pos = i * num_chunks + j;
+
+                if (intra_op == "lshift_dynamic") transformed_streams[target_pos] = data_val << (dynamic_shift % 32);
+                else if (intra_op == "rshift_dynamic") transformed_streams[target_pos] = _urshift(data_val, dynamic_shift % 32);
+                else if (intra_op == "rotl_dynamic") transformed_streams[target_pos] = _rotl(data_val, dynamic_shift);
+                else if (intra_op == "rotr_dynamic") transformed_streams[target_pos] = _rotr(data_val, dynamic_shift);
+            }
+        }
+        if (streams_number % 2 != 0) {
+            int last_raw_idx = streams_number - 1;
+            int last_target_idx = num_transformed - 1;
+            for (int j = 0; j < num_chunks; ++j) {
+                transformed_streams[last_target_idx * num_chunks + j] = raw_streams[last_raw_idx * num_chunks + j];
+            }
+        }
+    } else {
+        for (int i = 0; i < streams_number; ++i) {
+            for (int j = 0; j < num_chunks; ++j) {
+                int data_val = raw_streams[i * num_chunks + j];
+                int target_pos = i * num_chunks + j;
+
+                if (intra_op == "not") transformed_streams[target_pos] = ~data_val;
+                else if (intra_op == "lshift") transformed_streams[target_pos] = data_val << sanitized_static_shift;
+                else if (intra_op == "rshift") transformed_streams[target_pos] = _urshift(data_val, sanitized_static_shift);
+                else if (intra_op == "rotl") transformed_streams[target_pos] = _rotl(data_val, sanitized_static_shift);
+                else if (intra_op == "rotr") transformed_streams[target_pos] = _rotr(data_val, sanitized_static_shift);
+                else transformed_streams[target_pos] = data_val; // "none"
+            }
+        }
+    }
+
+    // --- 4. Combine Streams with Inter-Stream Operation ---
+    int final_chunks[];
+    resize(final_chunks, num_chunks);
+    
+    if (num_transformed > 0) {
+        for (int j = 0; j < num_chunks; ++j) {
+            final_chunks[j] = transformed_streams[0 * num_chunks + j];
+        }
+        for (int i = 1; i < num_transformed; ++i) {
+            for (int j = 0; j < num_chunks; ++j) {
+                int val = transformed_streams[i * num_chunks + j];
+                if (inter_op == "or") final_chunks[j] |= val;
+                else if (inter_op == "and") final_chunks[j] &= val;
+                else final_chunks[j] ^= val; // default "xor"
+            }
+        }
+    }
+
+    // --- 5. Decode the final bitstream ---
+    int current_pos = frame - outer_anchor;
+    int last_flip_pos = 0;
+    
+    for (int i = current_pos; i > 0; --i) {
+        if (_get_bit(i, block_size, final_chunks, num_chunks) != _get_bit(i - 1, block_size, final_chunks, num_chunks)) {
+            last_flip_pos = i;
+            break;
+        }
+    }
+
+    // --- 6. Hash into Final Output ---
+    int final_seed = outer_anchor + last_flip_pos + value_seed_offset;
+    return portable_rand(final_seed);
+}
+
+// --- Bitwise Decode (BD) Example ---
+// Parameters
+int block_size = 64; // size of the macro-rhythm in frames
+int streams_number = 2; // number of parallel bitstreams to generate
+int streams_offset = 10; // frame offset between each parallel stream's seed
+string intra_op = "rotl_dynamic"; // The unary (intra-stream) operation.
+int dynamic_shift_bits = 6; // number of controller bits to read for dynamic ops
+int static_shift_amount = 1; // fixed number of bits to shift/rotate for static ops
+string inter_op = "xor"; // inter-stream operation to combine transformed streams
+int value_seed_offset = 78901; // additional seed offset for the final value calculation
+
+// Link parameters to Houdini channel controls
+block_size = chi('block_size');
+streams_number = chi('streams_number');
+streams_offset = chi('streams_offset');
+intra_op = chs('intra_op');
+dynamic_shift_bits = chi('dynamic_shift_bits');
+static_shift_amount = chi('static_shift_amount');
+inter_op = chs('inter_op');
+value_seed_offset = chi('value_seed_offset');
+
+// Call the FPSR function
+float randVal_bd = fpsr_bd(int(@Frame), block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset);
+// Call the FPSR function for the previous frame
+float randVal_bd_prev = fpsr_bd(int(@Frame - 1), block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset);
+
+// Example Usage
+@P.y = randVal_bd; // Use the random value to drive the Y-position of a point
+@changed_bd = (randVal_bd != randVal_bd_prev); // Create an attribute to show when the value changes
