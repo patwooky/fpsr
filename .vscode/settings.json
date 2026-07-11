@@ -5,5 +5,8 @@
     "spellright.documentTypes": [
         "latex",
         "plaintext"
-    ]
+    ],
+    "[markdown]": {
+        "editor.cursorSurroundingLines": 0
+    }
 }
