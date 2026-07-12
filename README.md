@@ -242,10 +242,10 @@ FPS-R consists of 3 algorithms. Each one achieves the move-and-hold behaviour in
 
 # The Fingerprints of FPS-R
 ## Interactive FPS-R Visualiser!
-Here is an HTML visualiser of the four FPS-R algorithms! 
+Here is an HTML visualiser of the four FPS-R algorithms
 Interact with the parameters and see the output values update in real-time.
 ![](./resources/readme/images/fpsr_html_visualiser.jpg)
-Check it out here: 
+Check it out:
 
 [FPS-R Algorithms Visualiser on GitHub Pages](https://patwooky.github.io/fpsr/resources/code/html_javascript/fpsr_demo.html)
 
