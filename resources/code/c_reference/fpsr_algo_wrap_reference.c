@@ -763,15 +763,30 @@ double fpsr_bd(
     return result;
 }
 
-/******************************************************************************/
-/* Hierarchical Coherence Helper (REMOVED)                                    */
-/******************************************************************************/
-
-/*
-* The _get_hierarchical_seed function has been removed as it is part of the
-* old "fractal" logic and is replaced by the new
-* "Hierarchical Phrased Quantisation" (HPQ) model.
-*/
+//-----------------------------------------------------------------------------/
+// FPS-R: Hash (H)                                                             /
+//-----------------------------------------------------------------------------/
+/**
+ * @brief Pure coordinate-hash baseline (Stateless Continuous Noise).
+ * @details
+ * This base helper treats the provided 64-bit coordinate (typically the frame/time)
+ * as the deterministic seed for the canonical portable spatial hash (SplitMix64 -> double).
+ * It intentionally bypasses all non-linear phrasing wrappers (SM, TM) to provide 
+ * continuous stochastic entropy.
+ * Callers are responsible for composing any richer coordinate or seed (e.g. frame + offset,
+ * spatial encoding, or packing multiple integers) into the single int64_t argument.
+ * This keeps the function's responsibility narrow and consistent with the other
+ * fpsr_*_base functions that accept only a single frame/coordinate argument.
+ *
+ * @param frame  A 64-bit coordinate (e.g. frame/time or caller-encoded coordinate+seed).
+ * @return       A deterministic pseudo-random double in [0.0, 1.0).
+ */
+double fpsr_h_base(int64_t frame)
+{
+    uint64_t seed = (uint64_t)frame;
+    return portable_rand_u64(seed);
+}
+ 
 
 
 /******************************************************************************/
