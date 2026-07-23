@@ -1,4 +1,4 @@
-# Changelog
+# FPS-R Changelog
 
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -7,6 +7,82 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## Unreleased
 
 
+## [3.0.1] - 2025-01-14
+
+### Changed
+- `resources/readme/FPSR_Unifying_Theory.md`
+    - Expanded the theoretical foundation with concrete, multi-level analogies that make abstract concepts more accessible
+    - Strengthened the argument that "hold-then-break" is the fundamental, recursive signature of how work, thought, and all biological activity unfolds
+    - Enhanced the connection between abstract theory and observable reality through biological evidence
+
+
+## [3.0.0] - 2025-11-11
+
+### Major Release Summary
+This major release represents a significant evolution of the FPS-R framework from v1.0.0 to v3.0.0, introducing groundbreaking features and comprehensive improvements that fundamentally expand the framework's capabilities.
+
+### Highlights
+
+#### 1. **New FPS-R Bitwise Decode (BD) Algorithm** 
+The crown jewel of this release - a fourth algorithm that uses bit-flipping mechanics to create the most expressive FPS-R algorithm to date. BD offers unparalleled combinatory possibilities through its implemented parameters, producing quirky jumps and twitches that make it ideal for highly dynamic procedural generation.
+- Implemented across C, Python, and Jupyter Notebook environments
+- Features in the online visualizer for interactive exploration
+- Achieves even output distribution comparable to SM and TM algorithms
+- Performance: 3.0-6.2 seconds for 100,000 frames (depending on stream count)
+
+#### 2. **Wrapper Versions for Rich Analytical Output** 
+Complete wrapper implementations in both C and Python that transform FPS-R from a pure generator into a comprehensive analytical tool:
+- **`has_changed`**: Binary indicator when output values jump
+- **`hold_progress`**: Normalized progress (0.0-1.0) through current hold duration
+- **`last_changed_frame`** and **`next_changed_frame`**: Temporal anchors for hold periods
+- **Level-of-Detail (LOD) System**: Three tiers (0, 1, 2) for performance vs. detail trade-offs
+- **Hierarchical Phrased Quantisation (HPQ)**: Revolutionary time-scaling with frame_multiplier
+  - Two-tier stretch logic: "Tape Varispeed" (anchor) + "Telescopic Extension" (generative)
+  - Intuitive playback speed convention: <1.0 for slow-motion, >1.0 for fast-motion
+  - Segment block length control for time-stretched content
+
+#### 3. **Online HTML/JavaScript Visualizer** 
+Interactive web-based demonstration of all four FPS-R algorithms, hosted on GitHub Pages:
+- Real-time visualization of SM, TM, QS, and BD algorithms
+- Global HPQ Time Controls with playback speed manipulation
+- Snap-to-value slider logic for precise control
+- Deep-copy parameter handling with structuredClone() for correct BigInt support
+- [Explore the live visualizer](https://patwooky.github.io/fpsr/resources/code/html_javascript/fpsr_demo.html)
+
+#### 4. **FPS-R Profile Output Analysis** 
+Comprehensive data analysis tools and documentation that reveal the "fingerprint" of each algorithm:
+- **Jupyter Notebook** (`fpsr_algoAnalysis.ipynb`): Interactive analysis of all algorithms across 400+ time-steps
+- **Visual Documentation**: 
+  - Output value graphs (blue lines with red jump indicators)
+  - Held steps graphs (time axis analysis)
+  - Distribution graphs showing output characteristics
+- **Performance Metrics**: Timing comparisons for 100,000 frames across all algorithms
+- **README Integration**: Detailed explanations with embedded graphs for immediate understanding
+
+### Additional Major Improvements
+
+#### Enhanced Determinism and Cross-Platform Parity
+- **Thread-safe sine lookup tables (LUTs)**: Platform-agnostic initialization for consistent results
+- **Bit-for-bit parity**: C and Python implementations produce identical outputs
+- **Flexible sine level-of-detail system**: Multiple LOD levels for performance optimization
+- **FPSR_INFLATION_FACTOR**: Internal scaling for absolute determinism in timing calculations
+- **Comprehensive overflow checks**: Robust memory allocation and bounds checking
+
+#### Breaking Changes and Refinements
+- **SM/TM Output Change (v2.0.4)**: Removed 100000ULL multiplier for theoretical purity in hashing
+- **QS Stream Normalization (v1.0.1)**: Outputs normalized to 0-1 range (from -1 to 1) for consistency
+- **Inverted frame_multiplier Convention (v2.0.7)**: Matches intuitive "playback speed" expectations
+
+#### License Change
+- **Apache 2.0 License**: Changed from MIT License to facilitate easier collaboration and adoption
+
+### Changed
+All changes from v2.0.0 through v2.0.9 are consolidated in this major release. See individual version entries below for detailed change logs.
+
+### Commit Hash
+Release commit: `64b6fa1`
+
+---
 ## [2.0.9] - 2025-11-06
 ## Changed
 - `code/data_analysis/fpsr_algoAnalysis.ipynb`
@@ -17,6 +93,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
     - Added FPS-R Bitwise Decode (BD) algorithm
     - enhanced Quantised Switching (QS) logic. 
     - Improved code comments and structure for maintainability.
+    - restored missing comment blocks from the main `fpsr_algorithms_wrap.py` file.
+- `fpsr_algorithms_wrap_reference.c`
+    - `fpsr_xx_get_details()` functions have abbreviated comments like `... algo params ...`. Replaced it with meaningful and parameter descriptions.
 - Expanded and clarified the README with detailed explanations and new images for FPS-R algorithm output analysis. 
 
 ## [2.0.8] - 2025-11-05

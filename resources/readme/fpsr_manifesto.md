@@ -2,106 +2,116 @@ Apache License 2.0—[see LICENSE](LICENSE.md) for details.
 Copyright (c) 2025 Woo Ker Yang (Patrick Woo) patrickwoo.1976@gmail.com  
 If you reference or adapt this framework, please credit Patrick Woo and this repository.  
 **This documentation is still in development.**  
-While every update strives to be more accurate, there will be parts that are incomplete or inaccurate. 
+While every update aims for accuracy, some parts may still be incomplete or contain inaccuracies. I appreciate your understanding in this matter, and we apologize for any inconvenience this may cause.
 
 # 🎲 FPS-R Algorithm: Frame-Persistent Stateless Randomisation
 
 # Table of Contents
 - [🎲 FPS-R Algorithm: Frame-Persistent Stateless Randomisation](#-fps-r-algorithm-frame-persistent-stateless-randomisation)
-- [🗺️ A Site Map of the Documents](#️-a-site-map-of-the-documents)
-  - [📜 Readme — Manifesto (English)](#-readme--manifesto-english)
-  - [🈸 Readme — 宣言,理念描述 (Chinese)](#-readme--宣言理念描述-chinese)
-  - [📐 The Mathematics and Mechanics](#-the-mathematics-and-mechanics)
-  - [🍭 Applications](#-applications)
-  - [🧬 Origins](#-origins)
-  - [📓 Development Journal — The Chronicle](#-development-journal--the-chronicle)
-  - [🧠 Thoughts — Reflections and Conceptual Notes](#-thoughts--reflections-and-conceptual-notes)
-- [🎲 What is FPS-R?](#-what-is-fps-r)
-  - [🪞 Introduction](#-introduction)
-- [🎓 Principles and Philosophy](#-principles-and-philosophy)
-  - [🧭 Guiding Principle](#-guiding-principle)
-  - [🎭 Motion Philosophy](#-motion-philosophy)
-  - [📐 Structure and the Illusion of Chaos](#-structure-and-the-illusion-of-chaos)
-- [🗣 A New Grammar](#-a-new-grammar)
-  - ["Random Move-and-Hold"](#random-move-and-hold)
-- [🎞 Sample Uses of the FPS-R](#-sample-uses-of-the-fps-r)
-  - [🧭 FPS-R in Animation](#-fps-r-in-animation)
-  - [🧱 FPS-R in Geometry Generation](#-fps-r-in-geometry-generation)
-  - [⏱️ Visualisation Videos - FPS-R in Action](#️-visualisation-videos---fps-r-in-action)
-- [✨ Key Features](#-key-features)
-- [🧩 FPS-R in Relationship to a Parent System](#-fps-r-in-relationship-to-a-parent-system)
-- [💡 Why Do I Need Another Random Stream Generator?](#-why-do-i-need-another-random-stream-generator)
-  - [🧬 The Nature of "Held" Randomness](#-the-nature-of-held-randomness)
-  - [🧱 Limitations of Conventional Techniques](#-limitations-of-conventional-techniques)
-    - [The Current State of Computation and Calculations](#the-current-state-of-computation-and-calculations)
-    - [🧊 1. Spatialised Randomness (e.g. Worley Noise & Distance-Based Fields)](#-1-spatialised-randomness-eg-worley-noise--distance-based-fields)
-    - [🔁 2. Stateful behavioural Logic (e.g. Timers, Delays, Pauses, Walks)](#-2-stateful-behavioural-logic-eg-timers-delays-pauses-walks)
-  - [⚙️ Why FPS-R is Different](#️-why-fps-r-is-different)
-- [❓ Why Not Just Use State? (And Why It Matters)](#-why-not-just-use-state-and-why-it-matters)
-  - [The "Shell vs. Soul" Analogy: Why Stateless is Powerful](#the-shell-vs-soul-analogy-why-stateless-is-powerful)
-    - [The Cached Simulation (The Shell)](#the-cached-simulation-the-shell)
-    - [The Procedural Logic (The Soul)](#the-procedural-logic-the-soul)
-    - [The Freedom to Explore: Vector vs. Raster](#the-freedom-to-explore-vector-vs-raster)
-    - [A Real-World Example: The 200GB Wave Simulation](#a-real-world-example-the-200gb-wave-simulation)
-  - [Transcending Traditional State: The Deeper Advantages of FPS-R](#transcending-traditional-state-the-deeper-advantages-of-fps-r)
-    - [🧳 State Doesn’t Travel: Portability Across Modern Architectures](#-state-doesnt-travel-portability-across-modern-architectures)
-    - [🧠 The Glass Box: Perfect Traceability and Debugging](#-the-glass-box-perfect-traceability-and-debugging)
-    - [🌌 Domain Agnosticism: From Time to Space and Beyond](#-domain-agnosticism-from-time-to-space-and-beyond)
-    - [🧭 Elegant Composability: Building with Capsules](#-elegant-composability-building-with-capsules)
-- [📊 Explore the Algorithm's Fingerprint](#-explore-the-algorithms-fingerprint)
-- [🧬 Flavours of FPS-R](#-flavours-of-fps-r)
-  - [🌀 Stacked Modulo (SM) or 叠模机制](#-stacked-modulo-sm-or-叠模机制)
-  - [🔁 Toggled Modulo (TM) or 切模机制](#-toggled-modulo-tm-or-切模机制)
-  - [✴ Quantised Switching (QS) or 量跃机制](#-quantised-switching-qs-or-量跃机制)
-- [🏙 Spatial Extension: From Time to Space](#-spatial-extension-from-time-to-space)
-  - [🧬 FPS-R in the Spatial Context](#-fps-r-in-the-spatial-context)
-    - [🪡 Topology Wrapping and Surface Application](#-topology-wrapping-and-surface-application)
-  - [🌀 Stacked Modulo in Space](#-stacked-modulo-in-space)
-  - [🔁 Toggled Modulo in Space](#-toggled-modulo-in-space)
-  - [✴ Quantised Switching in Space](#-quantised-switching-in-space)
-- [🧠 Nested Modulation: Using FPS-R to Drive FPS-R](#-nested-modulation-using-fps-r-to-drive-fps-r)
-  - [🧪 Modulating Introspection](#-modulating-introspection)
-- [📈 Meta-Signal Analysis: FPS-R as Observer and Instrument](#-meta-signal-analysis-fps-r-as-observer-and-instrument)
-  - [🪞 Common Uses of Signal Mapping](#-common-uses-of-signal-mapping)
-- [🧭 Application Paradigms](#-application-paradigms)
-  - [🎨 Part I — Generative Expression & Organic Simulation](#-part-i--generative-expression--organic-simulation)
-    - [🕶️ AR/VR and Human-Centered Interaction](#️-arvr-and-human-centered-interaction)
-    - [🤖 Robotics and Embodied Systems](#-robotics-and-embodied-systems)
-    - [🛰 Swarms, Drones, and Spatial Coverage Systems](#-swarms-drones-and-spatial-coverage-systems)
-    - [💡 Embedded Systems and Ambient Interfaces](#-embedded-systems-and-ambient-interfaces)
-    - [🎼 Domains of Application in Audio and Composition](#-domains-of-application-in-audio-and-composition)
-  - [🧪 Part II — Systemic Resilience & Analysis](#-part-ii--systemic-resilience--analysis)
-    - [🛡️ Cybersecurity and Adversarial Simulation](#️-cybersecurity-and-adversarial-simulation)
-    - [💸 Financial Systems and Economic Simulation](#-financial-systems-and-economic-simulation)
-    - [🧪 Software Testing and Fuzzing](#-software-testing-and-fuzzing)
-    - [🧵 Systems-Level Protocol & Infrastructure Simulation](#-systems-level-protocol--infrastructure-simulation)
-  - [🧠 Part III — Generative Scenario Planning & Speculative Design](#-part-iii--generative-scenario-planning--speculative-design)
+- [Table of Contents](#table-of-contents)
+  - [🗺️ A Site Map of the Documents](#️-a-site-map-of-the-documents)
+    - [📜 Readme — Manifesto (English)](#-readme--manifesto-english)
+    - [🈸 Readme — 宣言,理念描述 (Chinese)](#-readme--宣言理念描述-chinese)
+    - [📐 The Mathematics and Mechanics](#-the-mathematics-and-mechanics)
+    - [🍭 Applications](#-applications)
+    - [🧬 Origins, Journal, Reflections](#-origins-journal-reflections)
+  - [🎲 What is FPS-R?](#-what-is-fps-r)
+    - [🪞 Introduction](#-introduction)
+  - [🎓 Principles and Philosophy](#-principles-and-philosophy)
+    - [🧭 Guiding Principle](#-guiding-principle)
+    - [🎭 Motion Philosophy](#-motion-philosophy)
+    - [📐 Structure and the Illusion of Chaos](#-structure-and-the-illusion-of-chaos)
+  - [🗣 A New Grammar:](#-a-new-grammar)
+    - ["Random Move-and-Hold"](#random-move-and-hold)
+  - [🎞 Sample Uses of the FPS-R](#-sample-uses-of-the-fps-r)
+    - [🧭 FPS-R in Animation](#-fps-r-in-animation)
+    - [🧱 FPS-R in Geometry Generation](#-fps-r-in-geometry-generation)
+    - [⏱️ Visualisation Videos - FPS-R in Action](#️-visualisation-videos---fps-r-in-action)
+  - [✨ Key Features](#-key-features)
+  - [🧩 FPS-R in Relationship to a Parent System](#-fps-r-in-relationship-to-a-parent-system)
+  - [💡 Why Do I Need Another Random Stream Generator?](#-why-do-i-need-another-random-stream-generator)
+    - [🔍 *A Lexicon Gap, Hidden in Plain Sight*](#-a-lexicon-gap-hidden-in-plain-sight)
+    - [🧬 *The Nature of "Held" Randomness*](#-the-nature-of-held-randomness)
+    - [🧱 Limitations of Conventional Techniques](#-limitations-of-conventional-techniques)
+      - [The Current State of Computation and Calculations](#the-current-state-of-computation-and-calculations)
+        - [🧊 1. Spatialised Randomness (e.g. Worley Noise \& Distance-Based Fields)](#-1-spatialised-randomness-eg-worley-noise--distance-based-fields)
+        - [🔁 2. Stateful behavioural Logic (e.g. Timers, Delays, Pauses, Walks)](#-2-stateful-behavioural-logic-eg-timers-delays-pauses-walks)
+    - [⚙️ Why FPS-R is Different](#️-why-fps-r-is-different)
+  - [❓ Why Not Just Use State? (And Why It Matters)](#-why-not-just-use-state-and-why-it-matters)
+    - [The "Shell vs. Soul" Analogy: Why Stateless is Powerful](#the-shell-vs-soul-analogy-why-stateless-is-powerful)
+      - [The Cached Simulation (The Shell)](#the-cached-simulation-the-shell)
+      - [The Procedural Logic (The Soul)](#the-procedural-logic-the-soul)
+      - [The Freedom to Explore: Vector vs. Raster](#the-freedom-to-explore-vector-vs-raster)
+      - [A Real-World Example: The 200GB Wave Simulation](#a-real-world-example-the-200gb-wave-simulation)
+    - [Transcending Traditional State: The Deeper Advantages of FPS-R](#transcending-traditional-state-the-deeper-advantages-of-fps-r)
+      - [🧳 State Doesn’t Travel: Portability Across Modern Architectures](#-state-doesnt-travel-portability-across-modern-architectures)
+      - [🧠 The Glass Box: Perfect Traceability and Debugging](#-the-glass-box-perfect-traceability-and-debugging)
+      - [⚖️ The Crisis of Computational Truth (The Topology Trap)](#️-the-crisis-of-computational-truth-the-topology-trap)
+      - [🌌 Domain Agnosticism: From Time to Space and Beyond](#-domain-agnosticism-from-time-to-space-and-beyond)
+      - [🧭 Elegant Composability: Building with Capsules](#-elegant-composability-building-with-capsules)
+  - [📊 Explore the Algorithm's Fingerprint](#-explore-the-algorithms-fingerprint)
+    - [Jupyter FPS-R Notebook Interactive Timeline](#jupyter-fps-r-notebook-interactive-timeline)
+    - [Interactive FPS-R HTML Visualizer](#interactive-fps-r-html-visualizer)
+  - [🧬 Flavours of FPS-R](#-flavours-of-fps-r)
+    - [🌀 Stacked Modulo (SM) or 叠模机制](#-stacked-modulo-sm-or-叠模机制)
+    - [🔁 Toggled Modulo (TM) or 切模机制](#-toggled-modulo-tm-or-切模机制)
+    - [✴ Quantised Switching (QS) or 量跃机制](#-quantised-switching-qs-or-量跃机制)
+    - [🎞 Bitwise Decode (BD) or 流翻解码机制](#-bitwise-decode-bd-or-流翻解码机制)
+  - [🏙 Spatial Extension: From Time to Space](#-spatial-extension-from-time-to-space)
+    - [🧬 FPS-R in the Spatial Context](#-fps-r-in-the-spatial-context)
+      - [🪡 Topology Wrapping and Surface Application](#-topology-wrapping-and-surface-application)
+    - [🌀 Stacked Modulo in Space](#-stacked-modulo-in-space)
+    - [🔁 Toggled Modulo in Space](#-toggled-modulo-in-space)
+    - [✴ Quantised Switching in Space](#-quantised-switching-in-space)
+  - [🧠 Nested Modulation: Using FPS-R to Drive FPS-R](#-nested-modulation-using-fps-r-to-drive-fps-r)
+    - [🧪 Modulating Introspection](#-modulating-introspection)
+  - [📈 Meta-Signal Analysis: FPS-R as Observer and Instrument](#-meta-signal-analysis-fps-r-as-observer-and-instrument)
+    - [🪞 Common Uses of Signal Mapping](#-common-uses-of-signal-mapping)
+  - [🧭 Application Paradigms](#-application-paradigms)
+    - [🎨 Part I — Generative Expression \& Organic Simulation](#-part-i--generative-expression--organic-simulation)
+      - [🕶️ AR/VR and Human-Centered Interaction](#️-arvr-and-human-centered-interaction)
+      - [🤖 Robotics and Embodied Systems](#-robotics-and-embodied-systems)
+      - [🧤 Wearables and Assistive Technologies](#-wearables-and-assistive-technologies)
+      - [🧬 Biofeedback and Adaptive Expression](#-biofeedback-and-adaptive-expression)
+      - [🛰 Swarms, Drones, and Spatial Coverage Systems](#-swarms-drones-and-spatial-coverage-systems)
+      - [💡 Embedded Systems and Ambient Interfaces](#-embedded-systems-and-ambient-interfaces)
+      - [🎼 Domains of Application in Audio and Composition](#-domains-of-application-in-audio-and-composition)
+    - [🧪 Part II — Systemic Resilience \& Analysis](#-part-ii--systemic-resilience--analysis)
+      - [🛡️ Cybersecurity and Adversarial Simulation](#️-cybersecurity-and-adversarial-simulation)
+      - [💸 Financial Systems and Economic Simulation](#-financial-systems-and-economic-simulation)
+      - [🧪 Software Testing and Fuzzing](#-software-testing-and-fuzzing)
+      - [🧵 Systems-Level Protocol \& Infrastructure Simulation](#-systems-level-protocol--infrastructure-simulation)
+    - [🧠 Part III — Generative Scenario Planning \& Speculative Design](#-part-iii--generative-scenario-planning--speculative-design)
     - [⚔️ Game Theory, Politics, and Strategic Modeling](#️-game-theory-politics-and-strategic-modeling)
-    - [🧭 Process & Contingency Simulation](#-process--contingency-simulation)
-    - [🧠 Cognitive Modeling & Generative Thought](#-cognitive-modeling--generative-thought)
+    - [🧭 Process \& Contingency Simulation](#-process--contingency-simulation)
+    - [🧠 Cognitive Modeling \& Generative Thought](#-cognitive-modeling--generative-thought)
       - [Thought as Temporal Behaviour](#thought-as-temporal-behaviour)
       - [Structured Ambiguity Without Memory](#structured-ambiguity-without-memory)
       - [Dialogue as Timing Logic](#dialogue-as-timing-logic)
       - [Latent Drift and Composed Cognition](#latent-drift-and-composed-cognition)
       - [Tunable Personality and Emergent Creativity](#tunable-personality-and-emergent-creativity)
-    - [🕰️ Exploring Plausible Past and Future in Observable Phenomena ](#️-exploring-plausible-past-and-future-in-observable-phenomena)
+    - [🕰️ Exploring Plausible Past and Future in Observable Phenomena](#️-exploring-plausible-past-and-future-in-observable-phenomena)
       - [How the Matching Works](#how-the-matching-works)
       - [What This Unlocks](#what-this-unlocks)
       - [It Goes Beyond Motion](#it-goes-beyond-motion)
       - [Understanding System Readiness](#understanding-system-readiness)
       - [📽️ Implications](#️-implications)
       - [📡 A Real-Time Scenario](#-a-real-time-scenario)
-  - [🌐 Closing Thoughts on Usage](#-closing-thoughts-on-usage)
-- [🔩 How FPS-R Works (A Gentle Primer)](#-how-fps-r-works-a-gentle-primer)
-  - [🎼 Stacked Modulo (SM)](#-stacked-modulo-sm)
-  - [✴️ Quantised Switching (QS)](#️-quantised-switching-qs)
-- [🌐 Closing: An Invitation](#-closing-an-invitation)
-- [🚧 Current Status](#-current-status)
-- [⚠️Future Developments](#️future-developments)
-- [🗒️ Additional Development Notes](#️-additional-development-notes)
-  - [🧠 FPSR Thoughts](#-fpsr-thoughts)
-  - [📔 Development Reflections](#-development-reflections)
-- [🤝 Contributions](#-contributions)
+    - [🌐 Closing Thoughts on Usage](#-closing-thoughts-on-usage)
+  - [🔩 How FPS-R Works (A Gentle Primer)](#-how-fps-r-works-a-gentle-primer)
+    - [🎼 Stacked Modulo (SM)](#-stacked-modulo-sm)
+    - [✴️ Quantised Switching (QS)](#️-quantised-switching-qs)
+  - [🌐 Closing: An Invitation](#-closing-an-invitation)
+  - [🚧 Current Status](#-current-status)
+  - [⚠️Future Developments](#️future-developments)
+    - [Capsules](#capsules)
+      - [What are capsules?](#what-are-capsules)
+      - [Why do We Need Capsules?](#why-do-we-need-capsules)
+      - [What Can We Do With Capsules?](#what-can-we-do-with-capsules)
+  - [🗒️ Additional Development Notes](#️-additional-development-notes)
+    - [🧠 FPSR Thoughts](#-fpsr-thoughts)
+    - [📔 Development Reflections](#-development-reflections)
+  - [🤝 Contributions](#-contributions)
 
 
 ---
@@ -172,7 +182,6 @@ A chronological account and living notebook of the research and design process. 
 This framework operates across time, space, and cognition when applied in the fields related to intelligence.
 
 ### 🪞 Introduction
-
 **FPS-R** stands for **`Frame-Persistent Stateless Randomisation`** (or **`静态律动算法`** in Chinese). 
 FPS-R is a grammar and philosophy of motion born from a simple observation: in nature, human interaction and organisational behaviour, randomness is rarely pure noise. It has rhythm, it hesitates, it holds, and it jumps. It feels structured.
 
@@ -502,8 +511,6 @@ The result was a **dimensionality explosion**: each frame of the simulation beca
 
 This is the exact problem that a procedural, stateless framework like FPS-R is designed to prevent. It preserves the "soul" so you are never trapped by the limitations of the "shell."
 
- 
-
 ### Transcending Traditional State: The Deeper Advantages of FPS-R
 > FPS-R doesn’t replace stateful methods—it transcends them. 
 
@@ -525,6 +532,9 @@ FPS-R, by contrast, is a "**glass box.**"
 - It's transparent by design.
 
 Every value it produces is derived solely from visible, reproducible inputs—frame, seed, parameters—not from hidden buffers or accumulated memory. There is no fog of history. Every phrased moment can be **reconstructed, explained, and replayed** from a single formula. FPS-R doesn’t just generate a result; it provides a complete, auditable trail of how that result came to be.
+
+#### ⚖️ The Crisis of Computational Truth (The Topology Trap)
+Traditional stateful randomness does not just obscure history; it corrupts the scientific integrity of the simulation. Because conventional `rand()` streams are sequentially entangled, the literal "shape of the code" (its order of evaluation) becomes permanently baked into the data output. If a researcher reorders a logic gate or inserts a benign diagnostic probe, the global seed stream shifts, and the macroscopic outcome is entirely rewritten. The empirical "truth" of the model becomes an inseparable, corruptible artifact of the compute chain that produced it. FPS-R resolves this by anchoring randomness to absolute, stateless coordinates, ensuring the output remains a pure reflection of the model’s logic, uncontaminated by the topology of the code.
 
 #### 🌌 Domain Agnosticism: From Time to Space and Beyond
 Stateful loops are inherently temporal; they are built around a clock that ticks from one frame to the next. This makes them difficult to apply to other domains. How do you use a time-based loop to modulate a static 3D surface, a character's gaze velocity, or the weights in a neural network? The logic doesn't translate.
@@ -556,11 +566,11 @@ FPS-R: Toggled Modulo Timeline Graph Preview
 FPS-R: Quantised Switching Timeline Graph Preview
 
 
-### Interactive FPS-R WebGL Visualizer
+### Interactive FPS-R HTML Visualizer
 A live, interactive demo of the FPS-R algorithms is available.
 
-**[Click here to launch the visualizer](https://patwooky.github.io/FPSR_Algorithm/resources/code/glsl/fpsr_algorithms_webgl.html)**
-![img](./resources/readme/images/webGl_visualiser_preview.gif)
+**[Click here to launch the visualizer](https://patwooky.github.io/fpsr/resources/code/html_javascript/fpsr_demo.html)**
+![img](../../resources/readme/images/fpsr_html_visualiser.jpg)
 
 ---
 ## 🧬 Flavours of FPS-R
@@ -568,6 +578,7 @@ FPS-R comprises three distinct mathematical algorithms — each offering a state
 - 🌀 Stacked Modulo (SM)
 - 🔁 Toggled Modulo (TM)
 - ✴ Quantised Switching (QS)
+- 🎞 Bitwise Decode (BD)
 
 These form the primary **modulation operators** within the FPS-R framework, usable independently or composable into parallel blends and chained sequences. Together, they shape the expressive grammar of _randomised move-and-hold_ behaviour — tuned, layered, and always reproducible.
 
@@ -602,7 +613,6 @@ Where SM reshapes time using internal modulation and QS switches outputs across 
 - Efficient and compact implementation, ideal for intentional timing control, offering high controllability
 
 ---
-
 ### ✴ Quantised Switching (QS) or 量跃机制
 Quantised Switching (QS) generates two independently modulated signal streams from sine-based functions, each quantised to a randomly selected level within a defined range. These quantisation levels are refreshed deterministically on separate timing cycles, with configurable durations and offsets per stream. A switching mechanism alternates between the streams, and the compound interplay between quantisation, reseed cycles, and switching cadence drives the final output.
 
@@ -615,6 +625,17 @@ This behaviour is inherently more volatile than SM's and TM's, as a change in an
 - Supports custom value banks and indexed behaviours. _The default sine wave engine that generates for each stream can be swapped out_ for any other periodic or non periodic signal generators or purely a supplied look-up table of values that cycle and repeat over time.
 - Optional quantisation for stepped or smooth interpolation
 - Configurable switching cadence with controlled reseed logic
+
+---
+### 🎞 Bitwise Decode (BD) or 流翻解码机制
+- Generates complex, phrased rhythms by manipulating deterministic bitstreams directly.
+- Achieves holds and jumps based on the detection of "bit flips" within combined, transformed streams.
+- Offers the highest degree of structural complexity and expressive control over the phrasing "character" through combinatorial bitwise operations (shifts, rotates, logic gates, dynamic controllers).
+- Supports multiple-streams mode (optional) that combine to a final bitstream through selectable bitwise operations.
+- Can potentially be the most computationally intensive algorithm due to its block-based, multi-stream processing, but provides unparalleled expressive control over the emergent rhythmic structure. Complexity can be scaled.
+- Distribution of output values is highly dependent on the chosen operations and parameters, generally not uniform.
+
+> BD has a blocky, digital feel to its phrasing due to its underlying bitwise nature. BD has the second highest flexibility for shaping the phrasing character after QS, given its support for multiple streams and combinatorial bitwise operations. It is the most "digital" of the FPS-R algorithms, and can be used to create glitchy, stuttered, or highly structured phrasing effects with a digital aesthetic. 
 
 ---
 ## 🏙 Spatial Extension: From Time to Space

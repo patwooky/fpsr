@@ -1,8 +1,53 @@
-# Announcements
+# FPS-R Announcements
 
 This file contains major announcements and important updates about the project.
 
 
+
+---
+### 11 November 2025
+[v 3.0.0]
+
+#### 🎉 Major Release v3.0.0 on GitHub
+
+We are thrilled to announce the release of **FPS-R v3.0.0** - a landmark update that represents the full maturation of the Frame-Persistent Stateless Randomisation framework from its initial v1.0.0 release.
+
+**Release Link**: [Release v3.0.0 on GitHub](https://github.com/patwooky/fpsr/releases/tag/v3.0.0)  
+**Commit hash**: [`64b6fa1`](https://github.com/patwooky/fpsr/commit/64b6fa11286a130ee15fa9b2f302e01b0f2df729)  
+**License**: Apache 2.0 License
+
+#### ✨ What's New in v3.0.0
+
+**1. The Bitwise Decode (BD) Algorithm - A Fourth Member of the FPS-R Family**  
+The most expressive FPS-R algorithm yet! BD uses bit-flipping mechanics to generate complex, non-repeating patterns with exceptional combinatory possibilities. Perfect for applications requiring highly dynamic and unpredictable procedural generation.
+
+**2. Wrapper Versions with Rich Analytical Capabilities**  
+Both C and Python now include comprehensive wrapper functions that provide deep insights into FPS-R output:
+- Track value changes with `has_changed`
+- Monitor hold progression with `hold_progress`
+- Access temporal anchors with `last_changed_frame` and `next_changed_frame`
+- Hierarchical Phrased Quantisation (HPQ) for sophisticated time-scaling
+
+**3. Interactive HTML/JavaScript Visualizer**  
+Experience all four FPS-R algorithms in action through our new online visualizer! Play with parameters in real-time and see how each algorithm behaves.  
+**[Try it now on GitHub Pages](https://patwooky.github.io/fpsr/resources/code/html_javascript/fpsr_demo.html)**
+
+**4. Comprehensive Profile Output Analysis**  
+New data analysis tools reveal the unique "fingerprint" of each FPS-R algorithm:
+- Interactive Jupyter notebook for hands-on exploration
+- Visual graphs showing output patterns, hold durations, and distributions
+- Performance benchmarks and timing comparisons
+- All integrated into the main README for easy reference
+
+#### 🔧 Key Technical Improvements
+- **Cross-Platform Determinism**: Thread-safe sine lookup tables ensure bit-for-bit identical outputs between C and Python
+- **Performance Optimizations**: Flexible LOD system and baked sine curves for efficient computation
+- **Enhanced Robustness**: Comprehensive overflow checks and deterministic initialization
+
+#### 📖 Documentation
+This release includes extensive documentation updates with visual examples, performance metrics, and detailed explanations of all new features. The README now features embedded graphs showing the output characteristics of each algorithm.
+
+[Read the full Changelog](./CHANGELOG.md#300---2025-11-11) for complete details.
 
 ---
 ### 20 Oct 2025

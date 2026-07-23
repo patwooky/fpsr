@@ -268,7 +268,7 @@
                         <div class="flex items-center space-x-2">
                             <input id="global_frameMultiplier" type="range" min="0.1" max="4.0" value="1.0" step="0.05" class="w-full">
                             <span id="global_frameMultiplierValue" class="text-sm text-white w-12 text-right">1.00x</span>
-                            <!-- *** NEW: Reset Button *** -->
+                            <!-- *** Reset Button *** -->
                             <button id="resetFrameMultiplierButton" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-1 px-2 rounded-md text-xs transition duration-150" title="Reset to 1.0x">
                                 1.0x
                             </button>
@@ -291,12 +291,18 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12.066 11.209a1.001 1.001 0 00-1.414 0l-3 3a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414-1.414L9.414 16H18a1 1 0 100-2h-8.586l1.652-1.652a1 1 0 000-1.414zM18 18v-2"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 12V6a1 1 0 011-1h10a1 1 0 011 1v6"></path></svg>
                     <span>Rewind</span>
                 </button>
-                <button id="pauseButton" class="w-full md:w-auto bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-md transition duration-150 flex items-center justify-center space-x-2">
-                    <!-- Pause Icon -->
-                    <svg id="pauseIcon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
-                    <!-- Play Icon -->
-                    <svg id="playIcon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" style="display: none;"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
-                    <span id="pauseButtonText">Pause</span>
+                
+                                <button id="pauseButton" class="w-full md:w-auto bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-md transition duration-150 flex items-center justify-center space-x-2">
+                                    <!-- Pause Icon -->
+                                    <svg id="pauseIcon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                                    <!-- Play Icon -->
+                                    <svg id="playIcon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" style="display: none;"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
+                                    <span id="pauseButtonText">Pause</span>
+                                </button>
+
+                <!-- NEW: Copy values to Clipboard -->
+                <button id="copyButton" class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition duration-150" title="Copies current values to the clipboard, in a python formatted list, (eg [0.022, 0.378, 0.795...]).&#10;This enables offline data analysis of FPS-R outputs.">
+                    Copy Values to Clipboard
                 </button>
             </div>
         </div>
@@ -339,6 +345,7 @@
             const pauseIcon = document.getElementById('pauseIcon');
             const playIcon = document.getElementById('playIcon');
             const rewindButton = document.getElementById('rewindButton');
+            const copyButton = document.getElementById('copyButton');
             
             // --- New Global HPQ UI ---
             const frameMultiplierSlider = document.getElementById('global_frameMultiplier');
@@ -354,7 +361,7 @@
 
                         if (slider.id === 'global_frameMultiplier') {
                             
-                            // --- NEW: Snap Logic ---
+                            // --- Snap Logic ---
                             const snapThreshold = 0.05; // Snap if within this range
                             const snapIncrement = 0.25;
                             const remainder = currentValue % snapIncrement;
@@ -411,7 +418,7 @@
 
             // --- Event Listeners ---
             function updateParams() {
-                // --- NEW: Read Global HPQ Params ---
+                // --- Read Global HPQ Params ---
                 globalParams.frameMultiplier = parseFloatInput('global_frameMultiplier', 1.0);
                 globalParams.segBlockLength = parseIntInput('global_segBlockLength', 5);
 
@@ -545,7 +552,45 @@
             pauseButton.addEventListener('click', togglePause);
             rewindButton.addEventListener('click', rewindAnimation);
 
-            // --- NEW: Reset Frame Multiplier Button ---
+            // --- Copy buffer to clipboard ---
+            function formatNumberForPython(v) {
+                // Handle BigInt explicitly
+                if (typeof v === 'bigint') return v.toString();
+                const n = Number(v);
+                if (!Number.isFinite(n)) return '0';
+                // Use 6 decimal places, trim trailing zeros
+                let s = n.toFixed(6).replace(/\.?0+$/, '');
+                return s;
+            }
+
+            async function copyHistoryToClipboard() {
+                // Map history values to python list string
+                const listContent = '[' + history.map(formatNumberForPython).join(', ') + ']';
+                try {
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        await navigator.clipboard.writeText(listContent);
+                    } else {
+                        // Fallback
+                        const ta = document.createElement('textarea');
+                        ta.value = listContent;
+                        document.body.appendChild(ta);
+                        ta.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(ta);
+                    }
+                    // brief UI feedback
+                    const prev = copyButton.textContent;
+                    copyButton.textContent = 'Copied!';
+                    setTimeout(() => { copyButton.textContent = prev; }, 1200);
+                } catch (e) {
+                    console.error('Copy failed', e);
+                }
+            }
+
+            if (copyButton) copyButton.addEventListener('click', copyHistoryToClipboard);
+            // --- end copy button logic ---
+
+            // --- Reset Frame Multiplier Button ---
             resetFrameMultiplierButton.addEventListener('click', () => {
                 frameMultiplierSlider.value = "1.0";
                 frameMultiplierValue.textContent = "1.00x";
@@ -553,6 +598,8 @@
                 // and reset the simulation, just like updateParams() does.
                 frameMultiplierSlider.dispatchEvent(new Event('input'));
             });
+
+
 
             // --- Core FPS-R Logic (64-bit BigInt Port) ---
 
@@ -814,7 +861,7 @@
                 }
             }
             
-            // --- *** NEW: HPQ Wrapper Logic *** ---
+            // --- *** HPQ Wrapper Logic *** ---
             // This is the new "get_details" wrapper, implemented in JS.
             // It takes the "Application Timeline" frame and handles all time scaling.
             function getFpsrValue(appFrame) {
