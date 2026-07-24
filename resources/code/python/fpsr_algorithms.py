@@ -680,8 +680,16 @@ def fpsr_bd(
 
 
     # --- Step 5: Decode the final bitstream ---
+    # We define get_bit inside fpsr_bd so it has access to
+    # final_chunks, num_chunks, and block_size from its closure
     def get_bit(n):
-        # Helper to get a specific bit, matching C's logic
+        ''' 
+        Helper to get a specific bit, matching C's logic
+        
+        n is the bit index in the final bitstream.
+        
+        returns 1 if the bit is set, 0 otherwise. Out-of-bounds returns 0.
+        '''
         if not (0 <= n < block_size): return 0
         chunk_index, bit_index = n // _CHUNK_BITS, n % _CHUNK_BITS
         if chunk_index >= num_chunks: return 0
