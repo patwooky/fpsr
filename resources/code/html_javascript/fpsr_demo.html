@@ -66,7 +66,7 @@
 
     <div class="w-full max-w-7xl">
         <h1 class="text-3xl font-bold text-center text-white mb-2">FPS-R HPQ Visualiser</h1>
-        <p class="text-center text-gray-400 mb-6">Visualizing the Hierarchical Phrased Quantisation (HPQ) logic.</p>
+        <p class="text-center text-gray-400 mb-6">Visualising the FPS-R Algorithms with Hierarchical Phrased Quantisation (HPQ) logic.</p>
 
         <!-- Canvas for visualization -->
         <canvas id="visualizerCanvas" class="w-full mb-6 shadow-lg" height="300"></canvas>
@@ -284,15 +284,15 @@
 
             <!-- Shared Controls -->
             <div class="flex flex-col md:flex-row gap-4 mt-6 pt-6 border-t border-gray-700">
-                <button id="resetButton" class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition duration-150">
+                <button id="resetButton" class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition duration-150" title="Resets the visualizer to the beginning of the timeline and generates new random seeds for the algorithms.">
                     Reset (New Seeds)
                 </button>
-                <button id="rewindButton" class="w-full md:w-auto bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md transition duration-150 flex items-center justify-center space-x-2">
+                <button id="rewindButton" class="w-full md:w-auto bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md transition duration-150 flex items-center justify-center space-x-2" title="Rewinds the visualizer to the beginning of the timeline.">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12.066 11.209a1.001 1.001 0 00-1.414 0l-3 3a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414-1.414L9.414 16H18a1 1 0 100-2h-8.586l1.652-1.652a1 1 0 000-1.414zM18 18v-2"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 12V6a1 1 0 011-1h10a1 1 0 011 1v6"></path></svg>
                     <span>Rewind</span>
                 </button>
                 
-                                <button id="reverseButton" class="w-full md:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md transition duration-150 flex items-center justify-center space-x-2">
+                                <button id="reverseButton" class="w-full md:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md transition duration-150 flex items-center justify-center space-x-2" title="Play/Pause the visualizer in the reverse direction.">
                                     <!-- Pause Icon (Rev) -->
                                     <svg id="pauseIconRev" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" style="display: none;"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
                                     <!-- Play Reverse Icon -->
@@ -300,7 +300,7 @@
                                     <span id="reverseButtonText">Reverse</span>
                                 </button>
 
-                                <button id="pauseButton" class="w-full md:w-auto bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-md transition duration-150 flex items-center justify-center space-x-2">
+                                <button id="pauseButton" class="w-full md:w-auto bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-md transition duration-150 flex items-center justify-center space-x-2" title="Play/Pause the visualizer in the forward direction.">
                                     <!-- Pause Icon -->
                                     <svg id="pauseIcon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
                                     <!-- Play Icon -->
