@@ -1160,31 +1160,58 @@ allTabs.forEach(tab => {
 
                 // Determine step count based on speed / max mode
                 let stepsToCompute = 0;
+                
                 if (scrollSpeedMaxToggle.checked) {
-                    stepsToCompute = 5000; // Fast unconstrained batch computation per render tick
+                    // --- Time-Budgeted Uncapped MAX Mode ---
+                    // Dedicated 12 ms CPU computation budget per 16.6 ms (60Hz) frame tick
+                    const startTime = performance.now();
+                    const targetBudgetMs = 12.0; 
+                    const batchSize = 500;
+                    
+                    while (performance.now() - startTime < targetBudgetMs) {
+                        for (let b = 0; b < batchSize; b++) {
+                            if (playDirection === 1) {
+                                const newValue = getFpsrValue(frame);
+                                history.push(newValue);
+                                if (history.length > canvasWidth) {
+                                    history.shift();
+                                }
+                                frame++; 
+                            } else if (playDirection === -1) {
+                                const newValue = getFpsrValue(frame - history.length - 1);
+                                history.unshift(newValue);
+                                if (history.length > canvasWidth) {
+                                    history.pop();
+                                    frame--;
+                                }
+                            }
+                        }
+                        stepsToCompute += batchSize;
+                    }
                 } else {
+                    // --- Standard Speed Slider Mode ---
                     const currentSpeed = parseFloat(scrollSpeedSlider.value);
                     stepAccumulator += currentSpeed;
                     stepsToCompute = Math.floor(stepAccumulator);
                     stepAccumulator -= stepsToCompute;
-                }
 
-                for (let s = 0; s < stepsToCompute; s++) {
-                    if (playDirection === 1) {
-                        const newValue = getFpsrValue(frame);
-                        history.push(newValue);
+                    for (let s = 0; s < stepsToCompute; s++) {
+                        if (playDirection === 1) {
+                            const newValue = getFpsrValue(frame);
+                            history.push(newValue);
 
-                        if (history.length > canvasWidth) {
-                            history.shift();
-                        }
-                        frame++; 
-                    } else if (playDirection === -1) {
-                        const newValue = getFpsrValue(frame - history.length - 1);
-                        history.unshift(newValue);
-                        
-                        if (history.length > canvasWidth) {
-                            history.pop();
-                            frame--;
+                            if (history.length > canvasWidth) {
+                                history.shift();
+                            }
+                            frame++; 
+                        } else if (playDirection === -1) {
+                            const newValue = getFpsrValue(frame - history.length - 1);
+                            history.unshift(newValue);
+                            
+                            if (history.length > canvasWidth) {
+                                history.pop();
+                                frame--;
+                            }
                         }
                     }
                 }
