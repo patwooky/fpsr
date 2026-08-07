@@ -137,6 +137,7 @@
             <button id="tab-TM" data-algo="TM" class="tab flex-1 py-3 px-4 font-semibold transition-colors duration-150">FPS-R: TM</button>
             <button id="tab-QS" data-algo="QS" class="tab flex-1 py-3 px-4 font-semibold transition-colors duration-150">FPS-R: QS</button>
             <button id="tab-BD" data-algo="BD" class="tab flex-1 py-3 px-4 font-semibold transition-colors duration-150">FPS-R: BD</button>
+            <button id="tab-LEGACY" data-algo="LEGACY" class="tab flex-1 py-3 px-4 font-semibold transition-colors duration-150 text-yellow-400">Legacy Stateful (Comparison)</button>
         </div>
 
         <!-- Control Panel -->
@@ -319,6 +320,27 @@
                 </div>
             </div>
 
+            <!-- Legacy Stateful Panel -->
+            <div id="panel-LEGACY" class="param-grid" style="display: none;">
+                <div class="col-span-full bg-yellow-900/30 border border-yellow-600/50 p-3 rounded-md mb-2 text-xs text-yellow-200">
+                    <strong>⚠️ Legacy Stateful Accumulator Loop:</strong> Relies on continuously mutating memory variables (<code class="bg-gray-800 px-1 py-0.5 rounded">last_jump_frame</code>, <code class="bg-gray-800 px-1 py-0.5 rounded">held_value</code>) on every frame tick. <strong>Reverse playback and arbitrary scrubbability are disabled</strong> because stateful memory cannot step backward without re-simulating from frame 0.
+                </div>
+                <div class="param-group" title="The minimum number of frames to hold before a jump is allowed.">
+                    <label for="st_minHold">minHoldFrames</label>
+                    <div class="flex items-center space-x-2">
+                        <input id="st_minHold" type="range" min="1" max="100" value="10" class="w-full">
+                        <span id="st_minHoldValue" class="text-sm text-white w-10 text-right">10</span>
+                    </div>
+                </div>
+                <div class="param-group" title="The probability threshold (0.01 - 1.00) to break the hold on each frame after minHold.">
+                    <label for="st_threshold">jumpProbability</label>
+                    <div class="flex items-center space-x-2">
+                        <input id="st_threshold" type="range" min="0.01" max="1.00" value="0.10" step="0.01" class="w-full">
+                        <span id="st_thresholdValue" class="text-sm text-white w-10 text-right">0.10</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- *** MODIFIED: Global HPQ Controls *** -->
             <div class="mt-6 pt-6 border-t border-gray-700">
                 <h3 class="text-lg font-semibold text-white mb-4">Global HPQ Time Controls</h3>
@@ -344,7 +366,7 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+                document.addEventListener('DOMContentLoaded', () => {
             const canvas = document.getElementById('visualizerCanvas');
             const ctx = canvas.getContext('2d');
 
@@ -359,6 +381,10 @@
             let playDirection = 1; // 1 = forward, -1 = reverse, 0 = paused
             let animationFrameId = null;
 
+            // --- Stateful Legacy Model Persistent Variables ---
+            let legacy_lastJumpFrame = 0;
+            let legacy_heldValue = Math.random();
+
             // --- Scroll Speed & Performance State ---
             let stepAccumulator = 0;
             let evalsLog = []; // [{ time: ms, count: N }] for 3-second rolling average
@@ -371,7 +397,8 @@
                 sm: {},
                 tm: {},
                 qs: {},
-                bd: {}
+                bd: {},
+                st: {}
             };
 
             // --- UI Elements ---
@@ -499,7 +526,7 @@
                 return isNaN(value) ? defaultValue : value;
             }
 
-            // --- Event Listeners ---
+            // --- Params Update Function ---
             function updateParams() {
                 // --- Read Global HPQ Params ---
                 globalParams.frameMultiplier = parseFloatInput('global_frameMultiplier', 1.0);
@@ -564,6 +591,16 @@
                     interOp: document.getElementById('bd_interOp').value,
                     valueSeedOffset: parseBigIntInput('bd_valueSeedOffset', 78901n),
                 };
+
+                // --- Stateful Legacy Params ---
+                globalParams.st = {
+                    minHold: parseIntInput('st_minHold', 10),
+                    threshold: parseFloatInput('st_threshold', 0.10)
+                };
+
+                // Reset stateful state
+                legacy_lastJumpFrame = 0;
+                legacy_heldValue = Math.random();
                 
                 // Clear history on param change
                 frame = 0;
@@ -574,14 +611,42 @@
             allParamInputs.forEach(input => input.addEventListener('input', updateParams));
             allParamInputs.forEach(input => input.addEventListener('change', updateParams)); // For selects/text inputs
 
-            // --- Tab Switching ---
-            allTabs.forEach(tab => {
+// --- Tab Switching ---
+allTabs.forEach(tab => {
                 tab.addEventListener('click', (e) => {
                     activeAlgorithm = e.target.dataset.algo;
                     allTabs.forEach(t => t.classList.remove('active'));
                     e.target.classList.add('active');
                     allPanels.forEach(p => p.style.display = 'none');
                     document.getElementById(`panel-${activeAlgorithm}`).style.display = 'grid';
+
+                    // Legacy Stateful mode restrictions
+                    const isLegacy = (activeAlgorithm === 'LEGACY');
+                    
+                    // 1. Disable reverse button
+                    if (isLegacy) {
+                        if (playDirection === -1) playDirection = 1; // force forward
+                        reverseButton.disabled = true;
+                        reverseButton.style.opacity = '0.4';
+                        reverseButton.title = "Reverse playback is unsupported in Legacy Stateful mode.";
+                    } else {
+                        reverseButton.disabled = false;
+                        reverseButton.style.opacity = '1.0';
+                        reverseButton.title = "Play/Pause the visualizer in the reverse direction.";
+                    }
+
+                    // 2. Disable Global HPQ Time Controls in Legacy Mode
+                    const hpqSection = document.getElementById('global_frameMultiplier').closest('.mt-6');
+                    frameMultiplierSlider.disabled = isLegacy;
+                    resetFrameMultiplierButton.disabled = isLegacy;
+                    document.getElementById('global_segBlockLength').disabled = isLegacy;
+
+                    if (hpqSection) {
+                        hpqSection.style.opacity = isLegacy ? '0.4' : '1.0';
+                        hpqSection.style.pointerEvents = isLegacy ? 'none' : 'auto';
+                        hpqSection.title = isLegacy ? "HPQ Time Controls are unsupported in Legacy Stateful mode." : "";
+                    }
+
                     updateParams();
                 });
             });
@@ -956,6 +1021,22 @@
                 return portable_rand_u64(final_seed);
             }
 
+            // --- Legacy Stateful Algorithm (Hold-and-Jump Loop) ---
+            function fpsr_legacy_base_js(frame, params) {
+                frame = Number(frame);
+                const minHold = params.minHold || 10;
+                const probability = params.threshold || 0.10;
+
+                // Stateful check: "Are we there yet?" Tier 1 & Tier 2 evaluation
+                if ((frame - legacy_lastJumpFrame) > minHold) {
+                    if (Math.random() < probability) {
+                        // Tier 3: Jump granted, write-cycles to memory
+                        legacy_heldValue = Math.random();
+                        legacy_lastJumpFrame = frame;
+                    }
+                }
+                return legacy_heldValue;
+            }
 
             // --- Main Value Router ---
             // This function routes to the correct _base_js function.
@@ -970,6 +1051,8 @@
                         return fpsr_qs_base_js(frame, params.qs);
                     case 'BD':
                         return fpsr_bd_base_js(frame, params.bd);
+                    case 'LEGACY':
+                        return fpsr_legacy_base_js(frame, params.st);
                     default:
                         return 0.5;
                 }
@@ -1077,31 +1160,58 @@
 
                 // Determine step count based on speed / max mode
                 let stepsToCompute = 0;
+                
                 if (scrollSpeedMaxToggle.checked) {
-                    stepsToCompute = 5000; // Fast unconstrained batch computation per render tick
+                    // --- Time-Budgeted Uncapped MAX Mode ---
+                    // Dedicated 12 ms CPU computation budget per 16.6 ms (60Hz) frame tick
+                    const startTime = performance.now();
+                    const targetBudgetMs = 12.0; 
+                    const batchSize = 500;
+                    
+                    while (performance.now() - startTime < targetBudgetMs) {
+                        for (let b = 0; b < batchSize; b++) {
+                            if (playDirection === 1) {
+                                const newValue = getFpsrValue(frame);
+                                history.push(newValue);
+                                if (history.length > canvasWidth) {
+                                    history.shift();
+                                }
+                                frame++; 
+                            } else if (playDirection === -1) {
+                                const newValue = getFpsrValue(frame - history.length - 1);
+                                history.unshift(newValue);
+                                if (history.length > canvasWidth) {
+                                    history.pop();
+                                    frame--;
+                                }
+                            }
+                        }
+                        stepsToCompute += batchSize;
+                    }
                 } else {
+                    // --- Standard Speed Slider Mode ---
                     const currentSpeed = parseFloat(scrollSpeedSlider.value);
                     stepAccumulator += currentSpeed;
                     stepsToCompute = Math.floor(stepAccumulator);
                     stepAccumulator -= stepsToCompute;
-                }
 
-                for (let s = 0; s < stepsToCompute; s++) {
-                    if (playDirection === 1) {
-                        const newValue = getFpsrValue(frame);
-                        history.push(newValue);
+                    for (let s = 0; s < stepsToCompute; s++) {
+                        if (playDirection === 1) {
+                            const newValue = getFpsrValue(frame);
+                            history.push(newValue);
 
-                        if (history.length > canvasWidth) {
-                            history.shift();
-                        }
-                        frame++; 
-                    } else if (playDirection === -1) {
-                        const newValue = getFpsrValue(frame - history.length - 1);
-                        history.unshift(newValue);
-                        
-                        if (history.length > canvasWidth) {
-                            history.pop();
-                            frame--;
+                            if (history.length > canvasWidth) {
+                                history.shift();
+                            }
+                            frame++; 
+                        } else if (playDirection === -1) {
+                            const newValue = getFpsrValue(frame - history.length - 1);
+                            history.unshift(newValue);
+                            
+                            if (history.length > canvasWidth) {
+                                history.pop();
+                                frame--;
+                            }
                         }
                     }
                 }
