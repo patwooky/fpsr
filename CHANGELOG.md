@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## Unreleased
 
+## [3.0.2] - 2026-08-07
+### Changed
+- Algorithm Analysis Jupyter Notebook (`resources\code\data_analysis\fpsr_algoAnalysis.ipynb`)
+    - Updated the FPSR analysis notebook to print per-sequence jump counts and jump frequency percentages after held-step calculations (e.g., `random.random()`, `Portable-Rand`, and FPS-R variants). This makes the notebook output easier to compare across generators without relying only on plots.
+- Visualizer (`resources/code/html_javascript/fpsr_demo.html`)
+    - Reworked the FPS-R demo controls by moving the transport bar up under the canvas and adding a dedicated speed/performance panel. The animation loop now supports adjustable playback speed, an unconstrained max mode, and a rolling evaluations-per-second display so users can both navigate and benchmark the demo more effectively.
+    - Added a 'Legacy Stateful (Comparison)' tab to the FPSR demo that implements the classic hold-and-jump stateful accumulator loop. Includes UI panel with minHoldFrames and jumpProbability controls, disables reverse playback and HPQ time controls when active (since stateful memory cannot step backward), and resets legacy state variables on param changes.
+    - Updated the demo playback loop so MAX speed mode now runs with a time-budgeted compute window per frame (instead of a fixed step count), improving uncapped playback responsiveness while keeping standard slider-based stepping behavior unchanged.
+- FPS-R Visualiser Performance Metrics(`resources\code\html_javascript\benchmmarks\fpsr_visualiser_metrics.md`)
+    - Documented observed FPS-R visualizer throughput metrics in a new benchmark markdown file, including Bitwise Decode stream/blocksize breakdowns. 
 
 ## [3.0.1] - 2025-01-14
 
