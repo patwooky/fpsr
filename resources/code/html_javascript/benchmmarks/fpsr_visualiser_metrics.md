@@ -42,6 +42,8 @@ Bitwise Decode (default 7 streams, blocksize 30) |  ~179 k/s |
 |   | 60 | ~580 k/s |
 | 2 | 30 | ~444 k/s |
 |   | 60 | ~446 k/s |
+| 3 | 30 | ~340 k/s |
+|   | 60 | ~333 k/s |
 | 4 | 30 | ~296 k/s |
 |   | 60 | ~289 k/s |
 | 7 | 30 | ~179 k/s |
@@ -59,7 +61,7 @@ Version 151.0.7922.34 (Official Build) (64-bit)
 | Stacked Modulo | ~1, 580 k/s |
 | Toggled Modulo | ~2, 130 k/s |
 | Quantised Switching | ~920 k/s |
-| Bitwise Decode (default 7 streams, blocksize 30) | ~188 k/s |
+| Bitwise Decode (default 3 streams, blocksize 60) | ~388 k/s |
 
 ### BD Breakdown by Streams and Blocksize
 | Streams | Blocksize | Approximate Performance |
@@ -68,6 +70,8 @@ Version 151.0.7922.34 (Official Build) (64-bit)
 |   | 60 | ~700 k/s |
 | 2 | 30 | ~505 k/s |
 |   | 60 | ~504 k/s |
+| 3 | 30 | ~385 k/s |
+|   | 60 | ~388 k/s |
 | 4 | 30 | ~325 k/s |
 |   | 60 | ~324 k/s |
 | 7 | 30 | ~192 k/s |
@@ -85,7 +89,7 @@ Version 153.0.3 (64-bit)
 | Stacked Modulo | ~1, 060 k/s |
 | Toggled Modulo | ~1, 750 k/s |
 | Quantised Switching | ~660 k/s |
-| Bitwise Decode (default 7 streams, blocksize 30) | ~176 k/s |
+| Bitwise Decode (default 3 streams, blocksize 60) | ~340 k/s |
 
 ### BD Breakdown by Streams and Blocksize
 | Streams | Blocksize | Approximate Performance |
@@ -94,6 +98,8 @@ Version 153.0.3 (64-bit)
 |   | 60 | ~605 k/s |
 | 2 | 30 | ~435 k/s |
 |   | 60 | ~440 k/s |
+| 3 | 30 | ~328 k/s |
+|   | 60 | ~340 k/s |
 | 4 | 30 | ~295 k/s |
 |   | 60 | ~283 k/s |
 | 7 | 30 | ~170 k/s |
@@ -121,7 +127,7 @@ Version 151.0.7922.83
 | Stacked Modulo | ~1, 830 k/s |
 | Toggled Modulo | ~2, 280 k/s |
 | Quantised Switching | ~1, 080 k/s |
-| Bitwise Decode (default 7 streams, blocksize 30) | ~268 k/s |
+| Bitwise Decode (default 3 streams, blocksize 60) | ~548 k/s |
 
 ### BD Breakdown by Streams and Blocksize
 | Streams | Blocksize | Approximate Performance |
@@ -130,6 +136,8 @@ Version 151.0.7922.83
 |   | 60 | ~820 k/s |
 | 2 | 30 | ~680 k/s |
 |   | 60 | ~682 k/s |
+| 3 | 30 | ~540 k/s |
+|   | 60 | ~548 k/s |
 | 4 | 30 | ~375 k/s |
 |   | 60 | ~390 k/s |
 | 7 | 30 | ~210 k/s |
