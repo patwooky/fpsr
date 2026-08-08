@@ -33,7 +33,7 @@ Legacy Stateful `rand()` | ~2, 300 k/s |
 Stacked Modulo | ~1, 400 k/s |
 Toggled Modulo | ~1, 740 k/s |
 Quantised Switching | ~880 k/s |
-Bitwise Decode (default 7 streams, blocksize 30) |  ~179 k/s |
+Bitwise Decode (default 3 streams, blocksize 60) |  ~333 k/s |
 
 ### BD Breakdown by Streams and Blocksize
 | Streams | Blocksize | Approximate Performance |
