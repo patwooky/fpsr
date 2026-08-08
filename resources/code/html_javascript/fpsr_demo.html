@@ -582,9 +582,9 @@
 
                 // --- BD Params ---
                 globalParams.bd = {
-                    blockSize: parseBigIntInput('bd_blockSize', 64n),
+                    blockSize: parseBigIntInput('bd_blockSize', 60n),
                     streamsNumber: parseIntInput('bd_streamsNumber', 3),
-                    streamsOffset: parseBigIntInput('bd_streamsOffset', 10n),
+                    streamsOffset: parseBigIntInput('bd_streamsOffset', 11n),
                     intraOp: document.getElementById('bd_intraOp').value,
                     dynamicShiftBits: parseIntInput('bd_dynamicShiftBits', 6),
                     staticShiftAmount: parseIntInput('bd_staticShiftAmount', 1),
