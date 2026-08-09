@@ -33,7 +33,7 @@ Legacy Stateful `rand()` | ~2, 300 k/s |
 Stacked Modulo | ~1, 400 k/s |
 Toggled Modulo | ~1, 740 k/s |
 Quantised Switching | ~880 k/s |
-Bitwise Decode (default 3 streams, blocksize 60) | ~333 k/s |
+Bitwise Decode (default 3 streams, blocksize 64) | ~333 k/s |
 
 ### BD Breakdown by Streams and Blocksize
 | Streams | Blocksize | Approximate Performance |
@@ -61,7 +61,7 @@ Version 151.0.7922.34 (Official Build) (64-bit)
 | Stacked Modulo | ~1, 580 k/s |
 | Toggled Modulo | ~2, 130 k/s |
 | Quantised Switching | ~920 k/s |
-| Bitwise Decode (default 3 streams, blocksize 60) | ~388 k/s |
+| Bitwise Decode (default 3 streams, blocksize 64) | ~388 k/s |
 
 ### BD Breakdown by Streams and Blocksize
 | Streams | Blocksize | Approximate Performance |
@@ -89,7 +89,7 @@ Version 153.0.3 (64-bit)
 | Stacked Modulo | ~1, 060 k/s |
 | Toggled Modulo | ~1, 750 k/s |
 | Quantised Switching | ~660 k/s |
-| Bitwise Decode (default 3 streams, blocksize 60) | ~340 k/s |
+| Bitwise Decode (default 3 streams, blocksize 64) | ~340 k/s |
 
 ### BD Breakdown by Streams and Blocksize
 | Streams | Blocksize | Approximate Performance |
@@ -127,7 +127,7 @@ Version 151.0.7922.83
 | Stacked Modulo | ~1, 830 k/s |
 | Toggled Modulo | ~2, 280 k/s |
 | Quantised Switching | ~1, 080 k/s |
-| Bitwise Decode (default 3 streams, blocksize 60) | ~548 k/s |
+| Bitwise Decode (default 3 streams, blocksize 64) | ~548 k/s |
 
 ### BD Breakdown by Streams and Blocksize
 | Streams | Blocksize | Approximate Performance |

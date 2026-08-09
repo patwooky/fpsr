@@ -273,7 +273,7 @@
             <div id="panel-BD" class="param-grid" style="display: none;">
                 <div class="param-group" title="The size of the macro-rhythm in frames. Defines the 'master loop' size.">
                     <label for="bd_blockSize">blockSize</label>
-                    <input id="bd_blockSize" type="number" value="60" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                    <input id="bd_blockSize" type="number" value="64" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
                 </div>
                 <div class="param-group" title="The number of parallel bitstreams to generate and combine.">
                     <label for="bd_streamsNumber">streamsNumber</label>
@@ -582,7 +582,7 @@
 
                 // --- BD Params ---
                 globalParams.bd = {
-                    blockSize: parseBigIntInput('bd_blockSize', 60n),
+                    blockSize: parseBigIntInput('bd_blockSize', 64n),
                     streamsNumber: parseIntInput('bd_streamsNumber', 3),
                     streamsOffset: parseBigIntInput('bd_streamsOffset', 10n),
                     intraOp: document.getElementById('bd_intraOp').value,
