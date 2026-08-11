@@ -89,7 +89,7 @@ Version 153.0.3 (64-bit)
 | Stacked Modulo | ~1, 060 k/s |
 | Toggled Modulo | ~1, 750 k/s |
 | Quantised Switching | ~660 k/s |
-| Bitwise Decode (default 3 streams, blocksize 64) | ~340 k/s |
+| Bitwise Decode (default 3 streams, blocksize 64) | ~352 k/s |
 
 ### BD Breakdown by Streams and Blocksize
 | Streams | Blocksize | Approximate Performance |
@@ -98,12 +98,12 @@ Version 153.0.3 (64-bit)
 |   | 60 | ~605 k/s |
 | 2 | 30 | ~435 k/s |
 |   | 60 | ~440 k/s |
-| 3 | 30 | ~328 k/s |
-|   | 60 | ~340 k/s |
-| 4 | 30 | ~295 k/s |
-|   | 60 | ~283 k/s |
-| 7 | 30 | ~170 k/s |
-|   | 60 | ~157 k/s |
+| 3 | 30 | ~371 k/s |
+|   | 60 | ~352 k/s |
+| 4 | 30 | ~309 k/s |
+|   | 60 | ~301 k/s |
+| 7 | 30 | ~178 k/s |
+|   | 60 | ~170 k/s |
 
 ---
 ## Android Phone Specifications
