@@ -142,3 +142,12 @@ Version 151.0.7922.83
 |   | 60 | ~390 k/s |
 | 7 | 30 | ~210 k/s |
 |   | 60 | ~200 k/s |
+
+## A Consolidated Table of Approximate Performance Metrics (k/s) Across Platforms
+| Algorithm | VS Code Preview | Chrome | Firefox | Android Chrome |
+| :--- | ---: | ---: | ---: | ---: |
+| Legacy Stateful `rand()` | 2,300 | 2,800 | 7,600 | 2,930 |
+| Stacked Modulo | 1,400 | 1,580 | 1,060 | 1,830 |
+| Toggled Modulo | 1,740 | 2,130 | 1,750 | 2,280 |
+| Quantised Switching | 880 | 920 | 660 | 1,080 |
+| Bitwise Decode (3 streams, blocksize 64) | 333 | 388 | 352 | 548 |
