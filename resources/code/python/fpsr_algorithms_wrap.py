@@ -493,7 +493,7 @@ def fpsr_qs_base(frame, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, stream
 # ------------------------------
 # FPS-R: Bitwise Decode (BD)
 # ------------------------------
-def fpsr_bd(
+def fpsr_bd_base(
     frame: int,
     block_size: int,
     streams_number: int = 1,
@@ -1180,7 +1180,7 @@ def fpsr_bd_get_details(
 
     if segment_index == 0:
         # --- MODE 1: "Tape Varispeed" (Anchor) ---
-        out.randVal = float(fpsr_bd(
+        out.randVal = float(fpsr_bd_base(
             master_frame, int(block_size), streams_number, int(streams_offset),
             intra_op, dynamic_shift_bits, static_shift_amount, inter_op, int(value_seed_offset)
         ))
@@ -1189,7 +1189,7 @@ def fpsr_bd_get_details(
         gap_seed = _splitmix64(_to_uint64(int(master_frame) + int(segment_index)))
         
         # For BD, inject the unique seed as the 'value_seed_offset'.
-        out.randVal = float(fpsr_bd(
+        out.randVal = float(fpsr_bd_base(
             local_progress_in_segment, int(block_size), streams_number, int(streams_offset),
             intra_op, dynamic_shift_bits, static_shift_amount, inter_op, int(gap_seed)
         ))

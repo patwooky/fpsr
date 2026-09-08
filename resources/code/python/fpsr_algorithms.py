@@ -535,7 +535,7 @@ FPS-R: Bitwise Decode (BD)
 ------------------------------
 """
 
-def fpsr_bd(
+def fpsr_bd_base(
     frame: int,
     block_size: int,
     streams_number: int = 1,
@@ -889,13 +889,13 @@ if __name__ == "__main__":
             p_inter_op = "xor" # Binary (inter-stream) operation to combine streams
             p_value_seed_offset = 78901 # Additional seed offset for the final value calculation
 
-            randVal = fpsr_bd(
+            randVal = fpsr_bd_base(
                 frame=frame, block_size=p_block_size, streams_number=p_streams_number,
                 streams_offset=p_streams_offset, intra_op=p_intra_op,
                 dynamic_shift_bits=p_dynamic_shift_bits, static_shift_amount=p_static_shift_amount,
                 inter_op=p_inter_op, value_seed_offset=p_value_seed_offset)
             
-            randVal_previous = fpsr_bd(
+            randVal_previous = fpsr_bd_base(
                 frame=frame - 1, block_size=p_block_size, streams_number=p_streams_number,
                 streams_offset=p_streams_offset, intra_op=p_intra_op,
                 dynamic_shift_bits=p_dynamic_shift_bits, static_shift_amount=p_static_shift_amount,

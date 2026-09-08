@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## Unreleased
 
+## [3.0.3] - 2026-09-08
+### Changed
+- renamed base function fpsr_bd to fpsr_bd_base to match the naming convention of other base functions (fpsr_sm_base, fpsr_tm_base, fpsr_qs_base). This change improves clarity and consistency across the FPS-R algorithm implementations.
+
 ## [3.0.2] - 2026-08-07
 ### Changed
 - Algorithm Analysis Jupyter Notebook (`resources\code\data_analysis\fpsr_algoAnalysis.ipynb`)
