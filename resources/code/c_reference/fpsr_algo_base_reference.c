@@ -549,33 +549,33 @@ double fpsr_bd_base(
     // --- FIX: Added comprehensive overflow checks ---
     // Check multiplication for total_chunk_data_sz
     if (streams_number > 0 && (SIZE_MAX / (size_t)streams_number < chunk_data_sz)) {
-        fprintf(stderr, "ERROR in fpsr_bd: Overflow calculating total_chunk_data_sz. Returning 0.0.\n");
+        fprintf(stderr, "ERROR in fpsr_bd_base: Overflow calculating total_chunk_data_sz. Returning 0.0.\n");
         return 0.0; // Overflow
     }
     size_t total_chunk_data_sz = (size_t)streams_number * chunk_data_sz;
 
     // Check multiplication for ptr_arrays_sz
     if ((SIZE_MAX / sizeof(uint64_t*)) / 2 < (size_t)streams_number) {
-        fprintf(stderr, "ERROR in fpsr_bd: Overflow calculating ptr_arrays_sz. Returning 0.0.\n");
+        fprintf(stderr, "ERROR in fpsr_bd_base: Overflow calculating ptr_arrays_sz. Returning 0.0.\n");
         return 0.0; // Overflow check
     }
     size_t ptr_arrays_sz = (size_t)streams_number * sizeof(uint64_t*) * 2; // raw_streams pointers + transformed_streams pointers
 
     // Check additions for total_alloc_size
     if (SIZE_MAX - ptr_arrays_sz < chunk_data_sz) {
-        fprintf(stderr, "ERROR in fpsr_bd: Overflow calculating total_alloc_size (step 1). Returning 0.0.\n");
+        fprintf(stderr, "ERROR in fpsr_bd_base: Overflow calculating total_alloc_size (step 1). Returning 0.0.\n");
         return 0.0; // Overflow check
     }
     size_t temp_size = ptr_arrays_sz + chunk_data_sz; // Size for pointers + final_chunks
     if (SIZE_MAX - temp_size < 2 * total_chunk_data_sz) {
-        fprintf(stderr, "ERROR in fpsr_bd: Overflow calculating total_alloc_size (step 2). Returning 0.0.\n");
+        fprintf(stderr, "ERROR in fpsr_bd_base: Overflow calculating total_alloc_size (step 2). Returning 0.0.\n");
         return 0.0; // Overflow check (adding space for raw_streams + transformed_streams)
     }
     size_t total_alloc_size = temp_size + (2 * total_chunk_data_sz); // final calculation
 
     void* buffer_base = malloc(total_alloc_size);
     if (!buffer_base) { 
-        fprintf(stderr, "ERROR in fpsr_bd: malloc failed to allocate %zu bytes. Returning 0.0.\n", total_alloc_size);
+        fprintf(stderr, "ERROR in fpsr_bd_base: malloc failed to allocate %zu bytes. Returning 0.0.\n", total_alloc_size);
         return 0.0; // Allocation failed, return neutral value.
     } 
     
