@@ -37,7 +37,7 @@
 // Bit-width used for chunked bit operations.
 // It must remain 64 for deterministic compatibility with SplitMix64 and the 64-bit masking below. DO NOT MODIFY.
 #define CHUNK_BITS 64
-// Safety limit for stack allocation in fpsr_bd to prevent stack overflow.
+// Safety limit for stack allocation in fpsr_bd_base to prevent stack overflow.
 #define BD_MAX_STACK_BLOCK_SIZE 8192
 
 // --- Platform-Specific Includes for Thread-Safe Init ---
@@ -521,7 +521,7 @@ static int get_bit(int64_t n, int64_t block_size, const uint64_t* chunks, int64_
  * int64_t value_seed_offset: An additional seed offset for the final value calculation.
  * @return A deterministic, phrased pseudo-random double between 0.0 and 1.0.
  */
-double fpsr_bd(
+double fpsr_bd_base(
     int64_t frame,
     int64_t block_size,
     int streams_number,
@@ -862,13 +862,13 @@ int main() {
                 //      transformed streams. Options: "xor", "or", "and".
             int64_t p_value_seed_offset = 78901; // additional seed offset for the final value calculation
 
-            randVal = (float)fpsr_bd(
+            randVal = (float)fpsr_bd_base(
                 (int64_t)frame, p_block_size, p_streams_number, p_streams_offset,
                 p_intra_op, p_dynamic_shift_bits, p_static_shift_amount,
                 p_inter_op, p_value_seed_offset
             );
 
-            randVal_previous = (float)fpsr_bd(
+            randVal_previous = (float)fpsr_bd_base(
                 (int64_t)(frame - 1), p_block_size, p_streams_number, p_streams_offset,
                 p_intra_op, p_dynamic_shift_bits, p_static_shift_amount,
                 p_inter_op, p_value_seed_offset

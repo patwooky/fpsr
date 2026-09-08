@@ -584,7 +584,7 @@ FPSR_Output fpsr_qs_base(
  * int64_t value_seed_offset: An additional seed offset for the final value calculation.
  * @return A deterministic, phrased pseudo-random double between 0.0 and 1.0.
  */
-double fpsr_bd(
+double fpsr_bd_base(
     int64_t frame,
     int64_t block_size,
     int streams_number,
@@ -1465,7 +1465,7 @@ FPSR_Output fpsr_bd_get_details(
     if (segment_index == 0) {
         // --- MODE 1: "Tape Varispeed" (Anchor) ---
         // Repeat the value of the `master_frame` from the Content Timeline.
-        out.randVal = (float)fpsr_bd(
+        out.randVal = (float)fpsr_bd_base(
             master_frame, (int64_t)block_size, streams_number, (int64_t)streams_offset,
             intra_op, dynamic_shift_bits, static_shift_amount, inter_op, (int64_t)value_seed_offset
         );
@@ -1475,7 +1475,7 @@ FPSR_Output fpsr_bd_get_details(
         
         // For BD, we inject the unique seed as the 'value_seed_offset'.
         // We also pass `local_progress_in_segment` (from Application Timeline) as the frame.
-        out.randVal = (float)fpsr_bd(
+        out.randVal = (float)fpsr_bd_base(
             local_progress_in_segment, (int64_t)block_size, streams_number, (int64_t)streams_offset,
             intra_op, dynamic_shift_bits, static_shift_amount, inter_op, (int64_t)gap_seed // Cast seed to int64_t
         );
