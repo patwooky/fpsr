@@ -6,9 +6,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## Unreleased
 
+## [3.0.4] - 2026-09-10
+### Added
+- **Visualizer Comparison Models (`fpsr_demo.html`)**:
+    - **Legacy Paradigm A (The Pre-Calculated Accumulator)**: Added an interactive tab and control panel demonstrating the classic dual-draw state machine (`MINHOLDFRAMES`, `MAXHOLDFRAMES`). Pre-computes `next_jump_frame` and holds in memory until the clock catches up, illustrating $O(N)$ forward-only dependency (reverse playback and HPQ time controls disabled).
+    - **Stateless Spatial Noise (Perlin & Worley)**: Added interactive demonstration tabs exploring the topological mismatch of forcing continuous spatial gradients into discrete temporal phrasing:
+        - **Stateless Perlin**: 1D Perlin noise with quintic polynomial interpolation ($6t^5 - 15t^4 + 10t^3$), fractional Brownian motion (0–10 octaves), frequency multipliers, per-octave incremental offsets, persistence, and post-process active quantization (`floor(noise * steps)`).
+        - **Stateless Worley**: 1D Cellular/Worley noise evaluating feature point distances across cell neighborhoods. Supports F1, F2, and F2-F1 metrics, multi-octave fBm, and post-process quantization.
+        - Both spatial noise generators demonstrate native $O(1)$ bidirectional scrubbability (reverse enabled) while deliberately disabling HPQ controls due to the absence of discrete modular anchor boundaries.
+### Changed
+- **Visualizer (`fpsr_demo.html`)**:
+    - Renamed the previous single "Legacy Stateful" tab to **Legacy Paradigm B (The Continuous Coin-Flip)** with updated mechanistic documentation explaining the Tier 2 probability grind and rapid geometric decay beyond `MINHOLDFRAMES`.
+    - Tab switching logic updated to handle mode-specific capability restrictions across legacy stateful ($O(N)$ forward-only) and stateless spatial ($O(1)$ scrubbable, no HPQ anchors) generators.
+### Fixed
+- **Visualizer (`fpsr_demo.html`)**:
+    - Fixed a state-retention bug on the Rewind transport button where Legacy Paradigms A and B maintained stale future jump timestamps (`next_jump_frame`, `last_jump_frame`) and held values instead of resetting to frame 0, causing the playhead to freeze on old values until catching up to the previous position.
+
 ## [3.0.3] - 2026-09-08
 ### Changed
-- renamed base function fpsr_bd to fpsr_bd_base to match the naming convention of other base functions (fpsr_sm_base, fpsr_tm_base, fpsr_qs_base). This change improves clarity and consistency across the FPS-R algorithm implementations.
+- renamed base function fpsr_bd to fpsr_bd_base to match the naming convention of other base functions (fpsr_sm_base, fpsr_tm_base, fpsr_qs_base). This change improves clarity and consistency across the FPS-R algorithm implementations. The change is reflected in 
+    - the C reference, Python, and Jupyter Notebook implementations, as well as the online visualizer.
 
 ## [3.0.2] - 2026-08-07
 ### Changed

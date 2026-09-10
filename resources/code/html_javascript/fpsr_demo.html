@@ -137,7 +137,10 @@
             <button id="tab-TM" data-algo="TM" class="tab flex-1 py-3 px-4 font-semibold transition-colors duration-150">FPS-R: TM</button>
             <button id="tab-QS" data-algo="QS" class="tab flex-1 py-3 px-4 font-semibold transition-colors duration-150">FPS-R: QS</button>
             <button id="tab-BD" data-algo="BD" class="tab flex-1 py-3 px-4 font-semibold transition-colors duration-150">FPS-R: BD</button>
-            <button id="tab-LEGACY" data-algo="LEGACY" class="tab flex-1 py-3 px-4 font-semibold transition-colors duration-150 text-yellow-400">Legacy Stateful (Comparison)</button>
+            <button id="tab-LEGACY_A" data-algo="LEGACY_A" class="tab flex-1 py-3 px-4 font-semibold transition-colors duration-150 text-yellow-400">Legacy Paradigm A</button>
+            <button id="tab-LEGACY_B" data-algo="LEGACY_B" class="tab flex-1 py-3 px-4 font-semibold transition-colors duration-150 text-yellow-400">Legacy Paradigm B</button>
+            <button id="tab-PERLIN" data-algo="PERLIN" class="tab flex-1 py-3 px-4 font-semibold transition-colors duration-150 text-emerald-400">Stateless Perlin</button>
+            <button id="tab-WORLEY" data-algo="WORLEY" class="tab flex-1 py-3 px-4 font-semibold transition-colors duration-150 text-emerald-400">Stateless Worley</button>
         </div>
 
         <!-- Control Panel -->
@@ -320,24 +323,147 @@
                 </div>
             </div>
 
-            <!-- Legacy Stateful Panel -->
-            <div id="panel-LEGACY" class="param-grid" style="display: none;">
+            <!-- Legacy Paradigm A Panel -->
+            <div id="panel-LEGACY_A" class="param-grid" style="display: none;">
                 <div class="col-span-full bg-yellow-900/30 border border-yellow-600/50 p-3 rounded-md mb-2 text-xs text-yellow-200">
-                    <strong>⚠️ Legacy Stateful Accumulator Loop:</strong> Relies on continuously mutating memory variables (<code class="bg-gray-800 px-1 py-0.5 rounded">last_jump_frame</code>, <code class="bg-gray-800 px-1 py-0.5 rounded">held_value</code>) on every frame tick. <strong>Reverse playback and arbitrary scrubbability are disabled</strong> because stateful memory cannot step backward without re-simulating from frame 0.
+                    <strong>⚠️ Legacy Paradigm A: The Pre-Calculated Accumulator:</strong> Pre-calculates the exact target frame for the next jump using two random draws (Payload Value and Duration Timer). The system stores <code class="bg-gray-800 px-1 py-0.5 rounded">next_jump_frame</code> in memory and waits for the global clock to catch up. <strong>Reverse playback and arbitrary scrubbability are disabled</strong> because stateful memory cannot step backward without re-simulating sequentially from frame 0.
+                </div>
+                <div class="param-group" title="The minimum baseline hold duration (in frames).">
+                    <label for="sta_minHold">MINHOLDFRAMES</label>
+                    <div class="flex items-center space-x-2">
+                        <input id="sta_minHold" type="range" min="1" max="100" value="1" class="w-full">
+                        <span id="sta_minHoldValue" class="text-sm text-white w-10 text-right">1</span>
+                    </div>
+                </div>
+                <div class="param-group" title="The maximum hold duration (in frames). Variance is (MAXHOLDFRAMES - MINHOLDFRAMES).">
+                    <label for="sta_maxHold">MAXHOLDFRAMES</label>
+                    <div class="flex items-center space-x-2">
+                        <input id="sta_maxHold" type="range" min="2" max="300" value="25" class="w-full">
+                        <span id="sta_maxHoldValue" class="text-sm text-white w-10 text-right">25</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Legacy Paradigm B Panel -->
+            <div id="panel-LEGACY_B" class="param-grid" style="display: none;">
+                <div class="col-span-full bg-yellow-900/30 border border-yellow-600/50 p-3 rounded-md mb-2 text-xs text-yellow-200">
+                    <strong>⚠️ Legacy Paradigm B: The Continuous Coin-Flip:</strong> This generates a minimum held frame, and every frame beyond that is a coin flip to determine if the value jumps. Relies on continuously mutating memory variables (<code class="bg-gray-800 px-1 py-0.5 rounded">last_jump_frame</code>, <code class="bg-gray-800 px-1 py-0.5 rounded">held_value</code>) on every frame tick. <strong>Reverse playback and arbitrary scrubbability are disabled</strong> because stateful memory cannot step backward without re-simulating from frame 0.
                 </div>
                 <div class="param-group" title="The minimum number of frames to hold before a jump is allowed.">
-                    <label for="st_minHold">minHoldFrames</label>
+                    <label for="stb_minHold">MINHOLDFRAMES</label>
                     <div class="flex items-center space-x-2">
-                        <input id="st_minHold" type="range" min="1" max="100" value="10" class="w-full">
-                        <span id="st_minHoldValue" class="text-sm text-white w-10 text-right">10</span>
+                        <input id="stb_minHold" type="range" min="1" max="100" value="1" class="w-full">
+                        <span id="stb_minHoldValue" class="text-sm text-white w-10 text-right">1</span>
                     </div>
                 </div>
                 <div class="param-group" title="The probability threshold (0.01 - 1.00) to break the hold on each frame after minHold.">
-                    <label for="st_threshold">jumpProbability</label>
+                    <label for="stb_threshold">jumpProbability</label>
                     <div class="flex items-center space-x-2">
-                        <input id="st_threshold" type="range" min="0.01" max="1.00" value="0.10" step="0.01" class="w-full">
-                        <span id="st_thresholdValue" class="text-sm text-white w-10 text-right">0.10</span>
+                        <input id="stb_threshold" type="range" min="0.01" max="1.00" value="0.10" step="0.01" class="w-full">
+                        <span id="stb_thresholdValue" class="text-sm text-white w-10 text-right">0.10</span>
                     </div>
+                </div>
+            </div>
+
+            <!-- Stateless Perlin Panel -->
+            <div id="panel-PERLIN" class="param-grid" style="display: none;">
+                <div class="col-span-full bg-emerald-950/40 border border-emerald-600/50 p-3 rounded-md mb-2 text-xs text-emerald-200">
+                    <strong>🌐 Stateless Spatial Noise: Continuous Gradient Quantization (Perlin):</strong> Generates continuous, smooth gradient curves evaluated statelessly per coordinate ($O(1)$ bidirectional access). To achieve phrased holds, the smooth floating-point gradient is <em>actively suppressed</em> through a rigid post-process quantization (<code class="bg-gray-800 px-1 py-0.5 rounded">floor(noise * steps)</code>). The architecture expends substantial ALU energy on 5th-degree polynomials only to mutilate and discard the resulting precision.
+                </div>
+                <div class="param-group" title="The number of fractal octaves summed together (0 to 10). 0 produces a flat zero baseline.">
+                    <label for="perlin_octaves">Octaves</label>
+                    <div class="flex items-center space-x-2">
+                        <input id="perlin_octaves" type="range" min="0" max="10" value="3" class="w-full">
+                        <span id="perlin_octavesValue" class="text-sm text-white w-10 text-right">3</span>
+                    </div>
+                </div>
+                <div class="param-group" title="The frequency multiplier applied to each successive octave (lacunarity).">
+                    <label for="perlin_freqMult">Frequency Multiplier</label>
+                    <div class="flex items-center space-x-2">
+                        <input id="perlin_freqMult" type="range" min="1.0" max="4.0" step="0.1" value="2.7" class="w-full">
+                        <span id="perlin_freqMultValue" class="text-sm text-white w-10 text-right">2.7</span>
+                    </div>
+                </div>
+                <div class="param-group" title="Spatial coordinate shift applied incrementally per octave (octave * offset) to decorrelate layers.">
+                    <label for="perlin_octaveOffset">Octave Offset</label>
+                    <input id="perlin_octaveOffset" type="number" value="684.2" step="0.1" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="The base fundamental frequency of the first octave.">
+                    <label for="perlin_baseFreq">Base Frequency</label>
+                    <input id="perlin_baseFreq" type="number" value="0.007" step="0.001" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="Amplitude decay multiplier per octave (persistence / roughness).">
+                    <label for="perlin_persistence">Persistence</label>
+                    <div class="flex items-center space-x-2">
+                        <input id="perlin_persistence" type="range" min="0.1" max="1.0" step="0.05" value="0.5" class="w-full">
+                        <span id="perlin_persistenceValue" class="text-sm text-white w-10 text-right">0.5</span>
+                    </div>
+                </div>
+                <div class="param-group" title="Quantization levels (steps) used to actively crush the continuous gradient into discrete plateaus.">
+                    <label for="perlin_quantSteps">Quantization Steps</label>
+                    <div class="flex items-center space-x-2">
+                        <input id="perlin_quantSteps" type="range" min="2" max="32" value="32" class="w-full">
+                        <span id="perlin_quantStepsValue" class="text-sm text-white w-10 text-right">32</span>
+                    </div>
+                </div>
+                <div class="param-group" title="If checked, runs the quantized plateau through a final PRNG hash to produce uncorrelated discrete steps.">
+                    <label for="perlin_finalRandSwitch">finalRandSwitch</label>
+                    <input id="perlin_finalRandSwitch" type="checkbox" checked class="w-6 h-6 bg-gray-700 text-blue-500 border-gray-600 rounded-md">
+                </div>
+            </div>
+
+            <!-- Stateless Worley Panel -->
+            <div id="panel-WORLEY" class="param-grid" style="display: none;">
+                <div class="col-span-full bg-emerald-950/40 border border-emerald-600/50 p-3 rounded-md mb-2 text-xs text-emerald-200">
+                    <strong>🌐 Stateless Spatial Noise: Cellular Distance Quantization (Worley):</strong> Evaluates euclidean distances to randomly positioned feature points across spatial cell neighborhoods ($O(1)$ bidirectional access). Phrased plateaus are achieved by discretizing the resulting non-linear distance fields (<code class="bg-gray-800 px-1 py-0.5 rounded">floor(distance * steps)</code>). Like Perlin noise, computing heavy distance metrics only to crush them into flat held integers demonstrates the topological friction of forcing continuous spatial fields into discrete temporal phrasing.
+                </div>
+                <div class="param-group" title="The number of fractal octaves summed together (0 to 10). 0 produces a flat zero baseline.">
+                    <label for="worley_octaves">Octaves</label>
+                    <div class="flex items-center space-x-2">
+                        <input id="worley_octaves" type="range" min="0" max="10" value="3" class="w-full">
+                        <span id="worley_octavesValue" class="text-sm text-white w-10 text-right">3</span>
+                    </div>
+                </div>
+                <div class="param-group" title="The frequency multiplier applied to each successive octave (lacunarity).">
+                    <label for="worley_freqMult">Frequency Multiplier</label>
+                    <div class="flex items-center space-x-2">
+                        <input id="worley_freqMult" type="range" min="1.0" max="4.0" step="0.1" value="2.4" class="w-full">
+                        <span id="worley_freqMultValue" class="text-sm text-white w-10 text-right">2.4</span>
+                    </div>
+                </div>
+                <div class="param-group" title="Spatial coordinate shift applied incrementally per octave (octave * offset) to decorrelate layers.">
+                    <label for="worley_octaveOffset">Octave Offset</label>
+                    <input id="worley_octaveOffset" type="number" value="79.3" step="0.1" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="The base fundamental frequency of the first octave.">
+                    <label for="worley_baseFreq">Base Frequency</label>
+                    <input id="worley_baseFreq" type="number" value="0.006" step="0.001" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="Distance metric feature output: F1 (nearest point), F2 (second nearest), or F2 - F1 (cell borders).">
+                    <label for="worley_metric">Cellular Metric</label>
+                    <select id="worley_metric" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                        <option value="F1" selected>F1 (Nearest Feature)</option>
+                        <option value="F2">F2 (Second Nearest)</option>
+                        <option value="F2_minus_F1">F2 - F1 (Cell Boundary)</option>
+                    </select>
+                </div>
+                <div class="param-group" title="Amplitude decay multiplier per octave (persistence / roughness).">
+                    <label for="worley_persistence">Persistence</label>
+                    <div class="flex items-center space-x-2">
+                        <input id="worley_persistence" type="range" min="0.1" max="1.0" step="0.05" value="0.35" class="w-full">
+                        <span id="worley_persistenceValue" class="text-sm text-white w-10 text-right">0.35</span>
+                    </div>
+                </div>
+                <div class="param-group" title="Quantization levels (steps) used to actively crush the continuous gradient into discrete plateaus.">
+                    <label for="worley_quantSteps">Quantization Steps</label>
+                    <div class="flex items-center space-x-2">
+                        <input id="worley_quantSteps" type="range" min="2" max="32" value="32" class="w-full">
+                        <span id="worley_quantStepsValue" class="text-sm text-white w-10 text-right">32 </span>
+                    </div>
+                </div>
+                <div class="param-group" title="If checked, runs the quantized plateau through a final PRNG hash to produce uncorrelated discrete steps.">
+                    <label for="worley_finalRandSwitch">finalRandSwitch</label>
+                    <input id="worley_finalRandSwitch" type="checkbox" checked class="w-6 h-6 bg-gray-700 text-blue-500 border-gray-600 rounded-md">
                 </div>
             </div>
 
@@ -382,8 +508,13 @@
             let animationFrameId = null;
 
             // --- Stateful Legacy Model Persistent Variables ---
-            let legacy_lastJumpFrame = 0;
-            let legacy_heldValue = Math.random();
+            // Paradigm A: Pre-Calculated Accumulator
+            let legacyA_nextJumpFrame = 0;
+            let legacyA_heldValue = Math.random();
+
+            // Paradigm B: Continuous Coin-Flip
+            let legacyB_lastJumpFrame = 0;
+            let legacyB_heldValue = Math.random();
 
             // --- Scroll Speed & Performance State ---
             let stepAccumulator = 0;
@@ -398,7 +529,11 @@
                 tm: {},
                 qs: {},
                 bd: {},
-                st: {}
+                st: {},
+                st_a: {},
+                st_b: {},
+                perlin: {},
+                worley: {}
             };
 
             // --- UI Elements ---
@@ -573,15 +708,52 @@
                     valueSeedOffset: parseBigIntInput('bd_valueSeedOffset', 78901n),
                 };
 
-                // --- Stateful Legacy Params ---
-                globalParams.st = {
-                    minHold: parseIntInput('st_minHold', 10),
-                    threshold: parseFloatInput('st_threshold', 0.10)
+                // --- Stateful Legacy Paradigm A Params ---
+                globalParams.st_a = {
+                    minHold: parseIntInput('sta_minHold', 10),
+                    maxHold: parseIntInput('sta_maxHold', 60)
+                };
+                if (globalParams.st_a.minHold > globalParams.st_a.maxHold) {
+                    globalParams.st_a.minHold = globalParams.st_a.maxHold;
+                    document.getElementById('sta_minHold').value = globalParams.st_a.minHold.toString();
+                    document.getElementById('sta_minHoldValue').textContent = globalParams.st_a.minHold.toString();
+                }
+
+                // --- Stateful Legacy Paradigm B Params ---
+                globalParams.st_b = {
+                    minHold: parseIntInput('stb_minHold', 10),
+                    threshold: parseFloatInput('stb_threshold', 0.10)
                 };
 
-                // Reset stateful state
-                legacy_lastJumpFrame = 0;
-                legacy_heldValue = Math.random();
+                // --- Stateless Perlin Params ---
+                globalParams.perlin = {
+                    octaves: parseIntInput('perlin_octaves', 4),
+                    freqMult: parseFloatInput('perlin_freqMult', 2.0),
+                    octaveOffset: parseFloatInput('perlin_octaveOffset', 53.1),
+                    baseFreq: parseFloatInput('perlin_baseFreq', 0.015),
+                    persistence: parseFloatInput('perlin_persistence', 0.5),
+                    quantSteps: parseIntInput('perlin_quantSteps', 8),
+                    finalRandSwitch: document.getElementById('perlin_finalRandSwitch').checked ? 1 : 0
+                };
+
+                // --- Stateless Worley Params ---
+                globalParams.worley = {
+                    octaves: parseIntInput('worley_octaves', 3),
+                    freqMult: parseFloatInput('worley_freqMult', 2.0),
+                    octaveOffset: parseFloatInput('worley_octaveOffset', 79.3),
+                    baseFreq: parseFloatInput('worley_baseFreq', 0.02),
+                    metric: document.getElementById('worley_metric').value,
+                    persistence: parseFloatInput('worley_persistence', 0.5),
+                    quantSteps: parseIntInput('worley_quantSteps', 8),
+                    finalRandSwitch: document.getElementById('worley_finalRandSwitch').checked ? 1 : 0
+                };
+
+                // Reset stateful states
+                legacyA_nextJumpFrame = 0;
+                legacyA_heldValue = Math.random();
+
+                legacyB_lastJumpFrame = 0;
+                legacyB_heldValue = Math.random();
                 
                 // Clear history on param change
                 frame = 0;
@@ -602,31 +774,35 @@ allTabs.forEach(tab => {
                     document.getElementById(`panel-${activeAlgorithm}`).style.display = 'grid';
 
                     // Legacy Stateful mode restrictions
-                    const isLegacy = (activeAlgorithm === 'LEGACY');
+                    const isLegacy = (activeAlgorithm === 'LEGACY_A' || activeAlgorithm === 'LEGACY_B');
+                    const isSpatial = (activeAlgorithm === 'PERLIN' || activeAlgorithm === 'WORLEY');
                     
-                    // 1. Disable reverse button
+                    // 1. Reverse button logic: Only disabled for Legacy Stateful modes. Spatial noise supports reverse!
                     if (isLegacy) {
                         if (playDirection === -1) playDirection = 1; // force forward
                         reverseButton.disabled = true;
                         reverseButton.style.opacity = '0.4';
-                        reverseButton.title = "Reverse playback is unsupported in Legacy Stateful mode.";
+                        reverseButton.title = "Reverse playback is unsupported in Legacy Stateful modes.";
                     } else {
                         reverseButton.disabled = false;
                         reverseButton.style.opacity = '1.0';
                         reverseButton.title = "Play/Pause the visualizer in the reverse direction.";
                     }
 
-                    // 2. Disable Global HPQ Time Controls in Legacy Mode
+                    // 2. Disable Global HPQ Time Controls in Legacy Mode and Spatial Noise modes
+                    const disableHPQ = isLegacy || isSpatial;
                     const hpqSection = document.getElementById('global_frameMultiplier').closest('.mt-6');
-                    frameMultiplierSlider.disabled = isLegacy;
-                    frameMultiplierInput.disabled = isLegacy;
-                    resetFrameMultiplierButton.disabled = isLegacy;
-                    document.getElementById('global_segBlockLength').disabled = isLegacy;
+                    frameMultiplierSlider.disabled = disableHPQ;
+                    frameMultiplierInput.disabled = disableHPQ;
+                    resetFrameMultiplierButton.disabled = disableHPQ;
+                    document.getElementById('global_segBlockLength').disabled = disableHPQ;
 
                     if (hpqSection) {
-                        hpqSection.style.opacity = isLegacy ? '0.4' : '1.0';
-                        hpqSection.style.pointerEvents = isLegacy ? 'none' : 'auto';
-                        hpqSection.title = isLegacy ? "HPQ Time Controls are unsupported in Legacy Stateful mode." : "";
+                        hpqSection.style.opacity = disableHPQ ? '0.4' : '1.0';
+                        hpqSection.style.pointerEvents = disableHPQ ? 'none' : 'auto';
+                        hpqSection.title = isLegacy 
+                            ? "HPQ Time Controls are unsupported in Legacy Stateful modes."
+                            : (isSpatial ? "HPQ Time Controls are unsupported in Stateless Spatial Noise (continuous gradients have no discrete phrase anchors)." : "");
                     }
 
                     updateParams();
@@ -706,6 +882,14 @@ allTabs.forEach(tab => {
             function rewindAnimation() {
                 frame = 0;
                 history = [];
+
+                // Reset stateful legacy variables to frame 0
+                legacyA_nextJumpFrame = 0;
+                legacyA_heldValue = Math.random();
+
+                legacyB_lastJumpFrame = 0;
+                legacyB_heldValue = Math.random();
+
                 ctx.clearRect(0, 0, canvasWidth, canvasHeight);
             }
 
@@ -1000,23 +1184,170 @@ allTabs.forEach(tab => {
                 return portable_rand_u64(final_seed);
             }
 
-            // --- Legacy Stateful Algorithm (Hold-and-Jump Loop) ---
-            function fpsr_legacy_base_js(frame, params) {
+            // --- Legacy Paradigm A: Pre-Calculated Accumulator ---
+            function fpsr_legacy_a_base_js(frame, params) {
+                frame = Number(frame);
+                const minHold = params.minHold || 10;
+                const maxHold = params.maxHold || 60;
+                const variance = Math.max(0, maxHold - minHold);
+
+                if (frame >= legacyA_nextJumpFrame) {
+                    legacyA_heldValue = Math.random();
+                    const randomDuration = minHold + Math.floor(Math.random() * (variance + 1));
+                    legacyA_nextJumpFrame = frame + randomDuration;
+                }
+                return legacyA_heldValue;
+            }
+
+            // --- Legacy Paradigm B: Continuous Coin-Flip ---
+            function fpsr_legacy_b_base_js(frame, params) {
                 frame = Number(frame);
                 const minHold = params.minHold || 10;
                 const probability = params.threshold || 0.10;
 
                 // Stateful check: "Are we there yet?" Tier 1 & Tier 2 evaluation
-                if ((frame - legacy_lastJumpFrame) > minHold) {
+                if ((frame - legacyB_lastJumpFrame) > minHold) {
                     if (Math.random() < probability) {
                         // Tier 3: Jump granted, write-cycles to memory
-                        legacy_heldValue = Math.random();
-                        legacy_lastJumpFrame = frame;
+                        legacyB_heldValue = Math.random();
+                        legacyB_lastJumpFrame = frame;
                     }
                 }
-                return legacy_heldValue;
+                return legacyB_heldValue;
             }
 
+            // --- Stateless Spatial Noise 1: 1D Perlin Noise (fBm) ---
+            function perlin1D_grad(intCoord) {
+                // Hashing integer coordinate to deterministic gradient [-1, 1]
+                const h = splitmix64(BigInt(Math.floor(intCoord)) + 0xB5526C09n);
+                return (Number(h & 0xFFFFn) / 32767.5) - 1.0;
+            }
+
+            function perlin1D_single(x) {
+                const i = Math.floor(x);
+                const f = x - i;
+                // Quintic fade polynomial: 6t^5 - 15t^4 + 10t^3
+                const s = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
+                const g0 = perlin1D_grad(i);
+                const g1 = perlin1D_grad(i + 1);
+                const d0 = g0 * f;
+                const d1 = g1 * (f - 1.0);
+                return d0 + s * (d1 - d0);
+            }
+
+            function fpsr_perlin_base_js(frame, params) {
+                const octaves = params.octaves;
+                if (octaves === 0) return 0.5;
+
+                const baseFreq = params.baseFreq || 0.015;
+                const freqMult = params.freqMult || 2.0;
+                const octaveOffset = params.octaveOffset || 53.1;
+                const persistence = params.persistence || 0.5;
+                const quantSteps = Math.max(2, params.quantSteps || 8);
+                const finalRandSwitch = params.finalRandSwitch || 0;
+
+                let total = 0.0;
+                let maxAmp = 0.0;
+                let currentAmp = 1.0;
+                let currentFreq = baseFreq;
+
+                for (let o = 0; o < octaves; o++) {
+                    const samplePos = Number(frame) * currentFreq + (o * octaveOffset);
+                    total += perlin1D_single(samplePos) * currentAmp;
+                    maxAmp += currentAmp;
+                    currentAmp *= persistence;
+                    currentFreq *= freqMult;
+                }
+
+                // Normalize from [-maxAmp, maxAmp] to [0, 1]
+                let normalized = (total / (maxAmp * 0.7) + 1.0) * 0.5;
+                normalized = Math.max(0.0, Math.min(1.0, normalized));
+
+                // The Crushed Gradient: active suppression via quantization
+                const quantized = Math.floor(normalized * quantSteps) / (quantSteps - 1);
+
+                if (finalRandSwitch) {
+                    const seed = BigInt(Math.floor(quantized * 1000000));
+                    return portable_rand_u64(seed);
+                }
+                return Math.max(0.0, Math.min(1.0, quantized));
+            }
+
+            // --- Stateless Spatial Noise 2: 1D Worley / Cellular Noise (fBm) ---
+            function worley1D_cell_point(cellIndex) {
+                // Random position of the feature point inside cell [cellIndex, cellIndex + 1]
+                const h = splitmix64(BigInt(Math.floor(cellIndex)) + 0x68E31DA4n);
+                return Number(h & 0xFFFFn) / 65535.0;
+            }
+
+            function worley1D_single(x, metric) {
+                const cell = Math.floor(x);
+                let d1 = 999.0;
+                let d2 = 999.0;
+
+                // Inspect neighboring 1D cells
+                for (let offset = -1; offset <= 2; offset++) {
+                    const neighborCell = cell + offset;
+                    const featurePos = neighborCell + worley1D_cell_point(neighborCell);
+                    const dist = Math.abs(x - featurePos);
+
+                    if (dist < d1) {
+                        d2 = d1;
+                        d1 = dist;
+                    } else if (dist < d2) {
+                        d2 = dist;
+                    }
+                }
+
+                let value = 0.0;
+                if (metric === 'F2') {
+                    value = d2;
+                } else if (metric === 'F2_minus_F1') {
+                    value = d2 - d1;
+                } else {
+                    value = d1; // default 'F1'
+                }
+                return Math.max(0.0, Math.min(1.0, value));
+            }
+
+            function fpsr_worley_base_js(frame, params) {
+                const octaves = params.octaves;
+                if (octaves === 0) return 0.5;
+
+                const baseFreq = params.baseFreq || 0.02;
+                const freqMult = params.freqMult || 2.0;
+                const octaveOffset = params.octaveOffset || 79.3;
+                const persistence = params.persistence || 0.5;
+                const metric = params.metric || 'F1';
+                const quantSteps = Math.max(2, params.quantSteps || 8);
+                const finalRandSwitch = params.finalRandSwitch || 0;
+
+                let total = 0.0;
+                let maxAmp = 0.0;
+                let currentAmp = 1.0;
+                let currentFreq = baseFreq;
+
+                for (let o = 0; o < octaves; o++) {
+                    const samplePos = Number(frame) * currentFreq + (o * octaveOffset);
+                    total += worley1D_single(samplePos, metric) * currentAmp;
+                    maxAmp += currentAmp;
+                    currentAmp *= persistence;
+                    currentFreq *= freqMult;
+                }
+
+                let normalized = maxAmp > 0 ? (total / maxAmp) : 0.0;
+                normalized = Math.max(0.0, Math.min(1.0, normalized));
+
+                // The Crushed Gradient: active suppression via quantization
+                const quantized = Math.floor(normalized * quantSteps) / (quantSteps - 1);
+
+                if (finalRandSwitch) {
+                    const seed = BigInt(Math.floor(quantized * 1000000));
+                    return portable_rand_u64(seed);
+                }
+                return Math.max(0.0, Math.min(1.0, quantized));
+            }
+            
             // --- Main Value Router ---
             // This function routes to the correct _base_js function.
             // The HPQ logic will call this function.
@@ -1030,8 +1361,14 @@ allTabs.forEach(tab => {
                         return fpsr_qs_base_js(frame, params.qs);
                     case 'BD':
                         return fpsr_bd_base_js(frame, params.bd);
-                    case 'LEGACY':
-                        return fpsr_legacy_base_js(frame, params.st);
+                    case 'LEGACY_A':
+                        return fpsr_legacy_a_base_js(frame, params.st_a);
+                    case 'LEGACY_B':
+                        return fpsr_legacy_b_base_js(frame, params.st_b);
+                    case 'PERLIN':
+                        return fpsr_perlin_base_js(frame, params.perlin);
+                    case 'WORLEY':
+                        return fpsr_worley_base_js(frame, params.worley);
                     default:
                         return 0.5;
                 }
