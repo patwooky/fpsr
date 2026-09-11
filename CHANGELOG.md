@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## Unreleased
 
+## [3.0.5] - 2026-09-11
+### Added
+- **Visualizer Benchmarks (`fpsr_visualiser_metrics.md`)**:
+  - Added benchmark profiles and detailed descriptions for Legacy Paradigm A (The Pre-Calculated Accumulator), Stateless Perlin, and Stateless Worley, detailing their mechanics and primary parameters impacting compute.
+  - Included mobile performance metrics on Android Chrome across all algorithm variants and BD stream/blocksize permutations.
+
+### Changed
+- **Visualizer Benchmarks (`fpsr_visualiser_metrics.md`)**:
+  - Renamed the baseline legacy entry to Legacy Paradigm B (The Continuous Coin-Flip) to align with visualizer comparison models.
+  - Refreshed all approximate performance throughput metrics (k/s) across VS Code Preview, Chrome, Firefox, and Android Chrome.
+  - Updated and populated the cross-platform consolidated metrics table, standardizing naming with FPS-R prefixes (`FPS-R SM`, `FPS-R TM`, `FPS-R QS`, `FPS-R BD`) and comparison models for clear identification.
+
 ## [3.0.4] - 2026-09-10
 ### Added
 - **Visualizer Comparison Models (`fpsr_demo.html`)**:

@@ -3,6 +3,8 @@
 
 Using the FPS-R Visualizer default settings for each algorithm, the following approximate performance metrics were observed.
 
+Frame Persistent Stateless Randomisation (FPS-R) is a novel algorithmic paradigm that produces a pseudo-random stream of discrete values with a uniform distribution and a configurable minimum hold duration. It is designed to be stateless, bidirectionally scrubbable, and performant across a wide range of platforms.
+
 ---
 ## PC Specifications
 | Specification | Details |
@@ -15,24 +17,32 @@ Using the FPS-R Visualizer default settings for each algorithm, the following ap
 
 ---
 ## Defining the Algorithms
-### Paradigm A (Legacy)
+
+**FPS-R Algorithms**
+
+FPS-R Stacked Modulo - FPS-R SM
+FPS-R Toggled Modulo - FPS-R TM
+FPS-R Quantised Switching - FPS-R QS
+FPS-R Bitwise Decode - FPS-R BD
+
+**Paradigm A (Legacy)**
 - **Description:** A stateful pre-calculated accumulator loop. Upon a state transition, it generates both a stochastic payload value and a random hold duration ($t_{\text{target}} = t_{\text{curr}} + \text{min\_hold} + \text{rand}() \times \text{variance}$). The system caches `next_jump_frame` in memory and performs a conditional boundary check (`current_frame >= next_jump_frame`) on every subsequent frame to determine when to recalculate. Forward-only path-dependent ($O(N)$ scrubbing penalty).
 - **Parameters with Maximum Impact on Compute:**
   - `MINHOLDFRAMES` (default: 1) / `MAXHOLDFRAMES` (default: 25): Governs the frequency of re-draw cycles. Shorter average holds increase the frequency of RNG payload and duration invocations.
 
-### Paradigm B (Legacy)
+**Paradigm B (Legacy)**
 - **Description:** A stateful continuous coin-flip loop. Generates a random payload value, then holds statically for at least `min_hold` baseline frames (Tier 1: Mandatory Baseline check, which cheaply bypasses RNG calls). Once that baseline elapses, it executes a continuous Bernoulli trial—a pseudo-random dice roll against a fixed probability threshold—on every single subsequent frame until a jump is triggered (Tier 2: The Probability Grind). Exhibits rapid geometric probability decay beyond `min_hold` and requires persistent memory locks (`last_jump_frame`, `held_value`).
 - **Parameters with Maximum Impact on Compute:**
   - `jumpProbability` / threshold (default: 0.10): Directly controls the duration of the Tier 2 "probability grind" loop (evaluating `Math.random() < threshold` on consecutive frames).
   - `MINHOLDFRAMES` (default: 1): Extends the cheap Tier 1 bypass phase where RNG evaluation is skipped.
 
-### Stateless Perlin
+**Stateless Perlin**
 - **Description:** A stateless 1D implementation of classical gradient noise evaluated using fractional Brownian motion (fBm). Computes quintic polynomial fade curves ($6t^5 - 15t^4 + 10t^3$) between integer grid coordinates hashed to 1D gradients. To achieve discrete phrased plateaus, the resulting continuous floating-point manifold is actively suppressed via uniform post-process quantization ($\lfloor \text{noise} \times \text{steps} \rfloor$). Stateless and bidirectionally scrubbable ($O(1)$ coordinate access).
 - **Parameters with Maximum Impact on Compute:**
   - `Octaves` (default: 3): Linearly multiplies the number of gradient hash lookups and quintic polynomial interpolations evaluated per coordinate ($2 \times \text{octaves}$ splitmix64 hashes per frame).
   - `Quantization Steps` (default: 32) & `finalRandSwitch` (default: checked): Post-processing quantization and optional final re-hash layer.
 
-### Stateless Worley
+**Stateless Worley**
 - **Description:** A stateless 1D implementation of Cellular / Voronoi noise evaluated using fractional Brownian motion (fBm). Divides coordinate space into unit cells, hashes a pseudo-random feature point into each cell, and calculates Euclidean distances from the sample point across a 4-cell neighborhood stencil to extract nearest-neighbor distance metrics ($F_1$, $F_2$, or $F_2 - F_1$). Like Perlin, flat plateaus are produced by quantizing the continuous distance field.
 - **Parameters with Maximum Impact on Compute:**
   - `Octaves` (default: 3): Directly multiplies neighborhood search passes ($4 \times \text{octaves}$ splitmix64 hashes per frame, twice the hash operations of Perlin).
@@ -54,14 +64,14 @@ Using the FPS-R Visualizer default settings for each algorithm, the following ap
 ### Algorithm Performance Metrics
 | Algorithm | Approximate Performance |
 | :--- | --- |
-Legacy Paradigm A | ~2, 430 k/s |
-Legacy Paradigm B | ~2, 320 k/s |
-Statelss Perlin | ~870 k/s |
-Stateless Worley | ~600 k/s |
-Stacked Modulo | ~1, 400 k/s |
-Toggled Modulo | ~1, 740 k/s |
-Quantised Switching | ~880 k/s |
-Bitwise Decode (default 3 streams, blocksize 64) | ~333 k/s |
+| Legacy Paradigm A | ~2, 483 k/s |
+| Legacy Paradigm B | ~2, 298 k/s |
+| Statelss Perlin | ~870 k/s |
+| Stateless Worley | ~600 k/s |
+| FPS-R SM | ~1, 385 k/s |
+| FPS-R TM | ~1, 834 k/s |
+| FPS-R QS | ~872 k/s |
+| FPS-R BD (default 3 streams, blocksize 64) | ~350 k/s |
 
 ### BD Breakdown by Streams and Blocksize
 | Streams | Blocksize | Approximate Performance |
@@ -85,11 +95,14 @@ Version 151.0.7922.34 (Official Build) (64-bit)
 ### Algorithm Performance Metrics
 | Algorithm | Approximate Performance |
 | :--- | --- |
-| Legacy Paradigm B | ~2, 800 k/s |
-| Stacked Modulo | ~1, 580 k/s |
-| Toggled Modulo | ~2, 130 k/s |
-| Quantised Switching | ~920 k/s |
-| Bitwise Decode (default 3 streams, blocksize 64) | ~388 k/s |
+| Legacy Paradigm A | ~2, 953 k/s |
+| Legacy Paradigm B | ~2, 587 k/s |
+| Statelss Perlin | ~1,016 k/s |
+| Stateless Worley | ~691 k/s |
+| FPS-R SM | ~1, 747 k/s |
+| FPS-R TM | ~2, 135 k/s |
+| FPS-R QS | ~956 k/s |
+| FPS-R BD (default 3 streams, blocksize 64) | ~390 k/s |
 
 ### BD Breakdown by Streams and Blocksize
 | Streams | Blocksize | Approximate Performance |
@@ -113,11 +126,14 @@ Version 153.0.3 (64-bit)
 ### Algorithm Performance Metrics
 | Algorithm | Approximate Performance |
 | :--- | --- |
-| Legacy Paradigm B | ~7, 600 k/s |
-| Stacked Modulo | ~1, 060 k/s |
-| Toggled Modulo | ~1, 750 k/s |
-| Quantised Switching | ~660 k/s |
-| Bitwise Decode (default 3 streams, blocksize 64) | ~352 k/s |
+| Legacy Paradigm A | ~7, 700 k/s |
+| Legacy Paradigm B | ~7, 100 k/s |
+| Statelss Perlin | ~392,000 k/s |
+| Stateless Worley | ~226, 000 k/s |
+| FPS-R SM | ~1, 092 k/s |
+| FPS-R TM | ~1, 838 k/s |
+| FPS-R QS | ~678 k/s |
+| FPS-R BD (default 3 streams, blocksize 64) | ~328 k/s |
 
 ### BD Breakdown by Streams and Blocksize
 | Streams | Blocksize | Approximate Performance |
@@ -151,11 +167,14 @@ Version 151.0.7922.83
 ### Algorithm Performance Metrics
 | Algorithm | Approximate Performance |
 | :--- | --- |
-| Legacy Paradigm B | ~2, 930 k/s |
-| Stacked Modulo | ~1, 830 k/s |
-| Toggled Modulo | ~2, 280 k/s |
-| Quantised Switching | ~1, 080 k/s |
-| Bitwise Decode (default 3 streams, blocksize 64) | ~548 k/s |
+| Legacy Paradigm A | ~3, 010 k/s |$$
+| Legacy Paradigm B | ~2, 724 k/s |
+| Statelss Perlin | ~1, 076 k/s |
+| Stateless Worley | ~725 k/s |
+| FPS-R SM | ~1, 873 k/s |
+| FPS-R TM | ~2, 296 k/s |
+| FPS-R QS | ~1, 125 k/s |
+| FPS-R BD (default 3 streams, blocksize 64) | ~423 k/s |
 
 ### BD Breakdown by Streams and Blocksize
 | Streams | Blocksize | Approximate Performance |
@@ -174,8 +193,11 @@ Version 151.0.7922.83
 ## A Consolidated Table of Approximate Performance Metrics (k/s) Across Platforms
 | Algorithm | VS Code Preview | Chrome | Firefox | Android Chrome |
 | :--- | ---: | ---: | ---: | ---: |
-| Legacy Paradigm B | 2,300 | 2,800 | 7,600 | 2,930 |
-| Stacked Modulo | 1,400 | 1,580 | 1,060 | 1,830 |
-| Toggled Modulo | 1,740 | 2,130 | 1,750 | 2,280 |
-| Quantised Switching | 880 | 920 | 660 | 1,080 |
-| Bitwise Decode (3 streams, blocksize 64) | 333 | 388 | 352 | 548 |
+| Legacy Paradigm A | 2,483 | 2,953 | 7,700 | 3,010 |
+| Legacy Paradigm B | 2,298 | 2,587 | 7,100 | 2,724 |
+| Stateless Perlin | 870 | 1,016 | 392,000 | 1,076 |
+| Stateless Worley | 600 | 691 | 226,000 | 725 |
+| FPS-R SM | 1,385 | 1,747 | 1,092 | 1,873 |
+| FPS-R TM | 1,834 | 2,135 | 1,838 | 2,296 |
+| FPS-R QS | 872 | 956 | 678 | 1,125 |
+| FPS-R BD (default 3 streams, blocksize 64) | 350 | 390 | 328 | 423 |
