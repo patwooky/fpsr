@@ -214,7 +214,7 @@ Version 151.0.7922.83
 | FPS-R QS | ~907.75 |
 | FPS-R BD | ~372.75 |
 
-
+## Performance Relative to Legacy Paradigm A Across Platforms
 Below, each result is normalized to **Legacy Paradigm A on the same platform**:
 $$
 R_{i,j}=\frac{\text{performance of algorithm }i\text{ on platform }j}
