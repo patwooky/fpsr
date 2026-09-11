@@ -126,14 +126,14 @@ Version 153.0.3 (64-bit)
 ### Algorithm Performance Metrics
 | Algorithm | Approximate Performance |
 | :--- | --- |
-| Legacy Paradigm A | ~7, 700 k/s |
-| Legacy Paradigm B | ~7, 100 k/s |
-| Statelss Perlin | ~392,000 k/s |
-| Stateless Worley | ~226, 000 k/s |
-| FPS-R SM | ~1, 092 k/s |
-| FPS-R TM | ~1, 838 k/s |
+| Legacy Paradigm A | ~7, 710 k/s |
+| Legacy Paradigm B | ~7, 300 k/s |
+| Statelss Perlin | ~405 k/s |
+| Stateless Worley | ~226 k/s |
+| FPS-R SM | ~1, 075 k/s |
+| FPS-R TM | ~1, 826 k/s |
 | FPS-R QS | ~678 k/s |
-| FPS-R BD (default 3 streams, blocksize 64) | ~328 k/s |
+| FPS-R BD (default 3 streams, blocksize 64) | ~348 k/s |
 
 ### BD Breakdown by Streams and Blocksize
 | Streams | Blocksize | Approximate Performance |
@@ -193,11 +193,67 @@ Version 151.0.7922.83
 ## A Consolidated Table of Approximate Performance Metrics (k/s) Across Platforms
 | Algorithm | VS Code Preview | Chrome | Firefox | Android Chrome |
 | :--- | ---: | ---: | ---: | ---: |
-| Legacy Paradigm A | 2,483 | 2,953 | 7,700 | 3,010 |
-| Legacy Paradigm B | 2,298 | 2,587 | 7,100 | 2,724 |
-| Stateless Perlin | 870 | 1,016 | 392,000 | 1,076 |
-| Stateless Worley | 600 | 691 | 226,000 | 725 |
-| FPS-R SM | 1,385 | 1,747 | 1,092 | 1,873 |
-| FPS-R TM | 1,834 | 2,135 | 1,838 | 2,296 |
-| FPS-R QS | 872 | 956 | 678 | 1,125 |
-| FPS-R BD (default 3 streams, blocksize 64) | 350 | 390 | 328 | 423 |
+| Legacy Paradigm A | ~2,483 | ~2,953 | ~7,710 | ~3,010 |
+| Legacy Paradigm B | ~2,298 | ~2,587 | ~7,300 | ~2,724 |
+| Stateless Perlin | ~870 | ~1,016 | ~405 | ~1,076 |
+| Stateless Worley | ~600 | ~691 | ~226 | ~725 |
+| FPS-R SM | ~1,385 | ~1,747 | ~1,092 | ~1,873 |
+| FPS-R TM | ~1,834 | ~2,135 | ~1,838 | ~2,296 |
+| FPS-R QS | ~872 | ~956 | ~678 | ~1,125 |
+| FPS-R BD (default 3 streams, blocksize 64) | ~350 | ~390 | ~328 | ~423 |
+
+## Averaged Performance Metrics (k/s) Across Platforms
+| Algorithm | Average Performance |
+| :--- | ---: | 
+| Legacy Paradigm A | ~4,039.00 |
+| Legacy Paradigm B | ~3,727.25 |
+| Stateless Perlin | ~841.75 |
+| Stateless Worley | ~560.50 |
+| FPS-R SM | ~1,524.25 |
+| FPS-R TM | ~2,025.75 |
+| FPS-R QS | ~907.75 |
+| FPS-R BD | ~372.75 |
+
+
+Below, each result is normalized to **Legacy Paradigm A on the same platform**:
+$$
+R_{i,j}=\frac{\text{performance of algorithm }i\text{ on platform }j}
+{\text{Legacy A performance on platform }j}
+$$
+Thus, Legacy A is \(1.000\), or \(100\%\), on every platform. A value of \(0.75\) means the algorithm achieves 75% of Legacy A’s throughput on that platform.
+
+| Algorithm | VS Code Preview | Chrome | Firefox | Android Chrome | Median ratio |
+|---|---:|---:|---:|---:|---:|
+| Legacy Paradigm A | 1.000 / 100.0% | 1.000 / 100.0% | 1.000 / 100.0% | 1.000 / 100.0% | **1.000 / 100.0%** |
+| Legacy Paradigm B | 0.926 / 92.6% | 0.876 / 87.6% | 0.947 / 94.7% | 0.905 / 90.5% | **0.915 / 91.5%** |
+| Stateless Perlin | 0.350 / 35.0% | 0.344 / 34.4% | 0.053 / 5.3% | 0.358 / 35.8% | **0.347 / 34.7%** |
+| Stateless Worley | 0.242 / 24.2% | 0.234 / 23.4% | 0.029 / 2.9% | 0.241 / 24.1% | **0.237 / 23.7%** |
+| FPS-R SM | 0.557 / 55.7% | 0.591 / 59.1% | 0.142 / 14.2% | 0.622 / 62.2% | **0.574 / 57.4%** |
+| FPS-R TM | 0.739 / 73.9% | 0.723 / 72.3% | 0.238 / 23.8% | 0.763 / 76.3% | **0.731 / 73.1%** |
+| FPS-R QS | 0.351 / 35.1% | 0.324 / 32.4% | 0.088 / 8.8% | 0.374 / 37.4% | **0.337 / 33.7%** |
+| FPS-R BD | 0.141 / 14.1% | 0.132 / 13.2% | 0.043 / 4.3% | 0.141 / 14.1% | **0.136 / 13.6%** |
+
+The median-normalized ranking is therefore:
+1. Legacy Paradigm A — **100.0%**
+2. Legacy Paradigm B — **91.5%**
+3. FPS-R TM — **73.1%**
+4. FPS-R SM — **57.4%**
+5. Stateless Perlin — **34.7%**
+6. FPS-R QS — **33.7%**
+7. Stateless Worley — **23.7%**
+8. FPS-R BD — **13.6%**
+
+The most striking result is that **FPS-R TM is consistently strong outside Firefox**:
+- VS Code Preview: 73.9% of Legacy A
+- Chrome: 72.3%
+- Android Chrome: 76.3%
+
+Firefox is the exception at 23.8%. This suggests that FPS-R TM has a relatively stable cross-platform relationship with Legacy A, while Firefox’s implementation strongly favors the legacy stateful loop.
+
+For a generalized intuition, you could summarize your FPS-R variants as:
+- **FPS-R TM:** roughly three-quarters as fast as Legacy A on most platforms
+- **FPS-R SM:** roughly three-fifths as fast
+- **FPS-R QS:** roughly one-third as fast
+- **FPS-R BD:** roughly one-seventh as fast
+
+The median ratio is particularly useful here because it describes the “typical platform relationship” without allowing Firefox’s Legacy A result to dominate the conclusion.
