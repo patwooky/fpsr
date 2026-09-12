@@ -167,7 +167,7 @@ Version 151.0.7922.83
 ### Algorithm Performance Metrics
 | Algorithm | Approximate Performance |
 | :--- | --- |
-| Legacy Paradigm A | ~3, 010 k/s |$$
+| Legacy Paradigm A | ~3, 010 k/s |
 | Legacy Paradigm B | ~2, 724 k/s |
 | Statelss Perlin | ~1, 076 k/s |
 | Stateless Worley | ~725 k/s |
@@ -190,31 +190,66 @@ Version 151.0.7922.83
 | 7 | 30 | ~210 k/s |
 |   | 60 | ~200 k/s |
 
-## A Consolidated Table of Approximate Performance Metrics (k/s) Across Platforms
-| Algorithm | VS Code Preview | Chrome | Firefox | Android Chrome |
-| :--- | ---: | ---: | ---: | ---: |
-| Legacy Paradigm A | ~2,483 | ~2,953 | ~7,710 | ~3,010 |
-| Legacy Paradigm B | ~2,298 | ~2,587 | ~7,300 | ~2,724 |
-| Stateless Perlin | ~870 | ~1,016 | ~405 | ~1,076 |
-| Stateless Worley | ~600 | ~691 | ~226 | ~725 |
-| FPS-R SM | ~1,385 | ~1,747 | ~1,092 | ~1,873 |
-| FPS-R TM | ~1,834 | ~2,135 | ~1,838 | ~2,296 |
-| FPS-R QS | ~872 | ~956 | ~678 | ~1,125 |
-| FPS-R BD (default 3 streams, blocksize 64) | ~350 | ~390 | ~328 | ~423 |
+## Firefox Android Browser
+### Firefox Version Information
+Firefox mobile version
+128.0.3 (Build #2016034663)
 
-## Averaged Performance Metrics (k/s) Across Platforms
+### Algorithm Performance Metrics
+| Algorithm | Approximate Performance |
+| :--- | --- |
+| Legacy Paradigm A | ~3, 550 k/s |
+| Legacy Paradigm B | ~3, 360 k/s |
+| Statelss Perlin | ~320.3 k/s |
+| Stateless Worley | ~183.8 k/s |
+| FPS-R SM | ~855.3 k/s |
+| FPS-R TM | ~1, 213 k/s |
+| FPS-R QS | ~435.5 k/s |
+| FPS-R BD (default 3 streams, blocksize 64) | ~245.6 k/s |
+
+## Comet Browser (Android)
+### Comet Version Information
+Version 1.5.0
+
+### Algorithm Performance Metrics
+| Algorithm | Approximate Performance |
+| :--- | --- |
+| Legacy Paradigm A | ~3, 188 k/s |
+| Legacy Paradigm B | ~2, 583 k/s |
+| Statelss Perlin | ~871.8 k/s |
+| Stateless Worley | ~590.1 k/s |
+| FPS-R SM | ~1, 537.1 k/s |
+| FPS-R TM | ~1, 923.4 k/s |
+| FPS-R QS | ~930.2 k/s |
+| FPS-R BD (default 3 streams, blocksize 64) | ~308.3 k/s |
+
+---
+
+### Table 1: Cross-Platform Throughput (FPS) for Various Processing Paradigms
+| Algorithm | VS Code Preview | Chrome | Firefox | Android Chrome | Android Firefox | Android Comet |
+| :--- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Legacy Paradigm A | ~2,483 | ~2,953 | ~7,710 | ~3,010 | ~3,550.0 | ~3,188.0 |
+| Legacy Paradigm B | ~2,298 | ~2,587 | ~7,300 | ~2,724 | ~3,360.0 | ~2,583.0 |
+| Stateless Perlin | ~870 | ~1,016 | ~405 | ~1,076 | ~320.3 | ~871.8 |
+| Stateless Worley | ~600 | ~691 | ~226 | ~725 | ~183.8 | ~590.1 |
+| FPS-R SM | ~1,385 | ~1,747 | ~1,092 | ~1,873 | ~855.3 | ~1,537.1 |
+| FPS-R TM | ~1,834 | ~2,135 | ~1,838 | ~2,296 | ~1,213.0 | ~1,923.4 |
+| FPS-R QS | ~872 | ~956 | ~678 | ~1,125 | ~435.5 | ~930.2 |
+| FPS-R BD (default 3 streams, blocksize 64) | ~350 | ~390 | ~328 | ~423 | ~245.6 | ~308.3 |
+
+### Table 2: Average Throughput Across Platforms
 | Algorithm | Average Performance |
-| :--- | ---: | 
-| Legacy Paradigm A | ~4,039.00 |
-| Legacy Paradigm B | ~3,727.25 |
-| Stateless Perlin | ~841.75 |
-| Stateless Worley | ~560.50 |
-| FPS-R SM | ~1,524.25 |
-| FPS-R TM | ~2,025.75 |
-| FPS-R QS | ~907.75 |
-| FPS-R BD | ~372.75 |
+| :--- | ---: |
+| Legacy Paradigm A | ~3,815.67 |
+| Legacy Paradigm B | ~3,475.33 |
+| Stateless Perlin | ~759.85 |
+| Stateless Worley | ~502.65 |
+| FPS-R SM | ~1,414.90 |
+| FPS-R TM | ~1,873.23 |
+| FPS-R QS | ~832.78 |
+| FPS-R BD | ~340.82 |
 
-## Performance Relative to Legacy Paradigm A Across Platforms
+## Table 3: Normalized Performance Relative to Legacy Paradigm A
 Below, each result is normalized to **Legacy Paradigm A on the same platform**:
 $$
 R_{i,j}=\frac{\text{performance of algorithm }i\text{ on platform }j}
@@ -222,31 +257,32 @@ R_{i,j}=\frac{\text{performance of algorithm }i\text{ on platform }j}
 $$
 Thus, Legacy A is \(1.000\), or \(100\%\), on every platform. A value of \(0.75\) means the algorithm achieves 75% of Legacy A’s throughput on that platform.
 
-| Algorithm | VS Code Preview | Chrome | Firefox | Android Chrome | Median ratio |
-|---|---:|---:|---:|---:|---:|
-| Legacy Paradigm A | 1.000 / 100.0% | 1.000 / 100.0% | 1.000 / 100.0% | 1.000 / 100.0% | **1.000 / 100.0%** |
-| Legacy Paradigm B | 0.926 / 92.6% | 0.876 / 87.6% | 0.947 / 94.7% | 0.905 / 90.5% | **0.915 / 91.5%** |
-| Stateless Perlin | 0.350 / 35.0% | 0.344 / 34.4% | 0.053 / 5.3% | 0.358 / 35.8% | **0.347 / 34.7%** |
-| Stateless Worley | 0.242 / 24.2% | 0.234 / 23.4% | 0.029 / 2.9% | 0.241 / 24.1% | **0.237 / 23.7%** |
-| FPS-R SM | 0.557 / 55.7% | 0.591 / 59.1% | 0.142 / 14.2% | 0.622 / 62.2% | **0.574 / 57.4%** |
-| FPS-R TM | 0.739 / 73.9% | 0.723 / 72.3% | 0.238 / 23.8% | 0.763 / 76.3% | **0.731 / 73.1%** |
-| FPS-R QS | 0.351 / 35.1% | 0.324 / 32.4% | 0.088 / 8.8% | 0.374 / 37.4% | **0.337 / 33.7%** |
-| FPS-R BD | 0.141 / 14.1% | 0.132 / 13.2% | 0.043 / 4.3% | 0.141 / 14.1% | **0.136 / 13.6%** |
+| Algorithm | VS Code Preview | Chrome | Firefox | Android Chrome | Android Firefox | Android Comet | Median ratio |
+| :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Legacy Paradigm A | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 |
+| Legacy Paradigm B | 0.925 | 0.876 | 0.947 | 0.905 | 0.946 | 0.810 | 0.915 |
+| Stateless Perlin | 0.350 | 0.344 | 0.053 | 0.357 | 0.090 | 0.273 | 0.309 |
+| Stateless Worley | 0.242 | 0.234 | 0.029 | 0.241 | 0.052 | 0.185 | 0.210 |
+| FPS-R SM | 0.558 | 0.592 | 0.142 | 0.622 | 0.241 | 0.482 | 0.520 |
+| FPS-R TM | 0.739 | 0.723 | 0.238 | 0.763 | 0.342 | 0.603 | 0.663 |
+| FPS-R QS | 0.351 | 0.324 | 0.088 | 0.374 | 0.123 | 0.292 | 0.308 |
+| FPS-R BD | 0.141 | 0.132 | 0.043 | 0.141 | 0.069 | 0.097 | 0.114 |
 
 The median-normalized ranking is therefore:
-1. Legacy Paradigm A — **100.0%**
-2. Legacy Paradigm B — **91.5%**
-3. FPS-R TM — **73.1%**
-4. FPS-R SM — **57.4%**
-5. Stateless Perlin — **34.7%**
-6. FPS-R QS — **33.7%**
-7. Stateless Worley — **23.7%**
-8. FPS-R BD — **13.6%**
+1. Legacy Paradigm A    100.0%
+2. Legacy Paradigm B     91.5%
+3. FPS-R TM              66.3%
+4. FPS-R SM              52.0%
+5. Stateless Perlin      30.9%
+6. FPS-R QS              30.8%
+7. Stateless Worley      21.0%
+8. FPS-R BD              11.4%
 
-The most striking result is that **FPS-R TM is consistently strong outside Firefox**:
+The most striking result is that **FPS-R TM is consistently strong outside Firefox Variant**. The median ratio of FPS-R TM to Legacy A is 66.3%, but the individual platform ratios are:
 - VS Code Preview: 73.9% of Legacy A
 - Chrome: 72.3%
 - Android Chrome: 76.3%
+- Android Comet: 60.3%
 
 Firefox is the exception at 23.8%. This suggests that FPS-R TM has a relatively stable cross-platform relationship with Legacy A, while Firefox’s implementation strongly favors the legacy stateful loop.
 
@@ -256,4 +292,4 @@ For a generalized intuition, you could summarize your FPS-R variants as:
 - **FPS-R QS:** roughly one-third as fast
 - **FPS-R BD:** roughly one-seventh as fast
 
-The median ratio is particularly useful here because it describes the “typical platform relationship” without allowing Firefox’s Legacy A result to dominate the conclusion.
+The median ratio is particularly useful here because it describes the “typical platform relationship” without allowing Firefox’s Legacy A result to dominate the conclusion.a
