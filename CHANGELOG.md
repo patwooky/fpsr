@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## Unreleased
 
+## [3.0.6] - 2026-09-14
+### Added
+- **Level of Detail (LOD) System (`fpsr_demo.html`)**:
+  - Added dedicated LOD control sliders (0–2) to each FPS-R algorithm panel (SM, TM, QS, BD).
+  - Ported the reference analytical LOD pipeline from `fpsr_algo_wrap_reference.c` into JavaScript:
+    - **LOD 0**: Pure scalar evaluation (`randVal`).
+    - **LOD 1**: Step-difference jump detection against $t - 1$ (`has_changed`, `randVal_previous`).
+    - **LOD 2**: Two-phase boundary search (`findChangeBoundary`) using exponential probing followed by binary search to locate temporal anchor frames (`last_changed_frame`, `next_changed_frame`, `randVal_next_changed_frame`) and compute normalized `hold_progress` ($[0.0, 1.0]$).
+  - Added algorithm-specific wrapper functions (`fpsr_sm_get_details`, `fpsr_tm_get_details`, `fpsr_qs_get_details`, `fpsr_bd_get_details`) fusing HPQ time coordinate remapping (Tape Varispeed & Telescopic Extension) with the LOD evaluation decorator.
+
+### Changed
+- **Visualizer Architecture (`fpsr_demo.html`)**:
+  - Decentralized HPQ time scaling out of the monolithic `getFpsrValue` function into each respective algorithm's wrapper function, mirroring the C reference architecture.
+  - Replaced `routeToBaseFunction` with a unified evaluation dispatcher (`getFpsrDetails`), enabling live profiling of the computational cost differences between LOD 0, LOD 1, and LOD 2 via the rolling **FPS-R Evals/Sec** meter.
+  - Updated UI reset handler and parameter ingestion to preserve and reset algorithm-specific LOD slider levels.
+
 ## [3.0.5] - 2026-09-11
 ### Added
 - **Visualizer Benchmarks (`fpsr_visualiser_metrics.md`)**:
