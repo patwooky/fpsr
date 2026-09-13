@@ -148,6 +148,13 @@
             
             <!-- SM Panel -->
             <div id="panel-SM" class="param-grid">
+                <div class="param-group" title="The Level of Detail (LOD). 0 = Value only, 1 = Value + Change Detection, 2 = Value + Progress + Boundary Search.">
+                    <label for="sm_lod">Level of Detail (LOD)</label>
+                    <div class="flex items-center space-x-2">
+                        <input id="sm_lod" type="range" min="0" max="2" value="0" step="1" class="w-full">
+                        <span id="sm_lodValue" class="text-sm text-white font-mono w-6 text-right">0</span>
+                    </div>
+                </div>
                 <div class="param-group" title="The minimum duration (in frames) for a value to hold.">
                     <label for="sm_minHold">minHoldFrames</label>
                     <div class="flex items-center space-x-2">
@@ -185,6 +192,13 @@
 
             <!-- TM Panel -->
             <div id="panel-TM" class="param-grid" style="display: none;">
+                <div class="param-group" title="The Level of Detail (LOD). 0 = Value only, 1 = Value + Change Detection, 2 = Value + Progress + Boundary Search.">
+                    <label for="tm_lod">Level of Detail (LOD)</label>
+                    <div class="flex items-center space-x-2">
+                        <input id="tm_lod" type="range" min="0" max="2" value="0" step="1" class="w-full">
+                        <span id="tm_lodValue" class="text-sm text-white font-mono w-6 text-right">0</span>
+                    </div>
+                </div>
                 <div class="param-group" title="The first hold duration (in frames).">
                     <label for="tm_periodA">periodA</label>
                     <div class="flex items-center space-x-2">
@@ -222,6 +236,13 @@
 
             <!-- QS Panel -->
             <div id="panel-QS" class="param-grid" style="display: none;">
+                <div class="param-group" title="The Level of Detail (LOD). 0 = Value only, 1 = Value + Change Detection, 2 = Value + Progress + Boundary Search.">
+                    <label for="qs_lod">Level of Detail (LOD)</label>
+                    <div class="flex items-center space-x-2">
+                        <input id="qs_lod" type="range" min="0" max="2" value="0" step="1" class="w-full">
+                        <span id="qs_lodValue" class="text-sm text-white font-mono w-6 text-right">0</span>
+                    </div>
+                </div>
                 <div class="param-group" title="The base frequency for the sine waves.">
                     <label for="qs_baseWaveFreq">baseWaveFreq</label>
                     <input id="qs_baseWaveFreq" type="number" value="0.0015" step="0.001" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
@@ -274,6 +295,13 @@
 
             <!-- BD Panel -->
             <div id="panel-BD" class="param-grid" style="display: none;">
+                <div class="param-group" title="The Level of Detail (LOD). 0 = Value only, 1 = Value + Change Detection, 2 = Value + Progress + Boundary Search.">
+                    <label for="bd_lod">Level of Detail (LOD)</label>
+                    <div class="flex items-center space-x-2">
+                        <input id="bd_lod" type="range" min="0" max="2" value="0" step="1" class="w-full">
+                        <span id="bd_lodValue" class="text-sm text-white font-mono w-6 text-right">0</span>
+                    </div>
+                </div>
                 <div class="param-group" title="The size of the macro-rhythm in frames. Defines the 'master loop' size.">
                     <label for="bd_blockSize">blockSize</label>
                     <input id="bd_blockSize" type="number" value="64" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
@@ -650,6 +678,7 @@
 
                 // --- SM Params ---
                 globalParams.sm = {
+                    lod: parseIntInput('sm_lod', 0),
                     minHold: parseBigIntInput('sm_minHold', 5n),
                     maxHold: parseBigIntInput('sm_maxHold', 60n),
                     reseedInterval: parseBigIntInput('sm_reseed', 120n),
@@ -665,6 +694,7 @@
 
                 // --- TM Params ---
                 globalParams.tm = {
+                    lod: parseIntInput('tm_lod', 0),
                     periodA: parseBigIntInput('tm_periodA', 8n),
                     periodB: parseBigIntInput('tm_periodB', 5n),
                     periodSwitch: parseBigIntInput('tm_periodSwitch', 6n),
@@ -675,6 +705,7 @@
                 
                 // --- QS Params ---
                 globalParams.qs = {
+                    lod: parseIntInput('qs_lod', 0),
                     baseWaveFreq: parseFloatInput('qs_baseWaveFreq', 0.012),
                     stream2FreqMult: parseFloatInput('qs_stream2FreqMult', 3.1),
                     quantLevelsMinMax: [
@@ -698,6 +729,7 @@
 
                 // --- BD Params ---
                 globalParams.bd = {
+                    lod: parseIntInput('bd_lod', 0),
                     blockSize: parseBigIntInput('bd_blockSize', 64n),
                     streamsNumber: parseIntInput('bd_streamsNumber', 3),
                     streamsOffset: parseBigIntInput('bd_streamsOffset', 10n),
@@ -822,6 +854,16 @@ allTabs.forEach(tab => {
                 document.getElementById('bd_streamsOffset').value = Math.floor(Math.random() * 100);
                 document.getElementById('bd_valueSeedOffset').value = Math.floor(Math.random() * 10000);
                 
+                // Reset LODs to 0
+                ['sm_lod', 'tm_lod', 'qs_lod', 'bd_lod'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.value = 0;
+                        const vSpan = document.getElementById(id + 'Value');
+                        if (vSpan) vSpan.textContent = '0';
+                    }
+                });
+
                 // Reset global controls
                 document.getElementById('global_frameMultiplier').value = 1.0;
                 document.getElementById('global_frameMultiplierInput').value = "1.00";
@@ -1184,6 +1226,205 @@ allTabs.forEach(tab => {
                 return portable_rand_u64(final_seed);
             }
 
+            // --- Two-Phase Boundary Search Helper for LOD 2 ---
+            // Uses exponential probing followed by binary search matching fpsr_algo_wrap_reference.c
+            function findChangeBoundary(evalFunc, startFrame, direction, maxSearchFrames, targetVal) {
+                let low = 0;
+                let high = 1;
+
+                // Phase 1: Exponential probe
+                while (high <= maxSearchFrames) {
+                    const testFrame = startFrame + BigInt(direction * high);
+                    const out = evalFunc(testFrame);
+                    if (out.randVal !== targetVal) {
+                        break;
+                    }
+                    low = high;
+                    high *= 2;
+                }
+
+                if (high > maxSearchFrames) {
+                    const testFrame = startFrame + BigInt(direction * maxSearchFrames);
+                    const out = evalFunc(testFrame);
+                    if (out.randVal === targetVal) {
+                        return { frame: Number(testFrame), val: out.randVal };
+                    }
+                    high = maxSearchFrames;
+                }
+
+                // Phase 2: Binary search between low and high
+                let boundaryOffset = high;
+                let boundaryVal = evalFunc(startFrame + BigInt(direction * high)).randVal;
+
+                while (low <= high) {
+                    const mid = Math.floor((low + high) / 2);
+                    const testFrame = startFrame + BigInt(direction * mid);
+                    const out = evalFunc(testFrame);
+
+                    if (out.randVal !== targetVal) {
+                        boundaryOffset = mid;
+                        boundaryVal = out.randVal;
+                        high = mid - 1; // Seek closer mismatch
+                    } else {
+                        low = mid + 1;
+                    }
+                }
+
+                return {
+                    frame: Number(startFrame + BigInt(direction * boundaryOffset)),
+                    val: boundaryVal
+                };
+            }
+
+            // Generic LOD Decorator executing LOD 0, 1, and 2 calculations
+            function executeWithLod(evalLod0Func, appFrame, lod, maxSearchFrames = 300) {
+                const appFrameBigInt = BigInt(appFrame);
+                const baseOutput = evalLod0Func(appFrameBigInt);
+
+                let output = {
+                    randVal: typeof baseOutput === 'object' ? baseOutput.randVal : baseOutput,
+                    has_changed: 0,
+                    randVal_previous: 0.0,
+                    hold_progress: 0.0,
+                    last_changed_frame: Number(appFrameBigInt),
+                    next_changed_frame: Number(appFrameBigInt),
+                    randVal_next_changed_frame: 0.0,
+                    randStreams: (baseOutput && baseOutput.randStreams) ? baseOutput.randStreams : [0.0, 0.0],
+                    selected_stream_idx: (baseOutput && baseOutput.selected_stream_idx !== undefined) ? baseOutput.selected_stream_idx : 0
+                };
+
+                if (lod <= 0) return output;
+
+                // --- LOD 1: Previous value & change detection ---
+                const prevBase = evalLod0Func(appFrameBigInt - 1n);
+                output.randVal_previous = typeof prevBase === 'object' ? prevBase.randVal : prevBase;
+                output.has_changed = (output.randVal !== output.randVal_previous) ? 1 : 0;
+
+                if (lod <= 1) return output;
+
+                // --- LOD 2: Boundary search & progress calculation ---
+                const evalAdapter = (f) => {
+                    const res = evalLod0Func(f);
+                    return { randVal: typeof res === 'object' ? res.randVal : res };
+                };
+
+                // Backward search for last changed frame
+                const backwardResult = findChangeBoundary(evalAdapter, appFrameBigInt, -1, maxSearchFrames, output.randVal);
+                output.last_changed_frame = backwardResult.frame + 1;
+
+                // Forward search for next changed frame
+                const forwardResult = findChangeBoundary(evalAdapter, appFrameBigInt, 1, maxSearchFrames, output.randVal);
+                output.next_changed_frame = forwardResult.frame;
+                output.randVal_next_changed_frame = forwardResult.val;
+
+                // Progress calculation normalized to [0, 1]
+                const totalSpan = output.next_changed_frame - output.last_changed_frame;
+                if (totalSpan > 0) {
+                    output.hold_progress = (Number(appFrameBigInt) - output.last_changed_frame) / totalSpan;
+                } else {
+                    output.hold_progress = 0.0;
+                }
+
+                return output;
+            }
+
+            // --- Algorithm-Specific HPQ + LOD Wrappers ---
+
+            function fpsr_sm_get_details(appFrame, params, fm, segBlockLength, lod) {
+                const evalLod0 = (f) => {
+                    const effectiveFm = (fm === 0.0) ? 1.0 : fm;
+                    const scaled_pos = Number(f) * effectiveFm;
+                    const master_frame = BigInt(Math.floor(scaled_pos));
+                    const master_start = BigInt(Math.ceil(Number(master_frame) / effectiveFm));
+                    const gap = f - master_start;
+                    const segLen = BigInt(segBlockLength);
+                    const seg_idx = segLen > 0n ? gap / segLen : 0n;
+
+                    if (seg_idx === 0n) {
+                        return fpsr_sm_base_js(master_frame, params);
+                    } else {
+                        const local_progress = gap % segLen;
+                        const gap_params = { ...params, seedInner: splitmix64(master_frame + seg_idx) };
+                        return fpsr_sm_base_js(local_progress, gap_params);
+                    }
+                };
+                return executeWithLod(evalLod0, appFrame, lod);
+            }
+
+            function fpsr_tm_get_details(appFrame, params, fm, segBlockLength, lod) {
+                const evalLod0 = (f) => {
+                    const effectiveFm = (fm === 0.0) ? 1.0 : fm;
+                    const scaled_pos = Number(f) * effectiveFm;
+                    const master_frame = BigInt(Math.floor(scaled_pos));
+                    const master_start = BigInt(Math.ceil(Number(master_frame) / effectiveFm));
+                    const gap = f - master_start;
+                    const segLen = BigInt(segBlockLength);
+                    const seg_idx = segLen > 0n ? gap / segLen : 0n;
+
+                    if (seg_idx === 0n) {
+                        return fpsr_tm_base_js(master_frame, params);
+                    } else {
+                        const local_progress = gap % segLen;
+                        const gap_params = { ...params, seedInner: splitmix64(master_frame + seg_idx) };
+                        return fpsr_tm_base_js(local_progress, gap_params);
+                    }
+                };
+                return executeWithLod(evalLod0, appFrame, lod);
+            }
+
+            function fpsr_qs_get_details(appFrame, params, fm, segBlockLength, lod) {
+                const evalLod0 = (f) => {
+                    const effectiveFm = (fm === 0.0) ? 1.0 : fm;
+                    const scaled_pos = Number(f) * effectiveFm;
+                    const master_frame = BigInt(Math.floor(scaled_pos));
+                    const master_start = BigInt(Math.ceil(Number(master_frame) / effectiveFm));
+                    const gap = f - master_start;
+                    const segLen = BigInt(segBlockLength);
+                    const seg_idx = segLen > 0n ? gap / segLen : 0n;
+
+                    if (seg_idx === 0n) {
+                        const val = fpsr_qs_base_js(master_frame, params);
+                        return { randVal: val };
+                    } else {
+                        const local_progress = gap % segLen;
+                        const gap_seed = splitmix64(master_frame + seg_idx);
+                        const seedPart1 = Number(gap_seed & 0xFFFFFFFFn);
+                        const seedPart2 = Number((gap_seed >> 32n) & 0xFFFFFFFFn);
+                        const gap_params = {
+                            ...params,
+                            quantOffsets: [
+                                params.quantOffsets[0] + seedPart1,
+                                params.quantOffsets[1] + seedPart2
+                            ]
+                        };
+                        const val = fpsr_qs_base_js(local_progress, gap_params);
+                        return { randVal: val };
+                    }
+                };
+                return executeWithLod(evalLod0, appFrame, lod);
+            }
+
+            function fpsr_bd_get_details(appFrame, params, fm, segBlockLength, lod) {
+                const evalLod0 = (f) => {
+                    const effectiveFm = (fm === 0.0) ? 1.0 : fm;
+                    const scaled_pos = Number(f) * effectiveFm;
+                    const master_frame = BigInt(Math.floor(scaled_pos));
+                    const master_start = BigInt(Math.ceil(Number(master_frame) / effectiveFm));
+                    const gap = f - master_start;
+                    const segLen = BigInt(segBlockLength);
+                    const seg_idx = segLen > 0n ? gap / segLen : 0n;
+
+                    if (seg_idx === 0n) {
+                        return fpsr_bd_base_js(master_frame, params);
+                    } else {
+                        const local_progress = gap % segLen;
+                        const gap_params = { ...params, valueSeedOffset: splitmix64(master_frame + seg_idx) };
+                        return fpsr_bd_base_js(local_progress, gap_params);
+                    }
+                };
+                return executeWithLod(evalLod0, appFrame, lod);
+            }
+
             // --- Legacy Paradigm A: Pre-Calculated Accumulator ---
             function fpsr_legacy_a_base_js(frame, params) {
                 frame = Number(frame);
@@ -1348,102 +1589,38 @@ allTabs.forEach(tab => {
                 return Math.max(0.0, Math.min(1.0, quantized));
             }
             
-            // --- Main Value Router ---
-            // This function routes to the correct _base_js function.
-            // The HPQ logic will call this function.
-            function routeToBaseFunction(frame, params) {
-                switch(activeAlgorithm) {
+            // --- Unified Evaluation Dispatcher ---
+            // Dispatches to the respective algorithm's wrapper (with integrated HPQ + LOD)
+            function getFpsrDetails(appFrame) {
+                const fm = globalParams.frameMultiplier;
+                const segLen = globalParams.segBlockLength;
+
+                switch (activeAlgorithm) {
                     case 'SM':
-                        return fpsr_sm_base_js(frame, params.sm);
+                        return fpsr_sm_get_details(appFrame, globalParams.sm, fm, segLen, globalParams.sm.lod);
                     case 'TM':
-                        return fpsr_tm_base_js(frame, params.tm);
+                        return fpsr_tm_get_details(appFrame, globalParams.tm, fm, segLen, globalParams.tm.lod);
                     case 'QS':
-                        return fpsr_qs_base_js(frame, params.qs);
+                        return fpsr_qs_get_details(appFrame, globalParams.qs, fm, segLen, globalParams.qs.lod);
                     case 'BD':
-                        return fpsr_bd_base_js(frame, params.bd);
+                        return fpsr_bd_get_details(appFrame, globalParams.bd, fm, segLen, globalParams.bd.lod);
                     case 'LEGACY_A':
-                        return fpsr_legacy_a_base_js(frame, params.st_a);
+                        return { randVal: fpsr_legacy_a_base_js(appFrame, globalParams.st_a) };
                     case 'LEGACY_B':
-                        return fpsr_legacy_b_base_js(frame, params.st_b);
+                        return { randVal: fpsr_legacy_b_base_js(appFrame, globalParams.st_b) };
                     case 'PERLIN':
-                        return fpsr_perlin_base_js(frame, params.perlin);
+                        return { randVal: fpsr_perlin_base_js(appFrame, globalParams.perlin) };
                     case 'WORLEY':
-                        return fpsr_worley_base_js(frame, params.worley);
+                        return { randVal: fpsr_worley_base_js(appFrame, globalParams.worley) };
                     default:
-                        return 0.5;
+                        return { randVal: 0.5 };
                 }
             }
-            
-            // --- *** HPQ Wrapper Logic *** ---
-            // This is the new "get_details" wrapper, implemented in JS.
-            // It takes the "Application Timeline" frame and handles all time scaling.
+
+            // Extract the scalar value for visualizer animation & canvas plotting
             function getFpsrValue(appFrame) {
-                const appFrameBigInt = BigInt(appFrame);
-                const fm = globalParams.frameMultiplier;
-                const segBlockLength = globalParams.segBlockLength;
-
-                // Sanitize fm
-                const effectiveFm = (fm === 0.0) ? 1.0 : fm;
-                
-                // --- 1. Find coordinate on "Content Timeline" ---
-                // (Application Timeline Frame) * fm = (Content Timeline Frame)
-                const scaled_frame_position = Number(appFrameBigInt) * effectiveFm;
-                const master_frame = BigInt(Math.floor(scaled_frame_position));
-
-                // --- 2. Find "Start Line" on "Application Timeline" ---
-                // (Content Timeline Frame) / fm = (Application Timeline Frame)
-                const master_frame_start_app_frame = BigInt(Math.ceil(Number(master_frame) / effectiveFm));
-
-                // --- 3. Calculate Local Coordinates (on Application Timeline) ---
-                const app_frames_into_gap = appFrameBigInt - master_frame_start_app_frame;
-                let segment_index = 0n;
-                let local_progress_in_segment = 0n;
-                const segBlockLengthBigInt = BigInt(segBlockLength);
-
-                if (segBlockLengthBigInt > 0n) {
-                    segment_index = app_frames_into_gap / segBlockLengthBigInt;
-                    local_progress_in_segment = app_frames_into_gap % segBlockLengthBigInt;
-                }
-
-                // --- 4. Execute Two-Mode Logic ---
-                if (segment_index === 0n) {
-                    // --- MODE 1: "Tape Varispeed" (Anchor) ---
-                    // Use the master_frame and original params
-                    return routeToBaseFunction(master_frame, globalParams);
-                } else {
-                    // --- MODE 2: "Telescopic Extension" (Generative Phrase) ---
-                    const gap_seed = splitmix64(master_frame + segment_index);
-                    
-                    // --- FIX: Use structuredClone for deep copy ---
-                    // This correctly handles BigInt values without crashing JSON.stringify
-                    const gapParams = structuredClone(globalParams);
-                    
-                    // The BigInts are already correctly copied.
-                    // We can now modify the gapParams directly.
-                    switch(activeAlgorithm) {
-                        case 'SM':
-                            gapParams.sm.seedInner = gap_seed;
-                            break;
-                        case 'TM':
-                            gapParams.tm.seedInner = gap_seed;
-                            break;
-                        case 'QS':
-                            // QS params are Numbers, so this is fine
-                            const seedPart1 = Number(gap_seed & 0xFFFFFFFFn);
-                            const seedPart2 = Number((gap_seed >> 32n) & 0xFFFFFFFFn);
-                            gapParams.qs.quantOffsets = [
-                                globalParams.qs.quantOffsets[0] + seedPart1,
-                                globalParams.qs.quantOffsets[1] + seedPart2
-                            ];
-                            break;
-                        case 'BD':
-                            gapParams.bd.valueSeedOffset = gap_seed;
-                            break;
-                    }
-                    
-                    // Use local_progress_in_segment and the modified gapParams
-                    return routeToBaseFunction(local_progress_in_segment, gapParams);
-                }
+                const details = getFpsrDetails(appFrame);
+                return details.randVal;
             }
 
 
