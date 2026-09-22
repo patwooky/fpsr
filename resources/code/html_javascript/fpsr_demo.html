@@ -65,8 +65,8 @@
 <body class="flex flex-col items-center justify-center min-h-screen p-4 md:p-8">
 
     <div class="w-full max-w-7xl">
-        <h1 class="text-3xl font-bold text-center text-white mb-2">FPS-R HPQ Visualiser</h1>
-        <p class="text-center text-gray-400 mb-6">Visualising the FPS-R Algorithms with Hierarchical Phrased Quantisation (HPQ) logic.</p>
+        <h1 class="text-3xl font-bold text-center text-white mb-2">FPS-R Evaluation & Visualisation Lab</h1>
+        <p class="text-center text-gray-400 mb-6">A real-time comparative testbed for visually mapping structural patterns, phase behaviours, and throughput characteristics across stateless FPS-R, legacy state machines, and continuous spatial noise.</p>
 
         <!-- Canvas for visualization -->
         <canvas id="visualizerCanvas" class="w-full mb-6 shadow-lg" height="300"></canvas>
@@ -74,16 +74,24 @@
         <!-- Transport Bar & Speed Controls Bar -->
         <div class="flex flex-col gap-4 mb-6">
             <!-- Transport Buttons Bar -->
-            <div class="flex flex-col md:flex-row gap-4 bg-gray-800 p-4 rounded-lg shadow-lg">
-                <button id="resetButton" class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition duration-150" title="Resets the visualizer to the beginning of the timeline and generates new random seeds for the algorithms.">
+            <div class="flex flex-wrap items-center gap-3 bg-gray-800 p-4 rounded-lg shadow-lg">
+                <button id="resetButton" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition duration-150" title="Resets the visualizer to the beginning of the timeline and generates new random seeds for the algorithms.">
                     Reset (New Seeds)
                 </button>
-                <button id="rewindButton" class="w-full md:w-auto bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md transition duration-150 flex items-center justify-center space-x-2" title="Rewinds the visualizer to the beginning of the timeline.">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12.066 11.209a1.001 1.001 0 00-1.414 0l-3 3a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414-1.414L9.414 16H18a1 1 0 100-2h-8.586l1.652-1.652a1 1 0 000-1.414zM18 18v-2"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 12V6a1 1 0 011-1h10a1 1 0 011 1v6"></path></svg>
-                    <span>Rewind</span>
-                </button>
+
+                <!-- Rewind button + target frame -->
+                <div class="flex items-center">
+                    <button id="rewindButton" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-3 rounded-l-md transition duration-150 flex items-center justify-center space-x-1.5" title="Rewinds the visualizer to the specified target frame.">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12.066 11.209a1.001 1.001 0 00-1.414 0l-3 3a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414-1.414L9.414 16H18a1 1 0 100-2h-8.586l1.652-1.652a1 1 0 000-1.414zM18 18v-2"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 12V6a1 1 0 011-1h10a1 1 0 011 1v6"></path></svg>
+                        <span>Rewind</span>
+                    </button>
+                    <input id="rewindFrameInput" type="number" value="0" min="0" step="1" class="w-24 bg-gray-700 text-white border-y border-r border-gray-600 rounded-r-md py-2 px-2 text-sm text-center font-mono" title="Target start frame to rewind to">
+                    <button id="resetRewindFrameButton" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-2.5 rounded-r-md text-xs transition duration-150 border-y border-r border-gray-600" title="Reset target rewind frame to 0">
+                        0
+                    </button>
+                </div>
                 
-                <button id="reverseButton" class="w-full md:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md transition duration-150 flex items-center justify-center space-x-2" title="Play/Pause the visualizer in the reverse direction.">
+                <button id="reverseButton" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md transition duration-150 flex items-center justify-center space-x-2" title="Play/Pause the visualizer in the reverse direction.">
                     <!-- Pause Icon (Rev) -->
                     <svg id="pauseIconRev" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" style="display: none;"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
                     <!-- Play Reverse Icon -->
@@ -91,7 +99,7 @@
                     <span id="reverseButtonText">Reverse</span>
                 </button>
 
-                <button id="pauseButton" class="w-full md:w-auto bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-md transition duration-150 flex items-center justify-center space-x-2" title="Play/Pause the visualizer in the forward direction.">
+                <button id="pauseButton" class="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-md transition duration-150 flex items-center justify-center space-x-2" title="Play/Pause the visualizer in the forward direction.">
                     <!-- Pause Icon -->
                     <svg id="pauseIcon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
                     <!-- Play Icon -->
@@ -99,8 +107,23 @@
                     <span id="pauseButtonText">Pause</span>
                 </button>
 
+                <!-- Continuous Scroll Toggle -->
+                <div class="flex items-center space-x-2 bg-gray-700/60 px-3 py-2 rounded-md border border-gray-600" title="When checked, timeline continuously scrolls. When unchecked, captures the specified buffer sample size and automatically freezes.">
+                    <input id="continuousScrollToggle" type="checkbox" checked class="w-4 h-4 bg-gray-700 text-blue-500 border-gray-600 rounded">
+                    <label for="continuousScrollToggle" class="text-xs font-semibold text-gray-200 cursor-pointer select-none">Continuous Scroll</label>
+                </div>
+
+                <!-- Buffer Sample Size Field -->
+                <div class="flex items-center space-x-1.5 bg-gray-700/60 px-3 py-1.5 rounded-md border border-gray-600" title="The maximum array size maintained internally and exported to clipboard.">
+                    <label for="bufferSizeInput" class="text-xs font-semibold text-gray-300 uppercase">Buffer Size:</label>
+                    <input id="bufferSizeInput" type="number" min="10" step="1" class="w-20 bg-gray-700 text-white border border-gray-500 rounded px-1.5 py-0.5 text-xs text-center font-mono">
+                    <button id="resetBufferSizeButton" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-0.5 px-2 rounded text-xs transition duration-150" title="Reset buffer sample size to native canvas width">
+                        Native
+                    </button>
+                </div>
+
                 <!-- Copy values to Clipboard -->
-                <button id="copyButton" class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition duration-150 ml-auto" title="Copies current values to the clipboard, in a python formatted list, (eg [0.022, 0.378, 0.795...]).&#10;This enables offline data analysis of FPS-R outputs.">
+                <button id="copyButton" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition duration-150 sm:ml-auto" title="Copies current values to the clipboard, in a python formatted list, (eg [0.022, 0.378, 0.795...]).&#10;This enables offline data analysis of FPS-R outputs.">
                     Copy Values to Clipboard
                 </button>
             </div>
@@ -529,24 +552,22 @@
             canvas.width = canvasWidth;
             canvas.height = canvasHeight;
 
-            let frame = 0; // This is the "Application Timeline" frame
+            let frame = 0; // Application timeline frame
             let history = [];
             let activeAlgorithm = 'SM';
             let playDirection = 1; // 1 = forward, -1 = reverse, 0 = paused
             let animationFrameId = null;
 
             // --- Stateful Legacy Model Persistent Variables ---
-            // Paradigm A: Pre-Calculated Accumulator
             let legacyA_nextJumpFrame = 0;
             let legacyA_heldValue = Math.random();
 
-            // Paradigm B: Continuous Coin-Flip
             let legacyB_lastJumpFrame = 0;
             let legacyB_heldValue = Math.random();
 
             // --- Scroll Speed & Performance State ---
             let stepAccumulator = 0;
-            let evalsLog = []; // [{ time: ms, count: N }] for 3-second rolling average
+            let evalsLog = []; 
             let appStartTime = performance.now();
 
             // --- Global parameters object ---
@@ -578,7 +599,34 @@
             const pauseIconRev = document.getElementById('pauseIconRev');
             const playIconRev = document.getElementById('playIconRev');
             const rewindButton = document.getElementById('rewindButton');
+            const rewindFrameInput = document.getElementById('rewindFrameInput');
+            const resetRewindFrameButton = document.getElementById('resetRewindFrameButton');
+            const continuousScrollToggle = document.getElementById('continuousScrollToggle');
+            const bufferSizeInput = document.getElementById('bufferSizeInput');
+            const resetBufferSizeButton = document.getElementById('resetBufferSizeButton');
             const copyButton = document.getElementById('copyButton');
+            
+            // Rewind target frame reset to 0
+            resetRewindFrameButton.addEventListener('click', () => {
+                rewindFrameInput.value = 0;
+            });
+            
+            // Initialize Buffer Size input to native canvas width
+            bufferSizeInput.value = canvasWidth;
+
+            resetBufferSizeButton.addEventListener('click', () => {
+                bufferSizeInput.value = canvasWidth;
+                delete bufferSizeInput.dataset.userModified;
+            });
+
+            bufferSizeInput.addEventListener('input', () => {
+                bufferSizeInput.dataset.userModified = 'true';
+            });
+
+            function getTargetBufferSize() {
+                const parsed = parseInt(bufferSizeInput.value, 10);
+                return (isNaN(parsed) || parsed < 1) ? canvasWidth : parsed;
+            }
             
             // --- New Global HPQ UI ---
             const frameMultiplierSlider = document.getElementById('global_frameMultiplier');
@@ -841,7 +889,6 @@ allTabs.forEach(tab => {
                 });
             });
 
-            // --- Reset Button ---
             resetButton.addEventListener('click', () => {
                 const newInner = Math.floor(Math.random() * 10000);
                 const newOuter = Math.floor(Math.random() * 10000);
@@ -863,6 +910,9 @@ allTabs.forEach(tab => {
                         if (vSpan) vSpan.textContent = '0';
                     }
                 });
+
+                // Reset rewind frame to 0
+                rewindFrameInput.value = 0;
 
                 // Reset global controls
                 document.getElementById('global_frameMultiplier').value = 1.0;
@@ -922,15 +972,26 @@ allTabs.forEach(tab => {
             }
 
             function rewindAnimation() {
-                frame = 0;
+                const targetFrame = parseInt(rewindFrameInput.value, 10) || 0;
+                frame = Math.max(0, targetFrame);
                 history = [];
 
-                // Reset stateful legacy variables to frame 0
+                // Reset stateful legacy variables to targetFrame
                 legacyA_nextJumpFrame = 0;
                 legacyA_heldValue = Math.random();
-
                 legacyB_lastJumpFrame = 0;
                 legacyB_heldValue = Math.random();
+
+                // If legacy mode, fast-forward simulate state from 0 up to frame
+                if (activeAlgorithm === 'LEGACY_A') {
+                    for (let f = 0; f < frame; f++) {
+                        fpsr_legacy_a_base_js(f, globalParams.st_a);
+                    }
+                } else if (activeAlgorithm === 'LEGACY_B') {
+                    for (let f = 0; f < frame; f++) {
+                        fpsr_legacy_b_base_js(f, globalParams.st_b);
+                    }
+                }
 
                 ctx.clearRect(0, 0, canvasWidth, canvasHeight);
             }
@@ -1646,40 +1707,52 @@ allTabs.forEach(tab => {
 
                 if (canvas.clientWidth !== canvasWidth) {
                     canvasWidth = canvas.clientWidth;
+                    canvas.height = canvasHeight;
                     canvas.width = canvasWidth;
+                    if (!bufferSizeInput.dataset.userModified) {
+                        bufferSizeInput.value = canvasWidth;
+                    }
                     history = [];
-                    frame = 0;
+                    frame = parseInt(rewindFrameInput.value, 10) || 0;
                 }
+
+                const isContinuous = continuousScrollToggle.checked;
+                const targetBufferSize = getTargetBufferSize();
 
                 // Determine step count based on speed / max mode
                 let stepsToCompute = 0;
+                let freezeReached = false;
                 
                 if (scrollSpeedMaxToggle.checked) {
                     // --- Time-Budgeted Uncapped MAX Mode ---
-                    // Dedicated 12 ms CPU computation budget per 16.6 ms (60Hz) frame tick
                     const startTime = performance.now();
                     const targetBudgetMs = 12.0; 
-                    const batchSize = 500;
+                    const batchSize = 100;
                     
-                    while (performance.now() - startTime < targetBudgetMs) {
+                    while (performance.now() - startTime < targetBudgetMs && !freezeReached) {
                         for (let b = 0; b < batchSize; b++) {
+                            if (!isContinuous && history.length >= targetBufferSize) {
+                                freezeReached = true;
+                                break;
+                            }
+
                             if (playDirection === 1) {
                                 const newValue = getFpsrValue(frame);
                                 history.push(newValue);
-                                if (history.length > canvasWidth) {
+                                if (isContinuous && history.length > targetBufferSize) {
                                     history.shift();
                                 }
                                 frame++; 
                             } else if (playDirection === -1) {
-                                const newValue = getFpsrValue(frame - history.length - 1);
+                                const newValue = getFpsrValue(frame);
                                 history.unshift(newValue);
-                                if (history.length > canvasWidth) {
+                                if (isContinuous && history.length > targetBufferSize) {
                                     history.pop();
-                                    frame--;
                                 }
+                                frame--;
                             }
+                            stepsToCompute++;
                         }
-                        stepsToCompute += batchSize;
                     }
                 } else {
                     // --- Standard Speed Slider Mode ---
@@ -1689,24 +1762,35 @@ allTabs.forEach(tab => {
                     stepAccumulator -= stepsToCompute;
 
                     for (let s = 0; s < stepsToCompute; s++) {
+                        if (!isContinuous && history.length >= targetBufferSize) {
+                            freezeReached = true;
+                            break;
+                        }
+
                         if (playDirection === 1) {
                             const newValue = getFpsrValue(frame);
                             history.push(newValue);
 
-                            if (history.length > canvasWidth) {
+                            if (isContinuous && history.length > targetBufferSize) {
                                 history.shift();
                             }
                             frame++; 
                         } else if (playDirection === -1) {
-                            const newValue = getFpsrValue(frame - history.length - 1);
+                            const newValue = getFpsrValue(frame);
                             history.unshift(newValue);
                             
-                            if (history.length > canvasWidth) {
+                            if (isContinuous && history.length > targetBufferSize) {
                                 history.pop();
-                                frame--;
                             }
+                            frame--;
                         }
                     }
+                }
+
+                // If non-continuous buffer is full, automatically freeze/pause
+                if (!isContinuous && (freezeReached || history.length >= targetBufferSize)) {
+                    playDirection = 0;
+                    updatePlaybackUI();
                 }
 
                 // --- 3-second Rolling Evaluations Average ---
@@ -1724,14 +1808,17 @@ allTabs.forEach(tab => {
                 ctx.strokeStyle = '#3b82f6';
                 ctx.lineWidth = 2;
 
-                for (let i = 0; i < history.length; i++) {
+                // Display the most recent canvasWidth frames from the buffer
+                const view = history.length > canvasWidth ? history.slice(-canvasWidth) : history;
+
+                for (let i = 0; i < view.length; i++) {
                     const x = i;
-                    const y = (1 - history[i]) * canvasHeight;
+                    const y = (1 - view[i]) * canvasHeight;
 
                     if (i === 0) {
                         ctx.moveTo(x, y);
                     } else {
-                        const prevY = (1 - history[i - 1]) * canvasHeight;
+                        const prevY = (1 - view[i - 1]) * canvasHeight;
                         if (y === prevY) {
                             ctx.lineTo(x, y);
                         } else {
@@ -1745,7 +1832,6 @@ allTabs.forEach(tab => {
                 
                 animationFrameId = requestAnimationFrame(animate);
             }
-
             // Initial setup and start
             updateParams();
             animate();

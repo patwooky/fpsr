@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## Unreleased
 
+## [3.0.7] - 2026-09-22
+### Added
+- **Frame-Accurate Test Vector & Buffer Capture (`fpsr_demo.html`)**:
+  - **Custom Start-Frame Rewind**: Added a numerical target frame input box beside the Rewind button along with a dedicated `0` quick-reset button, enabling deterministic timeline jumps to arbitrary offsets (e.g. frame `1001`). For stateful models (Legacy Paradigms A and B), Rewind automatically fast-forwards simulation from frame 0 up to target frame $N$ to preserve exact state alignment.
+  - **Buffer Sample Size & Native Snap**: Added an editable `Buffer Size` input field with an adjacent `Native` button that binds the internal evaluation history buffer to `canvas.clientWidth` or allows custom user sample spans (e.g. 750 or 1000 frames).
+  - **Continuous vs Single-Page Capture Toggle**: Added a `Continuous Scroll` checkbox. When enabled, the timeline scrolls continuously; when disabled, the visualizer generates exactly the specified `Buffer Size` samples and automatically pauses/freezes, locking the rolling **FPS-R Evals/Sec** meter and buffer for clipboard export.
+- **Workflow & Testing Documentation (`resources/docs/fpsr_visualiser_guide.md`)**:
+  - Authored a comprehensive user and verification guide documenting standard workflows:
+    - Visible canvas quick-capture.
+    - Deterministic cross-browser/cross-platform parity testing using synchronized start frames and buffer bounds.
+    - LOD 0/1/2 throughput profiling under unconstrained MAX mode.
+    - HPQ Phase 1 (Varispeed) vs Phase 2 (Telescopic Extension) time-dilation boundary validation.
+
+### Changed
+- **Visualizer Branding & UI Ergonomics (`fpsr_demo.html`)**:
+  - Retitled application to **FPS-R Evaluation & Visualisation Lab** with an expanded sub-header framing it as a comparative testbed across stateless FPS-R, legacy state machines, and continuous spatial noise.
+  - Enabled horizontal touch-scrolling (`overflow-x-auto`, `flex-shrink-0`) on algorithm tabs to ensure complete visibility and accessibility on mobile and narrow viewports.
+  - Updated global reset handler to clear rewind target frame to 0 alongside algorithm seeds and LOD levels.
+
+
 ## [3.0.6] - 2026-09-14
 ### Added
 - **Level of Detail (LOD) System (`fpsr_demo.html`)**:
