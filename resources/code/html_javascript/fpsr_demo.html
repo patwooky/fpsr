@@ -521,7 +521,7 @@
             <!-- *** MODIFIED: Global HPQ Controls *** -->
             <div class="mt-6 pt-6 border-t border-gray-700">
                 <h3 class="text-lg font-semibold text-white mb-4">Global HPQ Time Controls</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="param-group" title="Global playback speed. < 1.0 = Slow-Motion (Stretch), > 1.0 = Fast-Motion (Compress)">
                         <label for="global_frameMultiplier">Playback Speed (frame_multiplier)</label>
                         <div class="flex items-center space-x-2">
@@ -533,17 +533,23 @@
                             </button>
                         </div>
                     </div>
-                    <div class="param-group" title="HPQ 'runway' size. Defines length of 'Tape Varispeed' block before generative content begins.">
+                    <div class="param-group" title="HPQ runway segment length in application frames. Extended gaps are partitioned into chunks of this size.">
                         <label for="global_segBlockLength">Segment Length (seg_block_length)</label>
                         <input id="global_segBlockLength" type="number" value="5" min="1" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
                     </div>
+                    <div class="param-group" title="Anchor persistence threshold:
+-1 = Pure Tape Varispeed (Exact 1:1 Ground-Truth Hold; Metrology mode)
+ 0 = Obfuscated / Alternate Timeline (Leaves no trace of the original values at their underlying frames; 'paints over the original painting' while preserving the macro rhythm grid)
+>=1 = Phrased Anchor + Infill (Anchor milestone holds for N blocks before generative sub-phrasing)">
+                        <label for="global_varispeedHoldBlockCount">Anchor Persistence (varispeed_hold_block_count)</label>
+                        <input id="global_varispeedHoldBlockCount" type="number" value="1" min="-1" step="1" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                    </div>
                 </div>
             </div>
-
     </div>
 
     <script>
-                document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', () => {
             const canvas = document.getElementById('visualizerCanvas');
             const ctx = canvas.getContext('2d');
 
@@ -572,8 +578,9 @@
 
             // --- Global parameters object ---
             let globalParams = {
-                frameMultiplier: 1.0, // NEW
-                segBlockLength: 5,   // NEW
+                frameMultiplier: 1.0,
+                segBlockLength: 5,
+                varispeedHoldBlockCount: 1, // Continuum threshold: -1 (infinite), 0 (immediate), >=1 (grace period)
                 sm: {},
                 tm: {},
                 qs: {},
@@ -723,6 +730,7 @@
                 // --- Read Global HPQ Params ---
                 globalParams.frameMultiplier = parseFloatInput('global_frameMultiplierInput', 1.0);
                 globalParams.segBlockLength = parseIntInput('global_segBlockLength', 5);
+                globalParams.varispeedHoldBlockCount = parseIntInput('global_varispeedHoldBlockCount', 1);
 
                 // --- SM Params ---
                 globalParams.sm = {
@@ -876,6 +884,7 @@ allTabs.forEach(tab => {
                     frameMultiplierInput.disabled = disableHPQ;
                     resetFrameMultiplierButton.disabled = disableHPQ;
                     document.getElementById('global_segBlockLength').disabled = disableHPQ;
+                    document.getElementById('global_varispeedHoldBlockCount').disabled = disableHPQ;
 
                     if (hpqSection) {
                         hpqSection.style.opacity = disableHPQ ? '0.4' : '1.0';
@@ -918,6 +927,7 @@ allTabs.forEach(tab => {
                 document.getElementById('global_frameMultiplier').value = 1.0;
                 document.getElementById('global_frameMultiplierInput').value = "1.00";
                 document.getElementById('global_segBlockLength').value = 5;
+                document.getElementById('global_varispeedHoldBlockCount').value = 1;
 
                 updateParams();
             });
@@ -1391,7 +1401,7 @@ allTabs.forEach(tab => {
 
             // --- Algorithm-Specific HPQ + LOD Wrappers ---
 
-            function fpsr_sm_get_details(appFrame, params, fm, segBlockLength, lod) {
+            function fpsr_sm_get_details(appFrame, params, fm, segBlockLength, varispeedHoldBlockCount, lod) {
                 const evalLod0 = (f) => {
                     const effectiveFm = (fm === 0.0) ? 1.0 : fm;
                     const scaled_pos = Number(f) * effectiveFm;
@@ -1400,11 +1410,15 @@ allTabs.forEach(tab => {
                     const gap = f - master_start;
                     const segLen = BigInt(segBlockLength);
                     const seg_idx = segLen > 0n ? gap / segLen : 0n;
+                    const holdCount = BigInt(varispeedHoldBlockCount);
 
-                    if (seg_idx === 0n) {
+                    // Execute Unified Continuum Logic (Anchor Persistence vs Telescopic Extension)
+                    if (holdCount < 0n || seg_idx < holdCount) {
+                        // MODE 1: "Tape Varispeed" (Anchor)
                         return fpsr_sm_base_js(master_frame, params);
                     } else {
-                        const local_progress = gap % segLen;
+                        // MODE 2: "Telescopic Extension" (Generative Phrase)
+                        const local_progress = segLen > 0n ? (gap % segLen) : 0n;
                         const gap_params = { ...params, seedInner: splitmix64(master_frame + seg_idx) };
                         return fpsr_sm_base_js(local_progress, gap_params);
                     }
@@ -1412,7 +1426,7 @@ allTabs.forEach(tab => {
                 return executeWithLod(evalLod0, appFrame, lod);
             }
 
-            function fpsr_tm_get_details(appFrame, params, fm, segBlockLength, lod) {
+            function fpsr_tm_get_details(appFrame, params, fm, segBlockLength, varispeedHoldBlockCount, lod) {
                 const evalLod0 = (f) => {
                     const effectiveFm = (fm === 0.0) ? 1.0 : fm;
                     const scaled_pos = Number(f) * effectiveFm;
@@ -1421,11 +1435,15 @@ allTabs.forEach(tab => {
                     const gap = f - master_start;
                     const segLen = BigInt(segBlockLength);
                     const seg_idx = segLen > 0n ? gap / segLen : 0n;
+                    const holdCount = BigInt(varispeedHoldBlockCount);
 
-                    if (seg_idx === 0n) {
+                    // Execute Unified Continuum Logic (Anchor Persistence vs Telescopic Extension)
+                    if (holdCount < 0n || seg_idx < holdCount) {
+                        // MODE 1: "Tape Varispeed" (Anchor)
                         return fpsr_tm_base_js(master_frame, params);
                     } else {
-                        const local_progress = gap % segLen;
+                        // MODE 2: "Telescopic Extension" (Generative Phrase)
+                        const local_progress = segLen > 0n ? (gap % segLen) : 0n;
                         const gap_params = { ...params, seedInner: splitmix64(master_frame + seg_idx) };
                         return fpsr_tm_base_js(local_progress, gap_params);
                     }
@@ -1433,7 +1451,7 @@ allTabs.forEach(tab => {
                 return executeWithLod(evalLod0, appFrame, lod);
             }
 
-            function fpsr_qs_get_details(appFrame, params, fm, segBlockLength, lod) {
+            function fpsr_qs_get_details(appFrame, params, fm, segBlockLength, varispeedHoldBlockCount, lod) {
                 const evalLod0 = (f) => {
                     const effectiveFm = (fm === 0.0) ? 1.0 : fm;
                     const scaled_pos = Number(f) * effectiveFm;
@@ -1442,12 +1460,16 @@ allTabs.forEach(tab => {
                     const gap = f - master_start;
                     const segLen = BigInt(segBlockLength);
                     const seg_idx = segLen > 0n ? gap / segLen : 0n;
+                    const holdCount = BigInt(varispeedHoldBlockCount);
 
-                    if (seg_idx === 0n) {
+                    // Execute Unified Continuum Logic (Anchor Persistence vs Telescopic Extension)
+                    if (holdCount < 0n || seg_idx < holdCount) {
+                        // MODE 1: "Tape Varispeed" (Anchor)
                         const val = fpsr_qs_base_js(master_frame, params);
                         return { randVal: val };
                     } else {
-                        const local_progress = gap % segLen;
+                        // MODE 2: "Telescopic Extension" (Generative Phrase)
+                        const local_progress = segLen > 0n ? (gap % segLen) : 0n;
                         const gap_seed = splitmix64(master_frame + seg_idx);
                         const seedPart1 = Number(gap_seed & 0xFFFFFFFFn);
                         const seedPart2 = Number((gap_seed >> 32n) & 0xFFFFFFFFn);
@@ -1465,7 +1487,7 @@ allTabs.forEach(tab => {
                 return executeWithLod(evalLod0, appFrame, lod);
             }
 
-            function fpsr_bd_get_details(appFrame, params, fm, segBlockLength, lod) {
+            function fpsr_bd_get_details(appFrame, params, fm, segBlockLength, varispeedHoldBlockCount, lod) {
                 const evalLod0 = (f) => {
                     const effectiveFm = (fm === 0.0) ? 1.0 : fm;
                     const scaled_pos = Number(f) * effectiveFm;
@@ -1474,11 +1496,15 @@ allTabs.forEach(tab => {
                     const gap = f - master_start;
                     const segLen = BigInt(segBlockLength);
                     const seg_idx = segLen > 0n ? gap / segLen : 0n;
+                    const holdCount = BigInt(varispeedHoldBlockCount);
 
-                    if (seg_idx === 0n) {
+                    // Execute Unified Continuum Logic (Anchor Persistence vs Telescopic Extension)
+                    if (holdCount < 0n || seg_idx < holdCount) {
+                        // MODE 1: "Tape Varispeed" (Anchor)
                         return fpsr_bd_base_js(master_frame, params);
                     } else {
-                        const local_progress = gap % segLen;
+                        // MODE 2: "Telescopic Extension" (Generative Phrase)
+                        const local_progress = segLen > 0n ? (gap % segLen) : 0n;
                         const gap_params = { ...params, valueSeedOffset: splitmix64(master_frame + seg_idx) };
                         return fpsr_bd_base_js(local_progress, gap_params);
                     }
@@ -1655,16 +1681,17 @@ allTabs.forEach(tab => {
             function getFpsrDetails(appFrame) {
                 const fm = globalParams.frameMultiplier;
                 const segLen = globalParams.segBlockLength;
+                const holdCount = globalParams.varispeedHoldBlockCount;
 
                 switch (activeAlgorithm) {
                     case 'SM':
-                        return fpsr_sm_get_details(appFrame, globalParams.sm, fm, segLen, globalParams.sm.lod);
+                        return fpsr_sm_get_details(appFrame, globalParams.sm, fm, segLen, holdCount, globalParams.sm.lod);
                     case 'TM':
-                        return fpsr_tm_get_details(appFrame, globalParams.tm, fm, segLen, globalParams.tm.lod);
+                        return fpsr_tm_get_details(appFrame, globalParams.tm, fm, segLen, holdCount, globalParams.tm.lod);
                     case 'QS':
-                        return fpsr_qs_get_details(appFrame, globalParams.qs, fm, segLen, globalParams.qs.lod);
+                        return fpsr_qs_get_details(appFrame, globalParams.qs, fm, segLen, holdCount, globalParams.qs.lod);
                     case 'BD':
-                        return fpsr_bd_get_details(appFrame, globalParams.bd, fm, segLen, globalParams.bd.lod);
+                        return fpsr_bd_get_details(appFrame, globalParams.bd, fm, segLen, holdCount, globalParams.bd.lod);
                     case 'LEGACY_A':
                         return { randVal: fpsr_legacy_a_base_js(appFrame, globalParams.st_a) };
                     case 'LEGACY_B':
