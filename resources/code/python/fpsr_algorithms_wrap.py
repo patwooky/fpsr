@@ -658,7 +658,8 @@ def fpsr_sm_get_details(
     minHold: int, maxHold: int,
     reseedInterval: int, seedInner: int, seedOuter: int, finalRandSwitch: bool,
     lod: int, max_search_frames: int,
-    seg_block_length: int
+    seg_block_length: int,
+    varispeed_hold_block_count: int
 ) -> FPSR_Output:
     """
     ---- SM: Stacked Modulo Wrapper with Details ----
@@ -681,6 +682,13 @@ def fpsr_sm_get_details(
         lod (int): The level of detail to calculate.
         max_search_frames (int): A safety limit for the backward/forward search.
         seg_block_length (int): The "runway" length for HPQ logic.
+        varispeed_hold_block_count (int): Anchor persistence threshold:
+            -1 = Pure Tape Varispeed (Exact 1:1 Ground-Truth Hold; Metrology mode)
+             0 = Obfuscation / Alternate Timeline (Leaves no trace of the original
+                 values at their underlying frames; 'paints over the original painting'
+                 while preserving the macro rhythm grid)
+            >=1 = Phrased Anchor + Infill (Anchor milestone holds for N runway blocks
+                 before generative sub-phrasing)
 
     Returns:
         FPSR_Output: A struct with metadata populated based on the LOD.
@@ -720,8 +728,11 @@ def fpsr_sm_get_details(
         segment_index = app_frames_into_gap // seg_block_length
         local_progress_in_segment = app_frames_into_gap % seg_block_length
     
-    # --- 4. Execute Two-Mode Logic ---
-    if segment_index == 0:
+    # --- 4. Execute Unified Continuum Logic (Anchor Persistence vs Telescopic Extension) ---
+    # varispeed_hold_block_count < 0: Mode 1 pure varispeed (Ground truth anchor holds infinitely)
+    # segment_index < varispeed_hold_block_count: Mode 1 anchor holds for grace period
+    # varispeed_hold_block_count == 0: Mode 2 immediately (Obfuscation / Alternate Timeline: paints over original values)
+    if varispeed_hold_block_count < 0 or segment_index < varispeed_hold_block_count:
         # --- MODE 1: "Tape Varispeed" (Anchor) ---
         # Repeat the value of the `master_frame` from the Content Timeline.
         out.randVal = float(fpsr_sm_base(master_frame, int(minHold), int(maxHold), int(reseedInterval), int(seedInner), int(seedOuter), finalRandSwitch))
@@ -738,7 +749,7 @@ def fpsr_sm_get_details(
 
     # LOD 1: Compare with previous frame to check for change.
     # This call is on the "Application Timeline".
-    prev_out = fpsr_sm_get_details(frame - 1, frame_multiplier, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length)
+    prev_out = fpsr_sm_get_details(frame - 1, frame_multiplier, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length, varispeed_hold_block_count)
     out.randVal_previous = prev_out.randVal 
     out.has_changed = 1 if (out.randVal != prev_out.randVal) else 0
 
@@ -757,7 +768,7 @@ def fpsr_sm_get_details(
         bound_low_int = frame
         step_int = 1
         while (frame - step_int > frame - max_search_frames): 
-            val_at_probe = fpsr_sm_get_details(frame - step_int, frame_multiplier, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length).randVal
+            val_at_probe = fpsr_sm_get_details(frame - step_int, frame_multiplier, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length, varispeed_hold_block_count).randVal
             if (val_at_probe != out.randVal):
                 bound_low_int = frame - step_int
                 break
@@ -770,9 +781,9 @@ def fpsr_sm_get_details(
         result_int = frame - max_search_frames + 1
         while(low_int <= high_int):
             mid_int = low_int + (high_int - low_int) // 2
-            mid_val = fpsr_sm_get_details(mid_int, frame_multiplier, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length).randVal
+            mid_val = fpsr_sm_get_details(mid_int, frame_multiplier, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length, varispeed_hold_block_count).randVal
             if (mid_val == out.randVal):
-                prev_mid_val = fpsr_sm_get_details(mid_int - 1, frame_multiplier, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length).randVal
+                prev_mid_val = fpsr_sm_get_details(mid_int - 1, frame_multiplier, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length, varispeed_hold_block_count).randVal
                 if (prev_mid_val != out.randVal):
                     result_int = mid_int
                     break
@@ -786,7 +797,7 @@ def fpsr_sm_get_details(
     bound_high_int = frame
     step_int = 1
     while (frame + step_int < frame + max_search_frames): 
-        val_at_probe = fpsr_sm_get_details(frame + step_int, frame_multiplier, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length).randVal
+        val_at_probe = fpsr_sm_get_details(frame + step_int, frame_multiplier, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length, varispeed_hold_block_count).randVal
         if (val_at_probe != out.randVal):
             bound_high_int = frame + step_int
             next_val_candidate = val_at_probe
@@ -800,7 +811,7 @@ def fpsr_sm_get_details(
     result_int = frame + max_search_frames
     while(low_int <= high_int):
         mid_int = low_int + (high_int - low_int) // 2
-        mid_val = fpsr_sm_get_details(mid_int, frame_multiplier, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length).randVal
+        mid_val = fpsr_sm_get_details(mid_int, frame_multiplier, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length, varispeed_hold_block_count).randVal
         if (mid_val != out.randVal):
             result_int = mid_int
             next_val_candidate = mid_val
@@ -827,7 +838,8 @@ def fpsr_tm_get_details(
     periodA: int, periodB: int,
     periodSwitch: int, seedInner: int, seedOuter: int, finalRandSwitch: bool,
     lod: int, max_search_frames: int,
-    seg_block_length: int
+    seg_block_length: int,
+    varispeed_hold_block_count: int
 ) -> FPSR_Output:
     """
     ---- TM: Toggle Modulo Wrapper with Details ----
@@ -849,7 +861,14 @@ def fpsr_tm_get_details(
         finalRandSwitch (bool): Algorithm parameter.
         lod (int): The level of detail to calculate.
         max_search_frames (int): A safety limit for the backward/forward search.
-        seg_block_length (int): The "runway" length for HPQ logic.
+        seg_block_length (int): The "runway" length for HPQ logic (in application frames).
+        varispeed_hold_block_count (int): Anchor persistence threshold:
+            -1 = Pure Tape Varispeed (Exact 1:1 Ground-Truth Hold; Metrology mode)
+             0 = Obfuscation / Alternate Timeline (Leaves no trace of the original
+                 values at their underlying frames; 'paints over the original painting'
+                 while preserving the macro rhythm grid)
+            >=1 = Phrased Anchor + Infill (Anchor milestone holds for N runway blocks
+                 before generative sub-phrasing)
 
     Returns:
         FPSR_Output: A struct with metadata populated based on the LOD.
@@ -872,7 +891,11 @@ def fpsr_tm_get_details(
         segment_index = app_frames_into_gap // seg_block_length
         local_progress_in_segment = app_frames_into_gap % seg_block_length
 
-    if segment_index == 0:
+    # --- 4. Execute Unified Continuum Logic (Anchor Persistence vs Telescopic Extension) ---
+    # varispeed_hold_block_count < 0: Mode 1 pure varispeed (Ground truth anchor holds infinitely)
+    # segment_index < varispeed_hold_block_count: Mode 1 anchor holds for grace period
+    # varispeed_hold_block_count == 0: Mode 2 immediately (Obfuscation / Alternate Timeline: paints over original values)
+    if varispeed_hold_block_count < 0 or segment_index < varispeed_hold_block_count:
         # --- MODE 1: "Tape Varispeed" (Anchor) ---
         out.randVal = float(fpsr_tm_base(master_frame, int(periodA), int(periodB), int(periodSwitch), int(seedInner), int(seedOuter), finalRandSwitch))
     else:
@@ -885,7 +908,7 @@ def fpsr_tm_get_details(
     if lod < 1: return out
 
     # LOD 1
-    prev_out = fpsr_tm_get_details(frame - 1, frame_multiplier, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length)
+    prev_out = fpsr_tm_get_details(frame - 1, frame_multiplier, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length, varispeed_hold_block_count)
     out.randVal_previous = prev_out.randVal 
     out.has_changed = 1 if (out.randVal != prev_out.randVal) else 0
     
@@ -902,7 +925,7 @@ def fpsr_tm_get_details(
         bound_low_int = frame
         step_int = 1
         while (frame - step_int > frame - max_search_frames):
-            val_at_probe = fpsr_tm_get_details(frame - step_int, frame_multiplier, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length).randVal
+            val_at_probe = fpsr_tm_get_details(frame - step_int, frame_multiplier, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length, varispeed_hold_block_count).randVal
             if (val_at_probe != out.randVal):
                 bound_low_int = frame - step_int
                 break
@@ -914,9 +937,9 @@ def fpsr_tm_get_details(
         result_int = frame - max_search_frames + 1
         while(low_int <= high_int):
             mid_int = low_int + (high_int - low_int) // 2
-            mid_val = fpsr_tm_get_details(mid_int, frame_multiplier, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length).randVal
+            mid_val = fpsr_tm_get_details(mid_int, frame_multiplier, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length, varispeed_hold_block_count).randVal
             if (mid_val == out.randVal):
-                prev_mid_val = fpsr_tm_get_details(mid_int - 1, frame_multiplier, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length).randVal
+                prev_mid_val = fpsr_tm_get_details(mid_int - 1, frame_multiplier, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length, varispeed_hold_block_count).randVal
                 if (prev_mid_val != out.randVal):
                     result_int = mid_int
                     break
@@ -929,7 +952,7 @@ def fpsr_tm_get_details(
     bound_high_int = frame
     step_int = 1
     while (frame + step_int < frame + max_search_frames):
-        val_at_probe = fpsr_tm_get_details(frame + step_int, frame_multiplier, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length).randVal
+        val_at_probe = fpsr_tm_get_details(frame + step_int, frame_multiplier, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length, varispeed_hold_block_count).randVal
         if (val_at_probe != out.randVal):
             bound_high_int = frame + step_int
             next_val_candidate = val_at_probe
@@ -942,7 +965,7 @@ def fpsr_tm_get_details(
     result_int = frame + max_search_frames
     while(low_int <= high_int):
         mid_int = low_int + (high_int - low_int) // 2
-        mid_val = fpsr_tm_get_details(mid_int, frame_multiplier, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length).randVal
+        mid_val = fpsr_tm_get_details(mid_int, frame_multiplier, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length, varispeed_hold_block_count).randVal
         if (mid_val != out.randVal):
             result_int = mid_int
             next_val_candidate = mid_val
@@ -970,7 +993,8 @@ def fpsr_qs_get_details(
     streamSwitchDur: int, stream1QuantDur: int, stream2QuantDur: int, finalRandSwitch: bool,
     sine_lod_level: int,
     lod: int, max_search_frames: int,
-    seg_block_length: int
+    seg_block_length: int,
+    varispeed_hold_block_count: int
 ) -> FPSR_Output:
     """
     ---- QS: Quantised Switching Wrapper with Details ----
@@ -996,7 +1020,14 @@ def fpsr_qs_get_details(
         sine_lod_level (int): Algorithm parameter.
         lod (int): The level of detail to calculate.
         max_search_frames (int): A safety limit for the backward/forward search.
-        seg_block_length (int): The "runway" length for HPQ logic.
+        seg_block_length (int): The "runway" length for HPQ logic (in application frames).
+        varispeed_hold_block_count (int): Anchor persistence threshold:
+            -1 = Pure Tape Varispeed (Exact 1:1 Ground-Truth Hold; Metrology mode)
+             0 = Obfuscation / Alternate Timeline (Leaves no trace of the original
+                 values at their underlying frames; 'paints over the original painting'
+                 while preserving the macro rhythm grid)
+            >=1 = Phrased Anchor + Infill (Anchor milestone holds for N runway blocks
+                 before generative sub-phrasing)
 
     Returns:
         FPSR_Output: A struct with metadata populated based on the LOD.
@@ -1019,7 +1050,11 @@ def fpsr_qs_get_details(
         local_progress_in_segment = app_frames_into_gap % seg_block_length
 
     base_qs_output = None
-    if segment_index == 0:
+    # --- 4. Execute Unified Continuum Logic (Anchor Persistence vs Telescopic Extension) ---
+    # varispeed_hold_block_count < 0: Mode 1 pure varispeed (Ground truth anchor holds infinitely)
+    # segment_index < varispeed_hold_block_count: Mode 1 anchor holds for grace period
+    # varispeed_hold_block_count == 0: Mode 2 immediately (Obfuscation / Alternate Timeline: paints over original values)
+    if varispeed_hold_block_count < 0 or segment_index < varispeed_hold_block_count:
         # --- MODE 1: "Tape Varispeed" (Anchor) ---
         base_qs_output = fpsr_qs_base(master_frame, float(baseWaveFreq), float(stream2FreqMult), quantLevelsMinMax, streamsOffset, quantOffsets, int(streamSwitchDur), int(stream1QuantDur), int(stream2QuantDur), finalRandSwitch, sine_lod_level)
     else:
@@ -1042,9 +1077,9 @@ def fpsr_qs_get_details(
     if lod < 1: return out
 
     # LOD 1
-    prev_out = fpsr_qs_get_details(frame - 1, frame_multiplier, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0, seg_block_length)
+    prev_out = fpsr_qs_get_details(frame - 1, frame_multiplier, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0, seg_block_length, varispeed_hold_block_count)
     out.randVal_previous = prev_out.randVal
-    out.has_changed = 1 if (out.randVal != out.randVal_previous) else 0
+    out.has_changed = 1 if (out.randVal != prev_out.randVal) else 0
     
     if lod < 2: return out
 
@@ -1059,7 +1094,7 @@ def fpsr_qs_get_details(
         bound_low_int = frame
         step_int = 1
         while (frame - step_int > frame - max_search_frames): 
-            probe_qs_output = fpsr_qs_get_details(frame - step_int, frame_multiplier, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0, seg_block_length)
+            probe_qs_output = fpsr_qs_get_details(frame - step_int, frame_multiplier, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0, seg_block_length, varispeed_hold_block_count)
             if (probe_qs_output.randVal != out.randVal):
                 bound_low_int = frame - step_int
                 break
@@ -1071,9 +1106,9 @@ def fpsr_qs_get_details(
         result_int = frame - max_search_frames + 1
         while(low_int <= high_int):
             mid_int = low_int + (high_int - low_int) // 2
-            mid_qs_output = fpsr_qs_get_details(mid_int, frame_multiplier, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0, seg_block_length)
+            mid_qs_output = fpsr_qs_get_details(mid_int, frame_multiplier, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0, seg_block_length, varispeed_hold_block_count)
             if (mid_qs_output.randVal == out.randVal):
-                mid_minus_step_qs_output = fpsr_qs_get_details(mid_int - 1, frame_multiplier, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0, seg_block_length)
+                mid_minus_step_qs_output = fpsr_qs_get_details(mid_int - 1, frame_multiplier, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0, seg_block_length, varispeed_hold_block_count)
                 if (mid_minus_step_qs_output.randVal != out.randVal):
                     result_int = mid_int
                     break
@@ -1086,7 +1121,7 @@ def fpsr_qs_get_details(
     bound_high_int = frame
     step_int = 1
     while (frame + step_int < frame + max_search_frames): 
-        probe_qs_output = fpsr_qs_get_details(frame + step_int, frame_multiplier, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0, seg_block_length)
+        probe_qs_output = fpsr_qs_get_details(frame + step_int, frame_multiplier, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0, seg_block_length, varispeed_hold_block_count)
         if (probe_qs_output.randVal != out.randVal):
             bound_high_int = frame + step_int
             next_val_candidate = probe_qs_output.randVal
@@ -1099,7 +1134,7 @@ def fpsr_qs_get_details(
     result_int = frame + max_search_frames
     while(low_int <= high_int):
         mid_int = low_int + (high_int - low_int) // 2
-        mid_qs_output = fpsr_qs_get_details(mid_int, frame_multiplier, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0, seg_block_length)
+        mid_qs_output = fpsr_qs_get_details(mid_int, frame_multiplier, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0, seg_block_length, varispeed_hold_block_count)
         if (mid_qs_output.randVal != out.randVal):
             result_int = mid_int
             next_val_candidate = mid_qs_output.randVal
@@ -1131,7 +1166,8 @@ def fpsr_bd_get_details(
     inter_op: str,
     value_seed_offset: int,
     lod: int, max_search_frames: int,
-    seg_block_length: int
+    seg_block_length: int,
+    varispeed_hold_block_count: int
 ) -> FPSR_Output:
     """
     ---- BD: Bitwise Decode Wrapper with Details ----
@@ -1155,7 +1191,14 @@ def fpsr_bd_get_details(
         value_seed_offset (int): Algorithm parameter.
         lod (int): The level of detail to calculate.
         max_search_frames (int): A safety limit for the backward/forward search.
-        seg_block_length (int): The "runway" length for HPQ logic.
+        seg_block_length (int): The "runway" length for HPQ logic (in application frames).
+        varispeed_hold_block_count (int): Anchor persistence threshold:
+            -1 = Pure Tape Varispeed (Exact 1:1 Ground-Truth Hold; Metrology mode)
+             0 = Obfuscation / Alternate Timeline (Leaves no trace of the original
+                 values at their underlying frames; 'paints over the original painting'
+                 while preserving the macro rhythm grid)
+            >=1 = Phrased Anchor + Infill (Anchor milestone holds for N runway blocks
+                 before generative sub-phrasing)
 
     Returns:
         FPSR_Output: A struct with metadata populated based on the LOD.
@@ -1178,7 +1221,11 @@ def fpsr_bd_get_details(
         segment_index = app_frames_into_gap // seg_block_length
         local_progress_in_segment = app_frames_into_gap % seg_block_length
 
-    if segment_index == 0:
+    # --- 4. Execute Unified Continuum Logic (Anchor Persistence vs Telescopic Extension) ---
+    # varispeed_hold_block_count < 0: Mode 1 pure varispeed (Ground truth anchor holds infinitely)
+    # segment_index < varispeed_hold_block_count: Mode 1 anchor holds for grace period
+    # varispeed_hold_block_count == 0: Mode 2 immediately (Obfuscation / Alternate Timeline: paints over original values)
+    if varispeed_hold_block_count < 0 or segment_index < varispeed_hold_block_count:
         # --- MODE 1: "Tape Varispeed" (Anchor) ---
         out.randVal = float(fpsr_bd_base(
             master_frame, int(block_size), streams_number, int(streams_offset),
@@ -1198,9 +1245,9 @@ def fpsr_bd_get_details(
     if lod < 1: return out
 
     # LOD 1
-    prev_out = fpsr_bd_get_details(frame - 1, frame_multiplier, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0, seg_block_length)
+    prev_out = fpsr_bd_get_details(frame - 1, frame_multiplier, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0, seg_block_length, varispeed_hold_block_count)
     out.randVal_previous = prev_out.randVal
-    out.has_changed = 1 if (out.randVal != out.randVal_previous) else 0
+    out.has_changed = 1 if (out.randVal != prev_out.randVal) else 0
 
     if lod < 2: return out
 
@@ -1215,7 +1262,7 @@ def fpsr_bd_get_details(
         bound_low_int = frame
         step_int = 1
         while (frame - step_int > frame - max_search_frames):
-            val_at_probe = fpsr_bd_get_details(frame - step_int, frame_multiplier, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0, seg_block_length).randVal
+            val_at_probe = fpsr_bd_get_details(frame - step_int, frame_multiplier, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0, seg_block_length, varispeed_hold_block_count).randVal
             if (val_at_probe != out.randVal):
                 bound_low_int = frame - step_int
                 break
@@ -1227,9 +1274,9 @@ def fpsr_bd_get_details(
         result_int = frame - max_search_frames + 1
         while(low_int <= high_int):
             mid_int = low_int + (high_int - low_int) // 2
-            mid_val = fpsr_bd_get_details(mid_int, frame_multiplier, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0, seg_block_length).randVal
+            mid_val = fpsr_bd_get_details(mid_int, frame_multiplier, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0, seg_block_length, varispeed_hold_block_count).randVal
             if (mid_val == out.randVal):
-                prev_mid_val = fpsr_bd_get_details(mid_int - 1, frame_multiplier, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0, seg_block_length).randVal
+                prev_mid_val = fpsr_bd_get_details(mid_int - 1, frame_multiplier, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0, seg_block_length, varispeed_hold_block_count).randVal
                 if (prev_mid_val != out.randVal):
                     result_int = mid_int
                     break
@@ -1242,7 +1289,7 @@ def fpsr_bd_get_details(
     bound_high_int = frame
     step_int = 1
     while (frame + step_int < frame + max_search_frames):
-        val_at_probe = fpsr_bd_get_details(frame + step_int, frame_multiplier, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0, seg_block_length).randVal
+        val_at_probe = fpsr_bd_get_details(frame + step_int, frame_multiplier, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0, seg_block_length, varispeed_hold_block_count).randVal
         if (val_at_probe != out.randVal):
             bound_high_int = frame + step_int
             next_val_candidate = val_at_probe
@@ -1255,7 +1302,7 @@ def fpsr_bd_get_details(
     result_int = frame + max_search_frames
     while(low_int <= high_int):
         mid_int = low_int + (high_int - low_int) // 2
-        mid_val = fpsr_bd_get_details(mid_int, frame_multiplier, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0, seg_block_length).randVal
+        mid_val = fpsr_bd_get_details(mid_int, frame_multiplier, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0, seg_block_length, varispeed_hold_block_count).randVal
         if (mid_val != out.randVal):
             result_int = mid_int
             next_val_candidate = mid_val
@@ -1294,7 +1341,6 @@ if __name__ == "__main__":
     main_frame_multiplier = 1.0 # Default value representing "Normal Speed"
     
     speed_mode_description = ""
-    # [FIX]: C-style comment converted to Python
     # Check if the frame multiplier is less than 1.0, indicating "Slow-Down" mode
     if main_frame_multiplier < 1.0:
         speed_mode_description = "Slow-Down"
@@ -1304,11 +1350,17 @@ if __name__ == "__main__":
         speed_mode_description = "Normal Speed"
     print(f"Frame Multiplier: {main_frame_multiplier:.2f} ({speed_mode_description})")
     
-    # NEW: HPQ Parameter
-    # A value of 5 means "tape varispeed" holds until a 5x stretch
-    # (i.e., frame_multiplier <= 0.2), at which point new generative
-    # phrases kick in. (5 = 1.0 / 0.2)
+    # *** HPQ Parameters ***
+    # A value of 5 means the gap is segmented into 5-frame runway segments.
     seg_block_length = 5
+    # Anchor persistence threshold:
+    # -1 = Pure Tape Varispeed (Exact 1:1 Ground-Truth Hold; Metrology mode)
+    #  0 = Obfuscation / Alternate Timeline (Leaves no trace of the original
+    #      values at their underlying frames; 'paints over the original painting'
+    #      while preserving the macro rhythm grid)
+    # >=1 = Phrased Anchor + Infill (Anchor milestone holds for N runway blocks
+    #      before generative sub-phrasing)
+    varispeed_hold_block_count = 1
 
     for loop_frame in range(num_frames):
         frame = loop_frame + start_frames[algo] # Use int
@@ -1326,7 +1378,7 @@ if __name__ == "__main__":
             max_search_frames = 50 # Safety limit for search
 
             # Call fpsr_sm_get_details
-            output = fpsr_sm_get_details(frame, frame_multiplier, minHoldFrames, maxHoldFrames, reseedFrames, offsetInner, offsetOuter, finalRandSwitch, lod, max_search_frames, seg_block_length)
+            output = fpsr_sm_get_details(frame, frame_multiplier, minHoldFrames, maxHoldFrames, reseedFrames, offsetInner, offsetOuter, finalRandSwitch, lod, max_search_frames, seg_block_length, varispeed_hold_block_count)
         
         elif algo == 1:
             # Parameters for FPS-R:TM
@@ -1341,7 +1393,7 @@ if __name__ == "__main__":
             # Call fpsr_tm_get_details
             output = fpsr_tm_get_details(frame, frame_multiplier,
                 periodA, periodB, periodSwitch, offsetInner, offsetOuter, 
-                finalRandSwitch, lod, max_search_frames, seg_block_length)
+                finalRandSwitch, lod, max_search_frames, seg_block_length, varispeed_hold_block_count)
         
         elif algo == 2:
             # Parameters for FPS-R:QS
@@ -1361,7 +1413,7 @@ if __name__ == "__main__":
             output = fpsr_qs_get_details(frame, frame_multiplier, baseWaveFreq, stream2FreqMult, 
                 quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, 
                 stream1QuantDur, stream2QuantDur, finalRandSwitch, 
-                sine_lod_level, lod, max_search_frames, seg_block_length)
+                sine_lod_level, lod, max_search_frames, seg_block_length, varispeed_hold_block_count)
         
         elif algo == 3:
             # Parameters for FPS-R:BD
@@ -1383,7 +1435,7 @@ if __name__ == "__main__":
             output = fpsr_bd_get_details(
                 frame, frame_multiplier, p_block_size, p_streams_number, p_streams_offset,
                 p_intra_op, p_dynamic_shift_bits, p_static_shift_amount,
-                p_inter_op, p_value_seed_offset, lod, max_search_frames, seg_block_length
+                p_inter_op, p_value_seed_offset, lod, max_search_frames, seg_block_length, varispeed_hold_block_count
             )
 
         # Print the output for the current frame

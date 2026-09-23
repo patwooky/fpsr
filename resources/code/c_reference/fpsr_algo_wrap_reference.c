@@ -794,12 +794,11 @@ double fpsr_h_base(int64_t frame)
 /******************************************************************************/
 
 // --- Forward declarations are needed for recursive calls ---
-// *** MODIFIED: Added seg_block_length parameter ***
-FPSR_Output fpsr_sm_get_details(int64_t frame, double frame_multiplier, double* p_scaled_frame_pos_out, int minHold, int maxHold, int reseedInterval, int seedInner, int seedOuter, int finalRandSwitch, int lod, int max_search_frames, int seg_block_length);
-FPSR_Output fpsr_tm_get_details(int64_t frame, double frame_multiplier, double* p_scaled_frame_pos_out, int periodA, int periodB, int periodSwitch, int seedInner, int seedOuter, int finalRandSwitch, int lod, int max_search_frames, int seg_block_length);
-FPSR_Output fpsr_qs_get_details(int64_t frame, double frame_multiplier, double* p_scaled_frame_pos_out, float baseWaveFreq, float stream2FreqMult, const int quantLevelsMinMax[2], const int streamsOffset[2], const int quantOffsets[2], int streamSwitchDur, int stream1QuantDur, int stream2QuantDur, int finalRandSwitch, int sine_lod_level, int lod, int max_search_frames, int seg_block_length);
-FPSR_Output fpsr_bd_get_details(int64_t frame, double frame_multiplier, double* p_scaled_frame_pos_out, int block_size, int streams_number, int streams_offset, const char* intra_op, int dynamic_shift_bits, int static_shift_amount, const char* inter_op, int value_seed_offset, int lod, int max_search_frames, int seg_block_length);
-
+// *** MODIFIED: Added seg_block_length and varispeed_hold_block_count parameters ***
+FPSR_Output fpsr_sm_get_details(int64_t frame, double frame_multiplier, double* p_scaled_frame_pos_out, int minHold, int maxHold, int reseedInterval, int seedInner, int seedOuter, int finalRandSwitch, int lod, int max_search_frames, int seg_block_length, int varispeed_hold_block_count);
+FPSR_Output fpsr_tm_get_details(int64_t frame, double frame_multiplier, double* p_scaled_frame_pos_out, int periodA, int periodB, int periodSwitch, int seedInner, int seedOuter, int finalRandSwitch, int lod, int max_search_frames, int seg_block_length, int varispeed_hold_block_count);
+FPSR_Output fpsr_qs_get_details(int64_t frame, double frame_multiplier, double* p_scaled_frame_pos_out, float baseWaveFreq, float stream2FreqMult, const int quantLevelsMinMax[2], const int streamsOffset[2], const int quantOffsets[2], int streamSwitchDur, int stream1QuantDur, int stream2QuantDur, int finalRandSwitch, int sine_lod_level, int lod, int max_search_frames, int seg_block_length, int varispeed_hold_block_count);
+FPSR_Output fpsr_bd_get_details(int64_t frame, double frame_multiplier, double* p_scaled_frame_pos_out, int block_size, int streams_number, int streams_offset, const char* intra_op, int dynamic_shift_bits, int static_shift_amount, const char* inter_op, int value_seed_offset, int lod, int max_search_frames, int seg_block_length, int varispeed_hold_block_count);
 
 /**
  * ---- SM: Stacked Modulo Wrapper with Details ----
@@ -818,7 +817,14 @@ FPSR_Output fpsr_bd_get_details(int64_t frame, double frame_multiplier, double* 
  * @param finalRandSwitch (bool) A flag that can turn off the final randomisation step.
  * @param lod (int) The level of detail to calculate.
  * @param max_search_frames (int) A safety limit for the backward/forward search.
- * @param seg_block_length (int) *** NEW *** The "runway" length for HPQ logic.
+ * @param seg_block_length (int) The "runway" length for HPQ logic.
+ * @param varispeed_hold_block_count (int) Anchor persistence threshold:
+ *        -1 = Pure Tape Varispeed (Exact 1:1 Ground-Truth Hold; Metrology mode)
+ *         0 = Obfuscation / Alternate Timeline (Leaves no trace of the original
+ *             values at their underlying frames; 'paints over the original painting'
+ *             while preserving the macro rhythm grid)
+ *       >=1 = Phrased Anchor + Infill (Anchor milestone holds for N runway blocks
+ *             before generative sub-phrasing)
  * @return FPSR_Output struct with metadata populated based on the LOD.
  */
 FPSR_Output fpsr_sm_get_details(
@@ -827,7 +833,8 @@ FPSR_Output fpsr_sm_get_details(
     int minHold, int maxHold,
     int reseedInterval, int seedInner, int seedOuter, int finalRandSwitch,
     int lod, int max_search_frames,
-    int seg_block_length) // *** NEW HPQ PARAMETER ***
+    int seg_block_length,
+    int varispeed_hold_block_count)
 {
     FPSR_Output out = {0};
     
@@ -888,8 +895,11 @@ FPSR_Output fpsr_sm_get_details(
         local_progress_in_segment = 0;
     }
 
-    // --- 4. Execute Two-Mode Logic ---
-    if (segment_index == 0) {
+    // --- 4. Execute Unified Continuum Logic (Anchor Persistence vs Telescopic Extension) ---
+    // varispeed_hold_block_count < 0: Mode 1 pure varispeed (Ground truth anchor holds infinitely)
+    // segment_index < varispeed_hold_block_count: Mode 1 anchor holds for grace period
+    // varispeed_hold_block_count == 0: Mode 2 immediately (Obfuscation / Alternate Timeline: paints over original values)
+    if (varispeed_hold_block_count < 0 || segment_index < varispeed_hold_block_count) {
         // --- MODE 1: "Tape Varispeed" (Anchor) ---
         // Repeat the value of the `master_frame` from the Content Timeline.
         out.randVal = (float)fpsr_sm_base(master_frame, (int64_t)minHold, (int64_t)maxHold, (int64_t)reseedInterval, (int64_t)seedInner, (int64_t)seedOuter, finalRandSwitch);
@@ -907,15 +917,13 @@ FPSR_Output fpsr_sm_get_details(
 
     // LOD 1: Compare with previous frame to check for change.
     // This call is on the "Application Timeline".
-    // *** MODIFIED: Pass seg_block_length ***
-    FPSR_Output prev_out = fpsr_sm_get_details(frame - 1, frame_multiplier, NULL, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length);
+    FPSR_Output prev_out = fpsr_sm_get_details(frame - 1, frame_multiplier, NULL, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length, varispeed_hold_block_count);
     out.randVal_previous = prev_out.randVal; 
     out.has_changed = (out.randVal != prev_out.randVal);
 
     if (lod < 2) return out;
 
     // --- LOD 2: MODIFIED Robust Two-Phase Search ---
-    // The search logic operates entirely on the "Application Timeline".
     int64_t low_int, high_int, mid_int, result_int; 
     float next_val_candidate = 0.0f;
     int64_t step_int = 1;
@@ -927,8 +935,7 @@ FPSR_Output fpsr_sm_get_details(
         int64_t bound_low_int = frame;
         step_int = 1;
         while (frame - step_int > frame - max_search_frames) { 
-            // *** MODIFIED: Pass seg_block_length ***
-            float val_at_probe = fpsr_sm_get_details(frame - step_int, frame_multiplier, NULL, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length).randVal;
+            float val_at_probe = fpsr_sm_get_details(frame - step_int, frame_multiplier, NULL, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length, varispeed_hold_block_count).randVal;
             if (val_at_probe != out.randVal) {
                 bound_low_int = frame - step_int;
                 break;
@@ -942,11 +949,9 @@ FPSR_Output fpsr_sm_get_details(
         result_int = frame - max_search_frames + 1;
         while(low_int <= high_int) {
             mid_int = low_int + (high_int - low_int) / 2; 
-            // *** MODIFIED: Pass seg_block_length ***
-            float mid_val = fpsr_sm_get_details(mid_int, frame_multiplier, NULL, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length).randVal;
+            float mid_val = fpsr_sm_get_details(mid_int, frame_multiplier, NULL, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length, varispeed_hold_block_count).randVal;
             if (mid_val == out.randVal) {
-                // *** MODIFIED: Pass seg_block_length ***
-                float prev_mid_val = fpsr_sm_get_details(mid_int - 1, frame_multiplier, NULL, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length).randVal;
+                float prev_mid_val = fpsr_sm_get_details(mid_int - 1, frame_multiplier, NULL, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length, varispeed_hold_block_count).randVal;
                 if (prev_mid_val != out.randVal) {
                     result_int = mid_int; break;
                 }
@@ -962,8 +967,7 @@ FPSR_Output fpsr_sm_get_details(
     int64_t bound_high_int = frame;
     step_int = 1;
     while (frame + step_int < frame + max_search_frames) { 
-        // *** MODIFIED: Pass seg_block_length ***
-        float val_at_probe = fpsr_sm_get_details(frame + step_int, frame_multiplier, NULL, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length).randVal;
+        float val_at_probe = fpsr_sm_get_details(frame + step_int, frame_multiplier, NULL, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length, varispeed_hold_block_count).randVal;
         if (val_at_probe != out.randVal) {
             bound_high_int = frame + step_int;
             next_val_candidate = val_at_probe;
@@ -978,8 +982,7 @@ FPSR_Output fpsr_sm_get_details(
     result_int = frame + max_search_frames;
     while(low_int <= high_int) {
         mid_int = low_int + (high_int - low_int) / 2; 
-        // *** MODIFIED: Pass seg_block_length ***
-        float mid_val = fpsr_sm_get_details(mid_int, frame_multiplier, NULL, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length).randVal;
+        float mid_val = fpsr_sm_get_details(mid_int, frame_multiplier, NULL, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length, varispeed_hold_block_count).randVal;
         if (mid_val != out.randVal) {
             result_int = mid_int;
             next_val_candidate = mid_val;
@@ -1021,7 +1024,14 @@ FPSR_Output fpsr_sm_get_details(
  * @param finalRandSwitch (bool) A flag to enable/disable the final randomisation step.
  * @param lod (int) The level of detail to calculate.
  * @param max_search_frames (int) A safety limit for the backward/forward search.
- * @param seg_block_length (int) *** NEW *** The "runway" length for HPQ logic.
+ * @param seg_block_length (int) The "runway" length for HPQ logic.
+ * @param varispeed_hold_block_count (int) Anchor persistence threshold:
+ *        -1 = Pure Tape Varispeed (Exact 1:1 Ground-Truth Hold; Metrology mode)
+ *         0 = Obfuscation / Alternate Timeline (Leaves no trace of the original
+ *             values at their underlying frames; 'paints over the original painting'
+ *             while preserving the macro rhythm grid)
+ *       >=1 = Phrased Anchor + Infill (Anchor milestone holds for N runway blocks
+ *             before generative sub-phrasing)
  * @return FPSR_Output struct with metadata populated based on the LOD.
  */
 FPSR_Output fpsr_tm_get_details(
@@ -1030,7 +1040,8 @@ FPSR_Output fpsr_tm_get_details(
     int periodA, int periodB,
     int periodSwitch, int seedInner, int seedOuter, int finalRandSwitch,
     int lod, int max_search_frames,
-    int seg_block_length) // *** NEW HPQ PARAMETER ***
+    int seg_block_length,
+    int varispeed_hold_block_count)
 {
     FPSR_Output out = {0};
     
@@ -1073,8 +1084,11 @@ FPSR_Output fpsr_tm_get_details(
         local_progress_in_segment = 0;
     }
 
-    // --- 4. Execute Two-Mode Logic ---
-    if (segment_index == 0) {
+    // --- 4. Execute Unified Continuum Logic (Anchor Persistence vs Telescopic Extension) ---
+    // varispeed_hold_block_count < 0: Mode 1 pure varispeed (Ground truth anchor holds infinitely)
+    // segment_index < varispeed_hold_block_count: Mode 1 anchor holds for grace period
+    // varispeed_hold_block_count == 0: Mode 2 immediately (Obfuscation / Alternate Timeline: paints over original values)
+    if (varispeed_hold_block_count < 0 || segment_index < varispeed_hold_block_count) {
         // --- MODE 1: "Tape Varispeed" (Anchor) ---
         // Repeat the value of the `master_frame` from the Content Timeline.
         out.randVal = (float)fpsr_tm_base(master_frame, (int64_t)periodA, (int64_t)periodB, (int64_t)periodSwitch, (int64_t)seedInner, (int64_t)seedOuter, finalRandSwitch);
@@ -1091,8 +1105,7 @@ FPSR_Output fpsr_tm_get_details(
     if (lod < 1) return out;
 
     // LOD 1
-    // *** MODIFIED: Pass seg_block_length ***
-    FPSR_Output prev_out = fpsr_tm_get_details(frame - 1, frame_multiplier, NULL, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length);
+    FPSR_Output prev_out = fpsr_tm_get_details(frame - 1, frame_multiplier, NULL, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length, varispeed_hold_block_count);
     out.randVal_previous = prev_out.randVal; 
     out.has_changed = (out.randVal != prev_out.randVal);
     
@@ -1110,8 +1123,7 @@ FPSR_Output fpsr_tm_get_details(
         int64_t bound_low_int = frame;
         step_int = 1;
         while (frame - step_int > frame - max_search_frames) {
-            // *** MODIFIED: Pass seg_block_length ***
-            float val_at_probe = fpsr_tm_get_details(frame - step_int, frame_multiplier, NULL, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length).randVal;
+            float val_at_probe = fpsr_tm_get_details(frame - step_int, frame_multiplier, NULL, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length, varispeed_hold_block_count).randVal;
             if (val_at_probe != out.randVal) {
                 bound_low_int = frame - step_int;
                 break;
@@ -1124,11 +1136,9 @@ FPSR_Output fpsr_tm_get_details(
         result_int = frame - max_search_frames + 1;
         while(low_int <= high_int) {
             mid_int = low_int + (high_int - low_int) / 2;
-            // *** MODIFIED: Pass seg_block_length ***
-            float mid_val = fpsr_tm_get_details(mid_int, frame_multiplier, NULL, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length).randVal;
+            float mid_val = fpsr_tm_get_details(mid_int, frame_multiplier, NULL, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length, varispeed_hold_block_count).randVal;
             if (mid_val == out.randVal) {
-                // *** MODIFIED: Pass seg_block_length ***
-                float prev_mid_val = fpsr_tm_get_details(mid_int - 1, frame_multiplier, NULL, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length).randVal;
+                float prev_mid_val = fpsr_tm_get_details(mid_int - 1, frame_multiplier, NULL, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length, varispeed_hold_block_count).randVal;
                 if (prev_mid_val != out.randVal) {
                     result_int = mid_int; break;
                 }
@@ -1144,8 +1154,7 @@ FPSR_Output fpsr_tm_get_details(
     int64_t bound_high_int = frame;
     step_int = 1;
     while (frame + step_int < frame + max_search_frames) {
-        // *** MODIFIED: Pass seg_block_length ***
-        float val_at_probe = fpsr_tm_get_details(frame + step_int, frame_multiplier, NULL, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length).randVal;
+        float val_at_probe = fpsr_tm_get_details(frame + step_int, frame_multiplier, NULL, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length, varispeed_hold_block_count).randVal;
         if (val_at_probe != out.randVal) {
             bound_high_int = frame + step_int;
             next_val_candidate = val_at_probe;
@@ -1159,8 +1168,7 @@ FPSR_Output fpsr_tm_get_details(
     result_int = frame + max_search_frames;
     while(low_int <= high_int) {
         mid_int = low_int + (high_int - low_int) / 2;
-        // *** MODIFIED: Pass seg_block_length ***
-        float mid_val = fpsr_tm_get_details(mid_int, frame_multiplier, NULL, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length).randVal;
+        float mid_val = fpsr_tm_get_details(mid_int, frame_multiplier, NULL, periodA, periodB, periodSwitch, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length, varispeed_hold_block_count).randVal;
         if (mid_val != out.randVal) {
             result_int = mid_int;
             next_val_candidate = mid_val;
@@ -1205,7 +1213,14 @@ FPSR_Output fpsr_tm_get_details(
  * @param finalRandSwitch (bool) A flag that can turn off the final randomisation step.
  * @param lod (int) The level of detail to calculate.
  * @param max_search_frames (int) A safety limit for the backward/forward search.
- * @param seg_block_length (int) *** NEW *** The "runway" length for HPQ logic.
+ * @param seg_block_length (int) The "runway" length for HPQ logic.
+ * @param varispeed_hold_block_count (int) Anchor persistence threshold:
+ *        -1 = Pure Tape Varispeed (Exact 1:1 Ground-Truth Hold; Metrology mode)
+ *         0 = Obfuscation / Alternate Timeline (Leaves no trace of the original
+ *             values at their underlying frames; 'paints over the original painting'
+ *             while preserving the macro rhythm grid)
+ *       >=1 = Phrased Anchor + Infill (Anchor milestone holds for N runway blocks
+ *             before generative sub-phrasing)
  * @return FPSR_Output struct with metadata populated based on the LOD.
  */
 FPSR_Output fpsr_qs_get_details(
@@ -1216,7 +1231,8 @@ FPSR_Output fpsr_qs_get_details(
     int streamSwitchDur, int stream1QuantDur, int stream2QuantDur, int finalRandSwitch,
     int sine_lod_level,
     int lod, int max_search_frames,
-    int seg_block_length) // *** NEW HPQ PARAMETER ***
+    int seg_block_length,
+    int varispeed_hold_block_count)
 {
     FPSR_Output out = {0};
     
@@ -1260,7 +1276,11 @@ FPSR_Output fpsr_qs_get_details(
     }
 
     FPSR_Output base_qs_output;
-    if (segment_index == 0) {
+    // --- 4. Execute Unified Continuum Logic (Anchor Persistence vs Telescopic Extension) ---
+    // varispeed_hold_block_count < 0: Mode 1 pure varispeed (Ground truth anchor holds infinitely)
+    // segment_index < varispeed_hold_block_count: Mode 1 anchor holds for grace period
+    // varispeed_hold_block_count == 0: Mode 2 immediately (Obfuscation / Alternate Timeline: paints over original values)
+    if (varispeed_hold_block_count < 0 || segment_index < varispeed_hold_block_count) {
         // --- MODE 1: "Tape Varispeed" (Anchor) ---
         // Repeat the value of the `master_frame` from the Content Timeline.
         base_qs_output = fpsr_qs_base(master_frame, (double)baseWaveFreq, (double)stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, (int64_t)streamSwitchDur, (int64_t)stream1QuantDur, (int64_t)stream2QuantDur, finalRandSwitch, sine_lod_level);
@@ -1287,8 +1307,7 @@ FPSR_Output fpsr_qs_get_details(
     if (lod < 1) return out;
 
     // LOD 1
-    // *** MODIFIED: Pass seg_block_length ***
-    FPSR_Output prev_out = fpsr_qs_get_details(frame - 1, frame_multiplier, NULL, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0, seg_block_length);
+    FPSR_Output prev_out = fpsr_qs_get_details(frame - 1, frame_multiplier, NULL, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0, seg_block_length, varispeed_hold_block_count);
     out.randVal_previous = prev_out.randVal;
     out.has_changed = (out.randVal != out.randVal_previous);
     
@@ -1306,8 +1325,7 @@ FPSR_Output fpsr_qs_get_details(
         int64_t bound_low_int = frame;
         step_int = 1;
         while (frame - step_int > frame - max_search_frames) { 
-            // *** MODIFIED: Pass seg_block_length ***
-            FPSR_Output probe_qs_output = fpsr_qs_get_details(frame - step_int, frame_multiplier, NULL, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0, seg_block_length);
+            FPSR_Output probe_qs_output = fpsr_qs_get_details(frame - step_int, frame_multiplier, NULL, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0, seg_block_length, varispeed_hold_block_count);
             if (probe_qs_output.randVal != out.randVal) {
                 bound_low_int = frame - step_int;
                 break;
@@ -1320,11 +1338,9 @@ FPSR_Output fpsr_qs_get_details(
         result_int = frame - max_search_frames + 1;
         while(low_int <= high_int) {
             mid_int = low_int + (high_int - low_int) / 2; 
-            // *** MODIFIED: Pass seg_block_length ***
-            FPSR_Output mid_qs_output = fpsr_qs_get_details(mid_int, frame_multiplier, NULL, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0, seg_block_length);
+            FPSR_Output mid_qs_output = fpsr_qs_get_details(mid_int, frame_multiplier, NULL, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0, seg_block_length, varispeed_hold_block_count);
             if (mid_qs_output.randVal == out.randVal) {
-                // *** MODIFIED: Pass seg_block_length ***
-                FPSR_Output mid_minus_step_qs_output = fpsr_qs_get_details(mid_int - 1, frame_multiplier, NULL, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0, seg_block_length);
+                FPSR_Output mid_minus_step_qs_output = fpsr_qs_get_details(mid_int - 1, frame_multiplier, NULL, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0, seg_block_length, varispeed_hold_block_count);
                 if (mid_minus_step_qs_output.randVal != out.randVal) {
                     result_int = mid_int; break;
                 }
@@ -1340,8 +1356,7 @@ FPSR_Output fpsr_qs_get_details(
     int64_t bound_high_int = frame;
     step_int = 1;
     while (frame + step_int < frame + max_search_frames) { 
-        // *** MODIFIED: Pass seg_block_length ***
-        FPSR_Output probe_qs_output = fpsr_qs_get_details(frame + step_int, frame_multiplier, NULL, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0, seg_block_length);
+        FPSR_Output probe_qs_output = fpsr_qs_get_details(frame + step_int, frame_multiplier, NULL, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0, seg_block_length, varispeed_hold_block_count);
         if (probe_qs_output.randVal != out.randVal) {
             bound_high_int = frame + step_int;
             next_val_candidate = probe_qs_output.randVal;
@@ -1355,8 +1370,7 @@ FPSR_Output fpsr_qs_get_details(
     result_int = frame + max_search_frames;
     while(low_int <= high_int) {
         mid_int = low_int + (high_int - low_int) / 2; 
-        // *** MODIFIED: Pass seg_block_length ***
-        FPSR_Output mid_qs_output = fpsr_qs_get_details(mid_int, frame_multiplier, NULL, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0, seg_block_length);
+        FPSR_Output mid_qs_output = fpsr_qs_get_details(mid_int, frame_multiplier, NULL, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, sine_lod_level, 0, 0, seg_block_length, varispeed_hold_block_count);
         if (mid_qs_output.randVal != out.randVal) {
             result_int = mid_int;
             next_val_candidate = mid_qs_output.randVal;
@@ -1404,7 +1418,14 @@ FPSR_Output fpsr_qs_get_details(
  * @param value_seed_offset (int) An additional seed offset for the final value calculation.
  * @param lod (int) The level of detail to calculate.
  * @param max_search_frames (int) A safety limit for the backward/forward search.
- * @param seg_block_length (int) *** NEW *** The "runway" length for HPQ logic.
+ * @param seg_block_length (int) The "runway" length for HPQ logic.
+ * @param varispeed_hold_block_count (int) Anchor persistence threshold:
+ *        -1 = Pure Tape Varispeed (Exact 1:1 Ground-Truth Hold; Metrology mode)
+ *         0 = Obfuscation / Alternate Timeline (Leaves no trace of the original
+ *             values at their underlying frames; 'paints over the original painting'
+ *             while preserving the macro rhythm grid)
+ *       >=1 = Phrased Anchor + Infill (Anchor milestone holds for N runway blocks
+ *             before generative sub-phrasing)
  * @return FPSR_Output struct with metadata populated based on the LOD.
  */
 FPSR_Output fpsr_bd_get_details(
@@ -1419,7 +1440,8 @@ FPSR_Output fpsr_bd_get_details(
     const char* inter_op,
     int value_seed_offset,
     int lod, int max_search_frames,
-    int seg_block_length) // *** NEW HPQ PARAMETER ***
+    int seg_block_length,
+    int varispeed_hold_block_count)
 {
     FPSR_Output out = {0};
     
@@ -1462,7 +1484,11 @@ FPSR_Output fpsr_bd_get_details(
         local_progress_in_segment = 0;
     }
 
-    if (segment_index == 0) {
+    // --- 4. Execute Unified Continuum Logic (Anchor Persistence vs Telescopic Extension) ---
+    // varispeed_hold_block_count < 0: Mode 1 pure varispeed (Ground truth anchor holds infinitely)
+    // segment_index < varispeed_hold_block_count: Mode 1 anchor holds for grace period
+    // varispeed_hold_block_count == 0: Mode 2 immediately (Obfuscation / Alternate Timeline: paints over original values)
+    if (varispeed_hold_block_count < 0 || segment_index < varispeed_hold_block_count) {
         // --- MODE 1: "Tape Varispeed" (Anchor) ---
         // Repeat the value of the `master_frame` from the Content Timeline.
         out.randVal = (float)fpsr_bd_base(
@@ -1485,8 +1511,7 @@ FPSR_Output fpsr_bd_get_details(
     if (lod < 1) return out;
 
     // LOD 1
-    // *** MODIFIED: Pass seg_block_length ***
-    FPSR_Output prev_out = fpsr_bd_get_details(frame - 1, frame_multiplier, NULL, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0, seg_block_length);
+    FPSR_Output prev_out = fpsr_bd_get_details(frame - 1, frame_multiplier, NULL, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0, seg_block_length, varispeed_hold_block_count);
     out.randVal_previous = prev_out.randVal;
     out.has_changed = (out.randVal != out.randVal_previous);
 
@@ -1504,8 +1529,7 @@ FPSR_Output fpsr_bd_get_details(
         int64_t bound_low_int = frame;
         step_int = 1;
         while (frame - step_int > frame - max_search_frames) {
-            // *** MODIFIED: Pass seg_block_length ***
-            float val_at_probe = fpsr_bd_get_details(frame - step_int, frame_multiplier, NULL, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0, seg_block_length).randVal;
+            float val_at_probe = fpsr_bd_get_details(frame - step_int, frame_multiplier, NULL, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0, seg_block_length, varispeed_hold_block_count).randVal;
             if (val_at_probe != out.randVal) {
                 bound_low_int = frame - step_int;
                 break;
@@ -1518,11 +1542,9 @@ FPSR_Output fpsr_bd_get_details(
         result_int = frame - max_search_frames + 1;
         while(low_int <= high_int) {
             mid_int = low_int + (high_int - low_int) / 2;
-            // *** MODIFIED: Pass seg_block_length ***
-            float mid_val = fpsr_bd_get_details(mid_int, frame_multiplier, NULL, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0, seg_block_length).randVal;
+            float mid_val = fpsr_bd_get_details(mid_int, frame_multiplier, NULL, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0, seg_block_length, varispeed_hold_block_count).randVal;
             if (mid_val == out.randVal) {
-                // *** MODIFIED: Pass seg_block_length ***
-                float prev_mid_val = fpsr_bd_get_details(mid_int - 1, frame_multiplier, NULL, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0, seg_block_length).randVal;
+                float prev_mid_val = fpsr_bd_get_details(mid_int - 1, frame_multiplier, NULL, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0, seg_block_length, varispeed_hold_block_count).randVal;
                 if (prev_mid_val != out.randVal) {
                     result_int = mid_int; break;
                 }
@@ -1538,8 +1560,7 @@ FPSR_Output fpsr_bd_get_details(
     int64_t bound_high_int = frame;
     step_int = 1;
     while (frame + step_int < frame + max_search_frames) {
-        // *** MODIFIED: Pass seg_block_length ***
-        float val_at_probe = fpsr_bd_get_details(frame + step_int, frame_multiplier, NULL, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0, seg_block_length).randVal;
+        float val_at_probe = fpsr_bd_get_details(frame + step_int, frame_multiplier, NULL, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0, seg_block_length, varispeed_hold_block_count).randVal;
         if (val_at_probe != out.randVal) {
             bound_high_int = frame + step_int;
             next_val_candidate = val_at_probe;
@@ -1553,8 +1574,7 @@ FPSR_Output fpsr_bd_get_details(
     result_int = frame + max_search_frames;
     while(low_int <= high_int) {
         mid_int = low_int + (high_int - low_int) / 2;
-        // *** MODIFIED: Pass seg_block_length ***
-        float mid_val = fpsr_bd_get_details(mid_int, frame_multiplier, NULL, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0, seg_block_length).randVal;
+        float mid_val = fpsr_bd_get_details(mid_int, frame_multiplier, NULL, block_size, streams_number, streams_offset, intra_op, dynamic_shift_bits, static_shift_amount, inter_op, value_seed_offset, 0, 0, seg_block_length, varispeed_hold_block_count).randVal;
         if (mid_val != out.randVal) {
             result_int = mid_int;
             next_val_candidate = mid_val;
@@ -1618,11 +1638,17 @@ int main() {
     }
     printf("Frame Multiplier: %.2f (%s)\n", main_frame_multiplier, speed_mode_description);
     
-    // *** NEW: HPQ Parameter ***
-    // A value of 5 means "tape varispeed" holds until a 5x stretch
-    // (i.e., frame_multiplier <= 0.2), at which point new generative
-    // phrases kick in. (5 = 1.0 / 0.2)
+    // *** HPQ Parameters ***
+    // A value of 5 means the gap is segmented into 5-frame runway segments.
     int seg_block_length = 5;
+    // Anchor persistence threshold:
+    // -1 = Pure Tape Varispeed (Exact 1:1 Ground-Truth Hold; Metrology mode)
+    //  0 = Obfuscation / Alternate Timeline (Leaves no trace of the original
+    //      values at their underlying frames; 'paints over the original painting'
+    //      while preserving the macro rhythm grid)
+    // >=1 = Phrased Anchor + Infill (Anchor milestone holds for N runway blocks
+    //      before generative sub-phrasing)
+    int varispeed_hold_block_count = 1;
 
     for (int loop_frame = 0; loop_frame < num_frames; loop_frame++) {
         int64_t frame = (int64_t)loop_frame + (int64_t)start_frames[algo]; // Use int64_t for frame
@@ -1640,8 +1666,7 @@ int main() {
             int max_search_frames = 50; // Safety limit for search
 
             // Call fpsr_sm_get_details
-            // *** MODIFIED: Pass seg_block_length ***
-            output = fpsr_sm_get_details(frame, frame_multiplier, NULL, minHoldFrames, maxHoldFrames, reseedFrames, offsetInner, offsetOuter, finalRandSwitch, lod, max_search_frames, seg_block_length);
+            output = fpsr_sm_get_details(frame, frame_multiplier, NULL, minHoldFrames, maxHoldFrames, reseedFrames, offsetInner, offsetOuter, finalRandSwitch, lod, max_search_frames, seg_block_length, varispeed_hold_block_count);
         } else if (algo == 1) {
             // Parameters for FPS-R:TM
             int periodA = 8;            // First hold duration
@@ -1653,10 +1678,9 @@ int main() {
             int max_search_frames = 50; // Safety limit for search
 
             // Call fpsr_tm_get_details
-            // *** MODIFIED: Pass seg_block_length ***
             output = fpsr_tm_get_details(frame, frame_multiplier, NULL,
                 periodA, periodB, periodSwitch, offsetInner, offsetOuter, 
-                finalRandSwitch, lod, max_search_frames, seg_block_length);
+                finalRandSwitch, lod, max_search_frames, seg_block_length, varispeed_hold_block_count);
         } else if (algo == 2) {
             // Parameters for FPS-R:QS
             float baseWaveFreq = 0.012f;    // Base wave frequency for stream 1
@@ -1672,32 +1696,26 @@ int main() {
             int max_search_frames = 50;     // Safety limit for search
 
             // Call fpsr_qs_get_details
-            // *** MODIFIED: Pass seg_block_length ***
             output = fpsr_qs_get_details(frame, frame_multiplier, NULL, baseWaveFreq, stream2FreqMult, 
                 quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, 
                 stream1QuantDur, stream2QuantDur, finalRandSwitch, 
-                sine_lod_level, lod, max_search_frames, seg_block_length);
+                sine_lod_level, lod, max_search_frames, seg_block_length, varispeed_hold_block_count);
         } else if (algo == 3) {
             // Parameters for FPS-R:BD
             int p_block_size = 64;           // Size of the macro-rhythm block
             int p_streams_number = 2;        // Number of parallel bitstreams
             int p_streams_offset = 10;       // Frame offset between each stream's seed
-            // Intra-stream operation operates on each stream individually
-            //      Static ops: "none", "not", "lshift", "rshift", "rotl", "rotr".
-            //      Dynamic ops: "lshift_dynamic", "rshift_dynamic", "rotl_dynamic", "rotr_dynamic".
             const char* p_intra_op = "rotl_dynamic"; // Intra-stream operation on each stream
             int p_dynamic_shift_bits = 6;    // Dynamic shift bits for intra-op
             int p_static_shift_amount = 1;   // Static shift amount for intra-op
             const char* p_inter_op = "xor";  // Inter-stream operation to combine transformed streams
-                                            //     Options: "xor", "or", "and".
             int p_value_seed_offset = 78901; // Additional seed offset for final value
             int max_search_frames = 100; // BD blocks can be large
 
-            // *** MODIFIED: Pass seg_block_length ***
             output = fpsr_bd_get_details(
                 frame, frame_multiplier, NULL, p_block_size, p_streams_number, p_streams_offset,
                 p_intra_op, p_dynamic_shift_bits, p_static_shift_amount,
-                p_inter_op, p_value_seed_offset, lod, max_search_frames, seg_block_length
+                p_inter_op, p_value_seed_offset, lod, max_search_frames, seg_block_length, varispeed_hold_block_count
             );
         }
 

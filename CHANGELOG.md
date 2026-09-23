@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## Unreleased
 
+## [3.0.8] - 2026-09-23
+### Changed
+- **HPQ Anchor Persistence Taxonomy & Architectural Clarification (`varispeed_hold_block_count`)**:
+  - Unified comments, parameter docstrings, and UI tooltips across C (`fpsr_algo_wrap_reference.c`), Python (`fpsr_algorithms_wrap.py`), and the HTML visualizer (`fpsr_demo.html`) to formally define the three distinct operational regimes of the HPQ continuum:
+    - **`-1` (Pure Tape Varispeed / Metrology Mode)**: Ground-truth anchors hold indefinitely across stretched gaps; provides 100% strict 1:1 metric alignment against unscaled baseline curves.
+    - **`>= 1` (Phrased Anchor + Infill / Grace Period)**: Preserves the master anchor milestone over $N$ full runway blocks (`seg_block_length`) before smoothly shattering into generative procedural sub-phrasing, eliminating single-frame "needle glitch" transients.
+    - **`0` (Alternate Timeline / Obfuscation Mode)**: Emits zero anchor blocks, immediately substituting procedural sub-seeds across the entire gap. "Paints over the original painting" by leaving no trace of the original values at their underlying frames while strictly preserving the macro-rhythm temporal grid.
+- **Visualizer HPQ Parity (`fpsr_demo.html`)**:
+  - Updated the Global HPQ Time Controls panel to expose `varispeed_hold_block_count` alongside `frame_multiplier` and `seg_block_length`.
+  - Added descriptive parameter tooltips explaining anchor persistence, infinite holds, and alternate-timeline obfuscation.
+  - Linked global reset controls to restore default anchor persistence (`1`) alongside runway block length (`5`) and playback speed (`1.0x`).
+
+
 ## [3.0.7] - 2026-09-22
 ### Added
 - **Frame-Accurate Test Vector & Buffer Capture (`fpsr_demo.html`)**:
