@@ -6,6 +6,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## Unreleased
 
+## [3.0.9] - 2026-10-06
+### Added
+- **Interactive Offline Parity Validator (`fpsr_demo.html`)**:
+  - Introduced a top-level mode switch between **Visualiser & Benchmark Mode** and **Validator Mode (Offline Parity)**.
+  - Implemented headless batch evaluation (`runHeadlessEvaluation`) measuring cross-platform execution timings in milliseconds using high-resolution timers (`performance.now()`).
+  - Added JSON **Config Capsule** generation (lightweight, omitting raw evaluations) and **Participant Payload** generation (including full evaluated sequence arrays and benchmark timings).
+  - Integrated dynamic tri-state evaluation (**PARITY**, **DISPARITY**, and **INVALID**) comparing participant payloads against the master baseline across engine identity, frame boundaries, HPQ time settings, individual parameters, and strict bit-level value identity.
+  - Built a session ledger supporting individual participant additions, session array export/import for multi-device test suites, individual card removal, and complete session clearing.
+- **Dedicated Dual-Status Bar Architecture (`fpsr_demo.html`)**:
+  - Deployed two distinct, contextual status bars with live pulse indicators and localized timestamps:
+    - **Testing Controls Status Bar**: Positioned immediately below Master and Participant actions for immediate confirmation of configuration copy and evaluation runs.
+    - **Validation Session Status Bar**: Positioned directly beneath the ledger toolbar and above the participant cards, maintaining proximity regardless of ledger length.
+
+### Changed
+- **Transport Bar & Master Symmetrical UX (`fpsr_demo.html`)**:
+  - Decoupled the **Rewind** action from the timeline boundaries into a dedicated shuttle transport button.
+  - Paired **Start Frame** (with quick `0` reset) and **End Frame / Buffer Size** (with `Native` snap) with explicit tooltips detailing snap destinations and buffer sampling behavior.
+  - Redesigned the Master Testing Controls panel from redundant input text boxes into a synchronized, read-only metadata bar (`Engine`, `Range`, `Total Frames`) with an **Adjust in Visualizer** quick-jump shortcut.
+  - Replaced fixed Master identity with symmetrical **Master ID** (default `"000"`) and **Description** (default `"[Master] <Platform>"`) mirroring participant metadata fields.
+  - Automatically synchronize Master range bounds from the Visualizer's `Start Frame` and `End Frame` whenever entering Validator mode or clicking **Initiate & Copy Master Config**.
+- **Performance Benchmarking & Payload Optimization (`fpsr_demo.html`)**:
+  - Master's copied **Config Capsule** now omits value arrays and timings to keep shared payloads lightweight, while preserving them locally in-memory for the baseline card.
+  - Participant payloads now record and display `benchmark_timing` (float in ms) on ledger cards for immediate client profiling and comparison.
+
+### Fixed
+- **Validator Execution & Clipboard Parsing (`fpsr_demo.html`)**:
+  - Fixed an unhandled `TypeError` in `runHeadlessEvaluation` when accessing benchmark timings, ensuring smooth payload generation and status bar notifications.
+  - Resolved an issue where modal `confirm()` dialogues blocked in sandboxed webviews prevented the session ledger from clearing.
+  - Fixed false-positive `INVALID` flags by adding type coercion and explicit tolerance checks for numeric parameter comparisons and providing descriptive diagnostic error messages when config capsules are pasted without prior evaluation.
+
+
 ## [3.0.8] - 2026-09-23
 ### Changed
 - **HPQ Anchor Persistence Taxonomy & Architectural Clarification (`varispeed_hold_block_count`)**:
