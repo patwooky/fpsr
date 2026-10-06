@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## Unreleased
 
+## [3.0.10] - 2026-10-07
+### Changed
+- **Documentation & User Guide (`resources/docs/fpsr_visualiser_guide.md`)**:
+  - Revised Section 1 (Transport & Buffer Controls Overview) to document the decoupled transport controls:
+    - Added dedicated definitions for the shuttle **Rewind** button versus the parameter-randomizing **Reset (New Seeds)** button.
+    - Documented **Start Frame** (with quick `0` snap) and **End Frame / Buffer Size** (with `Native` canvas-width snap).
+  - Updated Section 2 (Standard Workflows):
+    - **Workflow A (Visible Canvas Quick-Capture)**: Updated steps to incorporate `Native` buffer snapping, `0` quick-reset, and shutter rewind.
+    - **Workflow B (Deterministic Parity Testing)**: Split into two formal verification methods:
+      - *Method 1 (Bounded Visualizer Capture)*: Manual frame-bounded sequence capture with non-continuous buffer pauses.
+      - *Method 2 (Headless Parity Validator)*: Automated cross-device test suite utilizing Master Config Capsules, Participant Payload Capsules, and clipboard ledger aggregation.
+
 ## [3.0.9] - 2026-10-06
 ### Added
 - **Interactive Offline Parity Validator (`fpsr_demo.html`)**:
