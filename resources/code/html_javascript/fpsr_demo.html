@@ -573,138 +573,164 @@
     </div>
         </div>
 
-        <!-- ==================== VALIDATOR MODE CONTAINER ==================== -->
-        <div id="validatorModeContainer" style="display: none;" class="flex flex-col gap-6 mb-8">
-            <!-- Validator Notification / Status Bar -->
-            <div id="validatorStatusBar" class="p-4 rounded-lg bg-gray-800 border border-gray-700 text-sm flex items-center justify-between shadow-lg">
-                <div class="flex items-center space-x-3">
-                    <span class="inline-block w-3 h-3 rounded-full bg-blue-500 animate-pulse"></span>
-                    <span id="validatorStatusText" class="font-mono text-gray-200">Ready for validation session. Initiate Master or load participant config.</span>
-                </div>
-                <span id="validatorStatusTimestamp" class="text-xs text-gray-400 font-mono"></span>
-            </div>
+                <!-- ==================== VALIDATOR MODE CONTAINER ==================== -->
+                <div id="validatorModeContainer" style="display: none;" class="flex flex-col gap-6 mb-8">
 
-            <!-- Panel 1: Testing Controls (Collapsible) -->
-            <details open class="bg-gray-800 rounded-lg shadow-lg border border-gray-700 overflow-hidden">
-                <summary class="p-4 font-bold text-lg text-white cursor-pointer select-none bg-gray-800 hover:bg-gray-750 transition-colors flex items-center justify-between">
-                    <span class="flex items-center space-x-2">
-                        <svg class="w-5 h-5 text-blue-400 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
-                        <span>Testing Controls</span>
-                    </span>
-                    <span class="text-xs text-gray-400 uppercase font-mono">Click to Toggle</span>
-                </summary>
+                    <!-- Panel 1: Testing Controls (Collapsible) -->
+                    <details open class="bg-gray-800 rounded-lg shadow-lg border border-gray-700 overflow-hidden">
+                        <summary class="p-4 font-bold text-lg text-white cursor-pointer select-none bg-gray-800 hover:bg-gray-750 transition-colors flex items-center justify-between">
+                            <span class="flex items-center space-x-2">
+                                <svg class="w-5 h-5 text-blue-400 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+                                <span>Testing Controls</span>
+                            </span>
+                            <span class="text-xs text-gray-400 uppercase font-mono">Click to Toggle Collapse</span>
+                        </summary>
+        
+                        <div class="p-6 border-t border-gray-700 bg-gray-850 flex flex-col gap-6">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <!-- Master Section -->
+                                <div class="bg-gray-800 p-5 rounded-lg border border-blue-900/40 flex flex-col justify-between space-y-4">
+                                    <div>
+                                        <div class="flex items-center justify-between mb-3">
+                                            <h3 class="text-md font-bold text-blue-400 uppercase tracking-wide">1. Master (Origin)</h3>
+                                            <span class="text-xs bg-blue-950 text-blue-300 border border-blue-700/60 px-2 py-0.5 rounded font-mono">Preset Exporter</span>
+                                        </div>
+                                        <p class="text-xs text-gray-400 mb-4">
+                                            Configures the reference evaluation ground-truth. Runs headless evaluation of the current engine and parameters, establishes index 0 of the ledger, and copies the lightweight <b>Config Capsule</b> (omits values) to the clipboard.
+                                        </p>
 
-                <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-6 border-t border-gray-700 bg-gray-850">
-                    <!-- Master Section -->
-                    <div class="bg-gray-800 p-5 rounded-lg border border-blue-900/40 flex flex-col justify-between space-y-4">
-                        <div>
-                            <div class="flex items-center justify-between mb-3">
-                                <h3 class="text-md font-bold text-blue-400 uppercase tracking-wide">1. Master (Origin)</h3>
-                                <span class="text-xs bg-blue-950 text-blue-300 border border-blue-700/60 px-2 py-0.5 rounded font-mono">ID: ["000", "master"]</span>
-                            </div>
-                            <p class="text-xs text-gray-400 mb-4">
-                                Configures the reference evaluation ground-truth. Runs headless evaluation of the current engine and parameters, establishes index 0 of the ledger, and copies the lightweight <b>Config Capsule</b> (omits values) to the clipboard.
-                            </p>
-                            <div class="grid grid-cols-2 gap-3 mb-4">
-                                <div>
-                                    <label for="val_startFrame" class="text-xs text-gray-400 font-medium uppercase block mb-1">Start Frame</label>
-                                    <input id="val_startFrame" type="number" value="0" min="0" step="1" class="w-full bg-gray-700 text-white border border-gray-600 rounded p-2 text-sm font-mono">
+                                        <!-- Master ID and Description -->
+                                        <div class="grid grid-cols-2 gap-3 mb-4">
+                                            <div>
+                                                <label for="val_masterId" class="text-xs text-gray-400 font-medium uppercase block mb-1">Master ID</label>
+                                                <input id="val_masterId" type="text" value="000" class="w-full bg-gray-700 text-white border border-gray-600 rounded p-2 text-sm font-mono" placeholder="e.g. 000">
+                                            </div>
+                                            <div>
+                                                <label for="val_masterDesc" class="text-xs text-gray-400 font-medium uppercase block mb-1">Description</label>
+                                                <input id="val_masterDesc" type="text" value="[Master] Client Device" class="w-full bg-gray-700 text-white border border-gray-600 rounded p-2 text-sm" placeholder="e.g. [Master] Chrome Win32">
+                                            </div>
+                                        </div>
+
+                                        <!-- Read-Only Master Range & Algo Summary with Jump Button -->
+                                        <div class="bg-gray-900/80 p-3 rounded border border-gray-700 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-4 font-mono text-xs">
+                                            <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                                                <span>Engine: <b id="val_masterActiveAlgo" class="text-blue-400">SM</b></span>
+                                                <span class="text-gray-500">|</span>
+                                                <span>Range: <b id="val_masterRangeDisplay" class="text-white">0 – 1000</b></span>
+                                                <span class="text-gray-500">|</span>
+                                                <span>Total: <b id="val_masterFrameCount" class="text-yellow-400">1001</b></span>
+                                            </div>
+                                            <button id="val_adjustRangeBtn" class="bg-gray-700 hover:bg-gray-600 text-gray-200 hover:text-white px-2.5 py-1 rounded transition duration-150 flex items-center space-x-1 text-[11px] font-sans flex-shrink-0" title="Switch to Visualizer Mode to adjust Start Frame and Buffer Size">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                                <span>Adjust in Visualizer</span>
+                                            </button>
+                                        </div>
+                                    </div>
+        
+                                    <button id="val_masterInitiateBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-md shadow transition duration-150 flex items-center justify-center space-x-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                                        <span>Initiate & Copy Master Config</span>
+                                    </button>
                                 </div>
-                                <div>
-                                    <label for="val_endFrame" class="text-xs text-gray-400 font-medium uppercase block mb-1">End Frame</label>
-                                    <input id="val_endFrame" type="number" value="1000" min="1" step="1" class="w-full bg-gray-700 text-white border border-gray-600 rounded p-2 text-sm font-mono">
+        
+                                <!-- Participant Section -->
+                                <div class="bg-gray-800 p-5 rounded-lg border border-purple-900/40 flex flex-col justify-between space-y-4">
+                                    <div>
+                                        <div class="flex items-center justify-between mb-3">
+                                            <h3 class="text-md font-bold text-purple-400 uppercase tracking-wide">2. Participant (Client)</h3>
+                                            <span class="text-xs bg-purple-950 text-purple-300 border border-purple-700/60 px-2 py-0.5 rounded font-mono">Universal Preset Loader</span>
+                                        </div>
+                                        <p class="text-xs text-gray-400 mb-4">
+                                            Reads the Master's config (or any payload) from clipboard, updates local UI inputs, executes the deterministic engine headless, and copies the resulting <b>Payload Capsule</b> (with values) back to the clipboard.
+                                        </p>
+                                        <div class="grid grid-cols-2 gap-3 mb-4">
+                                            <div>
+                                                <label for="val_participantId" class="text-xs text-gray-400 font-medium uppercase block mb-1">Participant ID</label>
+                                                <input id="val_participantId" type="text" value="001" class="w-full bg-gray-700 text-white border border-gray-600 rounded p-2 text-sm font-mono" placeholder="e.g. 001">
+                                            </div>
+                                            <div>
+                                                <label for="val_participantDesc" class="text-xs text-gray-400 font-medium uppercase block mb-1">Description</label>
+                                                <input id="val_participantDesc" type="text" value="Client Device" class="w-full bg-gray-700 text-white border border-gray-600 rounded p-2 text-sm" placeholder="e.g. Firefox Android">
+                                            </div>
+                                        </div>
+                                        <div class="text-xs text-gray-400 bg-gray-900/60 p-2.5 rounded border border-gray-700/50 mb-4">
+                                            Accepts any valid Config Capsule, Participant Payload, or Session Array from clipboard.
+                                        </div>
+                                    </div>
+        
+                                    <button id="val_participantRunBtn" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 px-4 rounded-md shadow transition duration-150 flex items-center justify-center space-x-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        <span>Load Config, Run & Copy Payload</span>
+                                    </button>
                                 </div>
                             </div>
-                            <div class="text-xs text-gray-400 bg-gray-900/60 p-2.5 rounded border border-gray-700/50 mb-4 font-mono">
-                                Active Algorithm: <span id="val_masterActiveAlgo" class="text-white font-bold">SM</span> | Total Frames: <span id="val_masterFrameCount" class="text-yellow-400 font-bold">1001</span>
+        
+                            <!-- Testing Controls Dedicated Status Bar -->
+                            <div id="testingStatusBar" class="p-3.5 rounded-lg bg-gray-900/90 border border-gray-700 text-xs flex items-center justify-between shadow-inner">
+                                <div class="flex items-center space-x-2.5">
+                                    <span class="inline-block w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse flex-shrink-0"></span>
+                                    <span id="testingStatusText" class="font-mono text-gray-300">Testing controls ready. Initiate Master baseline or evaluate participant config.</span>
+                                </div>
+                                <span id="testingStatusTimestamp" class="text-[11px] text-gray-400 font-mono ml-4 flex-shrink-0"></span>
                             </div>
                         </div>
-
-                        <button id="val_masterInitiateBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-md shadow transition duration-150 flex items-center justify-center space-x-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
-                            <span>Initiate & Copy Master Config</span>
-                        </button>
-                    </div>
-
-                    <!-- Participant Section -->
-                    <div class="bg-gray-800 p-5 rounded-lg border border-purple-900/40 flex flex-col justify-between space-y-4">
-                        <div>
-                            <div class="flex items-center justify-between mb-3">
-                                <h3 class="text-md font-bold text-purple-400 uppercase tracking-wide">2. Participant (Client)</h3>
-                                <span class="text-xs bg-purple-950 text-purple-300 border border-purple-700/60 px-2 py-0.5 rounded font-mono">Universal Preset Loader</span>
+                    </details>
+        
+                    <!-- Panel 2: Validation Session Ledger (Collapsible) -->
+                    <details open class="bg-gray-800 rounded-lg shadow-lg border border-gray-700 overflow-hidden">
+                        <summary class="p-4 font-bold text-lg text-white cursor-pointer select-none bg-gray-800 hover:bg-gray-750 transition-colors flex items-center justify-between">
+                            <span class="flex items-center space-x-2">
+                                <svg class="w-5 h-5 text-emerald-400 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                                <span>Validation Session (The Ledger)</span>
+                            </span>
+                            <span class="text-xs text-gray-400 uppercase font-mono">Click to Toggle Collapse</span>
+                        </summary>
+        
+                        <div class="p-6 border-t border-gray-700">
+                            <!-- Session Global Action Toolbar -->
+                            <div class="flex flex-wrap items-center gap-3 mb-4 bg-gray-900/80 p-3 rounded-lg border border-gray-700">
+                                <button id="val_addParticipantBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-3.5 rounded text-xs transition duration-150 flex items-center space-x-1.5" title="Read a Participant Payload Capsule from clipboard and append it to this ledger">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                    <span>Add Participant Capsule</span>
+                                </button>
+        
+                                <button id="val_exportSessionBtn" class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-3.5 rounded text-xs transition duration-150 flex items-center space-x-1.5" title="Copy full session JSON (Master + all Participants) to clipboard">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                                    <span>Export Session</span>
+                                </button>
+        
+                                <button id="val_importSessionBtn" class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-3.5 rounded text-xs transition duration-150 flex items-center space-x-1.5" title="Import session JSON from clipboard, restoring Master and all Participants">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                    <span>Import Session</span>
+                                </button>
+        
+                                <button id="val_clearLedgerBtn" class="bg-red-800/80 hover:bg-red-700 text-white font-semibold py-2 px-3.5 rounded text-xs transition duration-150 ml-auto flex items-center space-x-1.5" title="Clear all ledger entries and purge MasterBaseline from memory">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    <span>Clear All</span>
+                                </button>
                             </div>
-                            <p class="text-xs text-gray-400 mb-4">
-                                Reads the Master's config (or any payload) from clipboard, updates local UI inputs, executes the deterministic engine headless, and copies the resulting <b>Payload Capsule</b> (with values) back to the clipboard.
-                            </p>
-                            <div class="grid grid-cols-2 gap-3 mb-4">
-                                <div>
-                                    <label for="val_participantId" class="text-xs text-gray-400 font-medium uppercase block mb-1">Participant ID</label>
-                                    <input id="val_participantId" type="text" value="001" class="w-full bg-gray-700 text-white border border-gray-600 rounded p-2 text-sm font-mono" placeholder="e.g. 001">
+        
+                            <!-- Ledger Dedicated Status Bar -->
+                            <div id="ledgerStatusBar" class="p-3.5 rounded-lg bg-gray-900/90 border border-gray-700 text-xs flex items-center justify-between shadow-inner mb-6">
+                                <div class="flex items-center space-x-2.5">
+                                    <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0"></span>
+                                    <span id="ledgerStatusText" class="font-mono text-gray-300">Session ledger ready. Add participant capsules or import session records.</span>
                                 </div>
-                                <div>
-                                    <label for="val_participantDesc" class="text-xs text-gray-400 font-medium uppercase block mb-1">Description</label>
-                                    <input id="val_participantDesc" type="text" value="Client Device" class="w-full bg-gray-700 text-white border border-gray-600 rounded p-2 text-sm" placeholder="e.g. Firefox Android">
-                                </div>
+                                <span id="ledgerStatusTimestamp" class="text-[11px] text-gray-400 font-mono ml-4 flex-shrink-0"></span>
                             </div>
-                            <div class="text-xs text-gray-400 bg-gray-900/60 p-2.5 rounded border border-gray-700/50 mb-4">
-                                Accepts any valid Config Capsule, Participant Payload, or Session Array from clipboard.
+        
+                            <!-- Ledger Cards Container -->
+                            <div id="val_ledgerContainer" class="flex flex-col gap-4">
+                                <div id="val_emptyLedgerNotice" class="text-center py-12 px-4 border-2 border-dashed border-gray-700 rounded-lg text-gray-400">
+                                    <svg class="w-12 h-12 mx-auto mb-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                    <p class="font-medium text-gray-300">No session entries active</p>
+                                    <p class="text-xs text-gray-500 mt-1">Initiate a Master baseline above or click "Import Session" to begin evaluation.</p>
+                                </div>
                             </div>
                         </div>
-
-                        <button id="val_participantRunBtn" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 px-4 rounded-md shadow transition duration-150 flex items-center justify-center space-x-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <span>Load Config, Run & Copy Payload</span>
-                        </button>
-                    </div>
+                    </details>
                 </div>
-            </details>
-
-            <!-- Panel 2: Validation Session Ledger (Collapsible) -->
-            <details open class="bg-gray-800 rounded-lg shadow-lg border border-gray-700 overflow-hidden">
-                <summary class="p-4 font-bold text-lg text-white cursor-pointer select-none bg-gray-800 hover:bg-gray-750 transition-colors flex items-center justify-between">
-                    <span class="flex items-center space-x-2">
-                        <svg class="w-5 h-5 text-emerald-400 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
-                        <span>Validation Session (The Ledger)</span>
-                    </span>
-                    <span class="text-xs text-gray-400 uppercase font-mono">Click to Toggle</span>
-                </summary>
-
-                <div class="p-6 border-t border-gray-700">
-                    <!-- Session Global Action Toolbar -->
-                    <div class="flex flex-wrap items-center gap-3 mb-6 bg-gray-900/80 p-3 rounded-lg border border-gray-700">
-                        <button id="val_addParticipantBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-3.5 rounded text-xs transition duration-150 flex items-center space-x-1.5" title="Read a Participant Payload Capsule from clipboard and append it to this ledger">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                            <span>Add Participant Capsule</span>
-                        </button>
-
-                        <button id="val_exportSessionBtn" class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-3.5 rounded text-xs transition duration-150 flex items-center space-x-1.5" title="Copy full session JSON (Master + all Participants) to clipboard">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-                            <span>Export Session</span>
-                        </button>
-
-                        <button id="val_importSessionBtn" class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-3.5 rounded text-xs transition duration-150 flex items-center space-x-1.5" title="Import session JSON from clipboard, restoring Master and all Participants">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                            <span>Import Session</span>
-                        </button>
-
-                        <button id="val_clearLedgerBtn" class="bg-red-800/80 hover:bg-red-700 text-white font-semibold py-2 px-3.5 rounded text-xs transition duration-150 ml-auto flex items-center space-x-1.5" title="Clear all ledger entries and purge MasterBaseline from memory">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            <span>Clear All</span>
-                        </button>
-                    </div>
-
-                    <!-- Ledger Cards Container -->
-                    <div id="val_ledgerContainer" class="flex flex-col gap-4">
-                        <div id="val_emptyLedgerNotice" class="text-center py-12 px-4 border-2 border-dashed border-gray-700 rounded-lg text-gray-400">
-                            <svg class="w-12 h-12 mx-auto mb-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                            <p class="font-medium text-gray-300">No session entries active</p>
-                            <p class="text-xs text-gray-500 mt-1">Initiate a Master baseline above or click "Import Session" to begin evaluation.</p>
-                        </div>
-                    </div>
-                </div>
-            </details>
-        </div>
-
+            
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const canvas = document.getElementById('visualizerCanvas');
@@ -2030,20 +2056,32 @@ allTabs.forEach(tab => {
             const visualizerModeContainer = document.getElementById('visualizerModeContainer');
             const validatorModeContainer = document.getElementById('validatorModeContainer');
 
-            // --- Validator UI Elements ---
-            const val_statusBar = document.getElementById('validatorStatusBar');
-            const val_statusText = document.getElementById('validatorStatusText');
-            const val_statusTimestamp = document.getElementById('validatorStatusTimestamp');
+            // --- Testing Controls UI Elements ---
+            const testingStatusBar = document.getElementById('testingStatusBar');
+            const testingStatusText = document.getElementById('testingStatusText');
+            const testingStatusTimestamp = document.getElementById('testingStatusTimestamp');
 
-            const val_startFrameInput = document.getElementById('val_startFrame');
-            const val_endFrameInput = document.getElementById('val_endFrame');
+            const val_masterId = document.getElementById('val_masterId');
+            const val_masterDesc = document.getElementById('val_masterDesc');
             const val_masterActiveAlgo = document.getElementById('val_masterActiveAlgo');
+            const val_masterRangeDisplay = document.getElementById('val_masterRangeDisplay');
             const val_masterFrameCount = document.getElementById('val_masterFrameCount');
+            const val_adjustRangeBtn = document.getElementById('val_adjustRangeBtn');
             const val_masterInitiateBtn = document.getElementById('val_masterInitiateBtn');
 
             const val_participantId = document.getElementById('val_participantId');
             const val_participantDesc = document.getElementById('val_participantDesc');
             const val_participantRunBtn = document.getElementById('val_participantRunBtn');
+
+            // Quick shortcut: jump to Visualizer to adjust Start/End frame
+            val_adjustRangeBtn.addEventListener('click', () => {
+                switchMode('visualizer');
+            });
+
+            // --- Session Ledger UI Elements ---
+            const ledgerStatusBar = document.getElementById('ledgerStatusBar');
+            const ledgerStatusText = document.getElementById('ledgerStatusText');
+            const ledgerStatusTimestamp = document.getElementById('ledgerStatusTimestamp');
 
             const val_addParticipantBtn = document.getElementById('val_addParticipantBtn');
             const val_exportSessionBtn = document.getElementById('val_exportSessionBtn');
@@ -2067,18 +2105,20 @@ allTabs.forEach(tab => {
 
                 if (navigator.platform) desc += " (" + navigator.platform + ")";
                 val_participantDesc.value = desc;
+                val_masterDesc.value = `[Master] ${desc}`;
             }
 
-            // Sync master frame count display
+            // Sync master frame count & range display from visualizer settings
             function updateMasterFrameCount() {
-                const s = parseInt(val_startFrameInput.value, 10) || 0;
-                const e = parseInt(val_endFrameInput.value, 10) || 0;
+                const s = parseInt(rewindFrameInput.value, 10) || 0;
+                const e = parseInt(bufferSizeInput.value, 10) || canvasWidth;
                 const count = Math.max(0, e - s + 1);
+                val_masterRangeDisplay.textContent = `${s} – ${e}`;
                 val_masterFrameCount.textContent = count;
                 val_masterActiveAlgo.textContent = activeAlgorithm;
             }
-            val_startFrameInput.addEventListener('input', updateMasterFrameCount);
-            val_endFrameInput.addEventListener('input', updateMasterFrameCount);
+            rewindFrameInput.addEventListener('input', updateMasterFrameCount);
+            bufferSizeInput.addEventListener('input', updateMasterFrameCount);
 
             // Mode switching
             function switchMode(mode) {
@@ -2097,8 +2137,6 @@ allTabs.forEach(tab => {
                     modeVisualizerBtn.classList.add('text-gray-400');
 
                     // Synchronize Master Frame Range from Visualizer Start Frame & End Frame (Buffer Size)
-                    val_startFrameInput.value = parseInt(rewindFrameInput.value, 10) || 0;
-                    val_endFrameInput.value = parseInt(bufferSizeInput.value, 10) || canvasWidth;
                     updateMasterFrameCount();
                 } else {
                     validatorModeContainer.style.display = 'none';
@@ -2114,20 +2152,36 @@ allTabs.forEach(tab => {
             modeVisualizerBtn.addEventListener('click', () => switchMode('visualizer'));
             modeValidatorBtn.addEventListener('click', () => switchMode('validator'));
 
-            // Status message logger
-            function setValidatorStatus(msg, type = 'info') {
-                val_statusText.textContent = msg;
-                val_statusTimestamp.textContent = new Date().toLocaleTimeString();
+            // Status message loggers for contextual bars
+            function setTestingStatus(msg, type = 'info') {
+                testingStatusText.textContent = msg;
+                testingStatusTimestamp.textContent = new Date().toLocaleTimeString();
 
-                val_statusBar.classList.remove('border-blue-700', 'border-green-700', 'border-red-700', 'border-yellow-700');
+                testingStatusBar.classList.remove('border-blue-700', 'border-green-700', 'border-red-700', 'border-yellow-700');
                 if (type === 'success') {
-                    val_statusBar.classList.add('border-green-700');
+                    testingStatusBar.classList.add('border-green-700');
                 } else if (type === 'error') {
-                    val_statusBar.classList.add('border-red-700');
+                    testingStatusBar.classList.add('border-red-700');
                 } else if (type === 'warn') {
-                    val_statusBar.classList.add('border-yellow-700');
+                    testingStatusBar.classList.add('border-yellow-700');
                 } else {
-                    val_statusBar.classList.add('border-blue-700');
+                    testingStatusBar.classList.add('border-blue-700');
+                }
+            }
+
+            function setLedgerStatus(msg, type = 'info') {
+                ledgerStatusText.textContent = msg;
+                ledgerStatusTimestamp.textContent = new Date().toLocaleTimeString();
+
+                ledgerStatusBar.classList.remove('border-emerald-700', 'border-green-700', 'border-red-700', 'border-yellow-700');
+                if (type === 'success') {
+                    ledgerStatusBar.classList.add('border-green-700');
+                } else if (type === 'error') {
+                    ledgerStatusBar.classList.add('border-red-700');
+                } else if (type === 'warn') {
+                    ledgerStatusBar.classList.add('border-yellow-700');
+                } else {
+                    ledgerStatusBar.classList.add('border-emerald-700');
                 }
             }
 
@@ -2272,12 +2326,13 @@ allTabs.forEach(tab => {
                     document.getElementById('global_varispeedHoldBlockCount').value = capsule.varispeed_hold_block_count;
                 }
 
-                // 3. Apply frame range
+                // 3. Apply frame range to visualizer inputs
                 if (capsule.start_frame !== undefined) {
-                    val_startFrameInput.value = capsule.start_frame;
+                    rewindFrameInput.value = capsule.start_frame;
                 }
                 if (capsule.end_frame !== undefined) {
-                    val_endFrameInput.value = capsule.end_frame;
+                    bufferSizeInput.value = capsule.end_frame;
+                    bufferSizeInput.dataset.userModified = 'true';
                 }
 
                 // 4. Apply Engine Specific Params
@@ -2393,6 +2448,9 @@ allTabs.forEach(tab => {
                     }
                 }
 
+                // High-resolution performance timer
+                const t0 = performance.now();
+
                 // Sequential headless calculation
                 for (let f = s; f <= e; f++) {
                     const val = getFpsrValue(f);
@@ -2400,7 +2458,14 @@ allTabs.forEach(tab => {
                     const rounded = Number(Number(val).toFixed(6));
                     results.push(rounded);
                 }
-                return results;
+
+                const t1 = performance.now();
+                const benchmarkTimingMs = Number((t1 - t0).toFixed(2));
+
+                return {
+                    values: results,
+                    benchmark_timing: benchmarkTimingMs
+                };
             }
 
             // --- Tri-State Parity Comparator ---
@@ -2408,7 +2473,7 @@ allTabs.forEach(tab => {
                 if (!baselineCapsule) {
                     return {
                         state: 'INVALID',
-                        message: 'No Master baseline active to compare against. Please initiate Master first.'
+                        message: 'No Master baseline active to compare against. Please click "Initiate & Copy Master Config" first.'
                     };
                 }
 
@@ -2416,6 +2481,17 @@ allTabs.forEach(tab => {
                     return {
                         state: 'INVALID',
                         message: 'Corrupted payload: capsule is not a valid JSON object.'
+                    };
+                }
+
+                // Check Values Array first
+                const partVals = participantCapsule.values;
+                const baseVals = baselineCapsule.values;
+
+                if (!Array.isArray(partVals) || partVals.length === 0) {
+                    return {
+                        state: 'INVALID',
+                        message: 'Missing "values" array. You may have pasted a Config Capsule instead of a Participant Payload. Run the Participant first to generate values.'
                     };
                 }
 
@@ -2427,22 +2503,31 @@ allTabs.forEach(tab => {
                     };
                 }
 
-                // Check Frame Ranges
-                if (participantCapsule.start_frame !== baselineCapsule.start_frame ||
-                    participantCapsule.end_frame !== baselineCapsule.end_frame) {
+                // Check Frame Ranges with number coercion
+                const baseStart = Number(baselineCapsule.start_frame ?? 0);
+                const baseEnd = Number(baselineCapsule.end_frame ?? 0);
+                const partStart = Number(participantCapsule.start_frame ?? 0);
+                const partEnd = Number(participantCapsule.end_frame ?? 0);
+
+                if (partStart !== baseStart || partEnd !== baseEnd) {
                     return {
                         state: 'INVALID',
-                        message: `Frame range mismatch: Master is [${baselineCapsule.start_frame}, ${baselineCapsule.end_frame}] vs Participant [${participantCapsule.start_frame}, ${participantCapsule.end_frame}].`
+                        message: `Frame range mismatch: Master is [${baseStart}, ${baseEnd}] vs Participant [${partStart}, ${partEnd}].`
                     };
                 }
 
-                // Check HPQ Settings
-                if (participantCapsule.hpq_frame_multiplier !== baselineCapsule.hpq_frame_multiplier ||
-                    participantCapsule.seg_block_length !== baselineCapsule.seg_block_length ||
-                    participantCapsule.varispeed_hold_block_count !== baselineCapsule.varispeed_hold_block_count) {
+                // Check HPQ Settings with numeric tolerance
+                const baseFm = Number(baselineCapsule.hpq_frame_multiplier ?? 1.0);
+                const partFm = Number(participantCapsule.hpq_frame_multiplier ?? 1.0);
+                const baseSeg = Number(baselineCapsule.seg_block_length ?? 5);
+                const partSeg = Number(participantCapsule.seg_block_length ?? 5);
+                const baseHold = Number(baselineCapsule.varispeed_hold_block_count ?? 1);
+                const partHold = Number(participantCapsule.varispeed_hold_block_count ?? 1);
+
+                if (Math.abs(baseFm - partFm) > 0.001 || baseSeg !== partSeg || baseHold !== partHold) {
                     return {
                         state: 'INVALID',
-                        message: 'Global HPQ settings mismatch.'
+                        message: `Global HPQ mismatch: Master=[${baseFm}x, seg=${baseSeg}, hold=${baseHold}] vs Participant=[${partFm}x, seg=${partSeg}, hold=${partHold}].`
                     };
                 }
 
@@ -2451,24 +2536,28 @@ allTabs.forEach(tab => {
                 const partParams = participantCapsule.engine_params || participantCapsule.params || {};
                 const baseKeys = Object.keys(baseParams);
                 for (const key of baseKeys) {
-                    const bVal = JSON.stringify(baseParams[key]);
-                    const pVal = JSON.stringify(partParams[key]);
-                    if (bVal !== pVal) {
+                    const bVal = baseParams[key];
+                    const pVal = partParams[key];
+
+                    if (typeof bVal === 'number' && typeof pVal === 'number') {
+                        if (Math.abs(bVal - pVal) > 1e-6) {
+                            return {
+                                state: 'INVALID',
+                                message: `Engine parameter mismatch on "${key}": Master=${bVal}, Participant=${pVal}.`
+                            };
+                        }
+                    } else if (JSON.stringify(bVal) !== JSON.stringify(pVal)) {
                         return {
                             state: 'INVALID',
-                            message: `Engine parameter mismatch on "${key}": Master=${bVal}, Participant=${pVal}.`
+                            message: `Engine parameter mismatch on "${key}": Master=${JSON.stringify(bVal)}, Participant=${JSON.stringify(pVal)}.`
                         };
                     }
                 }
 
-                // Check Values Array
-                const partVals = participantCapsule.values;
-                const baseVals = baselineCapsule.values;
-
-                if (!Array.isArray(partVals)) {
+                if (!Array.isArray(baseVals)) {
                     return {
                         state: 'INVALID',
-                        message: 'Missing or corrupted "values" array in payload.'
+                        message: 'Master baseline is missing evaluation values array.'
                     };
                 }
 
@@ -2480,12 +2569,11 @@ allTabs.forEach(tab => {
                 }
 
                 // Strict Equality Check Across Every Frame
-                const startF = participantCapsule.start_frame || 0;
                 for (let i = 0; i < baseVals.length; i++) {
                     const mVal = baseVals[i];
                     const pVal = partVals[i];
                     if (mVal !== pVal) {
-                        const frameNum = startF + i;
+                        const frameNum = partStart + i;
                         return {
                             state: 'DISPARITY',
                             message: `Disparity at frame ${frameNum} (index ${i}): Master=${mVal}, Participant=${pVal}.`
@@ -2495,7 +2583,7 @@ allTabs.forEach(tab => {
 
                 return {
                     state: 'PARITY',
-                    message: `100% Parity across all ${baseVals.length} frames (${baselineCapsule.start_frame} - ${baselineCapsule.end_frame}).`
+                    message: `100% Parity across all ${baseVals.length} frames (${baseStart} - ${baseEnd}).`
                 };
             }
 
@@ -2504,12 +2592,22 @@ allTabs.forEach(tab => {
                 val_ledgerContainer.innerHTML = '';
 
                 if (!MasterBaseline && ParticipantEntries.length === 0) {
-                    val_ledgerContainer.appendChild(val_emptyLedgerNotice);
+                    val_ledgerContainer.innerHTML = `
+                        <div id="val_emptyLedgerNotice" class="text-center py-12 px-4 border-2 border-dashed border-gray-700 rounded-lg text-gray-400">
+                            <svg class="w-12 h-12 mx-auto mb-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            <p class="font-medium text-gray-300">No session entries active</p>
+                            <p class="text-xs text-gray-500 mt-1">Initiate a Master baseline above or click "Import Session" to begin evaluation.</p>
+                        </div>
+                    `;
                     return;
                 }
 
                 // 1. Render Master Card (Index 0)
                 if (MasterBaseline) {
+                    const masterTimingStr = (MasterBaseline.benchmark_timing !== undefined)
+                        ? `<span class="text-xs bg-gray-900 text-yellow-300 border border-yellow-700/60 px-2 py-0.5 rounded font-mono">⏱️ ${Number(MasterBaseline.benchmark_timing).toFixed(2)} ms</span>`
+                        : '';
+
                     const masterCard = document.createElement('div');
                     masterCard.className = 'p-4 rounded-lg bg-gray-800 border-2 border-blue-600/70 shadow-lg';
                     masterCard.innerHTML = `
@@ -2518,10 +2616,11 @@ allTabs.forEach(tab => {
                                 <span class="bg-blue-600 text-white font-bold text-xs uppercase px-2.5 py-1 rounded shadow">Master Baseline</span>
                                 <span class="text-white font-bold text-sm">${MasterBaseline.id ? MasterBaseline.id[1] : 'master'}</span>
                                 <span class="text-xs font-mono text-gray-400">ID: ${MasterBaseline.id ? MasterBaseline.id[0] : '000'}</span>
+                                ${masterTimingStr}
                             </div>
                             <div class="flex items-center space-x-3 text-xs font-mono">
                                 <span class="text-blue-400 font-bold">Engine: ${MasterBaseline.engine_id}</span>
-                                <span class="text-gray-300">Frames: ${MasterBaseline.start_frame} - ${MasterBaseline.end_frame} (${MasterBaseline.values.length} total)</span>
+                                <span class="text-gray-300">Frames: ${MasterBaseline.start_frame} - ${MasterBaseline.end_frame} (${MasterBaseline.values ? MasterBaseline.values.length : 0} total)</span>
                             </div>
                         </div>
                         <div class="relative">
@@ -2553,6 +2652,9 @@ allTabs.forEach(tab => {
 
                     const partId = (participant.id && participant.id[0]) ? participant.id[0] : `P${idx + 1}`;
                     const partDesc = (participant.id && participant.id[1]) ? participant.id[1] : 'Participant';
+                    const partTimingStr = (participant.benchmark_timing !== undefined)
+                        ? `<span class="text-xs bg-gray-900 text-yellow-300 border border-yellow-700/60 px-2 py-0.5 rounded font-mono">⏱️ ${Number(participant.benchmark_timing).toFixed(2)} ms</span>`
+                        : '';
 
                     card.className = `p-4 rounded-lg bg-gray-800 border-2 ${borderColor} shadow-lg transition-all duration-150`;
                     card.innerHTML = `
@@ -2563,6 +2665,7 @@ allTabs.forEach(tab => {
                                 </span>
                                 <span class="text-white font-bold text-sm">${partDesc}</span>
                                 <span class="text-xs font-mono text-gray-400">ID: ${partId}</span>
+                                ${partTimingStr}
                             </div>
                             <div class="flex items-center space-x-2">
                                 <span class="text-xs font-mono text-gray-400">Engine: <b class="text-white">${participant.engine_id || 'N/A'}</b></span>
@@ -2586,7 +2689,7 @@ allTabs.forEach(tab => {
                         removeBtn.addEventListener('click', () => {
                             ParticipantEntries.splice(idx, 1);
                             renderLedger();
-                            setValidatorStatus(`Participant "${partDesc}" removed from ledger.`);
+                            setLedgerStatus(`Participant "${partDesc}" removed from ledger.`, 'info');
                         });
                     }
 
@@ -2596,25 +2699,28 @@ allTabs.forEach(tab => {
 
             // --- Action 1: Master Initiate & Copy Config ---
             val_masterInitiateBtn.addEventListener('click', async () => {
-                // Refresh start and end frames directly from visualizer inputs
-                val_startFrameInput.value = parseInt(rewindFrameInput.value, 10) || 0;
-                val_endFrameInput.value = parseInt(bufferSizeInput.value, 10) || canvasWidth;
+                // Refresh status display from visualizer inputs
                 updateMasterFrameCount();
 
-                const s = parseInt(val_startFrameInput.value, 10) || 0;
-                const e = parseInt(val_endFrameInput.value, 10) || 0;
+                const s = parseInt(rewindFrameInput.value, 10) || 0;
+                const e = parseInt(bufferSizeInput.value, 10) || canvasWidth;
                 if (e < s) {
-                    setValidatorStatus('Error: End Frame must be greater than or equal to Start Frame.', 'error');
+                    setTestingStatus('Error: End Frame must be greater than or equal to Start Frame.', 'error');
                     return;
                 }
 
-                // 1. Run Headless Evaluation on Master
-                const values = runHeadlessEvaluation(s, e);
+                const mId = val_masterId.value.trim() || "000";
+                const mDesc = val_masterDesc.value.trim() || "[Master]";
+
+                // 1. Run Headless Evaluation on Master with defensive unpacking
+                const evalResult = runHeadlessEvaluation(s, e);
+                const values = Array.isArray(evalResult) ? evalResult : (evalResult.values || []);
+                const benchmarkTiming = (evalResult && typeof evalResult.benchmark_timing === 'number') ? evalResult.benchmark_timing : 0;
                 const engineParams = getSerializedEngineParams(activeAlgorithm);
 
-                // 2. Establish Master Baseline (in-memory, with values)
+                // 2. Establish Master Baseline (in-memory, retains values and benchmark timing)
                 MasterBaseline = {
-                    id: ["000", "master"],
+                    id: [mId, mDesc],
                     engine_id: activeAlgorithm,
                     start_frame: s,
                     end_frame: e,
@@ -2622,12 +2728,13 @@ allTabs.forEach(tab => {
                     seg_block_length: globalParams.segBlockLength,
                     varispeed_hold_block_count: globalParams.varispeedHoldBlockCount,
                     engine_params: engineParams,
-                    values: values
+                    values: values,
+                    benchmark_timing: benchmarkTiming
                 };
 
-                // 3. Serialize Lightweight Config Capsule (WITHOUT values) for Clipboard
+                // 3. Serialize Lightweight Config Capsule (WITHOUT values and WITHOUT benchmark_timing) for Clipboard
                 const configCapsule = {
-                    id: ["000", "master"],
+                    id: [mId, mDesc],
                     engine_id: activeAlgorithm,
                     start_frame: s,
                     end_frame: e,
@@ -2642,9 +2749,10 @@ allTabs.forEach(tab => {
 
                 renderLedger();
                 if (copied) {
-                    setValidatorStatus('Master config copied to clipboard. Share with participants.', 'success');
+                    setTestingStatus(`Master config [${mId}] copied to clipboard (${benchmarkTiming.toFixed(2)} ms). Share with participants.`, 'success');
+                    setLedgerStatus(`Master baseline [${mId}] initialized at Index 0. Ready to compare participants.`, 'info');
                 } else {
-                    setValidatorStatus('Master baseline initialized, but clipboard write failed. Copy manually from the ledger card.', 'warn');
+                    setTestingStatus('Master baseline initialized, but clipboard write failed. Copy manually from the ledger card.', 'warn');
                 }
             });
 
@@ -2652,7 +2760,7 @@ allTabs.forEach(tab => {
             val_participantRunBtn.addEventListener('click', async () => {
                 const rawClipboard = await readClipboardText();
                 if (!rawClipboard) {
-                    setValidatorStatus('No clipboard data detected.', 'warn');
+                    setTestingStatus('No clipboard data detected.', 'warn');
                     return;
                 }
 
@@ -2660,7 +2768,7 @@ allTabs.forEach(tab => {
                 try {
                     parsed = JSON.parse(rawClipboard);
                 } catch (err) {
-                    setValidatorStatus('Invalid JSON format on clipboard: ' + err.message, 'error');
+                    setTestingStatus('Invalid JSON format on clipboard: ' + err.message, 'error');
                     return;
                 }
 
@@ -2668,14 +2776,14 @@ allTabs.forEach(tab => {
                 let configCapsule = parsed;
                 if (Array.isArray(parsed)) {
                     if (parsed.length === 0) {
-                        setValidatorStatus('Empty session array provided on clipboard.', 'error');
+                        setTestingStatus('Empty session array provided on clipboard.', 'error');
                         return;
                     }
                     configCapsule = parsed[0]; // Take Master from session array
                 }
 
                 if (!configCapsule || !configCapsule.engine_id) {
-                    setValidatorStatus('Capsule missing valid "engine_id".', 'error');
+                    setTestingStatus('Capsule missing valid "engine_id".', 'error');
                     return;
                 }
 
@@ -2685,11 +2793,13 @@ allTabs.forEach(tab => {
                 const s = configCapsule.start_frame !== undefined ? configCapsule.start_frame : 0;
                 const e = configCapsule.end_frame !== undefined ? configCapsule.end_frame : 1000;
 
-                // 2. Headless Evaluation
-                const values = runHeadlessEvaluation(s, e);
+                // 2. Headless Evaluation (capturing values and benchmark timing)
+                const evalResult = runHeadlessEvaluation(s, e);
+                const values = Array.isArray(evalResult) ? evalResult : (evalResult.values || []);
+                const benchmarkTiming = (evalResult && typeof evalResult.benchmark_timing === 'number') ? evalResult.benchmark_timing : 0;
                 const engineParams = getSerializedEngineParams(activeAlgorithm);
 
-                // 3. Assemble Participant Payload Capsule
+                // 3. Assemble Participant Payload Capsule (Includes values AND benchmark_timing)
                 const pId = val_participantId.value.trim() || "001";
                 const pDesc = val_participantDesc.value.trim() || "Participant";
 
@@ -2702,16 +2812,17 @@ allTabs.forEach(tab => {
                     seg_block_length: globalParams.segBlockLength,
                     varispeed_hold_block_count: globalParams.varispeedHoldBlockCount,
                     engine_params: engineParams,
-                    values: values
+                    values: values,
+                    benchmark_timing: benchmarkTiming
                 };
 
                 const payloadStr = JSON.stringify(payloadCapsule);
                 const copied = await writeClipboardText(payloadStr);
 
                 if (copied) {
-                    setValidatorStatus('Participant payload copied! Paste this back at the Master\'s Validator.', 'success');
+                    setTestingStatus(`Participant payload copied! (${benchmarkTiming.toFixed(2)} ms). Paste this back at the Master's Validator.`, 'success');
                 } else {
-                    setValidatorStatus('Payload evaluated but clipboard write failed.', 'warn');
+                    setTestingStatus('Payload evaluated but clipboard write failed.', 'warn');
                 }
             });
 
@@ -2719,7 +2830,7 @@ allTabs.forEach(tab => {
             val_addParticipantBtn.addEventListener('click', async () => {
                 const rawClipboard = await readClipboardText();
                 if (!rawClipboard) {
-                    setValidatorStatus('No clipboard data detected.', 'warn');
+                    setLedgerStatus('No clipboard data detected.', 'warn');
                     return;
                 }
 
@@ -2727,7 +2838,7 @@ allTabs.forEach(tab => {
                 try {
                     parsed = JSON.parse(rawClipboard);
                 } catch (err) {
-                    setValidatorStatus('Failed to parse participant payload: ' + err.message, 'error');
+                    setLedgerStatus('Failed to parse participant payload: ' + err.message, 'error');
                     return;
                 }
 
@@ -2739,7 +2850,7 @@ allTabs.forEach(tab => {
                             ParticipantEntries.push(parsed[i]);
                         }
                         renderLedger();
-                        setValidatorStatus(`Imported ${parsed.length - 1} participant capsules from session array.`, 'success');
+                        setLedgerStatus(`Imported ${parsed.length - 1} participant capsules from session array.`, 'success');
                         return;
                     } else if (parsed.length === 1) {
                         payload = parsed[0];
@@ -2747,19 +2858,19 @@ allTabs.forEach(tab => {
                 }
 
                 if (!payload || typeof payload !== 'object') {
-                    setValidatorStatus('Payload must be a JSON object.', 'error');
+                    setLedgerStatus('Payload must be a JSON object.', 'error');
                     return;
                 }
 
                 ParticipantEntries.push(payload);
                 renderLedger();
-                setValidatorStatus(`Participant [${payload.id ? payload.id.join(', ') : 'Unknown'}] added to ledger.`, 'success');
+                setLedgerStatus(`Participant [${payload.id ? payload.id.join(', ') : 'Unknown'}] added to ledger.`, 'success');
             });
 
             // --- Action 4: Export Session ---
             val_exportSessionBtn.addEventListener('click', async () => {
                 if (!MasterBaseline && ParticipantEntries.length === 0) {
-                    setValidatorStatus('Cannot export: Ledger is empty.', 'warn');
+                    setLedgerStatus('Cannot export: Ledger is empty.', 'warn');
                     return;
                 }
 
@@ -2773,9 +2884,9 @@ allTabs.forEach(tab => {
                 const copied = await writeClipboardText(sessionJson);
 
                 if (copied) {
-                    setValidatorStatus(`Exported full session array (${sessionArray.length} entries) to clipboard.`, 'success');
+                    setLedgerStatus(`Exported full session array (${sessionArray.length} entries) to clipboard.`, 'success');
                 } else {
-                    setValidatorStatus('Export failed to write to clipboard.', 'error');
+                    setLedgerStatus('Export failed to write to clipboard.', 'error');
                 }
             });
 
@@ -2783,7 +2894,7 @@ allTabs.forEach(tab => {
             val_importSessionBtn.addEventListener('click', async () => {
                 const rawClipboard = await readClipboardText();
                 if (!rawClipboard) {
-                    setValidatorStatus('No clipboard data detected.', 'warn');
+                    setLedgerStatus('No clipboard data detected.', 'warn');
                     return;
                 }
 
@@ -2791,12 +2902,12 @@ allTabs.forEach(tab => {
                 try {
                     parsed = JSON.parse(rawClipboard);
                 } catch (err) {
-                    setValidatorStatus('Failed to parse session JSON: ' + err.message, 'error');
+                    setLedgerStatus('Failed to parse session JSON: ' + err.message, 'error');
                     return;
                 }
 
                 if (!Array.isArray(parsed) || parsed.length === 0) {
-                    setValidatorStatus('Session array must be a non-empty JSON array `[...]`.', 'error');
+                    setLedgerStatus('Session array must be a non-empty JSON array `[...]`.', 'error');
                     return;
                 }
 
@@ -2810,18 +2921,15 @@ allTabs.forEach(tab => {
                 ParticipantEntries = parsed.slice(1);
 
                 renderLedger();
-                setValidatorStatus(`Session successfully imported: 1 Master Baseline and ${ParticipantEntries.length} Participant(s).`, 'success');
+                setLedgerStatus(`Session successfully imported: 1 Master Baseline and ${ParticipantEntries.length} Participant(s).`, 'success');
             });
 
             // --- Action 6: Clear All ---
             val_clearLedgerBtn.addEventListener('click', () => {
-                if (!confirm('Are you sure you want to clear the entire validation ledger and reset the Master baseline?')) {
-                    return;
-                }
                 MasterBaseline = null;
                 ParticipantEntries = [];
                 renderLedger();
-                setValidatorStatus('Validation ledger cleared and Master baseline reset.', 'info');
+                setLedgerStatus('Validation ledger cleared: Master baseline and all participants removed.', 'info');
             });
         });
     </script>
