@@ -1,0 +1,33 @@
+{
+    "id": [
+      "000",
+      "[Master] Firefox (Win32)"
+    ],
+    "engine_id": "QS",
+    "start_frame": -156,
+    "end_frame": 1280,
+    "hpq_frame_multiplier": 1.6,
+    "seg_block_length": 5,
+    "varispeed_hold_block_count": 1,
+    "engine_params": {
+      "lod": 0,
+      "baseWaveFreq": 0.0043,
+      "stream2FreqMult": 3.8,
+      "quantLevelsMinMax": [
+        6,
+        26
+      ],
+      "streamsOffset": [
+        11,
+        146
+      ],
+      "quantOffsets": [
+        10,
+        511
+      ],
+      "streamSwitchDur": 171,
+      "stream1QuantDur": 31,
+      "stream2QuantDur": 155,
+      "finalRandSwitch": 1
+    }
+  }
