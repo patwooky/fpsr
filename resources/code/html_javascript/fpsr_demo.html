@@ -74,65 +74,83 @@
             FPS-R repository: 
             <a href="https://github.com/patwooky/fpsr" class="text-blue-400 hover:text-blue-500 underline" target="_blank">https://github.com/patwooky/fpsr</a>
         </p>
-        <!-- Canvas for visualization -->
-        <canvas id="visualizerCanvas" class="w-full mb-6 shadow-lg" height="300"></canvas>
 
-        <!-- Transport Bar & Speed Controls Bar -->
-        <div class="flex flex-col gap-4 mb-6">
-            <!-- Transport Buttons Bar -->
-            <div class="flex flex-wrap items-center gap-3 bg-gray-800 p-4 rounded-lg shadow-lg">
-                <button id="resetButton" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition duration-150" title="Resets the visualizer to the beginning of the timeline and generates new random seeds for the algorithms.">
-                    Reset (New Seeds)
+        <!-- Top-Level Mode Toggle -->
+        <div class="flex justify-center mb-6">
+            <div class="inline-flex bg-gray-800 p-1.5 rounded-lg border border-gray-700 shadow-md">
+                <button id="modeVisualizerBtn" class="py-2 px-6 rounded-md font-bold text-sm transition-all duration-150 bg-blue-600 text-white shadow" title="Visualiser and Benchmark Mode: This mode allows you to visualize the FPS-R algorithms in real-time, with transport controls and performance metrics.">
+                    Visualiser & Benchmark Mode
                 </button>
-
-                <!-- Rewind button + target frame -->
-                <div class="flex items-center">
-                    <button id="rewindButton" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-3 rounded-l-md transition duration-150 flex items-center justify-center space-x-1.5" title="Rewinds the visualizer to the specified target frame.">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12.066 11.209a1.001 1.001 0 00-1.414 0l-3 3a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414-1.414L9.414 16H18a1 1 0 100-2h-8.586l1.652-1.652a1 1 0 000-1.414zM18 18v-2"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 12V6a1 1 0 011-1h10a1 1 0 011 1v6"></path></svg>
-                        <span>Rewind</span>
-                    </button>
-                    <input id="rewindFrameInput" type="number" value="0" min="0" step="1" class="w-24 bg-gray-700 text-white border-y border-r border-gray-600 rounded-r-md py-2 px-2 text-sm text-center font-mono" title="Target start frame to rewind to">
-                    <button id="resetRewindFrameButton" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-2.5 rounded-r-md text-xs transition duration-150 border-y border-r border-gray-600" title="Reset target rewind frame to 0">
-                        0
-                    </button>
-                </div>
-                
-                <button id="reverseButton" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md transition duration-150 flex items-center justify-center space-x-2" title="Play/Pause the visualizer in the reverse direction.">
-                    <!-- Pause Icon (Rev) -->
-                    <svg id="pauseIconRev" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" style="display: none;"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
-                    <!-- Play Reverse Icon -->
-                    <svg id="playIconRev" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.445-10.832a1 1 0 00-1.555-.832l-3 2a1 1 0 000 1.664l3 2a1 1 0 001.555-.832V8z" clip-rule="evenodd"></path></svg>
-                    <span id="reverseButtonText">Reverse</span>
-                </button>
-
-                <button id="pauseButton" class="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-md transition duration-150 flex items-center justify-center space-x-2" title="Play/Pause the visualizer in the forward direction.">
-                    <!-- Pause Icon -->
-                    <svg id="pauseIcon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
-                    <!-- Play Icon -->
-                    <svg id="playIcon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" style="display: none;"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
-                    <span id="pauseButtonText">Pause</span>
-                </button>
-
-                <!-- Continuous Scroll Toggle -->
-                <div class="flex items-center space-x-2 bg-gray-700/60 px-3 py-2 rounded-md border border-gray-600" title="When checked, timeline continuously scrolls. When unchecked, captures the specified buffer sample size and automatically freezes.">
-                    <input id="continuousScrollToggle" type="checkbox" checked class="w-4 h-4 bg-gray-700 text-blue-500 border-gray-600 rounded">
-                    <label for="continuousScrollToggle" class="text-xs font-semibold text-gray-200 cursor-pointer select-none">Continuous Scroll</label>
-                </div>
-
-                <!-- Buffer Sample Size Field -->
-                <div class="flex items-center space-x-1.5 bg-gray-700/60 px-3 py-1.5 rounded-md border border-gray-600" title="The maximum array size maintained internally and exported to clipboard.">
-                    <label for="bufferSizeInput" class="text-xs font-semibold text-gray-300 uppercase">Buffer Size:</label>
-                    <input id="bufferSizeInput" type="number" min="10" step="1" class="w-20 bg-gray-700 text-white border border-gray-500 rounded px-1.5 py-0.5 text-xs text-center font-mono">
-                    <button id="resetBufferSizeButton" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-0.5 px-2 rounded text-xs transition duration-150" title="Reset buffer sample size to native canvas width">
-                        Native
-                    </button>
-                </div>
-
-                <!-- Copy values to Clipboard -->
-                <button id="copyButton" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition duration-150 sm:ml-auto" title="Copies current values to the clipboard, in a python formatted list, (eg [0.022, 0.378, 0.795...]).&#10;This enables offline data analysis of FPS-R outputs.">
-                    Copy Values to Clipboard
+                <button id="modeValidatorBtn" class="py-2 px-6 rounded-md font-bold text-sm transition-all duration-150 text-gray-400 hover:text-white" title="Validator Mode: This mode allows you to generate and export FPS-R sequences for offline analysis and comparison.">
+                    Validator Mode (Offline Parity)
                 </button>
             </div>
+        </div>
+
+        <!-- ==================== VISUALIZER MODE CONTAINER ==================== -->
+        <div id="visualizerModeContainer">
+            <!-- Canvas for visualization -->
+            <canvas id="visualizerCanvas" class="w-full mb-6 shadow-lg" height="300"></canvas>
+
+            <!-- Transport Bar & Speed Controls Bar -->
+            <div class="flex flex-col gap-4 mb-6">
+                <!-- Transport Buttons Bar -->
+                <div class="flex flex-wrap items-center gap-3 bg-gray-800 p-4 rounded-lg shadow-lg">
+                    <button id="resetButton" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition duration-150" title="Resets the visualizer to the beginning of the timeline and generates new random seeds for the algorithms.">
+                        Reset (New Seeds)
+                    </button>
+
+                    <!-- Standalone Rewind Transport Button -->
+                    <button id="rewindButton" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-3.5 rounded-md transition duration-150 flex items-center justify-center space-x-1.5" title="Rewinds the visualizer to the specified Start Frame and clears the buffer.">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12.066 11.209a1.001 1.001 0 00-1.414 0l-3 3a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414-1.414L9.414 16H18a1 1 0 100-2h-8.586l1.652-1.652a1 1 0 000-1.664zM18 18v-2"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 12V6a1 1 0 011-1h10a1 1 0 011 1v6"></path></svg>
+                        <span>Rewind</span>
+                    </button>
+                    
+                    <button id="reverseButton" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md transition duration-150 flex items-center justify-center space-x-2" title="Play/Pause the visualizer in the reverse direction.">
+                        <!-- Pause Icon (Rev) -->
+                        <svg id="pauseIconRev" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" style="display: none;"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                        <!-- Play Reverse Icon -->
+                        <svg id="playIconRev" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.445-10.832a1 1 0 00-1.555-.832l-3 2a1 1 0 000 1.664l3 2a1 1 0 001.555-.832V8z" clip-rule="evenodd"></path></svg>
+                        <span id="reverseButtonText">Reverse</span>
+                    </button>
+
+                    <button id="pauseButton" class="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-md transition duration-150 flex items-center justify-center space-x-2" title="Play/Pause the visualizer in the forward direction.">
+                        <!-- Pause Icon -->
+                        <svg id="pauseIcon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                        <!-- Play Icon -->
+                        <svg id="playIcon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" style="display: none;"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
+                        <span id="pauseButtonText">Pause</span>
+                    </button>
+
+                    <!-- Start Frame Input -->
+                    <div class="flex items-center space-x-1.5 bg-gray-700/60 px-3 py-1.5 rounded-md border border-gray-600" title="Start Frame: this is the frame that 'Rewind' will snap back to when it clears the graph.">
+                        <label for="rewindFrameInput" class="text-xs font-semibold text-gray-300 uppercase">Start Frame:</label>
+                        <input id="rewindFrameInput" type="number" value="0" min="0" step="1" class="w-20 bg-gray-700 text-white border border-gray-500 rounded px-1.5 py-0.5 text-xs text-center font-mono">
+                        <button id="resetRewindFrameButton" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-0.5 px-2 rounded text-xs transition duration-150" title="Reset Start Frame to 0">
+                            0
+                        </button>
+                    </div>
+
+                    <!-- End Frame / Buffer Size Input -->
+                    <div class="flex items-center space-x-1.5 bg-gray-700/60 px-3 py-1.5 rounded-md border border-gray-600" title="End Frame: this is also the buffer size of each 'page' of the graph.">
+                        <label for="bufferSizeInput" class="text-xs font-semibold text-gray-300 uppercase">End Frame:</label>
+                        <input id="bufferSizeInput" type="number" min="10" step="1" class="w-20 bg-gray-700 text-white border border-gray-500 rounded px-1.5 py-0.5 text-xs text-center font-mono">
+                        <button id="resetBufferSizeButton" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-0.5 px-2 rounded text-xs transition duration-150" title="Reset buffer sample size to native canvas width">
+                            Native
+                        </button>
+                    </div>
+
+                    <!-- Continuous Scroll Toggle -->
+                    <div class="flex items-center space-x-2 bg-gray-700/60 px-3 py-2 rounded-md border border-gray-600" title="When checked, timeline continuously scrolls. When unchecked, captures the specified buffer sample size and automatically freezes.">
+                        <input id="continuousScrollToggle" type="checkbox" checked class="w-4 h-4 bg-gray-700 text-blue-500 border-gray-600 rounded">
+                        <label for="continuousScrollToggle" class="text-xs font-semibold text-gray-200 cursor-pointer select-none">Continuous Scroll</label>
+                    </div>
+
+                    <!-- Copy values to Clipboard -->
+                    <button id="copyButton" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition duration-150 sm:ml-auto" title="Copies current values to the clipboard, in a python formatted list, (eg [0.022, 0.378, 0.795...]).&#10;This enables offline data analysis of FPS-R outputs.">
+                        Copy Values to Clipboard
+                    </button>
+                </div>
 
             <!-- Scroll Speed Controls & Performance Monitor -->
             <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-gray-800 p-4 rounded-lg shadow-lg">
@@ -553,6 +571,139 @@
                 </div>
             </div>
     </div>
+        </div>
+
+        <!-- ==================== VALIDATOR MODE CONTAINER ==================== -->
+        <div id="validatorModeContainer" style="display: none;" class="flex flex-col gap-6 mb-8">
+            <!-- Validator Notification / Status Bar -->
+            <div id="validatorStatusBar" class="p-4 rounded-lg bg-gray-800 border border-gray-700 text-sm flex items-center justify-between shadow-lg">
+                <div class="flex items-center space-x-3">
+                    <span class="inline-block w-3 h-3 rounded-full bg-blue-500 animate-pulse"></span>
+                    <span id="validatorStatusText" class="font-mono text-gray-200">Ready for validation session. Initiate Master or load participant config.</span>
+                </div>
+                <span id="validatorStatusTimestamp" class="text-xs text-gray-400 font-mono"></span>
+            </div>
+
+            <!-- Panel 1: Testing Controls (Collapsible) -->
+            <details open class="bg-gray-800 rounded-lg shadow-lg border border-gray-700 overflow-hidden">
+                <summary class="p-4 font-bold text-lg text-white cursor-pointer select-none bg-gray-800 hover:bg-gray-750 transition-colors flex items-center justify-between">
+                    <span class="flex items-center space-x-2">
+                        <svg class="w-5 h-5 text-blue-400 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+                        <span>Testing Controls</span>
+                    </span>
+                    <span class="text-xs text-gray-400 uppercase font-mono">Click to Toggle</span>
+                </summary>
+
+                <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-6 border-t border-gray-700 bg-gray-850">
+                    <!-- Master Section -->
+                    <div class="bg-gray-800 p-5 rounded-lg border border-blue-900/40 flex flex-col justify-between space-y-4">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="text-md font-bold text-blue-400 uppercase tracking-wide">1. Master (Origin)</h3>
+                                <span class="text-xs bg-blue-950 text-blue-300 border border-blue-700/60 px-2 py-0.5 rounded font-mono">ID: ["000", "master"]</span>
+                            </div>
+                            <p class="text-xs text-gray-400 mb-4">
+                                Configures the reference evaluation ground-truth. Runs headless evaluation of the current engine and parameters, establishes index 0 of the ledger, and copies the lightweight <b>Config Capsule</b> (omits values) to the clipboard.
+                            </p>
+                            <div class="grid grid-cols-2 gap-3 mb-4">
+                                <div>
+                                    <label for="val_startFrame" class="text-xs text-gray-400 font-medium uppercase block mb-1">Start Frame</label>
+                                    <input id="val_startFrame" type="number" value="0" min="0" step="1" class="w-full bg-gray-700 text-white border border-gray-600 rounded p-2 text-sm font-mono">
+                                </div>
+                                <div>
+                                    <label for="val_endFrame" class="text-xs text-gray-400 font-medium uppercase block mb-1">End Frame</label>
+                                    <input id="val_endFrame" type="number" value="1000" min="1" step="1" class="w-full bg-gray-700 text-white border border-gray-600 rounded p-2 text-sm font-mono">
+                                </div>
+                            </div>
+                            <div class="text-xs text-gray-400 bg-gray-900/60 p-2.5 rounded border border-gray-700/50 mb-4 font-mono">
+                                Active Algorithm: <span id="val_masterActiveAlgo" class="text-white font-bold">SM</span> | Total Frames: <span id="val_masterFrameCount" class="text-yellow-400 font-bold">1001</span>
+                            </div>
+                        </div>
+
+                        <button id="val_masterInitiateBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-md shadow transition duration-150 flex items-center justify-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                            <span>Initiate & Copy Master Config</span>
+                        </button>
+                    </div>
+
+                    <!-- Participant Section -->
+                    <div class="bg-gray-800 p-5 rounded-lg border border-purple-900/40 flex flex-col justify-between space-y-4">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="text-md font-bold text-purple-400 uppercase tracking-wide">2. Participant (Client)</h3>
+                                <span class="text-xs bg-purple-950 text-purple-300 border border-purple-700/60 px-2 py-0.5 rounded font-mono">Universal Preset Loader</span>
+                            </div>
+                            <p class="text-xs text-gray-400 mb-4">
+                                Reads the Master's config (or any payload) from clipboard, updates local UI inputs, executes the deterministic engine headless, and copies the resulting <b>Payload Capsule</b> (with values) back to the clipboard.
+                            </p>
+                            <div class="grid grid-cols-2 gap-3 mb-4">
+                                <div>
+                                    <label for="val_participantId" class="text-xs text-gray-400 font-medium uppercase block mb-1">Participant ID</label>
+                                    <input id="val_participantId" type="text" value="001" class="w-full bg-gray-700 text-white border border-gray-600 rounded p-2 text-sm font-mono" placeholder="e.g. 001">
+                                </div>
+                                <div>
+                                    <label for="val_participantDesc" class="text-xs text-gray-400 font-medium uppercase block mb-1">Description</label>
+                                    <input id="val_participantDesc" type="text" value="Client Device" class="w-full bg-gray-700 text-white border border-gray-600 rounded p-2 text-sm" placeholder="e.g. Firefox Android">
+                                </div>
+                            </div>
+                            <div class="text-xs text-gray-400 bg-gray-900/60 p-2.5 rounded border border-gray-700/50 mb-4">
+                                Accepts any valid Config Capsule, Participant Payload, or Session Array from clipboard.
+                            </div>
+                        </div>
+
+                        <button id="val_participantRunBtn" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 px-4 rounded-md shadow transition duration-150 flex items-center justify-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span>Load Config, Run & Copy Payload</span>
+                        </button>
+                    </div>
+                </div>
+            </details>
+
+            <!-- Panel 2: Validation Session Ledger (Collapsible) -->
+            <details open class="bg-gray-800 rounded-lg shadow-lg border border-gray-700 overflow-hidden">
+                <summary class="p-4 font-bold text-lg text-white cursor-pointer select-none bg-gray-800 hover:bg-gray-750 transition-colors flex items-center justify-between">
+                    <span class="flex items-center space-x-2">
+                        <svg class="w-5 h-5 text-emerald-400 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                        <span>Validation Session (The Ledger)</span>
+                    </span>
+                    <span class="text-xs text-gray-400 uppercase font-mono">Click to Toggle</span>
+                </summary>
+
+                <div class="p-6 border-t border-gray-700">
+                    <!-- Session Global Action Toolbar -->
+                    <div class="flex flex-wrap items-center gap-3 mb-6 bg-gray-900/80 p-3 rounded-lg border border-gray-700">
+                        <button id="val_addParticipantBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-3.5 rounded text-xs transition duration-150 flex items-center space-x-1.5" title="Read a Participant Payload Capsule from clipboard and append it to this ledger">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            <span>Add Participant Capsule</span>
+                        </button>
+
+                        <button id="val_exportSessionBtn" class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-3.5 rounded text-xs transition duration-150 flex items-center space-x-1.5" title="Copy full session JSON (Master + all Participants) to clipboard">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                            <span>Export Session</span>
+                        </button>
+
+                        <button id="val_importSessionBtn" class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-3.5 rounded text-xs transition duration-150 flex items-center space-x-1.5" title="Import session JSON from clipboard, restoring Master and all Participants">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            <span>Import Session</span>
+                        </button>
+
+                        <button id="val_clearLedgerBtn" class="bg-red-800/80 hover:bg-red-700 text-white font-semibold py-2 px-3.5 rounded text-xs transition duration-150 ml-auto flex items-center space-x-1.5" title="Clear all ledger entries and purge MasterBaseline from memory">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            <span>Clear All</span>
+                        </button>
+                    </div>
+
+                    <!-- Ledger Cards Container -->
+                    <div id="val_ledgerContainer" class="flex flex-col gap-4">
+                        <div id="val_emptyLedgerNotice" class="text-center py-12 px-4 border-2 border-dashed border-gray-700 rounded-lg text-gray-400">
+                            <svg class="w-12 h-12 mx-auto mb-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            <p class="font-medium text-gray-300">No session entries active</p>
+                            <p class="text-xs text-gray-500 mt-1">Initiate a Master baseline above or click "Import Session" to begin evaluation.</p>
+                        </div>
+                    </div>
+                </div>
+            </details>
+        </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -1868,6 +2019,810 @@ allTabs.forEach(tab => {
             // Initial setup and start
             updateParams();
             animate();
+
+            // =========================================================================
+            // VALIDATOR MODE: IMPLEMENTATION & HEADLESS PARITY ENGINE
+            // =========================================================================
+
+            // --- Navigation & View Mode State ---
+            const modeVisualizerBtn = document.getElementById('modeVisualizerBtn');
+            const modeValidatorBtn = document.getElementById('modeValidatorBtn');
+            const visualizerModeContainer = document.getElementById('visualizerModeContainer');
+            const validatorModeContainer = document.getElementById('validatorModeContainer');
+
+            // --- Validator UI Elements ---
+            const val_statusBar = document.getElementById('validatorStatusBar');
+            const val_statusText = document.getElementById('validatorStatusText');
+            const val_statusTimestamp = document.getElementById('validatorStatusTimestamp');
+
+            const val_startFrameInput = document.getElementById('val_startFrame');
+            const val_endFrameInput = document.getElementById('val_endFrame');
+            const val_masterActiveAlgo = document.getElementById('val_masterActiveAlgo');
+            const val_masterFrameCount = document.getElementById('val_masterFrameCount');
+            const val_masterInitiateBtn = document.getElementById('val_masterInitiateBtn');
+
+            const val_participantId = document.getElementById('val_participantId');
+            const val_participantDesc = document.getElementById('val_participantDesc');
+            const val_participantRunBtn = document.getElementById('val_participantRunBtn');
+
+            const val_addParticipantBtn = document.getElementById('val_addParticipantBtn');
+            const val_exportSessionBtn = document.getElementById('val_exportSessionBtn');
+            const val_importSessionBtn = document.getElementById('val_importSessionBtn');
+            const val_clearLedgerBtn = document.getElementById('val_clearLedgerBtn');
+            const val_ledgerContainer = document.getElementById('val_ledgerContainer');
+            const val_emptyLedgerNotice = document.getElementById('val_emptyLedgerNotice');
+
+            // --- In-Memory Validation Session Ledger ---
+            let MasterBaseline = null; // Full Master Capsule (including values array)
+            let ParticipantEntries = []; // Array of Participant Payload Capsules
+
+            // Auto-detect browser descriptor for convenience
+            if (navigator && navigator.userAgent) {
+                const ua = navigator.userAgent;
+                let desc = "Browser Client";
+                if (ua.indexOf("Firefox") !== -1) desc = "Firefox";
+                else if (ua.indexOf("Edg") !== -1) desc = "Edge";
+                else if (ua.indexOf("Chrome") !== -1) desc = "Chrome";
+                else if (ua.indexOf("Safari") !== -1) desc = "Safari";
+
+                if (navigator.platform) desc += " (" + navigator.platform + ")";
+                val_participantDesc.value = desc;
+            }
+
+            // Sync master frame count display
+            function updateMasterFrameCount() {
+                const s = parseInt(val_startFrameInput.value, 10) || 0;
+                const e = parseInt(val_endFrameInput.value, 10) || 0;
+                const count = Math.max(0, e - s + 1);
+                val_masterFrameCount.textContent = count;
+                val_masterActiveAlgo.textContent = activeAlgorithm;
+            }
+            val_startFrameInput.addEventListener('input', updateMasterFrameCount);
+            val_endFrameInput.addEventListener('input', updateMasterFrameCount);
+
+            // Mode switching
+            function switchMode(mode) {
+                if (mode === 'validator') {
+                    // Pause visualizer animation to save CPU
+                    if (playDirection !== 0) {
+                        playDirection = 0;
+                        updatePlaybackUI();
+                    }
+                    visualizerModeContainer.style.display = 'none';
+                    validatorModeContainer.style.display = 'flex';
+
+                    modeValidatorBtn.classList.remove('text-gray-400');
+                    modeValidatorBtn.classList.add('bg-blue-600', 'text-white', 'shadow');
+                    modeVisualizerBtn.classList.remove('bg-blue-600', 'text-white', 'shadow');
+                    modeVisualizerBtn.classList.add('text-gray-400');
+
+                    // Synchronize Master Frame Range from Visualizer Start Frame & End Frame (Buffer Size)
+                    val_startFrameInput.value = parseInt(rewindFrameInput.value, 10) || 0;
+                    val_endFrameInput.value = parseInt(bufferSizeInput.value, 10) || canvasWidth;
+                    updateMasterFrameCount();
+                } else {
+                    validatorModeContainer.style.display = 'none';
+                    visualizerModeContainer.style.display = 'block';
+
+                    modeVisualizerBtn.classList.remove('text-gray-400');
+                    modeVisualizerBtn.classList.add('bg-blue-600', 'text-white', 'shadow');
+                    modeValidatorBtn.classList.remove('bg-blue-600', 'text-white', 'shadow');
+                    modeValidatorBtn.classList.add('text-gray-400');
+                }
+            }
+
+            modeVisualizerBtn.addEventListener('click', () => switchMode('visualizer'));
+            modeValidatorBtn.addEventListener('click', () => switchMode('validator'));
+
+            // Status message logger
+            function setValidatorStatus(msg, type = 'info') {
+                val_statusText.textContent = msg;
+                val_statusTimestamp.textContent = new Date().toLocaleTimeString();
+
+                val_statusBar.classList.remove('border-blue-700', 'border-green-700', 'border-red-700', 'border-yellow-700');
+                if (type === 'success') {
+                    val_statusBar.classList.add('border-green-700');
+                } else if (type === 'error') {
+                    val_statusBar.classList.add('border-red-700');
+                } else if (type === 'warn') {
+                    val_statusBar.classList.add('border-yellow-700');
+                } else {
+                    val_statusBar.classList.add('border-blue-700');
+                }
+            }
+
+            // --- Clipboard Helpers with Resilient Fallback ---
+            async function writeClipboardText(text) {
+                try {
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        await navigator.clipboard.writeText(text);
+                        return true;
+                    }
+                } catch (e) {
+                    // fallback
+                }
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                const ok = document.execCommand('copy');
+                document.body.removeChild(ta);
+                return ok;
+            }
+
+            async function readClipboardText() {
+                try {
+                    if (navigator.clipboard && navigator.clipboard.readText) {
+                        const t = await navigator.clipboard.readText();
+                        if (t && t.trim().length > 0) return t.trim();
+                    }
+                } catch (e) {
+                    console.warn('Clipboard readText denied/unsupported, prompting user.', e);
+                }
+                const p = prompt('Paste JSON capsule or session array here:');
+                return p ? p.trim() : null;
+            }
+
+            // --- BigInt-Safe Parameter Serialization ---
+            function getSerializedEngineParams(engineId) {
+                switch (engineId) {
+                    case 'SM':
+                        return {
+                            lod: globalParams.sm.lod,
+                            minHold: Number(globalParams.sm.minHold),
+                            maxHold: Number(globalParams.sm.maxHold),
+                            reseedInterval: Number(globalParams.sm.reseedInterval),
+                            seedInner: Number(globalParams.sm.seedInner),
+                            seedOuter: Number(globalParams.sm.seedOuter),
+                            finalRandSwitch: globalParams.sm.finalRandSwitch
+                        };
+                    case 'TM':
+                        return {
+                            lod: globalParams.tm.lod,
+                            periodA: Number(globalParams.tm.periodA),
+                            periodB: Number(globalParams.tm.periodB),
+                            periodSwitch: Number(globalParams.tm.periodSwitch),
+                            seedInner: Number(globalParams.tm.seedInner),
+                            seedOuter: Number(globalParams.tm.seedOuter),
+                            finalRandSwitch: globalParams.tm.finalRandSwitch
+                        };
+                    case 'QS':
+                        return {
+                            lod: globalParams.qs.lod,
+                            baseWaveFreq: globalParams.qs.baseWaveFreq,
+                            stream2FreqMult: globalParams.qs.stream2FreqMult,
+                            quantLevelsMinMax: [...globalParams.qs.quantLevelsMinMax],
+                            streamsOffset: [...globalParams.qs.streamsOffset],
+                            quantOffsets: [...globalParams.qs.quantOffsets],
+                            streamSwitchDur: Number(globalParams.qs.streamSwitchDur),
+                            stream1QuantDur: Number(globalParams.qs.stream1QuantDur),
+                            stream2QuantDur: Number(globalParams.qs.stream2QuantDur),
+                            finalRandSwitch: globalParams.qs.finalRandSwitch
+                        };
+                    case 'BD':
+                        return {
+                            lod: globalParams.bd.lod,
+                            blockSize: Number(globalParams.bd.blockSize),
+                            streamsNumber: globalParams.bd.streamsNumber,
+                            streamsOffset: Number(globalParams.bd.streamsOffset),
+                            intraOp: globalParams.bd.intraOp,
+                            dynamicShiftBits: globalParams.bd.dynamicShiftBits,
+                            staticShiftAmount: globalParams.bd.staticShiftAmount,
+                            interOp: globalParams.bd.interOp,
+                            valueSeedOffset: Number(globalParams.bd.valueSeedOffset)
+                        };
+                    case 'LEGACY_A':
+                        return {
+                            minHold: globalParams.st_a.minHold,
+                            maxHold: globalParams.st_a.maxHold
+                        };
+                    case 'LEGACY_B':
+                        return {
+                            minHold: globalParams.st_b.minHold,
+                            threshold: globalParams.st_b.threshold
+                        };
+                    case 'PERLIN':
+                        return {
+                            octaves: globalParams.perlin.octaves,
+                            freqMult: globalParams.perlin.freqMult,
+                            octaveOffset: globalParams.perlin.octaveOffset,
+                            baseFreq: globalParams.perlin.baseFreq,
+                            persistence: globalParams.perlin.persistence,
+                            quantSteps: globalParams.perlin.quantSteps,
+                            finalRandSwitch: globalParams.perlin.finalRandSwitch
+                        };
+                    case 'WORLEY':
+                        return {
+                            octaves: globalParams.worley.octaves,
+                            freqMult: globalParams.worley.freqMult,
+                            octaveOffset: globalParams.worley.octaveOffset,
+                            baseFreq: globalParams.worley.baseFreq,
+                            metric: globalParams.worley.metric,
+                            persistence: globalParams.worley.persistence,
+                            quantSteps: globalParams.worley.quantSteps,
+                            finalRandSwitch: globalParams.worley.finalRandSwitch
+                        };
+                    default:
+                        return {};
+                }
+            }
+
+            // --- Universal Preset Applier (Injects Config Capsule into UI) ---
+            function applyCapsuleToUI(capsule) {
+                if (!capsule || typeof capsule !== 'object') return false;
+
+                const engineId = capsule.engine_id;
+                if (!engineId) return false;
+
+                // 1. Switch Active Algorithm Tab
+                const targetTab = document.getElementById(`tab-${engineId}`);
+                if (targetTab) {
+                    targetTab.click();
+                }
+
+                // 2. Apply HPQ settings if present
+                if (capsule.hpq_frame_multiplier !== undefined) {
+                    frameMultiplierSlider.value = capsule.hpq_frame_multiplier;
+                    frameMultiplierInput.value = parseFloat(capsule.hpq_frame_multiplier).toFixed(2);
+                }
+                if (capsule.seg_block_length !== undefined) {
+                    document.getElementById('global_segBlockLength').value = capsule.seg_block_length;
+                }
+                if (capsule.varispeed_hold_block_count !== undefined) {
+                    document.getElementById('global_varispeedHoldBlockCount').value = capsule.varispeed_hold_block_count;
+                }
+
+                // 3. Apply frame range
+                if (capsule.start_frame !== undefined) {
+                    val_startFrameInput.value = capsule.start_frame;
+                }
+                if (capsule.end_frame !== undefined) {
+                    val_endFrameInput.value = capsule.end_frame;
+                }
+
+                // 4. Apply Engine Specific Params
+                const p = capsule.engine_params || capsule.params || {};
+                switch (engineId) {
+                    case 'SM':
+                        if (p.lod !== undefined) document.getElementById('sm_lod').value = p.lod;
+                        if (p.minHold !== undefined) document.getElementById('sm_minHold').value = p.minHold;
+                        if (p.maxHold !== undefined) document.getElementById('sm_maxHold').value = p.maxHold;
+                        if (p.reseedInterval !== undefined) document.getElementById('sm_reseed').value = p.reseedInterval;
+                        if (p.seedInner !== undefined) document.getElementById('sm_seedInner').value = p.seedInner;
+                        if (p.seedOuter !== undefined) document.getElementById('sm_seedOuter').value = p.seedOuter;
+                        if (p.finalRandSwitch !== undefined) document.getElementById('sm_finalRandSwitch').checked = !!p.finalRandSwitch;
+                        break;
+                    case 'TM':
+                        if (p.lod !== undefined) document.getElementById('tm_lod').value = p.lod;
+                        if (p.periodA !== undefined) document.getElementById('tm_periodA').value = p.periodA;
+                        if (p.periodB !== undefined) document.getElementById('tm_periodB').value = p.periodB;
+                        if (p.periodSwitch !== undefined) document.getElementById('tm_periodSwitch').value = p.periodSwitch;
+                        if (p.seedInner !== undefined) document.getElementById('tm_seedInner').value = p.seedInner;
+                        if (p.seedOuter !== undefined) document.getElementById('tm_seedOuter').value = p.seedOuter;
+                        if (p.finalRandSwitch !== undefined) document.getElementById('tm_finalRandSwitch').checked = !!p.finalRandSwitch;
+                        break;
+                    case 'QS':
+                        if (p.lod !== undefined) document.getElementById('qs_lod').value = p.lod;
+                        if (p.baseWaveFreq !== undefined) document.getElementById('qs_baseWaveFreq').value = p.baseWaveFreq;
+                        if (p.stream2FreqMult !== undefined) document.getElementById('qs_stream2FreqMult').value = p.stream2FreqMult;
+                        if (p.quantLevelsMinMax) {
+                            document.getElementById('qs_quantMin').value = p.quantLevelsMinMax[0];
+                            document.getElementById('qs_quantMax').value = p.quantLevelsMinMax[1];
+                        }
+                        if (p.streamsOffset) {
+                            document.getElementById('qs_streamOffset1').value = p.streamsOffset[0];
+                            document.getElementById('qs_streamOffset2').value = p.streamsOffset[1];
+                        }
+                        if (p.quantOffsets) {
+                            document.getElementById('qs_quantOffset1').value = p.quantOffsets[0];
+                            document.getElementById('qs_quantOffset2').value = p.quantOffsets[1];
+                        }
+                        if (p.streamSwitchDur !== undefined) document.getElementById('qs_streamSwitchDur').value = p.streamSwitchDur;
+                        if (p.stream1QuantDur !== undefined) document.getElementById('qs_stream1QuantDur').value = p.stream1QuantDur;
+                        if (p.stream2QuantDur !== undefined) document.getElementById('qs_stream2QuantDur').value = p.stream2QuantDur;
+                        if (p.finalRandSwitch !== undefined) document.getElementById('qs_finalRandSwitch').checked = !!p.finalRandSwitch;
+                        break;
+                    case 'BD':
+                        if (p.lod !== undefined) document.getElementById('bd_lod').value = p.lod;
+                        if (p.blockSize !== undefined) document.getElementById('bd_blockSize').value = p.blockSize;
+                        if (p.streamsNumber !== undefined) document.getElementById('bd_streamsNumber').value = p.streamsNumber;
+                        if (p.streamsOffset !== undefined) document.getElementById('bd_streamsOffset').value = p.streamsOffset;
+                        if (p.intraOp !== undefined) document.getElementById('bd_intraOp').value = p.intraOp;
+                        if (p.dynamicShiftBits !== undefined) document.getElementById('bd_dynamicShiftBits').value = p.dynamicShiftBits;
+                        if (p.staticShiftAmount !== undefined) document.getElementById('bd_staticShiftAmount').value = p.staticShiftAmount;
+                        if (p.interOp !== undefined) document.getElementById('bd_interOp').value = p.interOp;
+                        if (p.valueSeedOffset !== undefined) document.getElementById('bd_valueSeedOffset').value = p.valueSeedOffset;
+                        break;
+                    case 'LEGACY_A':
+                        if (p.minHold !== undefined) document.getElementById('sta_minHold').value = p.minHold;
+                        if (p.maxHold !== undefined) document.getElementById('sta_maxHold').value = p.maxHold;
+                        break;
+                    case 'LEGACY_B':
+                        if (p.minHold !== undefined) document.getElementById('stb_minHold').value = p.minHold;
+                        if (p.threshold !== undefined) document.getElementById('stb_threshold').value = p.threshold;
+                        break;
+                    case 'PERLIN':
+                        if (p.octaves !== undefined) document.getElementById('perlin_octaves').value = p.octaves;
+                        if (p.freqMult !== undefined) document.getElementById('perlin_freqMult').value = p.freqMult;
+                        if (p.octaveOffset !== undefined) document.getElementById('perlin_octaveOffset').value = p.octaveOffset;
+                        if (p.baseFreq !== undefined) document.getElementById('perlin_baseFreq').value = p.baseFreq;
+                        if (p.persistence !== undefined) document.getElementById('perlin_persistence').value = p.persistence;
+                        if (p.quantSteps !== undefined) document.getElementById('perlin_quantSteps').value = p.quantSteps;
+                        if (p.finalRandSwitch !== undefined) document.getElementById('perlin_finalRandSwitch').checked = !!p.finalRandSwitch;
+                        break;
+                    case 'WORLEY':
+                        if (p.octaves !== undefined) document.getElementById('worley_octaves').value = p.octaves;
+                        if (p.freqMult !== undefined) document.getElementById('worley_freqMult').value = p.freqMult;
+                        if (p.octaveOffset !== undefined) document.getElementById('worley_octaveOffset').value = p.octaveOffset;
+                        if (p.baseFreq !== undefined) document.getElementById('worley_baseFreq').value = p.baseFreq;
+                        if (p.metric !== undefined) document.getElementById('worley_metric').value = p.metric;
+                        if (p.persistence !== undefined) document.getElementById('worley_persistence').value = p.persistence;
+                        if (p.quantSteps !== undefined) document.getElementById('worley_quantSteps').value = p.quantSteps;
+                        if (p.finalRandSwitch !== undefined) document.getElementById('worley_finalRandSwitch').checked = !!p.finalRandSwitch;
+                        break;
+                }
+
+                // Sync all slider labels and internal states
+                document.querySelectorAll('input[type="range"]').forEach(slider => {
+                    const span = document.getElementById(slider.id + 'Value');
+                    if (span) span.textContent = slider.value;
+                });
+                updateParams();
+                updateMasterFrameCount();
+                return true;
+            }
+
+            // --- Headless Evaluation Loop ---
+            function runHeadlessEvaluation(startFrame, endFrame) {
+                const results = [];
+                const s = Math.max(0, parseInt(startFrame, 10) || 0);
+                const e = Math.max(s, parseInt(endFrame, 10) || 0);
+
+                // For legacy stateful algorithms, reset states and warm-up up to startFrame
+                if (activeAlgorithm === 'LEGACY_A') {
+                    legacyA_nextJumpFrame = 0;
+                    legacyA_heldValue = Math.random();
+                    for (let f = 0; f < s; f++) {
+                        fpsr_legacy_a_base_js(f, globalParams.st_a);
+                    }
+                } else if (activeAlgorithm === 'LEGACY_B') {
+                    legacyB_lastJumpFrame = 0;
+                    legacyB_heldValue = Math.random();
+                    for (let f = 0; f < s; f++) {
+                        fpsr_legacy_b_base_js(f, globalParams.st_b);
+                    }
+                }
+
+                // Sequential headless calculation
+                for (let f = s; f <= e; f++) {
+                    const val = getFpsrValue(f);
+                    // Standardize float precision to 6 decimals to match visualizer format
+                    const rounded = Number(Number(val).toFixed(6));
+                    results.push(rounded);
+                }
+                return results;
+            }
+
+            // --- Tri-State Parity Comparator ---
+            function evaluateParity(participantCapsule, baselineCapsule) {
+                if (!baselineCapsule) {
+                    return {
+                        state: 'INVALID',
+                        message: 'No Master baseline active to compare against. Please initiate Master first.'
+                    };
+                }
+
+                if (!participantCapsule || typeof participantCapsule !== 'object') {
+                    return {
+                        state: 'INVALID',
+                        message: 'Corrupted payload: capsule is not a valid JSON object.'
+                    };
+                }
+
+                // Check Engine ID
+                if (participantCapsule.engine_id !== baselineCapsule.engine_id) {
+                    return {
+                        state: 'INVALID',
+                        message: `Engine mismatch: Master is "${baselineCapsule.engine_id}" vs Participant "${participantCapsule.engine_id}".`
+                    };
+                }
+
+                // Check Frame Ranges
+                if (participantCapsule.start_frame !== baselineCapsule.start_frame ||
+                    participantCapsule.end_frame !== baselineCapsule.end_frame) {
+                    return {
+                        state: 'INVALID',
+                        message: `Frame range mismatch: Master is [${baselineCapsule.start_frame}, ${baselineCapsule.end_frame}] vs Participant [${participantCapsule.start_frame}, ${participantCapsule.end_frame}].`
+                    };
+                }
+
+                // Check HPQ Settings
+                if (participantCapsule.hpq_frame_multiplier !== baselineCapsule.hpq_frame_multiplier ||
+                    participantCapsule.seg_block_length !== baselineCapsule.seg_block_length ||
+                    participantCapsule.varispeed_hold_block_count !== baselineCapsule.varispeed_hold_block_count) {
+                    return {
+                        state: 'INVALID',
+                        message: 'Global HPQ settings mismatch.'
+                    };
+                }
+
+                // Check Engine Params equality
+                const baseParams = baselineCapsule.engine_params || baselineCapsule.params || {};
+                const partParams = participantCapsule.engine_params || participantCapsule.params || {};
+                const baseKeys = Object.keys(baseParams);
+                for (const key of baseKeys) {
+                    const bVal = JSON.stringify(baseParams[key]);
+                    const pVal = JSON.stringify(partParams[key]);
+                    if (bVal !== pVal) {
+                        return {
+                            state: 'INVALID',
+                            message: `Engine parameter mismatch on "${key}": Master=${bVal}, Participant=${pVal}.`
+                        };
+                    }
+                }
+
+                // Check Values Array
+                const partVals = participantCapsule.values;
+                const baseVals = baselineCapsule.values;
+
+                if (!Array.isArray(partVals)) {
+                    return {
+                        state: 'INVALID',
+                        message: 'Missing or corrupted "values" array in payload.'
+                    };
+                }
+
+                if (partVals.length !== baseVals.length) {
+                    return {
+                        state: 'INVALID',
+                        message: `Array length mismatch: expected ${baseVals.length} frames, received ${partVals.length}.`
+                    };
+                }
+
+                // Strict Equality Check Across Every Frame
+                const startF = participantCapsule.start_frame || 0;
+                for (let i = 0; i < baseVals.length; i++) {
+                    const mVal = baseVals[i];
+                    const pVal = partVals[i];
+                    if (mVal !== pVal) {
+                        const frameNum = startF + i;
+                        return {
+                            state: 'DISPARITY',
+                            message: `Disparity at frame ${frameNum} (index ${i}): Master=${mVal}, Participant=${pVal}.`
+                        };
+                    }
+                }
+
+                return {
+                    state: 'PARITY',
+                    message: `100% Parity across all ${baseVals.length} frames (${baselineCapsule.start_frame} - ${baselineCapsule.end_frame}).`
+                };
+            }
+
+            // --- Ledger UI Renderer ---
+            function renderLedger() {
+                val_ledgerContainer.innerHTML = '';
+
+                if (!MasterBaseline && ParticipantEntries.length === 0) {
+                    val_ledgerContainer.appendChild(val_emptyLedgerNotice);
+                    return;
+                }
+
+                // 1. Render Master Card (Index 0)
+                if (MasterBaseline) {
+                    const masterCard = document.createElement('div');
+                    masterCard.className = 'p-4 rounded-lg bg-gray-800 border-2 border-blue-600/70 shadow-lg';
+                    masterCard.innerHTML = `
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                            <div class="flex items-center space-x-2">
+                                <span class="bg-blue-600 text-white font-bold text-xs uppercase px-2.5 py-1 rounded shadow">Master Baseline</span>
+                                <span class="text-white font-bold text-sm">${MasterBaseline.id ? MasterBaseline.id[1] : 'master'}</span>
+                                <span class="text-xs font-mono text-gray-400">ID: ${MasterBaseline.id ? MasterBaseline.id[0] : '000'}</span>
+                            </div>
+                            <div class="flex items-center space-x-3 text-xs font-mono">
+                                <span class="text-blue-400 font-bold">Engine: ${MasterBaseline.engine_id}</span>
+                                <span class="text-gray-300">Frames: ${MasterBaseline.start_frame} - ${MasterBaseline.end_frame} (${MasterBaseline.values.length} total)</span>
+                            </div>
+                        </div>
+                        <div class="relative">
+                            <textarea readonly class="w-full h-24 bg-gray-900 text-gray-300 font-mono text-xs rounded p-2.5 border border-gray-700 select-all resize-y" title="Click and Ctrl+A to select full Master capsule JSON">${JSON.stringify(MasterBaseline, null, 2)}</textarea>
+                            <span class="absolute bottom-2 right-2 text-[10px] text-gray-500 font-mono uppercase bg-gray-900/80 px-1 rounded">ReadOnly Capsule</span>
+                        </div>
+                    `;
+                    val_ledgerContainer.appendChild(masterCard);
+                }
+
+                // 2. Render Participant Cards
+                ParticipantEntries.forEach((participant, idx) => {
+                    const parity = evaluateParity(participant, MasterBaseline);
+                    const card = document.createElement('div');
+
+                    let badgeColor = 'bg-gray-700 text-gray-300 border-gray-500';
+                    let borderColor = 'border-gray-700';
+
+                    if (parity.state === 'PARITY') {
+                        badgeColor = 'bg-green-900/80 text-green-300 border border-green-500';
+                        borderColor = 'border-green-600/70';
+                    } else if (parity.state === 'DISPARITY') {
+                        badgeColor = 'bg-red-900/80 text-red-300 border border-red-500';
+                        borderColor = 'border-red-600/70';
+                    } else {
+                        badgeColor = 'bg-gray-700 text-gray-300 border border-gray-500';
+                        borderColor = 'border-gray-600';
+                    }
+
+                    const partId = (participant.id && participant.id[0]) ? participant.id[0] : `P${idx + 1}`;
+                    const partDesc = (participant.id && participant.id[1]) ? participant.id[1] : 'Participant';
+
+                    card.className = `p-4 rounded-lg bg-gray-800 border-2 ${borderColor} shadow-lg transition-all duration-150`;
+                    card.innerHTML = `
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                            <div class="flex items-center space-x-2">
+                                <span class="font-bold text-xs uppercase px-2.5 py-1 rounded shadow ${badgeColor}">
+                                    ${parity.state}
+                                </span>
+                                <span class="text-white font-bold text-sm">${partDesc}</span>
+                                <span class="text-xs font-mono text-gray-400">ID: ${partId}</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs font-mono text-gray-400">Engine: <b class="text-white">${participant.engine_id || 'N/A'}</b></span>
+                                <button data-remove-idx="${idx}" class="text-gray-500 hover:text-red-400 p-1 text-xs transition duration-150" title="Remove participant from ledger">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="text-xs font-mono mb-3 ${parity.state === 'PARITY' ? 'text-green-400' : (parity.state === 'DISPARITY' ? 'text-red-400 font-semibold' : 'text-gray-400')}">
+                            ${parity.message}
+                        </div>
+                        <div class="relative">
+                            <textarea readonly class="w-full h-24 bg-gray-900 text-gray-300 font-mono text-xs rounded p-2.5 border border-gray-700 select-all resize-y" title="Click and Ctrl+A to select full participant capsule JSON">${JSON.stringify(participant, null, 2)}</textarea>
+                            <span class="absolute bottom-2 right-2 text-[10px] text-gray-500 font-mono uppercase bg-gray-900/80 px-1 rounded">ReadOnly Capsule</span>
+                        </div>
+                    `;
+
+                    // Remove item handler
+                    const removeBtn = card.querySelector(`button[data-remove-idx="${idx}"]`);
+                    if (removeBtn) {
+                        removeBtn.addEventListener('click', () => {
+                            ParticipantEntries.splice(idx, 1);
+                            renderLedger();
+                            setValidatorStatus(`Participant "${partDesc}" removed from ledger.`);
+                        });
+                    }
+
+                    val_ledgerContainer.appendChild(card);
+                });
+            }
+
+            // --- Action 1: Master Initiate & Copy Config ---
+            val_masterInitiateBtn.addEventListener('click', async () => {
+                // Refresh start and end frames directly from visualizer inputs
+                val_startFrameInput.value = parseInt(rewindFrameInput.value, 10) || 0;
+                val_endFrameInput.value = parseInt(bufferSizeInput.value, 10) || canvasWidth;
+                updateMasterFrameCount();
+
+                const s = parseInt(val_startFrameInput.value, 10) || 0;
+                const e = parseInt(val_endFrameInput.value, 10) || 0;
+                if (e < s) {
+                    setValidatorStatus('Error: End Frame must be greater than or equal to Start Frame.', 'error');
+                    return;
+                }
+
+                // 1. Run Headless Evaluation on Master
+                const values = runHeadlessEvaluation(s, e);
+                const engineParams = getSerializedEngineParams(activeAlgorithm);
+
+                // 2. Establish Master Baseline (in-memory, with values)
+                MasterBaseline = {
+                    id: ["000", "master"],
+                    engine_id: activeAlgorithm,
+                    start_frame: s,
+                    end_frame: e,
+                    hpq_frame_multiplier: globalParams.frameMultiplier,
+                    seg_block_length: globalParams.segBlockLength,
+                    varispeed_hold_block_count: globalParams.varispeedHoldBlockCount,
+                    engine_params: engineParams,
+                    values: values
+                };
+
+                // 3. Serialize Lightweight Config Capsule (WITHOUT values) for Clipboard
+                const configCapsule = {
+                    id: ["000", "master"],
+                    engine_id: activeAlgorithm,
+                    start_frame: s,
+                    end_frame: e,
+                    hpq_frame_multiplier: globalParams.frameMultiplier,
+                    seg_block_length: globalParams.segBlockLength,
+                    varispeed_hold_block_count: globalParams.varispeedHoldBlockCount,
+                    engine_params: engineParams
+                };
+
+                const jsonStr = JSON.stringify(configCapsule, null, 2);
+                const copied = await writeClipboardText(jsonStr);
+
+                renderLedger();
+                if (copied) {
+                    setValidatorStatus('Master config copied to clipboard. Share with participants.', 'success');
+                } else {
+                    setValidatorStatus('Master baseline initialized, but clipboard write failed. Copy manually from the ledger card.', 'warn');
+                }
+            });
+
+            // --- Action 2: Participant Universal Loader, Runner & Copy Payload ---
+            val_participantRunBtn.addEventListener('click', async () => {
+                const rawClipboard = await readClipboardText();
+                if (!rawClipboard) {
+                    setValidatorStatus('No clipboard data detected.', 'warn');
+                    return;
+                }
+
+                let parsed;
+                try {
+                    parsed = JSON.parse(rawClipboard);
+                } catch (err) {
+                    setValidatorStatus('Invalid JSON format on clipboard: ' + err.message, 'error');
+                    return;
+                }
+
+                // Universal extractor: handles Config Capsule, Payload Capsule, or Session Array
+                let configCapsule = parsed;
+                if (Array.isArray(parsed)) {
+                    if (parsed.length === 0) {
+                        setValidatorStatus('Empty session array provided on clipboard.', 'error');
+                        return;
+                    }
+                    configCapsule = parsed[0]; // Take Master from session array
+                }
+
+                if (!configCapsule || !configCapsule.engine_id) {
+                    setValidatorStatus('Capsule missing valid "engine_id".', 'error');
+                    return;
+                }
+
+                // 1. Apply to UI globally (HPQ, Tab, Inputs)
+                applyCapsuleToUI(configCapsule);
+
+                const s = configCapsule.start_frame !== undefined ? configCapsule.start_frame : 0;
+                const e = configCapsule.end_frame !== undefined ? configCapsule.end_frame : 1000;
+
+                // 2. Headless Evaluation
+                const values = runHeadlessEvaluation(s, e);
+                const engineParams = getSerializedEngineParams(activeAlgorithm);
+
+                // 3. Assemble Participant Payload Capsule
+                const pId = val_participantId.value.trim() || "001";
+                const pDesc = val_participantDesc.value.trim() || "Participant";
+
+                const payloadCapsule = {
+                    id: [pId, pDesc],
+                    engine_id: activeAlgorithm,
+                    start_frame: s,
+                    end_frame: e,
+                    hpq_frame_multiplier: globalParams.frameMultiplier,
+                    seg_block_length: globalParams.segBlockLength,
+                    varispeed_hold_block_count: globalParams.varispeedHoldBlockCount,
+                    engine_params: engineParams,
+                    values: values
+                };
+
+                const payloadStr = JSON.stringify(payloadCapsule);
+                const copied = await writeClipboardText(payloadStr);
+
+                if (copied) {
+                    setValidatorStatus('Participant payload copied! Paste this back at the Master\'s Validator.', 'success');
+                } else {
+                    setValidatorStatus('Payload evaluated but clipboard write failed.', 'warn');
+                }
+            });
+
+            // --- Action 3: Add Participant Capsule to Ledger ---
+            val_addParticipantBtn.addEventListener('click', async () => {
+                const rawClipboard = await readClipboardText();
+                if (!rawClipboard) {
+                    setValidatorStatus('No clipboard data detected.', 'warn');
+                    return;
+                }
+
+                let parsed;
+                try {
+                    parsed = JSON.parse(rawClipboard);
+                } catch (err) {
+                    setValidatorStatus('Failed to parse participant payload: ' + err.message, 'error');
+                    return;
+                }
+
+                let payload = parsed;
+                if (Array.isArray(parsed)) {
+                    // If someone pasted a session array, add participant items (index 1+)
+                    if (parsed.length > 1) {
+                        for (let i = 1; i < parsed.length; i++) {
+                            ParticipantEntries.push(parsed[i]);
+                        }
+                        renderLedger();
+                        setValidatorStatus(`Imported ${parsed.length - 1} participant capsules from session array.`, 'success');
+                        return;
+                    } else if (parsed.length === 1) {
+                        payload = parsed[0];
+                    }
+                }
+
+                if (!payload || typeof payload !== 'object') {
+                    setValidatorStatus('Payload must be a JSON object.', 'error');
+                    return;
+                }
+
+                ParticipantEntries.push(payload);
+                renderLedger();
+                setValidatorStatus(`Participant [${payload.id ? payload.id.join(', ') : 'Unknown'}] added to ledger.`, 'success');
+            });
+
+            // --- Action 4: Export Session ---
+            val_exportSessionBtn.addEventListener('click', async () => {
+                if (!MasterBaseline && ParticipantEntries.length === 0) {
+                    setValidatorStatus('Cannot export: Ledger is empty.', 'warn');
+                    return;
+                }
+
+                const sessionArray = [];
+                if (MasterBaseline) {
+                    sessionArray.push(MasterBaseline);
+                }
+                sessionArray.push(...ParticipantEntries);
+
+                const sessionJson = JSON.stringify(sessionArray, null, 2);
+                const copied = await writeClipboardText(sessionJson);
+
+                if (copied) {
+                    setValidatorStatus(`Exported full session array (${sessionArray.length} entries) to clipboard.`, 'success');
+                } else {
+                    setValidatorStatus('Export failed to write to clipboard.', 'error');
+                }
+            });
+
+            // --- Action 5: Import Session ---
+            val_importSessionBtn.addEventListener('click', async () => {
+                const rawClipboard = await readClipboardText();
+                if (!rawClipboard) {
+                    setValidatorStatus('No clipboard data detected.', 'warn');
+                    return;
+                }
+
+                let parsed;
+                try {
+                    parsed = JSON.parse(rawClipboard);
+                } catch (err) {
+                    setValidatorStatus('Failed to parse session JSON: ' + err.message, 'error');
+                    return;
+                }
+
+                if (!Array.isArray(parsed) || parsed.length === 0) {
+                    setValidatorStatus('Session array must be a non-empty JSON array `[...]`.', 'error');
+                    return;
+                }
+
+                // Index 0 establishes the MasterBaseline
+                MasterBaseline = parsed[0];
+                if (MasterBaseline) {
+                    applyCapsuleToUI(MasterBaseline);
+                }
+
+                // Indices 1+ are participants
+                ParticipantEntries = parsed.slice(1);
+
+                renderLedger();
+                setValidatorStatus(`Session successfully imported: 1 Master Baseline and ${ParticipantEntries.length} Participant(s).`, 'success');
+            });
+
+            // --- Action 6: Clear All ---
+            val_clearLedgerBtn.addEventListener('click', () => {
+                if (!confirm('Are you sure you want to clear the entire validation ledger and reset the Master baseline?')) {
+                    return;
+                }
+                MasterBaseline = null;
+                ParticipantEntries = [];
+                renderLedger();
+                setValidatorStatus('Validation ledger cleared and Master baseline reset.', 'info');
+            });
         });
     </script>
 </body>
