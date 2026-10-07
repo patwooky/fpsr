@@ -2236,7 +2236,7 @@ FPSR_Output fpsr_qs_get_details(
         int64_t bound_low_int = frame;
         step_int = 1;
         while (frame - step_int > frame - max_search_frames) { 
-            double val_at_probe = fpsr_sm_get_details(frame - step_int, frame_multiplier, NULL, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length, varispeed_hold_block_count).randVal;
+            double val_at_probe = fpsr_qs_get_details(frame - step_int, frame_multiplier, NULL, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, wavetable, 0, 0, seg_block_length, varispeed_hold_block_count).randVal;
             if (val_at_probe != out.randVal) {
                 bound_low_int = frame - step_int;
                 break;
@@ -2250,9 +2250,9 @@ FPSR_Output fpsr_qs_get_details(
         result_int = frame - max_search_frames + 1;
         while(low_int <= high_int) {
             mid_int = low_int + (high_int - low_int) / 2; 
-            double mid_val = fpsr_sm_get_details(mid_int, frame_multiplier, NULL, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length, varispeed_hold_block_count).randVal;
+            double mid_val = fpsr_qs_get_details(mid_int, frame_multiplier, NULL, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, wavetable, 0, 0, seg_block_length, varispeed_hold_block_count).randVal;
             if (mid_val == out.randVal) {
-                double prev_mid_val = fpsr_sm_get_details(mid_int - 1, frame_multiplier, NULL, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length, varispeed_hold_block_count).randVal;
+                double prev_mid_val = fpsr_qs_get_details(mid_int - 1, frame_multiplier, NULL, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, wavetable, 0, 0, seg_block_length, varispeed_hold_block_count).randVal;
                 if (prev_mid_val != out.randVal) {
                     result_int = mid_int; break;
                 }
@@ -2268,7 +2268,7 @@ FPSR_Output fpsr_qs_get_details(
     int64_t bound_high_int = frame;
     step_int = 1;
     while (frame + step_int < frame + max_search_frames) { 
-        double val_at_probe = fpsr_sm_get_details(frame + step_int, frame_multiplier, NULL, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length, varispeed_hold_block_count).randVal;
+        double val_at_probe = fpsr_qs_get_details(frame + step_int, frame_multiplier, NULL, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, wavetable, 0, 0, seg_block_length, varispeed_hold_block_count).randVal;
         if (val_at_probe != out.randVal) {
             bound_high_int = frame + step_int;
             next_val_candidate = val_at_probe;
@@ -2283,7 +2283,7 @@ FPSR_Output fpsr_qs_get_details(
     result_int = frame + max_search_frames;
     while(low_int <= high_int) {
         mid_int = low_int + (high_int - low_int) / 2; 
-        double mid_val = fpsr_sm_get_details(mid_int, frame_multiplier, NULL, minHold, maxHold, reseedInterval, seedInner, seedOuter, finalRandSwitch, 0, 0, seg_block_length, varispeed_hold_block_count).randVal;
+        double mid_val = fpsr_qs_get_details(mid_int, frame_multiplier, NULL, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, wavetable, 0, 0, seg_block_length, varispeed_hold_block_count).randVal;
         if (mid_val != out.randVal) {
             result_int = mid_int;
             next_val_candidate = mid_val;
