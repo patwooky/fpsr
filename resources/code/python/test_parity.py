@@ -28,7 +28,7 @@ import struct
 from fpsr_algorithms import (
     fpsr_sm,
     fpsr_tm,
-    fpsr_qs,
+    fpsr_qs_base,
 )
 
 # Helper to get the exact 64-bit pattern of a Python float (IEEE-754 double)
@@ -89,7 +89,7 @@ def run_sweep():
         print(f"TM frame={frame:4d} val={tm_val:.17g} bits={f64_bits_hex(tm_val)}")
 
         # QS
-        qs_val = fpsr_qs(frame, qs_baseWaveFreq, qs_stream2freqMult, qs_quantLevelsMinMax,
+        qs_val = fpsr_qs_base(frame, qs_baseWaveFreq, qs_stream2freqMult, qs_quantLevelsMinMax,
                          qs_streamsOffset, qs_quantOffsets,
                          qs_streamSwitchDur, qs_stream1QuantDur, qs_stream2QuantDur, qs_final)
         print(f"QS frame={frame:4d} val={qs_val:.17g} bits={f64_bits_hex(qs_val)}")

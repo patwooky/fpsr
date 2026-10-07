@@ -10,22 +10,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Added
 - **Embedded Static Unipolar Sine Wavetable (`fpsr_sine_lut_1024`)**:
   - Pre-baked and embedded a canonical 1024-point compile-time unipolar $[0.0, 1.0]$ sine wavetable into the C reference implementations (`fpsr_algo_base_reference.c` and `fpsr_algo_wrap_reference.c`), eliminating runtime dynamic allocation and initialization overhead.
+  - Ported the pre-baked 1024-point static table to Python (`fpsr_algorithms.py` and `fpsr_algorithms_wrap.py`) to guarantee cross-language bit-for-bit parity without runtime initialization.
 - **Custom Wavetable Extension Interface (`FPSR_Wavetable`, `fpsr_custom_lut`)**:
-  - Introduced a lightweight power-of-2 wavetable struct and developer drop-in extension zone across C reference implementations, allowing arbitrary cyclical unipolar waveforms to serve as algorithmic keys.
+  - Introduced a lightweight power-of-2 wavetable struct and developer drop-in extension zone across C and Python implementations, allowing arbitrary cyclical unipolar waveforms to serve as algorithmic keys.
 - **Dual-Domain Curve Baking Utility**:
   - Updated the curve baking utility to simultaneously generate unipolar $[0.0, 1.0]$ and bipolar $[-1.0, 1.0]$ lookup tables.
 
 ### Changed
 - **Quantised Switching (QS) Architecture & Pipeline Streamlining**:
-  - Replaced runtime sine initialization (`initialize_sine_luts`) and multi-tier sine LOD switching with an optimized bitwise-modulo wavetable sampler (`fpsr_sample_wavetable`).
+  - Replaced runtime sine initialization (`initialize_sine_luts`) and multi-tier sine LOD switching with an optimized bitwise-modulo wavetable sampler (`fpsr_sample_wavetable`) across C and Python.
+  - Renamed `fpsr_qs` to `fpsr_qs_base` in Python and replaced `sine_lod_level` with an optional `wavetable` parameter across base and wrapper entry points.
   - Standardized QS stream quantization to sample directly from unipolar $[0.0, 1.0]$ data, removing redundant runtime bipolar-to-unipolar conversions (`* 0.5 + 0.5`).
   - Standardized all floating-point parameters, internal buffers, and `FPSR_Output` struct members on 64-bit `double` precision to guarantee bit-for-bit parity with Python and JavaScript engines.
+  - Updated Python wrapper functions, sample scripts, and parity test call sites to match the new `fpsr_qs_base` entry point and arguments.
 - **Lookup Table File Taxonomy**:
   - Renamed and split generated LUT source files to explicitly reflect unipolar vs. bipolar ranges and sample resolutions.
 
-### Removed
-- Removed runtime dynamic LUT setup functions and multi-tier sine LOD branching logic from the C reference code.
+### Fixed
+- **C Reference QS Detail Boundary Searches (`fpsr_algo_wrap_reference.c`)**:
+  - Fixed change boundary probes in `fpsr_qs_get_details` that erroneously invoked `fpsr_sm_get_details` instead of `fpsr_qs_get_details`, ensuring LOD 1 and LOD 2 search routines reflect true QS dynamics.
 
+### Removed
+- Removed runtime dynamic LUT setup functions (`initialize_sine_luts`) and multi-tier sine LOD branching logic from C and Python implementations.
+- Removed unused imports (`functools`, `struct`, `threading`) from Python scripts.
 
 ## [3.0.10] - 2026-10-07
 ### Changed
