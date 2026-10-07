@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## Unreleased
 
+## [3.0.11] - 2026-10-07
+### Added
+- **Embedded Static Unipolar Sine Wavetable (`fpsr_sine_lut_1024`)**:
+  - Pre-baked and embedded a canonical 1024-point compile-time unipolar $[0.0, 1.0]$ sine wavetable into the C reference implementations (`fpsr_algo_base_reference.c` and `fpsr_algo_wrap_reference.c`), eliminating runtime dynamic allocation and initialization overhead.
+- **Custom Wavetable Extension Interface (`FPSR_Wavetable`, `fpsr_custom_lut`)**:
+  - Introduced a lightweight power-of-2 wavetable struct and developer drop-in extension zone across C reference implementations, allowing arbitrary cyclical unipolar waveforms to serve as algorithmic keys.
+- **Dual-Domain Curve Baking Utility**:
+  - Updated the curve baking utility to simultaneously generate unipolar $[0.0, 1.0]$ and bipolar $[-1.0, 1.0]$ lookup tables.
+
+### Changed
+- **Quantised Switching (QS) Architecture & Pipeline Streamlining**:
+  - Replaced runtime sine initialization (`initialize_sine_luts`) and multi-tier sine LOD switching with an optimized bitwise-modulo wavetable sampler (`fpsr_sample_wavetable`).
+  - Standardized QS stream quantization to sample directly from unipolar $[0.0, 1.0]$ data, removing redundant runtime bipolar-to-unipolar conversions (`* 0.5 + 0.5`).
+  - Standardized all floating-point parameters, internal buffers, and `FPSR_Output` struct members on 64-bit `double` precision to guarantee bit-for-bit parity with Python and JavaScript engines.
+- **Lookup Table File Taxonomy**:
+  - Renamed and split generated LUT source files to explicitly reflect unipolar vs. bipolar ranges and sample resolutions.
+
+### Removed
+- Removed runtime dynamic LUT setup functions and multi-tier sine LOD branching logic from the C reference code.
+
+
 ## [3.0.10] - 2026-10-07
 ### Changed
 - **Documentation & User Guide (`resources/docs/fpsr_visualiser_guide.md`)**:
