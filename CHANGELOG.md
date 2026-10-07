@@ -7,10 +7,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## Unreleased
 
 ## [3.0.11] - 2026-10-07
+> [!WARNING]
+> **BREAKING CHANGE — FPS-R Quantised Switching (QS) Output Vector Discontinuity**:
+> Migrating QS from runtime trigonometric calculations (`Math.sin()`) to the static 1024-point unipolar wavetable (`fpsr_sample_wavetable`), standardizing phase to normalized cycles $[0.0, 1.0)$, and aligning the integer hash scalar to `1000000.0` alters the resulting pseudo-random output sequence relative to versions `<= 3.0.10`. Existing seeds/configurations for QS will produce different values. Cross-platform, cross-language bit-parity (C, Python, and JavaScript/Web) is strictly preserved from this release forward.
+
 ### Added
-- **Embedded Static Unipolar Sine Wavetable (`fpsr_sine_lut_1024`)**:
+- **Embedded Static Unipolar Sine Wavetable (`fpsr_sine_lut_1024` / `FPSR_SINE_LUT_1024`)**:
   - Pre-baked and embedded a canonical 1024-point compile-time unipolar $[0.0, 1.0]$ sine wavetable into the C reference implementations (`fpsr_algo_base_reference.c` and `fpsr_algo_wrap_reference.c`), eliminating runtime dynamic allocation and initialization overhead.
-  - Ported the pre-baked 1024-point static table to Python (`fpsr_algorithms.py` and `fpsr_algorithms_wrap.py`) to guarantee cross-language bit-for-bit parity without runtime initialization.
+  - Ported the pre-baked 1024-point static table to Python (`fpsr_algorithms.py` and `fpsr_algorithms_wrap.py`) and JavaScript (`fpsr_demo.html`) using `Float64Array` to guarantee cross-language bit-for-bit parity without runtime initialization.
 - **Custom Wavetable Extension Interface (`FPSR_Wavetable`, `fpsr_custom_lut`)**:
   - Introduced a lightweight power-of-2 wavetable struct and developer drop-in extension zone across C and Python implementations, allowing arbitrary cyclical unipolar waveforms to serve as algorithmic keys.
 - **Dual-Domain Curve Baking Utility**:
@@ -18,11 +22,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 - **Quantised Switching (QS) Architecture & Pipeline Streamlining**:
-  - Replaced runtime sine initialization (`initialize_sine_luts`) and multi-tier sine LOD switching with an optimized bitwise-modulo wavetable sampler (`fpsr_sample_wavetable`) across C and Python.
+  - Replaced runtime sine initialization (`initialize_sine_luts`) and multi-tier sine LOD switching with an optimized bitwise-modulo wavetable sampler (`fpsr_sample_wavetable`) across C, Python, and JavaScript (`fpsr_demo.html`).
   - Renamed `fpsr_qs` to `fpsr_qs_base` in Python and replaced `sine_lod_level` with an optional `wavetable` parameter across base and wrapper entry points.
   - Standardized QS stream quantization to sample directly from unipolar $[0.0, 1.0]$ data, removing redundant runtime bipolar-to-unipolar conversions (`* 0.5 + 0.5`).
   - Standardized all floating-point parameters, internal buffers, and `FPSR_Output` struct members on 64-bit `double` precision to guarantee bit-for-bit parity with Python and JavaScript engines.
   - Updated Python wrapper functions, sample scripts, and parity test call sites to match the new `fpsr_qs_base` entry point and arguments.
+- **Interactive Visualizer & Offline Validator Parity (`fpsr_demo.html`)**:
+  - Updated `fpsr_qs_base_js` to sample directly from `FPSR_DEFAULT_SINE_WAVETABLE` using cycle-normalized phase $[0.0, 1.0)$ and aligned the final random integer hash scalar from `100000.0` to `1000000.0`, matching the C and Python implementations.
+  - Updated `fpsr_qs_get_details` to pass through the full QS output structure (`randVal`, `randStreams`, `selected_stream_idx`) and enforce signed 32-bit truncation (`BigInt.asIntN(32, ...)`) for HPQ gap seed infill.
+  - Verified 100% bit-accurate parity across browser runtimes (Edge, Firefox, and VS Code Preview) via the built-in Offline Parity Validator ledger.
 - **Lookup Table File Taxonomy**:
   - Renamed and split generated LUT source files to explicitly reflect unipolar vs. bipolar ranges and sample resolutions.
 

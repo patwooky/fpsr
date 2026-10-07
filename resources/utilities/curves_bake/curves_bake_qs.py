@@ -1,80 +1,96 @@
-# This script generates a sine lookup table in C format. It creates a static array of double precision values representing the sine of angles from 0 to 2π, divided into a specified number of points (1024 in this case). The output is formatted for inclusion in C code, with each value printed to 16 decimal places.
+# This script generates a sine lookup table in C and Python formats.
+# It computes a table of double precision values representing the sine of angles from 0 to 2π,
+# and formats the output into configurable column widths.
 
 import math
 
 # Configuration
 NUM_POINTS = 1024
 TABLE_NAME = "fpsr_sine_lut_1024"
+COLS_PER_ROW = 5
 
-def generate_c_sine_lookup_table(num_points, table_name, bipolar=True):
-    '''
-    Generates a C-style sine lookup table with the specified number of points.
-    Each entry corresponds to sin(2 * PI * i / num_points) for i in range(num_points).
-    
-    num_points: The number of points in the lookup table.
-    table_name: The name of the C array to be generated.
-    bipolar: If True, outputs values in range [-1.0, 1.0]. If False (unipolar), outputs values in range [0.0, 1.0].
-    
-    Returns: multiline string containing the C code for the lookup table.
-    '''
-    range_desc = "[-1.0, 1.0] (bipolar)" if bipolar else "[0.0, 1.0] (unipolar)"
-    return_string = []
-    return_string.append(f"// Auto-generated {num_points}-point sine lookup table")
-    return_string.append(f"// Maps normalized phase [0.0, 1.0) to {range_desc}")
-    return_string.append(f"static const double {table_name}[{num_points}] = {{")
-    
-    for i in range(num_points):
-        # 1. Get our normalized percentage (0.0 to 0.999...)
-        normalized_phase = i / num_points
-        
-        # 2. Multiply by 2*PI to get the math angle
-        angle_in_radians = normalized_phase * 2.0 * math.pi
-        
-        # 3. Calculate the sine value (apply unipolar scaling if needed)
-        sine_value = math.sin(angle_in_radians)
-        val = sine_value if bipolar else 0.5 * (sine_value + 1.0)
-        
-        # 4. Print it formatted for C (using 16 decimal places for double precision)
-        comma = "," if i < num_points - 1 else ""
-        return_string.append(f"    {val:.16f}{comma}")
 
-    return_string.append("};")
-    return "\n".join(return_string)
-
-def generate_python_sine_lookup_table(num_points, bipolar=True, table_name=None):
-    '''
-    Generates a Python-style sine lookup table string with the specified number of points.
+def compute_sine_lookup_table(num_points: int, bipolar: bool = True) -> list[float]:
+    """Computes a pure list of sine table samples.
     
-    num_points: The number of points in the lookup table.
-    bipolar: If True, outputs values in range [-1.0, 1.0]. If False (unipolar), outputs values in range [0.0, 1.0].
-    table_name: Optional variable name. If provided, prefixes the list with '<table_name> = '.
+    num_points: Number of points in the lookup table.
+    bipolar: If True, values in range [-1.0, 1.0]. If False (unipolar), values in range [0.0, 1.0].
     
-    Returns: multiline string containing Python comments and the lookup table list.
-    '''
-    range_desc = "[-1.0, 1.0] (bipolar)" if bipolar else "[0.0, 1.0] (unipolar)"
-    return_string = []
-    return_string.append(f"# Auto-generated {num_points}-point sine lookup table")
-    return_string.append(f"# Maps normalized phase [0.0, 1.0) to {range_desc}")
-    
-    prefix = f"{table_name} = [" if table_name else "["
-    return_string.append(prefix)
-    
+    Returns:
+        list[float]: The generated sine values.
+    """
+    table = []
     for i in range(num_points):
         sine_val = math.sin(2.0 * math.pi * (i / num_points))
         val = sine_val if bipolar else 0.5 * (sine_val + 1.0)
-        comma = "," if i < num_points - 1 else ""
-        return_string.append(f"    {val:.16f}{comma}")
-        
-    return_string.append("]")
-    return "\n".join(return_string)
+        table.append(val)
+    return table
 
-generated_c_code = generate_c_sine_lookup_table(NUM_POINTS, bipolar=False, table_name=TABLE_NAME)
-print("// C Sine Lookup Table:")
-print(generated_c_code)
-# Output the generated C code to a file
 
-generated_python_table = generate_python_sine_lookup_table(NUM_POINTS, bipolar=False, table_name=TABLE_NAME)
+def _format_table_rows(values: list[float], cols: int, indent: str = "    ") -> list[str]:
+    """Helper to format a flat list of floats into grouped rows."""
+    if cols < 1:
+        cols = 1
+    lines = []
+    total = len(values)
 
-print("\n# Python Sine Lookup Table:")
-print(generated_python_table)
-# Output the generated Python table to a file
+    for i in range(0, total, cols):
+        chunk = values[i : i + cols]
+        row_tokens = []
+        for idx, val in enumerate(chunk):
+            global_idx = i + idx
+            comma = "," if global_idx < total - 1 else ""
+            row_tokens.append(f"{val:.16f}{comma}")
+        lines.append(f"{indent}" + " ".join(row_tokens))
+
+    return lines
+
+
+def generate_c_sine_lookup_table(values: list[float], table_name: str, bipolar: bool = True, cols: int = 4) -> str:
+    """Formats a list of floats as a static const C array."""
+    num_points = len(values)
+    range_desc = "[-1.0, 1.0] (bipolar)" if bipolar else "[0.0, 1.0] (unipolar)"
+
+    lines = [
+        f"// Auto-generated {num_points}-point sine lookup table",
+        f"// Maps normalized phase [0.0, 1.0) to {range_desc}",
+        f"static const double {table_name}[{num_points}] = {{",
+    ]
+    lines.extend(_format_table_rows(values, cols=cols, indent="    "))
+    lines.append("};")
+    return "\n".join(lines)
+
+
+def generate_python_sine_lookup_table(values: list[float], table_name: str | None = None, bipolar: bool = True, cols: int = 4) -> str:
+    """Formats a list of floats as a Python list."""
+    num_points = len(values)
+    range_desc = "[-1.0, 1.0] (bipolar)" if bipolar else "[0.0, 1.0] (unipolar)"
+
+    lines = [
+        f"# Auto-generated {num_points}-point sine lookup table",
+        f"# Maps normalized phase [0.0, 1.0) to {range_desc}",
+    ]
+    prefix = f"{table_name} = [" if table_name else "["
+    lines.append(prefix)
+    lines.extend(_format_table_rows(values, cols=cols, indent="    "))
+    lines.append("]")
+    return "\n".join(lines)
+
+
+if __name__ == "__main__":
+    # 1. Compute table values
+    unipolar_table = compute_sine_lookup_table(NUM_POINTS, bipolar=False)
+
+    # 2. Format as C code
+    generated_c_code = generate_c_sine_lookup_table(
+        unipolar_table, table_name=TABLE_NAME, bipolar=False, cols=COLS_PER_ROW
+    )
+    print("// C Sine Lookup Table:")
+    print(generated_c_code)
+
+    # 3. Format as Python code
+    generated_python_table = generate_python_sine_lookup_table(
+        unipolar_table, table_name=TABLE_NAME, bipolar=False, cols=COLS_PER_ROW
+    )
+    print("\n# Python Sine Lookup Table:")
+    print(generated_python_table)
