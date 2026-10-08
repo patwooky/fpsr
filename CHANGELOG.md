@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## Unreleased
 
+## [3.0.12] - 2026-10-08
+### Changed
+- **Full IEEE 754 Double-Precision Parity Validation (`fpsr_demo.html`)**:
+  - Removed 6-decimal truncation (`toFixed(6)`) from `runHeadlessEvaluation`, preserving the full 53-bit significand precision (~15–17 decimal digits) of raw 64-bit floats in participant and master payload value arrays.
+  - Updated Python export formatting helper (`formatNumberForPython`) to emit unrounded `double` string representations (`n.toString()`).
+  - Strengthened strict equality checks in the Offline Parity Validator (`mVal !== pVal`) to verify genuine bit-for-bit parity across client engines (V8, SpiderMonkey, JavaScriptCore) rather than masked, rounded approximations.
+  - *Note*: Validation session capsules captured on versions `<= 3.0.11` will report disparity against v3.0.12+ capsules due to the higher precision threshold.
+
 ## [3.0.11] - 2026-10-07
 > [!WARNING]
 > **BREAKING CHANGE — FPS-R Quantised Switching (QS) Output Vector Discontinuity**:

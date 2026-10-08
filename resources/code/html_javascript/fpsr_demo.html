@@ -2684,9 +2684,8 @@ allTabs.forEach(tab => {
                 // Sequential headless calculation
                 for (let f = s; f <= e; f++) {
                     const val = getFpsrValue(f);
-                    // Standardize float precision to 6 decimals to match visualizer format
-                    const rounded = Number(Number(val).toFixed(6));
-                    results.push(rounded);
+                    // Push full unrounded IEEE 754 64-bit float precision
+                    results.push(val);
                 }
 
                 const t1 = performance.now();
