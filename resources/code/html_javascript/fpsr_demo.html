@@ -2658,38 +2658,63 @@ allTabs.forEach(tab => {
             }
 
             // --- Headless Evaluation Loop ---
-            function runHeadlessEvaluation(startFrame, endFrame) {
+            const BENCHMARK_RUNS = 5; // Averaged over N runs to isolate ALU time from GC & mobile clock jitter
+
+            async function runHeadlessEvaluation(startFrame, endFrame, onStatusUpdate = null) {
                 const results = [];
                 const s = Math.max(0, parseInt(startFrame, 10) || 0);
                 const e = Math.max(s, parseInt(endFrame, 10) || 0);
 
-                // For legacy stateful algorithms, reset states and warm-up up to startFrame
-                if (activeAlgorithm === 'LEGACY_A') {
-                    legacyA_nextJumpFrame = 0;
-                    legacyA_heldValue = Math.random();
-                    for (let f = 0; f < s; f++) {
-                        fpsr_legacy_a_base_js(f, globalParams.st_a);
-                    }
-                } else if (activeAlgorithm === 'LEGACY_B') {
-                    legacyB_lastJumpFrame = 0;
-                    legacyB_heldValue = Math.random();
-                    for (let f = 0; f < s; f++) {
-                        fpsr_legacy_b_base_js(f, globalParams.st_b);
+                function resetStatefulWarmup() {
+                    if (activeAlgorithm === 'LEGACY_A') {
+                        legacyA_nextJumpFrame = 0;
+                        legacyA_heldValue = Math.random();
+                        for (let f = 0; f < s; f++) {
+                            fpsr_legacy_a_base_js(f, globalParams.st_a);
+                        }
+                    } else if (activeAlgorithm === 'LEGACY_B') {
+                        legacyB_lastJumpFrame = 0;
+                        legacyB_heldValue = Math.random();
+                        for (let f = 0; f < s; f++) {
+                            fpsr_legacy_b_base_js(f, globalParams.st_b);
+                        }
                     }
                 }
 
-                // High-resolution performance timer
-                const t0 = performance.now();
+                // Phase 1: Populate ground-truth value stream (untimed, warms JIT compiler)
+                if (onStatusUpdate) {
+                    onStatusUpdate(`Evaluating ground-truth values (${s} – ${e})...`, 'info');
+                    await new Promise(r => setTimeout(r, 20)); // Yield to allow DOM to repaint
+                }
 
-                // Sequential headless calculation
+                resetStatefulWarmup();
                 for (let f = s; f <= e; f++) {
-                    const val = getFpsrValue(f);
-                    // Push full unrounded IEEE 754 64-bit float precision
-                    results.push(val);
+                    results.push(getFpsrValue(f));
                 }
 
-                const t1 = performance.now();
-                const benchmarkTimingMs = Number((t1 - t0).toFixed(2));
+                // Phase 2: Averaged pure ALU benchmark loop using a sink accumulator to prevent dead-code elimination
+                if (onStatusUpdate) {
+                    onStatusUpdate(`Starting ${BENCHMARK_RUNS} benchmark runs...`, 'info');
+                    await new Promise(r => setTimeout(r, 20)); // Yield to allow DOM to repaint
+                }
+
+                let totalTimedMs = 0;
+                let sink = 0.0;
+
+                for (let run = 0; run < BENCHMARK_RUNS; run++) {
+                    resetStatefulWarmup();
+                    const t0 = performance.now();
+                    for (let f = s; f <= e; f++) {
+                        sink += getFpsrValue(f);
+                    }
+                    const t1 = performance.now();
+                    totalTimedMs += (t1 - t0);
+                }
+
+                // Prevent dead-code elimination of sink in aggressive JITs
+                if (sink === 123456789.0) console.log(sink);
+
+                const benchmarkTimingMs = Number((totalTimedMs / BENCHMARK_RUNS).toFixed(2));
 
                 return {
                     values: results,
@@ -2942,7 +2967,7 @@ allTabs.forEach(tab => {
                 const mDesc = val_masterDesc.value.trim() || "[Master]";
 
                 // 1. Run Headless Evaluation on Master with defensive unpacking
-                const evalResult = runHeadlessEvaluation(s, e);
+                const evalResult = await runHeadlessEvaluation(s, e, setTestingStatus);
                 const values = Array.isArray(evalResult) ? evalResult : (evalResult.values || []);
                 const benchmarkTiming = (evalResult && typeof evalResult.benchmark_timing === 'number') ? evalResult.benchmark_timing : 0;
                 const engineParams = getSerializedEngineParams(activeAlgorithm);
@@ -3023,7 +3048,7 @@ allTabs.forEach(tab => {
                 const e = configCapsule.end_frame !== undefined ? configCapsule.end_frame : 1000;
 
                 // 2. Headless Evaluation (capturing values and benchmark timing)
-                const evalResult = runHeadlessEvaluation(s, e);
+                const evalResult = await runHeadlessEvaluation(s, e, setTestingStatus);
                 const values = Array.isArray(evalResult) ? evalResult : (evalResult.values || []);
                 const benchmarkTiming = (evalResult && typeof evalResult.benchmark_timing === 'number') ? evalResult.benchmark_timing : 0;
                 const engineParams = getSerializedEngineParams(activeAlgorithm);
