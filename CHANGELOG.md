@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [3.0.13] - 2026-10-10
 ### Changed
+- **Visualizer Mode Navigation Streamlining (`fpsr_demo.html` & `fpsr_visualiser_guide.md`)**:
+  - Refactored the top-level mode toggle buttons from noun labels (`Visualiser & Benchmark Mode` / `Validator Mode (Offline Parity)`) to balanced, imperative action-verb pairings: **`Visualise & Benchmark`** and **`Validate Parity`**.
+  - Removed implicit trailing "Mode" suffixes and explanatory parenthetical clutter to establish clean typographical symmetry and modern segmented pill styling.
+  - Synchronized toolbar step-by-step navigation instructions across all procedural guides in `fpsr_visualiser_guide.md`.
 - **Visualizer Guide Restructuring (`resources/docs/fpsr_visualiser_guide.md`)**:
   - Reorganized standard workflows to cleanly separate visual canvas and benchmark diagnostics from headless validation:
     - **Workflow A**: Quick-Capture Visible Canvas (canvas pixel-width locking, frame rewind, and buffer clipboard export).
@@ -17,7 +21,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - Streamlined Workflow D documentation by eliminating redundant procedural steps from the architectural overview and consolidating local (multi-browser) and remote (cross-device/network) execution into a unified headless workflow.
   - Clarified capsule payload responsibilities: lightweight Master Config Capsules (omitting values to enforce unbiased evaluation) versus comprehensive Participant Return Capsules (capturing unrounded 64-bit float streams and high-resolution ALU timings).
   - Explicitly defined the tri-state verdict engine rules: green-lit **`PARITY`** (bit-exact IEEE 754 float equality), red-lit **`DISPARITY`** (first diverging frame index and delta reporting), and grey-lit **`INVALID`** (parameter or time-dilation drift).
-
 
 ## [3.0.12] - 2026-10-08
 ### Changed
