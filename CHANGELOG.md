@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## Unreleased
 
+## [3.0.13] - 2026-10-10
+### Changed
+- **Visualizer Guide Restructuring (`resources/docs/fpsr_visualiser_guide.md`)**:
+  - Reorganized standard workflows to cleanly separate visual canvas and benchmark diagnostics from headless validation:
+    - **Workflow A**: Quick-Capture Visible Canvas (canvas pixel-width locking, frame rewind, and buffer clipboard export).
+    - **Workflow B**: Throughput & LOD Compute Cost Benchmarking (profiling LOD 0/1/2 performance with MAX unconstrained batch loop).
+    - **Workflow C**: HPQ Time-Dilation Analysis (verifying the threshold transition between Mode 1 Tape Varispeed and Mode 2 Telescopic Extension).
+    - **Workflow D**: Headless Cross-Platform Parity Validation (formalized the asymmetric Master/Participant clipboard capsule workflow).
+  - Streamlined Workflow D documentation by eliminating redundant procedural steps from the architectural overview and consolidating local (multi-browser) and remote (cross-device/network) execution into a unified headless workflow.
+  - Clarified capsule payload responsibilities: lightweight Master Config Capsules (omitting values to enforce unbiased evaluation) versus comprehensive Participant Return Capsules (capturing unrounded 64-bit float streams and high-resolution ALU timings).
+  - Explicitly defined the tri-state verdict engine rules: green-lit **`PARITY`** (bit-exact IEEE 754 float equality), red-lit **`DISPARITY`** (first diverging frame index and delta reporting), and grey-lit **`INVALID`** (parameter or time-dilation drift).
+
+
 ## [3.0.12] - 2026-10-08
 ### Changed
 - **Full IEEE 754 Double-Precision Parity Validation (`fpsr_demo.html`)**:
