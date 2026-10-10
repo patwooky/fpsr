@@ -84,7 +84,7 @@ The validator operates on an asymmetric Master/Participant ledger model mediated
 #### Step-by-Step Procedure
 
 ##### Step 1: Establish the Master Baseline
-1. In the top toolbar, switch from **Visualiser & Benchmark Mode** to **Validator Mode (Offline Parity)**.
+1. In the top toolbar, switch from **Visualise & Benchmark** to **Validate Parity**.
 2. Verify the active algorithm, seeds, and evaluation bounds (**Start Frame** and **Buffer Size / End Frame**). To modify bounds, click **Adjust in Visualizer**.
 3. In **1. Master (Origin)**, specify a master identifier (e.g., `000`) and descriptor (e.g., `[Master] Chrome (Win32 x86_64)`). The `[Master]` tag prefix is optional but recommended for clarity in multi-participant sessions. All other participants descriptions would merely be `<Engine Name> <OS> <Arch>` (e.g., `Firefox Gecko Linux x86_64`) where a `[Participant]` prefix is optional.
 4. Click **Initiate & Copy Master Config**:
@@ -92,7 +92,7 @@ The validator operates on an asymmetric Master/Participant ledger model mediated
    - The lightweight **Master Config Capsule** JSON is copied to the system clipboard.
 
 ##### Step 2: Execute Headless Run on Participant
-1. Open `fpsr_demo.html` on the participant target (either another browser on the same device or a remote device via network/file/message transfer) and switch to **Validator Mode**.
+1. Open `fpsr_demo.html` on the participant target (either another browser on the same device or a remote device via network/file/message transfer) and switch to **Validate Parity**.
 2. Set a **Participant ID** (e.g., `001`) and descriptor (e.g., `Firefox Gecko` or `Safari iOS ARM64`).
 3. Ensure the Master Config Capsule JSON is in the participant's clipboard, then click **Load Config, Run & Copy Payload**:
    - The participant automatically mirrors the Master's configuration and executes the frame span headlessly.
