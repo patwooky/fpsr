@@ -38,53 +38,7 @@ The **FPS-R Evaluation & Visualisation Lab** (`fpsr_demo.html`) is an interactiv
 
 ---
 
-#### Method 1: Bounded Visualizer Capture (Manual)
-**Objective:** Capture an exact, frame-bounded sequence from an arbitrary start index directly within the visualizer.
-
-1. **Synchronize Parameters**: Ensure engine seeds, period/duration sliders, and HPQ multipliers are identical across environments.
-2. **Set Start Frame**: Enter the target start frame into **Start Frame** (e.g., `-156` or `1001`).
-3. **Click Rewind**:
-   - For stateless algorithms (FPS-R, Perlin, Worley), this relocates the clock to the target frame immediately in $O(1)$ time.
-   - For stateful models (Legacy A & B), this fast-forwards sequential simulation from frame 0 to frame $t-1$ to re-warm state memory.
-4. **Set Sample Span**: In **End Frame / Buffer Size**, enter the desired sample count (e.g., `1000`).
-5. **Disable Continuous Scroll**: Uncheck **Continuous Scroll** to enforce the buffer stop boundary.
-6. **Trigger Playback**: Click **Forward**. Playback streams and automatically freezes once the buffer fills.
-7. Click **Copy Values to Clipboard** and compare outputs.
-
-#### Method 2: Headless Parity Validator (Automated Suite)
-**Objective:** Run bit-exact parity validation and execution benchmarking across multiple devices/browsers without visual rendering overhead.
-
-1. **Switch to Validator Mode**: On the designated **Master** instance, switch to **Validator Mode (Offline Parity)** via the top mode toggle. Visualizer start frame and buffer bounds are automatically mirrored into the Master setup.
-2. **Initiate Master (Origin)**:
-   - Enter a **Master ID** (default `000`) and optional descriptive tag (e.g., `[Master] Chrome Win32`).
-   - Click **Initiate & Copy Master Config**. This benchmarks Master headless execution, anchors index 0 of the ledger, and copies a lightweight **Config Capsule** (omitting raw values and benchmark timing) to the system clipboard.
-
-##### Path A: Local Cross-Browser Testing (Single Machine, Shared Clipboard)
-*Use this when comparing different browser engines (e.g., Firefox Gecko vs. Chrome V8 vs. Edge) on the same computer where the OS clipboard is shared.*
-
-3. **Run Participant (Client)**:
-   - Switch to or open another browser instance on the same machine.
-   - Navigate to the demo, switch to **Validator Mode**, set a **Participant ID** (e.g., `001`) and description.
-   - Click **Load Config, Run & Copy Payload**. The client reads the Master config from the shared clipboard, synchronizes parameters, runs headless evaluation, records benchmark timing, and copies the evaluated **Payload Capsule** back to the clipboard.
-4. **Aggregate to Ledger**:
-   - Return to the **Master** browser tab.
-   - Click **Add Participant Capsule**. The Master compares all frame values and outputs a **PARITY**, **DISPARITY**, or **INVALID** verdict with diagnostic diffs and performance stats.
-
-##### Path B: Cross-Device / Remote Testing (Different Physical Machines / Mobile)
-*Use this when validating across hardware architectures (e.g., PC x86_64 to Android ARM64 or iOS Apple Silicon).*
-
-3. **Dispatch to Target Device**:
-   - Paste the Master's copied **Config Capsule** into a messaging channel, email, text file, or shared note (e.g., WhatsApp, Slack, Notes, or file transfer).
-   - On the target device (phone, tablet, or secondary PC), copy that JSON text directly to its local device clipboard.
-   - Open `fpsr_demo.html` on the device, switch to **Validator Mode**, enter a device descriptor (e.g., `Pixel 7 Android`), and tap **Load Config, Run & Copy Payload**.
-   - The device evaluates the sequence headless, benchmarks the time, and copies the **Payload Capsule** (with evaluation values) to its device clipboard.
-4. **Return Payload to Master**:
-   - Paste the device clipboard back into your transfer channel (email/chat/file) and copy that text onto the Master machine's clipboard.
-   - On the Master machine's Validator tab, click **Add Participant Capsule** to append the remote device to the ledger.
-
----
-
-### Workflow C: Throughput & LOD Compute Cost Benchmarking
+### Workflow B: Throughput & LOD Compute Cost Benchmarking
 **Objective:** Profile how computational load changes under varying Levels of Detail (LOD 0, 1, and 2) or algorithm configurations.
 
 1. Select the target algorithm tab (e.g., **FPS-R: SM**).
@@ -100,7 +54,7 @@ The **FPS-R Evaluation & Visualisation Lab** (`fpsr_demo.html`) is an interactiv
 
 ---
 
-### Workflow D: HPQ Time-Dilation Analysis
+### Workflow C: HPQ Time-Dilation Analysis
 **Objective:** Visually confirm the transition boundary between Mode 1 (Tape Varispeed) and Mode 2 (Telescopic Extension).
 
 1. Select any FPS-R algorithm (**SM**, **TM**, **QS**, or **BD**).
@@ -110,3 +64,50 @@ The **FPS-R Evaluation & Visualisation Lab** (`fpsr_demo.html`) is an interactiv
    - Notice the waveform stretching smoothly (Tape Varispeed).
 5. Reduce `frame_multiplier` below `0.20` ($< 1 / \text{segBlockLength}$):
    - Notice the telescopic phrase extension generating new mutations within extended hold gaps while preserving master phrase boundaries.
+
+---
+
+### Workflow D: Headless Cross-Platform Parity Validation
+**Objective:** Verify bit-exact deterministic parity across disparate JavaScript engines (V8, Gecko, JavaScriptCore), hardware architectures (x86_64, ARM64), and client OSes without visual canvas rendering overhead.
+
+#### Architectural Overview
+The validator operates on an asymmetric Master/Participant ledger model mediated via system clipboard JSON capsules:
+* **Master (Origin):** Evaluates a baseline frame span headlessly, records raw ALU execution time, and exports a lightweight **Config Capsule** containing parameters and seeds (withholding values to enforce unbiased client-side evaluation).
+* **Participant (Target):** Ingests the Master Config Capsule, automatically configures its local engine, evaluates the identical frame span headlessly, and generates a return **Payload Capsule** containing its computed output stream and benchmark timing.
+* **Tri-State Verdict Engine:** When participant payloads are imported into the Master ledger, each frame undergoes bit-exact IEEE 754 64-bit float comparison:
+  * <span style="color: #22c55e; font-weight: bold;">PARITY</span>: Identical engine configuration and 100% bit-exact float equality across all evaluated frames.
+  * <span style="color: #ef4444; font-weight: bold;">DISPARITY</span>: Identical engine configuration and frame bounds, but one or more output values deviate (diagnostic flags the exact first diverging frame).
+  * <span style="color: #9ca3af; font-weight: bold;">INVALID</span>: Parameter divergence (e.g., mismatched algorithm ID, seeds, or HPQ time-dilation settings).
+
+---
+
+#### Step-by-Step Procedure
+
+##### Step 1: Establish the Master Baseline
+1. In the top toolbar, switch from **Visualiser & Benchmark Mode** to **Validator Mode (Offline Parity)**.
+2. Verify the active algorithm, seeds, and evaluation bounds (**Start Frame** and **Buffer Size / End Frame**). To modify bounds, click **Adjust in Visualizer**.
+3. In **1. Master (Origin)**, specify a master identifier (e.g., `000`) and descriptor (e.g., `[Master] Chrome (Win32 x86_64)`). The `[Master]` tag prefix is optional but recommended for clarity in multi-participant sessions. All other participants descriptions would merely be `<Engine Name> <OS> <Arch>` (e.g., `Firefox Gecko Linux x86_64`) where a `[Participant]` prefix is optional.
+4. Click **Initiate & Copy Master Config**:
+   - The engine computes the baseline headlessly, records execution latency, and commits entry `[000]` to the ledger.
+   - The lightweight **Master Config Capsule** JSON is copied to the system clipboard.
+
+##### Step 2: Execute Headless Run on Participant
+1. Open `fpsr_demo.html` on the participant target (either another browser on the same device or a remote device via network/file/message transfer) and switch to **Validator Mode**.
+2. Set a **Participant ID** (e.g., `001`) and descriptor (e.g., `Firefox Gecko` or `Safari iOS ARM64`).
+3. Ensure the Master Config Capsule JSON is in the participant's clipboard, then click **Load Config, Run & Copy Payload**:
+   - The participant automatically mirrors the Master's configuration and executes the frame span headlessly.
+   - The populated **Payload Capsule** (containing output values and execution timing) is copied to the participant clipboard.
+
+##### Step 3: Register Payload & Inspect Parity Verdict
+1. Transfer the participant's Payload Capsule back to the Master machine's clipboard.
+2. On the Master instance, under **Validation Session (The Ledger)**, click **Add Participant Capsule**.
+3. The participant entry is appended to the ledger displaying:
+   - **Verdict Banner:** **`PARITY`**, **`DISPARITY`**, or **`INVALID`**.
+   - **Deviation Readout:** Exact frame index and value delta if a disparity occurred.
+   - **Execution Latency:** High-resolution headless evaluation time (`⏱️ ms`).
+
+##### Step 4: Archive or Restore Validation Sessions (Optional)
+* **Export Session:** Click **Export Session** to copy the entire multi-device session (Master baseline + all participant payloads) as an archival JSON document. The exported session content in the clipboard can then be saved to disk for future reference, regression testing, or cross-team collaboration.
+* **Import Session:** Click **Import Session** A previously exported session JSON can be pasted into the clipboard and loaded on any client to restore a previously saved ledger for offline analysis or documentation appendices. With the session restored, the Master can re-validate all participant payloads, remove and append new participants, and re-run parity checks without requiring participants to re-run their engines.
+
+---
