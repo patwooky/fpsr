@@ -5,6 +5,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 
 ## Unreleased
+## [3.0.14] - 2026-10-11
+### Changed
+- **Two-Phase Headless ALU Benchmarking & JIT Stabilization (`fpsr_demo.html`)**:
+  - Re-architected `runHeadlessEvaluation` into a two-phase decoupled routine:
+    - **Phase 1 (Payload Generation & JIT Warm-up)**: Gathers unrounded 64-bit float streams into the `results` array untimed, pre-warming the JavaScript JIT compiler and allocating memory ahead of profiling.
+    - **Phase 2 (Averaged Pure ALU Benchmark)**: Runs an untruncated 5-iteration loop (`BENCHMARK_RUNS = 5`) measuring arithmetic throughput using a scalar sink accumulator (`sink += val`) instead of dynamic heap allocations (`results.push()`), eliminating garbage collection spikes, dynamic array resizing overhead, and JIT dead-code elimination.
+  - Returns the averaged mean latency per frame span (`total_ms / 5`), smoothing out mobile device clock jitter and thermal governor fluctuations while keeping capsule timing schemas 100% backward-compatible.
+- **Asynchronous Status Feedback & Thread Yielding (`fpsr_demo.html`)**:
+  - Converted `runHeadlessEvaluation` to an asynchronous routine with an `onStatusUpdate` callback.
+  - Introduced cooperative thread yields (`await new Promise(r => setTimeout(r, 20))`) before each compute phase to allow the browser paint cycle to refresh the Testing Controls status bar.
+  - Added real-time phased status indicators (`Evaluating ground-truth values...` followed by `Starting 5 benchmark runs...`) across both Master baseline initiation and Participant payload evaluation, providing responsive UI feedback during wide frame sweeps (e.g., 500,000 frames).
 
 ## [3.0.13] - 2026-10-10
 ### Changed
