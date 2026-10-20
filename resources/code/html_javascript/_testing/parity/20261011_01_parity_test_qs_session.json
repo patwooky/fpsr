@@ -9221,7 +9221,7 @@
   {
     "id": [
       "001",
-      "Safari (iPhone XR)"
+      "Safari (iPhone XR, A12 Bionic)"
     ],
     "engine_id": "QS",
     "start_frame": -156,
@@ -10538,7 +10538,7 @@
   {
     "id": [
       "001",
-      "Safari (iPhone 16 Pro, iOS 27)"
+      "Safari (iPhone 16 Pro, iOS 27, A18 Pro)"
     ],
     "engine_id": "QS",
     "start_frame": -156,
