@@ -7,17 +7,21 @@ While every update aims for accuracy, some parts may still be incomplete or cont
 
 
 ## Table of Contents
-- [✍️ FPS-R Capsule Contribution Guide](#-fps-r-capsule-contribution-guide)
-- [🎯 What Is a FPS-R Capsule?](#-what-is-a-fps-r-capsule)
-- [A Typical 📦 `.cap.json` Format](#a-typical--capjson-format)
-  - [FPS-R: Stacked Modulo Capsule Format](#fps-r-stacked-modulo-capsule-format)
-    - [🛠 Minimal Fields](#-minimal-fields)
-  - [FPS-R: Quantised Switching Capsule Format](#fps-r-quantised-switching-capsule-format)
-- [🌱 Naming Guidelines (Optional, Suggested)](#-naming-guidelines-optional-suggested)
-- [🧪 How to Observe & Curate a Capsule](#-how-to-observe--curate-a-capsule)
-- [🌱 The Spirit of Sharing](#-the-spirit-of-sharing)
-- [🌱 The Current State of the Capsules Technology](#-the-current-state-of-the-capsules-technology)
-- [🤝 Attribution & Community](#-attribution--community)
+- [Capsules Documentation](#capsules-documentation)
+  - [Table of Contents](#table-of-contents)
+  - [✍️ FPS-R Capsule Contribution Guide](#️-fps-r-capsule-contribution-guide)
+  - [🎯 What Is a FPS-R Capsule?](#-what-is-a-fps-r-capsule)
+    - [Storage](#storage)
+    - [Capture](#capture)
+    - [A Typical 📦 `.cap.json` Format](#a-typical--capjson-format)
+      - [FPS-R: Stacked Modulo Capsule Format](#fps-r-stacked-modulo-capsule-format)
+        - [🛠 Minimal Fields](#-minimal-fields)
+      - [FPS-R: Quantised Switching Capsule Format](#fps-r-quantised-switching-capsule-format)
+  - [🌱 Naming Guidelines (Optional, Suggested)](#-naming-guidelines-optional-suggested)
+  - [🧪 How to Observe \& Curate a Capsule](#-how-to-observe--curate-a-capsule)
+  - [🌱 The Spirit of Sharing](#-the-spirit-of-sharing)
+    - [🌱 The Current State of the Capsules Technology](#-the-current-state-of-the-capsules-technology)
+  - [🤝 Attribution \& Community](#-attribution--community)
 
 ---
 
@@ -27,7 +31,7 @@ Creating and Sharing Behavioral Phrases in FPS-R
 ## 🎯 What Is a FPS-R Capsule?
 A **FPS-R capsule** is a mechanism that **stores** and **captures** FPS-R's performances of structured and deterministic unpredictability. 
 
-A FPS-R capsule's settings is **reusable**, and a capsule's performance is **repeatable**. These settings and performances shows how FPS-R's behaviour unfolds over time using only a seed, input signal, and configuration—without memory. Capsules can either be:
+A FPS-R capsule's settings is **reusable**, and a capsule's performance is **repeatable**. These settings and performances shows how FPS-R's behaviour unfolds over time using only a seed, input signal, and configuration—without memory. Capsules can be used for both capturing and sharing FPS-R's performances, as well as for testing and validating the engine's deterministic parity across different platforms.
 
 ### Storage
 **Reusable parameter settings:** to replicate the state of FPS-R at the point of capture.
