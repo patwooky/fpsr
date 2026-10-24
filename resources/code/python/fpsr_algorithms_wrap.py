@@ -812,7 +812,7 @@ def fpsr_sm_get_details(
     reseedInterval: int, seedInner: int, seedOuter: int, finalRandSwitch: bool,
     lod: int, max_search_frames: int,
     seg_block_length: int,
-    varispeed_hold_block_count: int
+    varispeed_hold_block_count: int = -1
 ) -> FPSR_Output:
     """
     ---- SM: Stacked Modulo Wrapper with Details ----
@@ -992,7 +992,7 @@ def fpsr_tm_get_details(
     periodSwitch: int, seedInner: int, seedOuter: int, finalRandSwitch: bool,
     lod: int, max_search_frames: int,
     seg_block_length: int,
-    varispeed_hold_block_count: int
+    varispeed_hold_block_count: int = -1
 ) -> FPSR_Output:
     """
     ---- TM: Toggle Modulo Wrapper with Details ----
@@ -1144,10 +1144,10 @@ def fpsr_qs_get_details(
     baseWaveFreq: float, stream2FreqMult: float,
     quantLevelsMinMax: list, streamsOffset: list, quantOffsets: list,
     streamSwitchDur: int, stream1QuantDur: int, stream2QuantDur: int, finalRandSwitch: bool,
-    wavetable=None,
-    lod: int = 0, max_search_frames: int = 0,
-    seg_block_length: int = 0,
-    varispeed_hold_block_count: int = -1
+    lod: int, max_search_frames: int,
+    seg_block_length: int,
+    varispeed_hold_block_count: int = -1,
+    wavetable=None
 ) -> FPSR_Output:
     """
     ---- QS: Quantised Switching Wrapper with Details ----
@@ -1170,7 +1170,6 @@ def fpsr_qs_get_details(
         stream1QuantDur (int): Algorithm parameter.
         stream2QuantDur (int): Algorithm parameter.
         finalRandSwitch (bool): Algorithm parameter.
-        wavetable (FPSR_Wavetable|list|None): Optional custom wavetable.
         lod (int): The level of detail to calculate.
         max_search_frames (int): A safety limit for the backward/forward search.
         seg_block_length (int): The "runway" length for HPQ logic (in application frames).
@@ -1181,6 +1180,7 @@ def fpsr_qs_get_details(
                  while preserving the macro rhythm grid)
             >=1 = Phrased Anchor + Infill (Anchor milestone holds for N runway blocks
                  before generative sub-phrasing)
+        wavetable (FPSR_Wavetable|list|None): Optional custom wavetable.
 
     Returns:
         FPSR_Output: A struct with metadata populated based on the LOD.
@@ -1225,7 +1225,7 @@ def fpsr_qs_get_details(
     if lod < 1: return out
 
     # LOD 1
-    prev_out = fpsr_qs_get_details(frame - 1, frame_multiplier, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, wavetable, 0, 0, seg_block_length, varispeed_hold_block_count)
+    prev_out = fpsr_qs_get_details(frame - 1, frame_multiplier, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, 0, 0, seg_block_length, varispeed_hold_block_count, wavetable)
     out.randVal_previous = prev_out.randVal
     out.has_changed = 1 if (out.randVal != prev_out.randVal) else 0
     
@@ -1242,7 +1242,7 @@ def fpsr_qs_get_details(
         bound_low_int = frame
         step_int = 1
         while (frame - step_int > frame - max_search_frames): 
-            probe_qs_output = fpsr_qs_get_details(frame - step_int, frame_multiplier, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, wavetable, 0, 0, seg_block_length, varispeed_hold_block_count)
+            probe_qs_output = fpsr_qs_get_details(frame - step_int, frame_multiplier, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, 0, 0, seg_block_length, varispeed_hold_block_count, wavetable)
             if (probe_qs_output.randVal != out.randVal):
                 bound_low_int = frame - step_int
                 break
@@ -1254,9 +1254,9 @@ def fpsr_qs_get_details(
         result_int = frame - max_search_frames + 1
         while(low_int <= high_int):
             mid_int = low_int + (high_int - low_int) // 2
-            mid_qs_output = fpsr_qs_get_details(mid_int, frame_multiplier, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, wavetable, 0, 0, seg_block_length, varispeed_hold_block_count)
+            mid_qs_output = fpsr_qs_get_details(mid_int, frame_multiplier, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, 0, 0, seg_block_length, varispeed_hold_block_count, wavetable)
             if (mid_qs_output.randVal == out.randVal):
-                mid_minus_step_qs_output = fpsr_qs_get_details(mid_int - 1, frame_multiplier, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, wavetable, 0, 0, seg_block_length, varispeed_hold_block_count)
+                mid_minus_step_qs_output = fpsr_qs_get_details(mid_int - 1, frame_multiplier, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, 0, 0, seg_block_length, varispeed_hold_block_count, wavetable)
                 if (mid_minus_step_qs_output.randVal != out.randVal):
                     result_int = mid_int
                     break
@@ -1269,7 +1269,7 @@ def fpsr_qs_get_details(
     bound_high_int = frame
     step_int = 1
     while (frame + step_int < frame + max_search_frames): 
-        probe_qs_output = fpsr_qs_get_details(frame + step_int, frame_multiplier, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, wavetable, 0, 0, seg_block_length, varispeed_hold_block_count)
+        probe_qs_output = fpsr_qs_get_details(frame + step_int, frame_multiplier, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, 0, 0, seg_block_length, varispeed_hold_block_count, wavetable)
         if (probe_qs_output.randVal != out.randVal):
             bound_high_int = frame + step_int
             next_val_candidate = probe_qs_output.randVal
@@ -1282,7 +1282,7 @@ def fpsr_qs_get_details(
     result_int = frame + max_search_frames
     while(low_int <= high_int):
         mid_int = low_int + (high_int - low_int) // 2
-        mid_qs_output = fpsr_qs_get_details(mid_int, frame_multiplier, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, wavetable, 0, 0, seg_block_length, varispeed_hold_block_count)
+        mid_qs_output = fpsr_qs_get_details(mid_int, frame_multiplier, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, stream1QuantDur, stream2QuantDur, finalRandSwitch, 0, 0, seg_block_length, varispeed_hold_block_count, wavetable)
         if (mid_qs_output.randVal != out.randVal):
             result_int = mid_int
             next_val_candidate = mid_qs_output.randVal
@@ -1314,7 +1314,7 @@ def fpsr_bd_get_details(
     value_seed_offset: int,
     lod: int, max_search_frames: int,
     seg_block_length: int,
-    varispeed_hold_block_count: int
+    varispeed_hold_block_count: int = -1
 ) -> FPSR_Output:
     """
     ---- BD: Bitwise Decode Wrapper with Details ----
@@ -1560,7 +1560,7 @@ if __name__ == "__main__":
             output = fpsr_qs_get_details(frame, frame_multiplier, baseWaveFreq, stream2FreqMult, 
                 quantLevelsMinMax, streamsOffset, quantOffsets, streamSwitchDur, 
                 stream1QuantDur, stream2QuantDur, finalRandSwitch, 
-                wavetable, lod, max_search_frames, seg_block_length, varispeed_hold_block_count)
+                lod, max_search_frames, seg_block_length, varispeed_hold_block_count, wavetable)
         
         elif algo == 3:
             # Parameters for FPS-R:BD
