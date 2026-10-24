@@ -5,6 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 
 ## Unreleased
+
+## [3.0.15] - 2026-10-24
+### Changed
+- updated python functions in fpsr_algoAnalysis.ipynb notebook and fpsr_algorithms_wrap.py.
+  - updated the QS to the latest wavetable paradigm, discarding the dependence on programmatic generation. with wavetable there is greater deterministic accuracy across platforms. updated fpsr_algoAnalysis.ipynb `fpsr_xx_get_details()` to conform to the python wrapper reference.
+
+
 ## [3.0.14] - 2026-10-11
 ### Changed
 - **Two-Phase Headless ALU Benchmarking & JIT Stabilization (`fpsr_demo.html`)**:
