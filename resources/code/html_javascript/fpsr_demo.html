@@ -1499,11 +1499,11 @@ allTabs.forEach(tab => {
                 if (reseedInterval < 1n) reseedInterval = 1n;
                 const reseed_anchor = (seedInner + frame) - i64_floor_mod(seedInner + frame, reseedInterval);
                 const rand_for_duration = portable_rand_u64(reseed_anchor);
-                let holdDuration = BigInt(Math.floor(Number(minHold) + rand_for_duration * Number(maxHold - minHold)));
+                let holdDuration = minHold + BigInt(Math.floor(rand_for_duration * Number(maxHold - minHold)));
                 if (holdDuration < 1n) holdDuration = 1n;
                 const held_integer_state = i64_align_down((seedOuter + frame), holdDuration);
                 if (finalRandSwitch) {
-                    const seed = BigInt.asUintN(64, held_integer_state * 100000n);
+                    const seed = BigInt.asUintN(64, held_integer_state);
                     return portable_rand_u64(seed);
                 } else {
                     return Number(held_integer_state);
@@ -1522,7 +1522,7 @@ allTabs.forEach(tab => {
                 const outer_clock_frame = seedOuter + frame;
                 const held_integer_state = i64_align_down(outer_clock_frame, holdDuration);
                 if (finalRandSwitch) {
-                    const seed = BigInt.asUintN(64, held_integer_state * 100000n);
+                    const seed = BigInt.asUintN(64, held_integer_state);
                     return portable_rand_u64(seed);
                 } else {
                     return Number(held_integer_state);
