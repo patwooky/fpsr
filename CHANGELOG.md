@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## Unreleased
 
+## [3.0.16] - 2026-10-29
+### Changed
+- updated SM algorithms across C, Python, HTML.
+  ```
+      // Compute duration with explicit integer clamping:
+      // floor only the dynamic delta, keeping minHold in int64 space.
+      int64_t holdDuration = (int64_t)floor((double)minHold + rand_for_duration * (double)(maxHold - minHold));
+  ```
+- also in html fps-r visualiser, i removed the multiplier of 10000 from the seed sent to the final hash. removed from SM and TM. QS still needs to use it. this large number multiplier was a legacy hting, and no longer exists in the c_ref and python versions.
+
 ## [3.0.15] - 2026-10-24
 ### Changed
 - Updated python functions in fpsr_algoAnalysis.ipynb notebook and fpsr_algorithms_wrap.py.

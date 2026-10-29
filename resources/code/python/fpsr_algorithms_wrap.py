@@ -476,8 +476,8 @@ def fpsr_sm_base(frame, minHold, maxHold, reseedInterval, seedInner, seedOuter, 
     # Deterministic PRNG over 64-bit integer seed; result is double in [0,1].
     rand_for_duration = portable_rand_u64(reseed_anchor)
     
-    # Compute duration with double intermediates then floor to int64.
-    holdDuration = math.floor(float(minHold) + rand_for_duration * float(maxHold - minHold))
+    # Compute duration with explicit integer clamping: floor the scaled span into a pure integer
+    holdDuration = int(minHold + math.floor(rand_for_duration * (maxHold - minHold)))
 
     if holdDuration < 1:
         holdDuration = 1  # Prevent division by zero.

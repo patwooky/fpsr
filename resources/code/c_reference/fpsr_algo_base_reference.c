@@ -421,8 +421,8 @@ double fpsr_sm_base(
     // Deterministic PRNG over 64-bit integer seed; result is double in [0,1].
     double rand_for_duration = portable_rand_u64((uint64_t)reseed_anchor);
 
-    // Compute duration with double intermediates then floor to int64.
-    // Double math here mirrors Python's float behavior for cross-language parity.
+    // Compute duration with explicit integer clamping: 
+    // floor only the dynamic delta, keeping minHold in int64 space.
     int64_t holdDuration = (int64_t)floor((double)minHold + rand_for_duration * (double)(maxHold - minHold));
     if (holdDuration < 1) { holdDuration = 1; } // Prevent division by zero.
 
