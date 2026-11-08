@@ -6,6 +6,64 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## Unreleased
 
+## [3.0.17] - 2026-11-08
+> [!WARNING]
+> **BREAKING CHANGE — Architectural Parameter Standardization, Decoupled Dual TM Phase Offsets, and Universal Value Seed Offsets**:
+> This release unifies parameter taxonomy across all algorithms, replaces legacy "inner/outer" nesting terminology with clear rhythmic/phase roles, splits TM's hold offset into independent channels (`periodAOffset` and `periodBOffset`), and adds a dedicated hashing offset (`valueSeedOffset`) across SM, TM, and QS (matching BD). Function signatures, parameter orders, and resulting pseudo-random output sequences are modified relative to versions `<= 3.0.16`.
+
+### Changed
+- **Parameter Nomenclature Harmonization & Structural Taxonomy**:
+  - Replaced ambiguous, implementation-leaking names (`seedInner`, `seedOuter`, `reseedInterval`) with functional temporal roles:
+    - **Metronome / Sampling Controls**: `period`, `periodOffset`, `periodSwitch`, `periodSwitchOffset`.
+    - **Plateau / Discretization Controls**: `holdMin`, `holdMax`, `holdOffset`.
+  - Upgraded parameter types across base and wrapper functions from 32-bit `int` to `int64_t` for full 64-bit coordinate space determinism, and standardized `finalRandSwitch` to `int`.
+
+- **Decoupled Dual Phase Offsets for Toggled Modulo (TM)**:
+  - Replaced the single shared plateau offset (`seedOuter`) with two independent phase channels: **`periodAOffset`** and **`periodBOffset`**.
+  - Allows Period A and Period B plateaus to align to independent coordinate lattices, unlocking asymmetric, polyrhythmic step patterns and significantly widening TM's expressive parameter space.
+
+- **Universal Value Seed Offset (`valueSeedOffset`)**:
+  - Added an independent `int64_t valueSeedOffset` to the hashing stage of **SM**, **TM**, and **QS**, standardizing behavior with Bitwise Decode (BD).
+  - Enables multiple downstream targets or objects to share the exact same temporal cadence and jump timings while evaluating to completely distinct, uncorrelated pseudo-random value sequences.
+
+### Parameter Migration Mapping
+
+#### 1. Stacked Modulo (SM)
+| Old Parameter (`<= 3.0.16`) | New Parameter (`3.0.17+`) | Type | Role |
+| :--- | :--- | :--- | :--- |
+| `frame` | `frame` | `int64_t` | Input frame coordinate |
+| `minHold` | `holdMin` | `int64_t` | Minimum hold duration |
+| `maxHold` | `holdMax` | `int64_t` | Maximum hold duration |
+| `reseedInterval` | `period` | `int64_t` | Duration sampling interval |
+| `seedInner` | `periodOffset` | `int64_t` | Duration sampling phase offset |
+| `seedOuter` | `holdOffset` | `int64_t` | Held plateau phase offset |
+| *(New parameter)* | **`valueSeedOffset`** | `int64_t` | Hashing seed decorrelator |
+| `finalRandSwitch` | `finalRandSwitch` | `int` | Randomization bypass flag |
+
+#### 2. Toggled Modulo (TM)
+| Old Parameter (`<= 3.0.16`) | New Parameter (`3.0.17+`) | Type | Role |
+| :--- | :--- | :--- | :--- |
+| `frame` | `frame` | `int64_t` | Input frame coordinate |
+| `periodA` | `periodA` | `int64_t` | First hold duration |
+| `periodB` | `periodB` | `int64_t` | Second hold duration |
+| `periodSwitch` | `periodSwitch` | `int64_t` | Duration toggle interval |
+| `seedInner` | `periodSwitchOffset` | `int64_t` | Duration toggle clock phase offset |
+| `seedOuter` *(shared)* | **`periodAOffset`** | `int64_t` | Plateau phase offset during Period A |
+| *(Split channel)* | **`periodBOffset`** | `int64_t` | Plateau phase offset during Period B |
+| *(New parameter)* | **`valueSeedOffset`** | `int64_t` | Hashing seed decorrelator |
+| `finalRandSwitch` | `finalRandSwitch` | `int` | Randomization bypass flag |
+
+#### 3. Quantised Switching (QS)
+| Parameter | Type Updated | Role |
+| :--- | :--- | :--- |
+| `streamSwitchDur` | Promoted to `int64_t` | Stream switching cycle duration |
+| `stream1QuantDur` | Promoted to `int64_t` | Stream 1 quantization hold duration |
+| `stream2QuantDur` | Promoted to `int64_t` | Stream 2 quantization hold duration |
+| **`valueSeedOffset`** | Added (`int64_t`) | Hashing seed decorrelator (placed before `finalRandSwitch`) |
+| `finalRandSwitch` | Standardized to `int` | Randomization bypass flag |
+
+
+
 ## [3.0.16] - 2026-10-29
 ### Changed
 - updated SM algorithms across C, Python, HTML.

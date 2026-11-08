@@ -254,7 +254,6 @@ static const double fpsr_sine_lut_1024[1024] = {
     0.4877293857385438, 0.4907966350470974, 0.4938642308571397, 0.4969320576754228
 };
 
-
 typedef struct {
     const double* data; // Pointer to normalized [0.0, 1.0] unipolar cycle data
     int size;           // Number of elements (MUST be power-of-2)
@@ -386,49 +385,42 @@ static inline uint64_t u64_circular_right_shift(uint64_t value, int shift) {
  * "hold duration". Second, it generates a stable integer for that duration,
  * which is then used as a seed to produce the final, held random value.
  *
- * int frame: The current frame or time input.
- * int minHold: The minimum duration (in frames) for a value to hold.
- * int maxHold: The maximum duration (in frames) for a value to hold.
- * int reseedInterval: The fixed interval at which a new hold duration is calculated.
- * int seedInner: An offset for the random duration calculation to create unique sequences.
- * int seedOuter: An offset for the final value calculation to create unique sequences.
+ * int64_t frame: The current frame or time input.
+ * int64_t holdMin: The minimum duration (in frames) for a value to hold.
+ * int64_t holdMax: The maximum duration (in frames) for a value to hold.
+ * int64_t period: The fixed interval at which a new hold duration is calculated.
+ * int64_t periodOffset: An offset for the duration calculation to shift the sampling phase.
+ * int64_t holdOffset: An offset for the plateau calculation to shift the held coordinate phase.
+ * int64_t valueSeedOffset: An offset for the hashing seed to decorrelate output values.
  * int finalRandSwitch: A flag that can turn off the final randomisation step.
- * int lod: The level of detail (LOD) that controls computational overhead. Valid values are 0 to 2.
- * * return 
- * FPSR_Output struct containing the random value and other details.
- * Output fields depend on the LOD level.
- * Refer to the FPSR_Output structure for details on the return values.
  *
- * float randVal: this is the main output, which is a float value between [0.0, 1.0]
- * when finalRandSwitch is 0: 
-    * randVal will be a whole number representing the currently held   frame 
-    * that remains constant for the hold duration.
- * when finalRandSwitch is 1: 
-    * A float value between 0.0 and 1.0 that remains constant 
-    * for the held duration.
+ * @return 
+ * when finalRandSwitch is 0: An integer value representing the currently held frame state.
+ * when finalRandSwitch is 1: A float value between 0.0 and 1.0 that remains constant for the held duration.
  */
 double fpsr_sm_base(
-    int64_t frame, int64_t minHold, int64_t maxHold,
-    int64_t reseedInterval, int64_t seedInner, int64_t seedOuter, int finalRandSwitch)
+    int64_t frame, int64_t holdMin, int64_t holdMax,
+    int64_t period, int64_t periodOffset, int64_t holdOffset,
+    int64_t valueSeedOffset, int finalRandSwitch)
 {
     // --- 1. Calculate the random hold duration ---
-    if (reseedInterval < 1) { reseedInterval = 1; } // Prevent division by zero.
+    if (period < 1) { period = 1; } // Prevent division by zero.
 
     // Use floor-based modulo to match Python for negative frames.
     // Seed stays in integer domain for reproducibility.
-    int64_t reseed_anchor = (seedInner + frame) - i64_floor_mod(frame, reseedInterval);
+    int64_t sample_anchor = (periodOffset + frame) - i64_floor_mod(frame, period);
 
     // Deterministic PRNG over 64-bit integer seed; result is double in [0,1].
-    double rand_for_duration = portable_rand_u64((uint64_t)reseed_anchor);
+    double rand_for_duration = portable_rand_u64((uint64_t)sample_anchor);
 
     // Compute duration with explicit integer clamping: 
-    // floor only the dynamic delta, keeping minHold in int64 space.
-    int64_t holdDuration = (int64_t)floor((double)minHold + rand_for_duration * (double)(maxHold - minHold));
+    // floor only the dynamic delta, keeping holdMin in int64 space.
+    int64_t holdDuration = (int64_t)floor((double)holdMin + rand_for_duration * (double)(holdMax - holdMin));
     if (holdDuration < 1) { holdDuration = 1; } // Prevent division by zero.
 
     // --- 2. Generate the stable integer "state" for the hold period ---
     // Align down using floor-mod semantics for negative inputs.
-    int64_t held_integer_state = i64_align_down((seedOuter + frame), holdDuration);
+    int64_t held_integer_state = i64_align_down((holdOffset + frame), holdDuration);
 
     // --- 3. Use the stable state as a seed for the final random value ---
     // Keep all seed math in 64-bit integer space; rely on uint64 wraparound (well-defined).
@@ -436,7 +428,7 @@ double fpsr_sm_base(
     if (finalRandSwitch) {
         // The held_integer_state is already the unique identifier for this hold segment.
         // We pass it directly to the SplitMix64 hasher without needing an additional multiplier.
-        uint64_t seed = (uint64_t)held_integer_state;
+        uint64_t seed = (uint64_t)held_integer_state + (uint64_t)valueSeedOffset;
         fpsr_output = portable_rand_u64(seed);
     } else {
         // Return the active stream value directly as a double (cast by caller if needed).
@@ -455,42 +447,46 @@ double fpsr_sm_base(
  * between two fixed periods. This creates a predictable, rhythmic, or mechanical
  * "move-and-hold" pattern, as opposed to the organic randomness of SM.
  *
- * int frame: The current frame or time input.
- * int periodA: The first hold duration (in frames).
- * int periodB: The second hold duration (in frames).
- * int periodSwitch: The fixed interval at which the hold duration is toggled to switch between periodA and periodB.
- * int seedInner: An offset for the toggle clock to de-sync it from the main clock.
- * int seedOuter: An offset for the main clock to create unique sequences.
+ * int64_t frame: The current frame or time input.
+ * int64_t periodA: The first hold duration (in frames).
+ * int64_t periodB: The second hold duration (in frames).
+ * int64_t periodSwitch: The fixed interval at which the hold duration is toggled to switch between periodA and periodB.
+ * int64_t periodSwitchOffset: An offset for the toggle clock to de-sync it from the main clock.
+ * int64_t periodAOffset: An offset for the held plateau phase during period A.
+ * int64_t periodBOffset: An offset for the held plateau phase during period B.
+ * int64_t valueSeedOffset: An offset for the hashing seed to decorrelate output values.
  * int finalRandSwitch: A flag that can turn off the final randomisation step.
- * return 
- * when finalRandSwitch is 0: 
- * An integer value representing the currently held frame state.
- * when finalRandSwitch is 1: 
- * A float value between 0.0 and 1.0 that holds for the toggled duration.
+ * 
+ * @return 
+ * when finalRandSwitch is 0: An integer value representing the currently held frame state.
+ * when finalRandSwitch is 1: A float value between 0.0 and 1.0 that holds for the toggled duration.
  */
 double fpsr_tm_base(
     int64_t frame, int64_t periodA, int64_t periodB,
-    int64_t periodSwitch, int64_t seedInner, int64_t seedOuter,
-    int finalRandSwitch)
+    int64_t periodSwitch, int64_t periodSwitchOffset,
+    int64_t periodAOffset, int64_t periodBOffset,
+    int64_t valueSeedOffset, int finalRandSwitch)
 {
     // --- 1. Determine the hold duration by toggling between two periods ---
     if (periodSwitch < 1) { periodSwitch = 1; } // Prevent division by zero.
 
-    // The "inner clock" is offset by seedInner to de-correlate it from the main frame.
-    int64_t inner_clock_frame = seedInner + frame;
+    // The switch clock is offset by periodSwitchOffset to de-correlate it from the main frame.
+    int64_t switch_frame = periodSwitchOffset + frame;
     
     // Use floor-based modulo for cross-language consistency.
-    int64_t r = i64_floor_mod(inner_clock_frame, periodSwitch);
+    int64_t r = i64_floor_mod(switch_frame, periodSwitch);
 
     // Toggle threshold at exactly half the period using integer math.
     // Equivalent to: (r < 0.5 * periodSwitch) without floating-point rounding.
-    int64_t holdDuration = (2 * r < periodSwitch) ? periodA : periodB;
+    int is_period_a = (2 * r < periodSwitch);
+    int64_t holdDuration = is_period_a ? periodA : periodB;
+    int64_t holdOffset   = is_period_a ? periodAOffset : periodBOffset;
 
     if (holdDuration < 1) { holdDuration = 1; } // Prevent division by zero.
 
     // --- 2. Generate the stable integer "state" for the hold period ---
-    // The "outer clock" is offset by seedOuter to create unique output sequences.
-    int64_t outer_clock_frame = seedOuter + frame;
+    // The hold clock is offset by its state-dependent phase offset to create unique output sequences.
+    int64_t outer_clock_frame = holdOffset + frame;
     int64_t held_integer_state = i64_align_down(outer_clock_frame, holdDuration);
 
     // --- 3. Use the stable state as a seed for the final random value (or bypass) ---
@@ -498,7 +494,7 @@ double fpsr_tm_base(
     if (finalRandSwitch) {
         // The held_integer_state is the unique identifier for the hold segment.
         // Pass it directly to the SplitMix64 hasher for a well-distributed random value.
-        uint64_t seed = (uint64_t)held_integer_state;
+        uint64_t seed = (uint64_t)held_integer_state + (uint64_t)valueSeedOffset;
         fpsr_output = portable_rand_u64(seed);
     } else {
         // Return the raw integer state directly.
@@ -528,15 +524,20 @@ double fpsr_tm_base(
  * int64_t streamSwitchDur: The duration (in frames) before switching between streams.
  * int64_t stream1QuantDur: The quantization duration (in frames) for stream 1.
  * int64_t stream2QuantDur: The quantization duration (in frames) for stream 2.
+ * int64_t valueSeedOffset: An offset for the hashing seed to decorrelate output values.
+
  * int finalRandSwitch: A flag that can turn off the final randomisation step.
  * const FPSR_Wavetable* wavetable: Optional wavetable (pass NULL to use default sine).
- * @return A deterministic, pseudo-random double between 0.0 and 1.0.
+ * 
+ * @return 
+ * when finalRandSwitch is 0: The raw value of the currently active quantized sine stream (unipolar [0.0, 1.0]).
+ * when finalRandSwitch is 1: A pseudo-random float value between 0.0 and 1.0 that holds for the quantized duration.
  */
 double fpsr_qs(
     int64_t frame, double baseWaveFreq, double stream2FreqMult,
     const int quantLevelsMinMax[2], const int streamsOffset[2], const int quantOffsets[2],
     int64_t streamSwitchDur, int64_t stream1QuantDur, int64_t stream2QuantDur,
-    int finalRandSwitch, const FPSR_Wavetable* wavetable)
+    int64_t valueSeedOffset, int finalRandSwitch, const FPSR_Wavetable* wavetable)
 {
     // Default fallback to canonical sine table if NULL
     const FPSR_Wavetable* wt = (wavetable != NULL) ? wavetable : &FPSR_DEFAULT_SINE_WAVETABLE;
@@ -585,7 +586,7 @@ double fpsr_qs(
     double fpsr_output;
     if (finalRandSwitch == 1) {
         int64_t hashed_int = (int64_t)floor(active_stream_val * 1000000.0);
-        fpsr_output = portable_rand_u64((uint64_t)hashed_int);
+        fpsr_output = portable_rand_u64((uint64_t)hashed_int + (uint64_t)valueSeedOffset);
     } else {
         fpsr_output = active_stream_val;
     }
@@ -838,9 +839,7 @@ double fpsr_h_base(int64_t frame)
 /* Main function to demonstrate usage of FPS-R algorithms                     */
 /******************************************************************************/
 int main() {
-    // Write C code here
-    // printf("Try programiz.pro\n");
- 
+
     // algorithms: 0 - sm, 1 - tm, 2 - qs, 3 - bd
     int algo = 3; // Change this value to 0, 1, 2, or 3 to test different algorithms
     char algo_name[][3] = {"SM", "TM", "QS", "BD"}; // Names for the algorithms
@@ -864,24 +863,27 @@ int main() {
             // --------------------------------------------------------------------------
             // Parameters
             // int frame = 90;       // Replace with the current frame value
-            int minHoldFrames = 7;   // probable minimum held period
-            int maxHoldFrames = 9;   // maximum held period before cycling
-            int reseedFrames = 6;    // inner mod cycle timing
-            int offsetInner = -41;   // offsets the inner frame
-            int offsetOuter = 23;    // offsets the outer frame
+            int holdMin = 7;         // probable minimum held period
+            int holdMax = 9;         // maximum held period before cycling
+            int period = 6;          // sampling cycle timing
+            int periodOffset = -41;  // offsets the duration sampling phase
+            int holdOffset = 23;     // offsets the plateau coordinate phase
+            int valueSeedOffset = 0; // seed offset for final value hashing
             int finalRandSwitch = 1; // 1 to apply the final randomisation step, 0 to skip it
             
             // Call the FPS-R:SM function
             // call to fpsr_sm for the current frame
             randVal = 
                 (float)fpsr_sm_base(
-                    (int64_t)frame, (int64_t)minHoldFrames, (int64_t)maxHoldFrames, 
-                    (int64_t)reseedFrames, (int64_t)offsetInner, (int64_t)offsetOuter, finalRandSwitch);
+                    (int64_t)frame, (int64_t)holdMin, (int64_t)holdMax, 
+                    (int64_t)period, (int64_t)periodOffset, (int64_t)holdOffset,
+                    valueSeedOffset, finalRandSwitch);
             // another call to fpsr_sm for the previous frame
             randVal_previous = 
                 (float)fpsr_sm_base(
-                    (int64_t)(frame - 1), (int64_t)minHoldFrames, (int64_t)maxHoldFrames, 
-                    (int64_t)reseedFrames, (int64_t)offsetInner, (int64_t)offsetOuter, finalRandSwitch);
+                    (int64_t)(frame - 1), (int64_t)holdMin, (int64_t)holdMax, 
+                    (int64_t)period, (int64_t)periodOffset, (int64_t)holdOffset,
+                    valueSeedOffset, finalRandSwitch);
             changed = 0;
             if (randVal != randVal_previous) {
                 changed = 1; // value has changed from the previous frame
@@ -893,25 +895,31 @@ int main() {
             // Sample code to call the FPS-R:TM function
             // --------------------------------------------------------------------------
             // Parameters
-            // int frame = 100;        // Replace with the current frame value
-            int period_A = 8;          // The first hold duration
-            int period_B = 5;          // The second hold duration
-            int periodSwitch = 6;      // The toggle happens every 30 frames
-            int offset_inner = 15;     // offsets the inner (toggle) clock
-            int offset_outer = 0;      // offsets the outer (hold) clock
-            int final_rand_switch = 1; // 1 to apply the final randomisation step, 0 to skip it
+            // int frame = 100;           // Replace with the current frame value
+            int periodA = 8;              // The first hold duration
+            int periodB = 5;              // The second hold duration
+            int periodSwitch = 6;         // The toggle happens every 6 frames
+            int periodSwitchOffset = 15;  // offsets the toggle clock
+            int periodAOffset = 0;        // offsets the hold phase during period A
+            int periodBOffset = 23;       // offsets the hold phase during period B
+            int valueSeedOffset = 0;      // seed offset for final value hashing
+            int finalRandSwitch = 1;      // 1 to apply the final randomisation step, 0 to skip it
             
             // Call the FPS-R:TM function
             // call to fpsr_tm for the current frame
             randVal = 
                 (float)fpsr_tm_base(
-                    (int64_t)frame, (int64_t)period_A, (int64_t)period_B, 
-                    (int64_t)periodSwitch, (int64_t)offset_inner, (int64_t)offset_outer, final_rand_switch);
+                    (int64_t)frame, (int64_t)periodA, (int64_t)periodB, 
+                    (int64_t)periodSwitch, (int64_t)periodSwitchOffset,
+                    (int64_t)periodAOffset, (int64_t)periodBOffset,
+                    valueSeedOffset, finalRandSwitch);
             // another call to fpsr_tm for the previous frame
             randVal_previous = 
                 (float)fpsr_tm_base(
-                    (int64_t)(frame - 1), (int64_t)period_A, (int64_t)period_B, 
-                    (int64_t)periodSwitch, (int64_t)offset_inner, (int64_t)offset_outer, final_rand_switch);
+                    (int64_t)(frame - 1), (int64_t)periodA, (int64_t)periodB, 
+                    (int64_t)periodSwitch, (int64_t)periodSwitchOffset,
+                    (int64_t)periodAOffset, (int64_t)periodBOffset,
+                    valueSeedOffset, finalRandSwitch);
             changed = 0;
             if (randVal != randVal_previous) {
                 changed = 1; // value has changed from the previous frame
@@ -932,6 +940,7 @@ int main() {
             int streamSwitchDur = 8; // Duration for switching streams in frames
             int stream1QuantDur = 10; // Duration for the first stream's quantisation switch cycle in frames
             int stream2QuantDur = 13; // Duration for the second stream's quantisation switch cycle in frames
+            int valueSeedOffset = 0; // seed offset for final value hashing
             int finalRandSwitch = 1; // 1 to apply the final randomisation step, 0 to skip it
 
             // Wavetable configuration: pass NULL for canonical sine (&FPSR_DEFAULT_SINE_WAVETABLE)
@@ -941,12 +950,14 @@ int main() {
             // call to fpsr_qs for the current frame
             randVal = (float)fpsr_qs(
                 (int64_t)frame, (double)baseWaveFreq, (double)stream2freqMult, quantLevelsMinMax, 
-                streamsOffset, quantOffsets, (int64_t)streamSwitchDur, (int64_t)stream1QuantDur, (int64_t)stream2QuantDur, finalRandSwitch, wavetable);
+                streamsOffset, quantOffsets, (int64_t)streamSwitchDur, (int64_t)stream1QuantDur, (int64_t)stream2QuantDur,
+                valueSeedOffset, finalRandSwitch, wavetable);
             
             // another call to fpsr_qs for the previous frame
             randVal_previous = (float)fpsr_qs(
                 (int64_t)(frame - 1), (double)baseWaveFreq, (double)stream2freqMult, quantLevelsMinMax, 
-                streamsOffset, quantOffsets, (int64_t)streamSwitchDur, (int64_t)stream1QuantDur, (int64_t)stream2QuantDur, finalRandSwitch, wavetable);
+                streamsOffset, quantOffsets, (int64_t)streamSwitchDur, (int64_t)stream1QuantDur, (int64_t)stream2QuantDur,
+                valueSeedOffset, finalRandSwitch, wavetable);
             
             changed = 0; // Variable to track if the value has changed
             if (randVal != randVal_previous) {

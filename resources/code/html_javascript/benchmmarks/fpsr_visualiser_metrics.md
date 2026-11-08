@@ -21,9 +21,12 @@ Frame Persistent Stateless Randomisation (FPS-R) is a novel algorithmic paradigm
 **FPS-R Algorithms**
 
 FPS-R Stacked Modulo - FPS-R SM
+
 FPS-R Toggled Modulo - FPS-R TM
+
 FPS-R Quantised Switching - FPS-R QS
-FPS-R Bitwise Decode - FPS-R BD
+
+FPS-R Bitwise Decode - FPS-R BD (**note:**, BD defaults to `streams 3, blocksize 64` configuration for the FPS-R Visualizer.)
 
 **Paradigm A (Legacy)**
 - **Description:** A stateful pre-calculated accumulator loop. Upon a state transition, it generates both a stochastic payload value and a random hold duration ($t_{\text{target}} = t_{\text{curr}} + \text{min\_hold} + \text{rand}() \times \text{variance}$). The system caches `next_jump_frame` in memory and performs a conditional boundary check (`current_frame >= next_jump_frame`) on every subsequent frame to determine when to recalculate. Forward-only path-dependent ($O(N)$ scrubbing penalty).
@@ -51,27 +54,27 @@ FPS-R Bitwise Decode - FPS-R BD
 ---
 ## HTML Preview in Visual Studio Code
 ### VS Code Version Information
-| Specification | Details |
-| :--- | --- |
-| Version | 1.99.2 (user setup) |
-| Electron | 34.3.2 |
+| Specification   | Details |
+| :-------------- | ------------------------- |
+| Version         | 1.99.2 (user setup) |
+| Electron        | 34.3.2 |
 | ElectronBuildId | 11161073 |
-| Chromium | 132.0.6834.210 |
-| Node.js | 20.18.3 |
-| V8 | 13.2.152.41-electron.0 |
-| OS | Windows_NT x64 10.0.19045 |
+| Chromium        | 132.0.6834.210 |
+| Node.js         | 20.18.3 |
+| V8              | 13.2.152.41-electron.0 |
+| OS              | Windows_NT x64 10.0.19045 |
 
 ### Algorithm Performance Metrics
-| Algorithm | Approximate Performance |
-| :--- | --- |
+| Algorithm         | Approximate Performance |
+| :---------------- | --- |
 | Legacy Paradigm A | ~2, 483 k/s |
 | Legacy Paradigm B | ~2, 298 k/s |
-| Statelss Perlin | ~870 k/s |
-| Stateless Worley | ~600 k/s |
-| FPS-R SM | ~1, 385 k/s |
-| FPS-R TM | ~1, 834 k/s |
-| FPS-R QS | ~872 k/s |
-| FPS-R BD (default 3 streams, blocksize 64) | ~350 k/s |
+| Statelss Perlin   | ~870 k/s |
+| Stateless Worley  | ~600 k/s |
+| FPS-R SM          | ~1, 385 k/s |
+| FPS-R TM          | ~1, 834 k/s |
+| FPS-R QS          | ~872 k/s |
+| FPS-R BD          | ~350 k/s |
 
 ### BD Breakdown by Streams and Blocksize
 | Streams | Blocksize | Approximate Performance |
@@ -93,16 +96,16 @@ FPS-R Bitwise Decode - FPS-R BD
 Version 151.0.7922.34 (Official Build) (64-bit)
 
 ### Algorithm Performance Metrics
-| Algorithm | Approximate Performance |
-| :--- | --- |
+| Algorithm         | Approximate Performance |
+| :---------------- | --- |
 | Legacy Paradigm A | ~2, 953 k/s |
 | Legacy Paradigm B | ~2, 587 k/s |
-| Statelss Perlin | ~1,016 k/s |
-| Stateless Worley | ~691 k/s |
-| FPS-R SM | ~1, 747 k/s |
-| FPS-R TM | ~2, 135 k/s |
-| FPS-R QS | ~956 k/s |
-| FPS-R BD (default 3 streams, blocksize 64) | ~390 k/s |
+| Statelss Perlin   | ~1,016 k/s |
+| Stateless Worley  | ~691 k/s |
+| FPS-R SM          | ~1, 747 k/s |
+| FPS-R TM          | ~2, 135 k/s |
+| FPS-R QS          | ~956 k/s |
+| FPS-R BD          | ~390 k/s |
 
 ### BD Breakdown by Streams and Blocksize
 | Streams | Blocksize | Approximate Performance |
@@ -124,16 +127,16 @@ Version 151.0.7922.34 (Official Build) (64-bit)
 Version 153.0.3 (64-bit)
 
 ### Algorithm Performance Metrics
-| Algorithm | Approximate Performance |
-| :--- | --- |
+| Algorithm         | Approximate Performance |
+| :---------------- | --- |
 | Legacy Paradigm A | ~7, 710 k/s |
 | Legacy Paradigm B | ~7, 300 k/s |
-| Statelss Perlin | ~405 k/s |
-| Stateless Worley | ~226 k/s |
-| FPS-R SM | ~1, 075 k/s |
-| FPS-R TM | ~1, 826 k/s |
-| FPS-R QS | ~678 k/s |
-| FPS-R BD (default 3 streams, blocksize 64) | ~348 k/s |
+| Statelss Perlin   | ~405 k/s |
+| Stateless Worley  | ~226 k/s |
+| FPS-R SM          | ~1, 075 k/s |
+| FPS-R TM          | ~1, 826 k/s |
+| FPS-R QS          | ~678 k/s |
+| FPS-R BD          | ~348 k/s |
 
 ### BD Breakdown by Streams and Blocksize
 | Streams | Blocksize | Approximate Performance |
@@ -151,13 +154,13 @@ Version 153.0.3 (64-bit)
 
 ---
 ## Android Phone Specifications
-| Specification | Details |
-| :--- | --- |
-| Samsung | Galaxy S23 Ultra 5G |
-| Model | SM-S918B/DS |
-| Processor | Qualcomm Snapdragon 8 Gen 2 |
-| Memory | 12 GB |
-| System Type | 64-bit operating system, arm64-based processor |
+| Specification   | Details |
+| :-------------- | --- |
+| Samsung         | Galaxy S23 Ultra 5G |
+| Model           | SM-S918B/DS |
+| Processor       | Qualcomm Snapdragon 8 Gen 2 |
+| Memory          | 12 GB |
+| System Type     | 64-bit operating system, arm64-based processor |
 | Android Version | 16 |
 
 ## Android Chrome Browser
@@ -165,30 +168,30 @@ Version 153.0.3 (64-bit)
 Version 151.0.7922.83
 
 ### Algorithm Performance Metrics
-| Algorithm | Approximate Performance |
-| :--- | --- |
+| Algorithm         | Approximate Performance |
+| :---------------- | --- |
 | Legacy Paradigm A | ~3, 010 k/s |
 | Legacy Paradigm B | ~2, 724 k/s |
-| Statelss Perlin | ~1, 076 k/s |
-| Stateless Worley | ~725 k/s |
-| FPS-R SM | ~1, 873 k/s |
-| FPS-R TM | ~2, 296 k/s |
-| FPS-R QS | ~1, 125 k/s |
-| FPS-R BD (default 3 streams, blocksize 64) | ~423 k/s |
+| Statelss Perlin   | ~1, 076 k/s |
+| Stateless Worley  | ~725 k/s |
+| FPS-R SM          | ~1, 873 k/s |
+| FPS-R TM          | ~2, 296 k/s |
+| FPS-R QS          | ~1, 125 k/s |
+| FPS-R BD          | ~423 k/s |
 
 ### BD Breakdown by Streams and Blocksize
 | Streams | Blocksize | Approximate Performance |
-| :--- | --- | --- |
-| 1 | 30 | ~830 k/s |
-|   | 60 | ~820 k/s |
-| 2 | 30 | ~680 k/s |
-|   | 60 | ~682 k/s |
-| 3 | 30 | ~540 k/s |
-|   | 60 | ~548 k/s |
-| 4 | 30 | ~375 k/s |
-|   | 60 | ~390 k/s |
-| 7 | 30 | ~210 k/s |
-|   | 60 | ~200 k/s |
+| :--- | --- | -------- |
+| 1    | 30  | ~830 k/s |
+|      | 60  | ~820 k/s |
+| 2    | 30  | ~680 k/s |
+|      | 60  | ~682 k/s |
+| 3    | 30  | ~540 k/s |
+|      | 60  | ~548 k/s |
+| 4    | 30  | ~375 k/s |
+|      | 60  | ~390 k/s |
+| 7    | 30  | ~210 k/s |
+|      | 60  | ~200 k/s |
 
 ## Firefox Android Browser
 ### Firefox Version Information
@@ -196,58 +199,58 @@ Firefox mobile version
 128.0.3 (Build #2016034663)
 
 ### Algorithm Performance Metrics
-| Algorithm | Approximate Performance |
-| :--- | --- |
+| Algorithm         | Approximate Performance |
+| :---------------- | --- |
 | Legacy Paradigm A | ~3, 550 k/s |
 | Legacy Paradigm B | ~3, 360 k/s |
-| Statelss Perlin | ~320.3 k/s |
-| Stateless Worley | ~183.8 k/s |
-| FPS-R SM | ~855.3 k/s |
-| FPS-R TM | ~1, 213 k/s |
-| FPS-R QS | ~435.5 k/s |
-| FPS-R BD (default 3 streams, blocksize 64) | ~245.6 k/s |
+| Statelss Perlin   | ~320.3 k/s |
+| Stateless Worley  | ~183.8 k/s |
+| FPS-R SM          | ~855.3 k/s |
+| FPS-R TM          | ~1, 213 k/s |
+| FPS-R QS          | ~435.5 k/s |
+| FPS-R BD          | ~245.6 k/s |
 
 ## Comet Browser (Android)
 ### Comet Version Information
 Version 1.5.0
 
 ### Algorithm Performance Metrics
-| Algorithm | Approximate Performance |
-| :--- | --- |
+| Algorithm         | Approximate Performance |
+| :---------------- | --- |
 | Legacy Paradigm A | ~3, 188 k/s |
 | Legacy Paradigm B | ~2, 583 k/s |
-| Statelss Perlin | ~871.8 k/s |
-| Stateless Worley | ~590.1 k/s |
-| FPS-R SM | ~1, 537.1 k/s |
-| FPS-R TM | ~1, 923.4 k/s |
-| FPS-R QS | ~930.2 k/s |
-| FPS-R BD (default 3 streams, blocksize 64) | ~308.3 k/s |
+| Statelss Perlin   | ~871.8 k/s |
+| Stateless Worley  | ~590.1 k/s |
+| FPS-R SM          | ~1, 537.1 k/s |
+| FPS-R TM          | ~1, 923.4 k/s |
+| FPS-R QS          | ~930.2 k/s |
+| FPS-R BD          | ~308.3 k/s |
 
 ---
 
 ### Table 1: Cross-Platform Throughput (FPS) for Various Processing Paradigms
-| Algorithm | VS Code Preview | Chrome | Firefox | Android Chrome | Android Firefox | Android Comet |
-| :--- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Algorithm         | VS Code Preview | Chrome | Firefox | Android Chrome | Android Firefox | Android Comet |
+| :---------------- | ---: | ---: | ---: | ---: | ---: | ---: |
 | Legacy Paradigm A | ~2,483 | ~2,953 | ~7,710 | ~3,010 | ~3,550.0 | ~3,188.0 |
 | Legacy Paradigm B | ~2,298 | ~2,587 | ~7,300 | ~2,724 | ~3,360.0 | ~2,583.0 |
-| Stateless Perlin | ~870 | ~1,016 | ~405 | ~1,076 | ~320.3 | ~871.8 |
-| Stateless Worley | ~600 | ~691 | ~226 | ~725 | ~183.8 | ~590.1 |
-| FPS-R SM | ~1,385 | ~1,747 | ~1,092 | ~1,873 | ~855.3 | ~1,537.1 |
-| FPS-R TM | ~1,834 | ~2,135 | ~1,838 | ~2,296 | ~1,213.0 | ~1,923.4 |
-| FPS-R QS | ~872 | ~956 | ~678 | ~1,125 | ~435.5 | ~930.2 |
-| FPS-R BD (default 3 streams, blocksize 64) | ~350 | ~390 | ~328 | ~423 | ~245.6 | ~308.3 |
+| Stateless Perlin  | ~870   | ~1,016 | ~405 | ~1,076 | ~320.3 | ~871.8 |
+| Stateless Worley  | ~600   | ~691 | ~226 | ~725 | ~183.8 | ~590.1 |
+| FPS-R SM          | ~1,385 | ~1,747 | ~1,092 | ~1,873 | ~855.3 | ~1,537.1 |
+| FPS-R TM          | ~1,834 | ~2,135 | ~1,838 | ~2,296 | ~1,213.0 | ~1,923.4 |
+| FPS-R QS          | ~872   | ~956 | ~678 | ~1,125 | ~435.5 | ~930.2 |
+| FPS-R BD          | ~350 | ~390 | ~328 | ~423 | ~245.6 | ~308.3 |
 
 ### Table 2: Average Throughput Across Platforms
-| Algorithm | Average Performance |
-| :--- | ---: |
+| Algorithm         | Average Performance |
+| :---------------- | ---: |
 | Legacy Paradigm A | ~3,815.67 |
 | Legacy Paradigm B | ~3,475.33 |
-| Stateless Perlin | ~759.85 |
-| Stateless Worley | ~502.65 |
-| FPS-R SM | ~1,414.90 |
-| FPS-R TM | ~1,873.23 |
-| FPS-R QS | ~832.78 |
-| FPS-R BD | ~340.82 |
+| Stateless Perlin   | ~759.85 |
+| Stateless Worley  | ~502.65 |
+| FPS-R SM          | ~1,414.90 |
+| FPS-R TM          | ~1,873.23 |
+| FPS-R QS          | ~832.78 |
+| FPS-R BD          | ~340.82 |
 
 ## Table 3: Normalized Performance Relative to Legacy Paradigm A
 Below, each result is normalized to **Legacy Paradigm A on the same platform**:
@@ -257,16 +260,16 @@ R_{i,j}=\frac{\text{performance of algorithm }i\text{ on platform }j}
 $$
 Thus, Legacy A is \(1.000\), or \(100\%\), on every platform. A value of \(0.75\) means the algorithm achieves 75% of Legacy A’s throughput on that platform.
 
-| Algorithm | VS Code Preview | Chrome | Firefox | Android Chrome | Android Firefox | Android Comet | Median ratio |
-| :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Algorithm         | VS Code Preview | Chrome | Firefox | Android Chrome | Android Firefox | Android Comet | Median ratio |
+| :---------------- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | Legacy Paradigm A | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 |
 | Legacy Paradigm B | 0.925 | 0.876 | 0.947 | 0.905 | 0.946 | 0.810 | 0.915 |
-| Stateless Perlin | 0.350 | 0.344 | 0.053 | 0.357 | 0.090 | 0.273 | 0.309 |
-| Stateless Worley | 0.242 | 0.234 | 0.029 | 0.241 | 0.052 | 0.185 | 0.210 |
-| FPS-R SM | 0.558 | 0.592 | 0.142 | 0.622 | 0.241 | 0.482 | 0.520 |
-| FPS-R TM | 0.739 | 0.723 | 0.238 | 0.763 | 0.342 | 0.603 | 0.663 |
-| FPS-R QS | 0.351 | 0.324 | 0.088 | 0.374 | 0.123 | 0.292 | 0.308 |
-| FPS-R BD | 0.141 | 0.132 | 0.043 | 0.141 | 0.069 | 0.097 | 0.114 |
+| Stateless Perlin  | 0.350 | 0.344 | 0.053 | 0.357 | 0.090 | 0.273 | 0.309 |
+| Stateless Worley  | 0.242 | 0.234 | 0.029 | 0.241 | 0.052 | 0.185 | 0.210 |
+| FPS-R SM          | 0.558 | 0.592 | 0.142 | 0.622 | 0.241 | 0.482 | 0.520 |
+| FPS-R TM          | 0.739 | 0.723 | 0.238 | 0.763 | 0.342 | 0.603 | 0.663 |
+| FPS-R QS          | 0.351 | 0.324 | 0.088 | 0.374 | 0.123 | 0.292 | 0.308 |
+| FPS-R BD          | 0.141 | 0.132 | 0.043 | 0.141 | 0.069 | 0.097 | 0.114 |
 
 The median-normalized ranking is therefore:
 1. Legacy Paradigm A    100.0%
