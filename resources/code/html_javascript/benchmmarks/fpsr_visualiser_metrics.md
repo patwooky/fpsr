@@ -238,14 +238,14 @@ Version 1.5.0
 | FPS-R SM          | ~1,385 | ~1,747 | ~1,092 | ~1,873 | ~855.3 | ~1,537.1 |
 | FPS-R TM          | ~1,834 | ~2,135 | ~1,838 | ~2,296 | ~1,213.0 | ~1,923.4 |
 | FPS-R QS          | ~872   | ~956 | ~678 | ~1,125 | ~435.5 | ~930.2 |
-| FPS-R BD          | ~350 | ~390 | ~328 | ~423 | ~245.6 | ~308.3 |
+| FPS-R BD          | ~350   | ~390 | ~328 | ~423 | ~245.6 | ~308.3 |
 
 ### Table 2: Average Throughput Across Platforms
 | Algorithm         | Average Performance |
 | :---------------- | ---: |
 | Legacy Paradigm A | ~3,815.67 |
 | Legacy Paradigm B | ~3,475.33 |
-| Stateless Perlin   | ~759.85 |
+| Stateless Perlin  | ~759.85 |
 | Stateless Worley  | ~502.65 |
 | FPS-R SM          | ~1,414.90 |
 | FPS-R TM          | ~1,873.23 |
