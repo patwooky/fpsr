@@ -247,9 +247,9 @@ FPS-R 包含 4 种算法。每种算法都以略微不同的方式实现移动-�
 ![](./resources/readme/images/fpsr_html_visualiser.jpg)
 点击此处查看：
 
-[FPS-R 算法可视化工具](https://patwooky.github.io/fpsr/resources/code/html_javascript/fpsr_demo.html)
+[FPS-R 算法可视化工具](https://patwooky.github.io/fpsr/resources/code/html_javascript/fpsr_visualiser.html)
 
-[FPS-R 算法可视化工具: 仓库中 HTML 代码](./resources/code/html_javascript/fpsr_demo.html)
+[FPS-R 算法可视化工具: 仓库中 HTML 代码](resources/code/html_javascript/fpsr_visualiser.html)
 
 ## FPS-R 算法的信号分析
 以下图表是 FPS-R 框架中每种算法的示例输出，运行 400 个时间步。

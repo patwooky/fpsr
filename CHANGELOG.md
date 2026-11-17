@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## Unreleased
 
+None
+
+---
+
+## [3.0.18] - 2026-11-17
+### Added
+- **Modular JavaScript Runtime Library (`resources/code/html_javascript/fpsr_core_lib.js`)**:
+  - Extracted all foundational mathematical routines, lookup tables (`FPSR_DEFAULT_SINE_WAVETABLE`), hashing primitives (`portable_rand_u64`), base generators (`fpsr_sm_base_js`, `fpsr_tm_base_js`, `fpsr_qs_base_js`, `fpsr_bd_base_js`), and wrapper LOD/HPQ analytic dispatchers into a standalone library file.
+  - Decoupled the deterministic execution engine from canvas rendering and UI state, enabling external projects, test harnesses, and client apps to embed FPS-R via a lightweight `<script src="fpsr_core_lib.js"></script>` import.
+- **Legacy URL Redirection Stub (`resources/code/html_javascript/fpsr_demo.html`)**:
+  - Introduced a lightweight redirect stub at the former `fpsr_demo.html` location with immediate `<meta http-equiv="refresh">` and script fallbacks forwarding traffic to `fpsr_visualiser.html`, safeguarding existing bookmarks, hyperlinks, and external references.
+
+### Changed
+- **Visualizer Architecture & File Taxonomy**:
+  - Renamed `fpsr_demo.html` to `fpsr_visualiser.html` to align naming conventions across project documentation and codebases while preserving full Git history.
+  - Refactored `fpsr_visualiser.html` to ingest the new `fpsr_core_lib.js` dependency via script tag, isolating canvas animation, interaction controls, and parity validation logic from core generator math.
+  - Updated repository markdown documents, guides (`fpsr_visualiser_guide.md`, `README.md`), and GitHub Pages entry-point links from `fpsr_demo.html` to `fpsr_visualiser.html`.
+
+
 ## [3.0.17] - 2026-11-08
 > [!WARNING]
 > **BREAKING CHANGE — Architectural Parameter Standardization, Decoupled Dual TM Phase Offsets, and Universal Value Seed Offsets**:
@@ -435,7 +454,7 @@ Release commit: `64b6fa1`
 ## [2.0.5] - 2025-10-26
 ### Added
 - A new html visualiser of the four FPS-R algorithms! Check it out here! [FPS-R Algorithms Visualiser on GitHub Pages](https://patwooky.github.io/fpsr/resources/code/html_javascript/fpsr_demo.html) ← interact with the page
-[FPS-R Algorithms Visualiser in this Repo](./resources/code/html_javascript/fpsr_demo.html) ← view the code
+[FPS-R Algorithms Visualiser in this Repo](resources/code/html_javascript/fpsr_visualiser.html) ← view the code
 
 ### Changed
 - `fpsr_algorithms_wrap_reference.c` 
