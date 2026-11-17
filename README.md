@@ -247,9 +247,9 @@ Interact with the parameters and see the output values update in real-time.
 ![](./resources/readme/images/fpsr_html_visualiser.jpg)
 Check it out:
 
-[FPS-R Algorithms Visualiser on GitHub Pages](https://patwooky.github.io/fpsr/resources/code/html_javascript/fpsr_demo.html)
+[FPS-R Algorithms Visualiser on GitHub Pages](https://patwooky.github.io/fpsr/resources/code/html_javascript/fpsr_visualiser.html)
 
-[FPS-R Algorithms Visualiser HTML code in this repository](./resources/code/html_javascript/fpsr_demo.html)
+[FPS-R Algorithms Visualiser HTML code in this repository](resources/code/html_javascript/fpsr_visualiser.html)
 
 ## Signal Analysis of FPS-R Algorithms
 The following graphs are sample output of each algorithm in the FPS-R framework, running for 400 time-steps. 

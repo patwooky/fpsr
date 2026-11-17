@@ -1,6 +1,6 @@
 # FPS-R Evaluation & Visualisation Lab: User & Workflow Guide
 
-The **FPS-R Evaluation & Visualisation Lab** (`fpsr_demo.html`) is an interactive workbench designed for:
+The **FPS-R Evaluation & Visualisation Lab** (`fpsr_visualiser.html`) is an interactive workbench designed for:
 1. Visually diagnosing structural and phase behaviors across FPS-R algorithms, legacy state machines, and continuous spatial noise models.
 2. Generating deterministic, frame-accurate test vectors for cross-platform and cross-language parity validation.
 3. Live throughput profiling across different Levels of Detail (LOD 0, 1, 2).
@@ -92,7 +92,7 @@ The validator operates on an asymmetric Master/Participant ledger model mediated
    - The lightweight **Master Config Capsule** JSON is copied to the system clipboard.
 
 ##### Step 2: Execute Headless Run on Participant
-1. Open `fpsr_demo.html` on the participant target (either another browser on the same device or a remote device via network/file/message transfer) and switch to **Validate Parity**.
+1. Open `fpsr_visualiser.html` on the participant target (either another browser on the same device or a remote device via network/file/message transfer) and switch to **Validate Parity**.
 2. Set a **Participant ID** (e.g., `001`) and descriptor (e.g., `Firefox Gecko` or `Safari iOS ARM64`).
 3. Ensure the Master Config Capsule JSON is in the participant's clipboard, then click **Load Config, Run & Copy Payload**:
    - The participant automatically mirrors the Master's configuration and executes the frame span headlessly.
