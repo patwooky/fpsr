@@ -10,6 +10,24 @@ None
 
 ---
 
+## [3.0.19] - 2026-11-18
+### Added
+- **Fit Explorer (`resources/code/html_javascript/fpsr_fit.html`)**:
+  - First release of the fit explorer — a port of the visualiser portion of `fpsr_visualiser.html` (same layout, engine panels, seeds and per-algorithm parameters, and global HPQ time-stretch controls), turned to fitting: one page of user-supplied data plotted against one page of FPS-R, loading the shared `fpsr_core_lib.js`.
+  - Three local-only data doors — file picker, drag-and-drop zone, and paste box — reading CSV (`frame,value`, `time,value`, or `value`-only, header row allowed, non-numeric rows skipped and counted) with an optional `weight` column as a per-point deviation cost. Data never leaves the browser.
+  - Paging by extent, not continuous scrolling: End Frame sets the full extent, the zoom slider sets the viewport size (with "Actual pixels" 1:1 and "Full extent" snap buttons), the scroll slider sets the window start, Start Frame anchors the FPS-R neighbourhood (data frame 0 aligns to it), and the seed slider scrubs FPS-R against the user curve as a phase offset (±extent, with a snap-to-zero button), still O(1) per frame.
+  - Fit controls and read-only diagnostics: per-axis loss multipliers and thresholds (change-point tolerance in frames, jump-detection threshold as a share of range), curve opacity for both curves, and diagnostics for X loss, Y loss, combined and normalised loss, change-point match, plateau capture, mean holds, hold-histogram overlap, correlation, and the fitted least-squares stretch. The FPS-R curve is coloured on a green → amber → red ramp driven by the normalised loss.
+  - No-data mode: FPS-R plots on its own under a red 60%-transparent "Upload or paste an empirical dataset" watermark, with the page roaming a 10,000-frame stretch and a faint grey scrub-0 reference curve, so scrolling and scrubbing can be tried before any data is loaded.
+  - Frame ticks on absolute frame numbers with the standard 1-2-5 adaptive ladder (default interval 10 frames, with a sub-ticks checkbox), and faint horizontal gridlines at 0, 0.2, … 1.0 across the shared Y axis.
+  - Visualiser / Validator dual mode pill; a collapsible "User-data profile" under Diagnostics (hold count and min / max / median / mean hold in frames, value min–max and mean — the timings to tune hold, reseed and switch intervals against); a collapsible "Mapping key" in the Validator panel that travels with the "best so far" readout; and a collapsible upload section that tucks away once data is loaded.
+  - Loss numbers (X, Y, combined, and the normalised loss above the colour ramp) colour green when the loss falls and red when it rises, each remembering its previous value; info bubbles beside the Diagnostics heading explain every metric and the manuscript's realistic thresholds.
+  - "New Seeds" and "Defaults" as separate transport buttons — New Seeds re-rolls the active engine's seeds, Defaults reverts only the active engine's parameters to the load-time defaults — and a "Copy Values" button that copies the current page of FPS-R values as a Python list.
+  - A collapsible "Graph display options" frame directly above the viewport sliders, holding the tick options and both curve-opacity controls side by side, so opacity changes show in the plot immediately below as they are adjusted.
+### Fixed
+- **Shared Y axis**: both curves now plot in their true values on one axis (the union of the user and FPS-R ranges), with FPS-R drawn natively; previously the axis was the user range only and FPS-R was drawn through its fitted least-squares stretch, so a poor fit collapsed it to a thin band while the user curve filled the plot. The fitted stretch now lives only in the Y-loss score and diagnostics.
+- **Scroll jitter and curve jumping**: redraws are throttled to one per animation frame (input handlers store the latest value only), so a slow refresh can no longer write a stale slider value back mid-drag; and the Y axis is built from the full data range, so scrolling no longer rescales the plot. The loss numbers were never affected — scoring reads the data values directly, never the drawing.
+- **Seed-slider stutter and skipping**: the seed readout sat in the same flex row as the slider with no fixed width, so crossing a digit boundary (99 → 100, 999 → 1000) widened the readout by one character, shrank the track, and remapped the same pointer position to a different value. The readout now has a fixed width, so the track can never resize mid-drag.
+
 ## [3.0.18] - 2026-11-17
 ### Added
 - **Modular JavaScript Runtime Library (`resources/code/html_javascript/fpsr_core_lib.js`)**:

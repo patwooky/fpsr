@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FPS-R Fit Explorer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* gray-900 */
+            color: #d1d5db; /* gray-300 */
+        }
+        canvas {
+            background-color: #1f2937; /* gray-800 */
+            border-radius: 0.5rem; /* rounded-lg */
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #3b82f6; /* blue-500 */
+            border-radius: 9999px; /* rounded-full */
+            cursor: pointer;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: #3b82f6; /* blue-500 */
+            border-radius: 9999px; /* rounded-full */
+            cursor: pointer;
+        }
+        .control-panel {
+            background-color: #1f2937; /* gray-800 */
+            border-radius: 0.5rem; /* rounded-lg */
+        }
+        .tab {
+            background-color: #374151; /* gray-700 */
+            border-bottom: 2px solid transparent;
+        }
+        .tab.active {
+            background-color: #1f2937; /* gray-800 */
+            border-color: #3b82f6; /* blue-500 */
+            color: #fff;
+        }
+        .param-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1rem 1.5rem;
+        }
+        .param-group {
+            background-color: #374151; /* gray-700 */
+            border-radius: 0.5rem; /* rounded-lg */
+            padding: 0.75rem;
+        }
+        .param-group label {
+            font-size: 0.75rem; /* text-xs */
+            font-weight: 500; /* font-medium */
+            color: #9ca3af; /* gray-400 */
+            text-transform: uppercase;
+        }
+    </style>
+    <style>
+        #dropZone { border: 2px dashed #4b5563; padding: 1em; margin-top: 0.5em; color: #9ca3af; border-radius: 0.5rem; }
+        #dropZone.over { border-color: #3b82f6; background: #1e3a5f; }
+        #pasteBox { width: 100%; box-sizing: border-box; margin-top: 0.5em; background: #374151; color: #fff; border: 1px solid #4b5563; border-radius: 0.5rem; padding: 0.5em; }
+        #rampSwatch { display: inline-block; width: 1.2em; height: 1.2em; border-radius: 0.25rem; vertical-align: middle; border: 1px solid #9ca3af; }
+        .ramp-bar { height: 0.75em; border-radius: 9999px; background: linear-gradient(to right, #22c55e, #eab308, #ef4444); }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen p-4 md:p-8">
+
+    <div class="w-full max-w-7xl">
+        <h1 class="text-3xl font-bold text-center text-white mb-2">FPS-R Fit Explorer</h1>
+        <p class="text-center text-gray-400 mb-6">The visualiser you know, turned to fitting: one page of user data
+        against one page of FPS-R. Client-side only — the user's CSV never leaves this browser.
+        Loads the real core from <code>fpsr_core_lib.js</code>.</p>
+
+        <!-- ==================== USER DATA ==================== -->
+        <div class="control-panel p-4 mb-6 shadow-lg">
+            <button id="dataToggleBtn" class="w-full flex items-center gap-2 text-left" title="Show or hide the data upload controls.">
+                <span class="text-lg font-semibold text-white">User data</span>
+                <span id="dataSummary" class="text-sm text-gray-300"></span>
+                <span id="dataToggleChevron" class="text-gray-400 ml-auto">▾</span>
+            </button>
+            <div id="dataBody" class="mt-3">
+            <p>
+                <input type="file" id="csvFile" accept=".csv,.txt" class="text-sm">
+                <button id="sampleBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded-md text-sm transition duration-150">Use sample data</button>
+            </p>
+            <div id="dropZone">…or drag a CSV file onto this box.</div>
+            <p>
+                <textarea id="pasteBox" rows="3" placeholder="…or paste CSV rows here (frame,value — or just one value per line), then click Load pasted data."></textarea><br>
+                <button id="pasteBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded-md text-sm transition duration-150">Load pasted data</button>
+            </p>
+            <p class="text-xs text-gray-400 mt-2">CSV columns: <code>frame,value</code> — or <code>time,value</code>,
+            or just <code>value</code> (frame = row number). Optional third column <code>weight</code> is a
+            per-point deviation cost (default 1.0). Header row allowed; non-numeric rows are skipped and counted.</p>
+            </div>
+        </div>
+
+        <!-- Canvas -->
+        <canvas id="visualizerCanvas" class="w-full mb-6 shadow-lg" height="300"></canvas>
+
+        <!-- Transport Bar (visualiser layout, no continuous scroll) -->
+        <div class="flex flex-col gap-4 mb-6">
+            <div class="flex flex-wrap items-center gap-3 bg-gray-800 p-4 rounded-lg shadow-lg">
+                <button id="newSeedsButton" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition duration-150" title="Assign new random seeds to the current engine.">
+                    New Seeds
+                </button>
+                <button id="defaultsButton" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md transition duration-150" title="Revert the current engine's parameters to the defaults from when the tool loaded.">
+                    Defaults
+                </button>
+                <div class="flex items-center space-x-1.5 bg-gray-700/60 px-3 py-1.5 rounded-md border border-gray-600" title="Start Frame: the FPS-R frame the first user-data frame aligns to. Change it to explore another neighbourhood of the seed space — scrub then ranges ±extent around it.">
+                    <label for="rewindFrameInput" class="text-xs font-semibold text-gray-300 uppercase">Start Frame:</label>
+                    <input id="rewindFrameInput" type="number" value="0" min="0" step="1" class="w-20 bg-gray-700 text-white border border-gray-500 rounded px-1.5 py-0.5 text-xs text-center font-mono">
+                    <button id="resetRewindFrameButton" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-0.5 px-2 rounded text-xs transition duration-150" title="Reset Start Frame to 0">0</button>
+                </div>
+                <div class="flex items-center space-x-1.5 bg-gray-700/60 px-3 py-1.5 rounded-md border border-gray-600" title="End Frame: the full extent of the timeline. With no data loaded, this is the range FPS-R is plotted over; with data, the extent is the data length.">
+                    <label for="bufferSizeInput" class="text-xs font-semibold text-gray-300 uppercase">End Frame:</label>
+                    <input id="bufferSizeInput" type="number" min="10" step="1" class="w-20 bg-gray-700 text-white border border-gray-500 rounded px-1.5 py-0.5 text-xs text-center font-mono">
+                    <button id="resetBufferSizeButton" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-0.5 px-2 rounded text-xs transition duration-150" title="Reset buffer sample size to native canvas width">Native</button>
+                </div>
+                <button id="copyButton" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition duration-150 sm:ml-auto whitespace-nowrap" title="Copies the current page of FPS-R values to the clipboard as a python list.">
+                    Copy Values
+                </button>
+            </div>
+
+            <!-- Graph display options (collapsible) — directly above the viewport sliders, so opacity changes show in the plot below as they are adjusted -->
+            <div class="bg-gray-800 p-4 rounded-lg shadow-lg">
+                <button id="displayToggleBtn" class="w-full flex items-center gap-2 text-left" title="Tick spacing and curve opacity.">
+                    <span class="text-sm font-semibold text-white">Graph display options</span>
+                    <span id="displayToggleChevron" class="text-gray-400 ml-auto">▾</span>
+                </button>
+                <div id="displayBody" class="mt-3 flex flex-col gap-3">
+                    <div class="flex flex-wrap items-center gap-3">
+                        <label for="tickInterval" class="text-xs font-semibold text-gray-300 uppercase w-24" title="Frame interval between axis ticks. Ticks sit on absolute frame numbers (a multiple of this interval), so scrolling moves the labels. If the labels would crowd, the interval steps up automatically through 1, 2, 5, 10, 20, 50, 100…">Tick interval (frames):</label>
+                        <input id="tickInterval" type="number" min="1" max="100000" value="10" step="1" class="bg-gray-700 text-white rounded px-2 py-1 text-sm w-20" title="Frame interval between axis ticks. Ticks sit on absolute frame numbers (a multiple of this interval), so scrolling moves the labels. If the labels would crowd, the interval steps up automatically through 1, 2, 5, 10, 20, 50, 100…">
+                        <span id="tickEffective" class="text-xs text-gray-400 font-mono">every 10 frames</span>
+                        <label class="text-xs text-gray-300 flex items-center gap-1" title="Draw a smaller tick halfway between the main ticks."><input id="subTicks" type="checkbox" class="accent-blue-500"> Sub-ticks</label>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-4">
+                        <label class="text-xs font-semibold text-gray-300 uppercase" title="Opacity of the user's data curve.">User curve opacity
+                            <input id="userOpacity" type="range" min="0.1" max="1" value="0.9" step="0.05" class="w-24"></label>
+                        <label class="text-xs font-semibold text-gray-300 uppercase" title="Opacity of the FPS-R curve.">FPS-R curve opacity
+                            <input id="fpsrOpacity" type="range" min="0.1" max="1" value="0.9" step="0.05" class="w-24"></label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Zoom + scroll + scrub sliders (always visible) -->
+            <div class="flex flex-col gap-3 bg-gray-800 p-4 rounded-lg shadow-lg">
+                <div class="flex flex-wrap items-center gap-3">
+                    <label for="zoomSlider" class="text-xs font-semibold text-gray-300 uppercase w-24" title="Zoom: how many points are in view. Pull left to zoom in on a smaller slice, right for the whole extent.">Zoom (viewport):</label>
+                    <input id="zoomSlider" type="range" min="10" max="860" value="860" step="1" class="flex-1 min-w-0" title="Zoom: how many points are in view. Pull left to zoom in on a smaller slice, right for the whole extent.">
+                    <button id="zoomNativeButton" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-1 px-2 rounded text-xs transition duration-150 whitespace-nowrap" title="Viewport = canvas width: 1 point = 1 pixel">Actual pixels</button>
+                    <button id="zoomFullButton" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-1 px-2 rounded text-xs transition duration-150 whitespace-nowrap" title="Viewport = the whole extent">Full extent</button>
+                </div>
+                <div class="flex flex-wrap items-center gap-3">
+                    <label for="windowSlider" class="text-xs font-semibold text-gray-300 uppercase w-24" title="Scroll: where the window starts in the timeline. Greyed out when the viewport already shows the whole extent.">Scroll (window):</label>
+                    <input id="windowSlider" type="range" min="0" max="0" value="0" step="1" class="flex-1 min-w-0" title="Scroll: where the window starts in the timeline. Greyed out when the viewport already shows the whole extent.">
+                    <button id="windowZeroButton" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-1 px-2 rounded text-xs transition duration-150" title="Rewind: jump the window back to the start">0</button>
+                </div>
+                <div class="flex flex-wrap items-center gap-3">
+                    <label for="scrubSlider" class="text-xs font-semibold text-gray-300 uppercase w-24" title="FPS-R seed offset: slides FPS-R against the user's curve in real time — a phase offset, still O(1) per frame. With a small viewport and a large extent, scrubbing walks FPS-R through the extent page by page.">FPS-R seed offset:</label>
+                    <input id="scrubSlider" type="range" min="-860" max="860" value="0" step="1" class="flex-1 min-w-0" title="FPS-R seed offset: slides FPS-R against the user's curve in real time — a phase offset, still O(1) per frame. With a small viewport and a large extent, scrubbing walks FPS-R through the extent page by page.">
+                    <button id="scrubZeroButton" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-1 px-2 rounded text-xs transition duration-150" title="Snap the seed offset back to zero">0</button>
+                    <span id="scrubReadout" class="text-sm text-white font-mono whitespace-nowrap w-32 text-right">seed +0</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span id="pageReadout" class="text-sm text-white font-mono">no data yet</span>
+                </div>
+            </div>
+
+            <!-- Diagnostics (read-only, always visible) -->
+            <div class="bg-gray-800 p-4 rounded-lg shadow-lg">
+                <div class="relative">
+                    <h3 class="text-lg font-semibold text-white mb-2">Diagnostics (read-only)
+                        <button id="diagInfoBtn" class="inline-flex items-center justify-center w-5 h-5 ml-1 rounded-full bg-gray-600 hover:bg-gray-500 text-white text-xs font-bold align-middle" title="About these thresholds — click for more">i</button>
+                        <button id="diagMetricsBtn" class="inline-flex items-center justify-center w-5 h-5 ml-1 rounded-full bg-gray-600 hover:bg-gray-500 text-white text-xs font-bold align-middle" title="What each metric means — click for more">i</button>
+                    </h3>
+                    <div id="diagInfoBubble" class="hidden absolute left-0 right-0 top-full mt-1 z-10 bg-gray-700 border border-gray-500 rounded-lg p-3 text-xs text-gray-200 shadow-xl max-h-[60vh] overflow-y-auto">Realistic thresholds from the manuscript: a primary fit capturing 60–70% of the macroscopic holding plateaus is a good fit; for secondary streams, under 30% of inflections in the temporal neighbourhood and under 5% near-exact is normal. No pass/fail at 95%.</div>
+                    <div id="diagMetricsBubble" class="hidden absolute left-0 right-0 top-full mt-1 z-10 bg-gray-700 border border-gray-500 rounded-lg p-3 text-xs text-gray-200 shadow-xl max-h-[60vh] overflow-y-auto">
+                        <p class="mb-2"><b>X loss</b> — how badly the <i>timing</i> fits. It is 0.5 × (1 − change-point match) + 0.5 × (1 − plateau capture). 0 is a perfect timing fit, 1 is no timing fit at all. Lower is better.</p>
+                        <p class="mb-2"><b>Change-points %</b> — the share of the jumps in the user's data that have an FPS-R jump within ± the X threshold (frames). This is the timing alignment the eye sees on the plot.</p>
+                        <p class="mb-2"><b>Plateaus %</b> — the share of the holding plateaus in the user's data whose duration FPS-R captures. Together with change-points % it makes up the X loss.</p>
+                        <p class="mb-2"><b>Mean hold, user vs FPS-R</b> — the average hold duration in frames for each curve. If FPS-R's holds run much longer or shorter than the user's, no amount of scrubbing will fix the timing — the engine's hold parameters (min/max hold, periods) need to change.</p>
+                        <p class="mb-2"><b>Hold-histogram overlap %</b> — how much the two hold-duration distributions overlap. 100% means the two curves hold for the same lengths of time with the same frequencies, even if the individual jumps land on different frames.</p>
+                        <p class="mb-2"><b>Y loss</b> — how badly the <i>values</i> fit. It is the weighted root-mean-square error between the user's values and FPS-R's values, after FPS-R has been stretched and shifted by the fitted stretch below, normalised by the user's value range and capped at 1. 0 is a perfect value fit. Lower is better.</p>
+                        <p class="mb-2"><b>RMSE (% of range)</b> — the same value error in the user's own units, and as a percentage of the user's value range, so the error can be judged big or small for the dataset.</p>
+                        <p class="mb-2"><b>Correlation</b> — the Pearson correlation between the two curves, from −1 to 1. 1 means the shapes move together exactly; 0 means no linear relationship; negative means they move in opposite directions. A high correlation with a poor Y loss usually means the fitted stretch is doing the work.</p>
+                        <p class="mb-2"><b>Fitted stretch ×a + b</b> — the least-squares scale (a) and offset (b) applied to FPS-R's 0–1 values to best match the user's values. This is the transform the Y loss is measured through. If a is near 0, FPS-R's shape barely matters to the score — the fit is being carried by the offset alone.</p>
+                        <p class="mb-2"><b>Combined loss</b> — wX × X loss + wY × Y loss, using the loss weights from the Validator panel. This is the single number the fit is ranked by.</p>
+                        <p class="mb-2"><b>Normalised loss</b> — the combined loss divided by (wX + wY), so it always sits between 0 and 1 no matter what weights are set. This is what drives the FPS-R curve's colour.</p>
+                        <p><b>Curve colour</b> — the FPS-R curve is coloured by the normalised loss on a green → amber → red ramp: green near 0 (good fit), red near 1 (poor fit). The colour and the numbers always agree, because both come from the same score.</p>
+                    </div>
+                </div>
+                <p id="diagX" class="text-sm font-mono text-gray-200">X loss: —</p>
+                <p id="diagY" class="text-sm font-mono text-gray-200">Y loss: —</p>
+                <p id="diagCombined" class="text-sm font-mono font-bold text-white">Combined loss: —</p>
+                <p class="text-sm text-gray-200 mt-2"><span id="rampSwatch"></span>
+                    <span id="rampLabel">FPS-R curve colour = normalised loss (green good → amber → red poor)</span></p>
+                <div class="ramp-bar mt-1"></div>
+                <div class="mt-3 border-t border-gray-700 pt-3">
+                    <button id="profileToggleBtn" class="w-full flex items-center gap-2 text-left" title="Hold statistics of the user's dataset — the timings to tune the engines against.">
+                        <span class="text-sm font-semibold text-white">User-data profile</span>
+                        <span id="profileToggleChevron" class="text-gray-400 ml-auto">▸</span>
+                    </button>
+                    <div id="profileBody" class="hidden mt-2">
+                        <p id="profileText" class="text-sm font-mono text-gray-200">No data loaded — load a dataset to profile it.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mode pill: Visualiser (engines + params) / Validator (fit controls) -->
+            <div class="flex rounded-full bg-gray-800 p-1 gap-1 shadow-lg" role="tablist" aria-label="Fit explorer mode">
+                <button id="modeVisualiserBtn" class="tab active flex-1 py-2 px-4 font-semibold whitespace-nowrap transition-colors duration-150 rounded-full" title="Engines and parameters — tune the FPS-R algorithm and its seeds.">Visualiser</button>
+                <button id="modeValidatorBtn" class="tab flex-1 py-2 px-4 font-semibold whitespace-nowrap transition-colors duration-150 rounded-full" title="Fit controls — loss weights, thresholds, and the mapping key.">Validator</button>
+            </div>
+        </div>
+
+        <!-- Mode: Visualiser — algorithm tabs + panels -->
+        <div id="modeVisualiser">
+        <!-- Algorithm Tabs (FPS-R only) -->
+        <div class="flex space-x-1 rounded-t-lg overflow-x-auto no-scrollbar">
+            <button id="tab-SM" data-algo="SM" class="tab active flex-1 py-3 px-4 font-semibold whitespace-nowrap flex-shrink-0 transition-colors duration-150">FPS-R: SM</button>
+            <button id="tab-TM" data-algo="TM" class="tab flex-1 py-3 px-4 font-semibold whitespace-nowrap flex-shrink-0 transition-colors duration-150">FPS-R: TM</button>
+            <button id="tab-QS" data-algo="QS" class="tab flex-1 py-3 px-4 font-semibold whitespace-nowrap flex-shrink-0 transition-colors duration-150">FPS-R: QS</button>
+            <button id="tab-BD" data-algo="BD" class="tab flex-1 py-3 px-4 font-semibold whitespace-nowrap flex-shrink-0 transition-colors duration-150">FPS-R: BD</button>
+        </div>
+
+        <!-- Algorithm Panels — copied verbatim from fpsr_visualiser.html -->
+        <div class="control-panel p-4 md:p-6 shadow-lg">
+            <div id="panel-SM" class="param-grid">
+                <div class="param-group" title="The Level of Detail (LOD). 0 = Value only, 1 = Value + Change Detection, 2 = Value + Progress + Boundary Search.">
+                    <label for="sm_lod">Level of Detail (LOD)</label>
+                    <div class="flex items-center space-x-2">
+                        <input id="sm_lod" type="range" min="0" max="2" value="0" step="1" class="w-full">
+                        <span id="sm_lodValue" class="text-sm text-white font-mono w-6 text-right">0</span>
+                    </div>
+                </div>
+                <div class="param-group" title="The minimum duration (in frames) for a value to hold.">
+                    <label for="sm_minHold">minHoldFrames</label>
+                    <div class="flex items-center space-x-2">
+                        <input id="sm_minHold" type="range" min="1" max="100" value="4" class="w-full">
+                        <span id="sm_minHoldValue" class="text-sm text-white w-10 text-right">4</span>
+                    </div>
+                </div>
+                <div class="param-group" title="The maximum duration (in frames) for a value to hold.">
+                    <label for="sm_maxHold">maxHoldFrames</label>
+                    <div class="flex items-center space-x-2">
+                        <input id="sm_maxHold" type="range" min="2" max="300" value="60" class="w-full">
+                        <span id="sm_maxHoldValue" class="text-sm text-white w-10 text-right">60</span>
+                    </div>
+                </div>
+                <div class="param-group" title="The fixed interval at which a new hold duration is calculated.">
+                    <label for="sm_reseed">reseedInterval</label>
+                    <div class="flex items-center space-x-2">
+                        <input id="sm_reseed" type="range" min="1" max="500" value="108" class="w-full">
+                        <span id="sm_reseedValue" class="text-sm text-white w-10 text-right">108</span>
+                    </div>
+                </div>
+                <div class="param-group" title="An offset for the random duration calculation to create unique sequences.">
+                    <label for="sm_seedInner">seedInner</label>
+                    <input id="sm_seedInner" type="number" value="456" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="An offset for the final value calculation to create unique sequences.">
+                    <label for="sm_seedOuter">seedOuter</label>
+                    <input id="sm_seedOuter" type="number" value="123" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="If checked, runs the final held number through one last randomization.">
+                    <label for="sm_finalRandSwitch">finalRandSwitch</label>
+                    <input id="sm_finalRandSwitch" type="checkbox" checked class="w-6 h-6 bg-gray-700 text-blue-500 border-gray-600 rounded-md">
+                </div>
+            </div>
+
+            <!-- TM Panel -->
+            <div id="panel-TM" class="param-grid" style="display: none;">
+                <div class="param-group" title="The Level of Detail (LOD). 0 = Value only, 1 = Value + Change Detection, 2 = Value + Progress + Boundary Search.">
+                    <label for="tm_lod">Level of Detail (LOD)</label>
+                    <div class="flex items-center space-x-2">
+                        <input id="tm_lod" type="range" min="0" max="2" value="0" step="1" class="w-full">
+                        <span id="tm_lodValue" class="text-sm text-white font-mono w-6 text-right">0</span>
+                    </div>
+                </div>
+                <div class="param-group" title="The first hold duration (in frames).">
+                    <label for="tm_periodA">periodA</label>
+                    <div class="flex items-center space-x-2">
+                        <input id="tm_periodA" type="range" min="1" max="100" value="37" class="w-full">
+                        <span id="tm_periodAValue" class="text-sm text-white w-10 text-right">37</span>
+                    </div>
+                </div>
+                <div class="param-group" title="The second hold duration (in frames).">
+                    <label for="tm_periodB">periodB</label>
+                    <div class="flex items-center space-x-2">
+                        <input id="tm_periodB" type="range" min="1" max="100" value="25" class="w-full">
+                        <span id="tm_periodBValue" class="text-sm text-white w-10 text-right">25</span>
+                    </div>
+                </div>
+                <div class="param-group" title="The interval for toggling between periodA and periodB.">
+                    <label for="tm_periodSwitch">periodSwitch</label>
+                    <div class="flex items-center space-x-2">
+                        <input id="tm_periodSwitch" type="range" min="1" max="100" value="54" class="w-full">
+                        <span id="tm_periodSwitchValue" class="text-sm text-white w-10 text-right">54</span>
+                    </div>
+                </div>
+                <div class="param-group" title="An offset for the toggle clock to de-sync it from the main clock.">
+                    <label for="tm_seedInner">seedInner</label>
+                    <input id="tm_seedInner" type="number" value="15" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="An offset for the main clock to create unique sequences.">
+                    <label for="tm_seedOuter">seedOuter</label>
+                    <input id="tm_seedOuter" type="number" value="0" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="If checked, runs the final held number through one last randomization.">
+                    <label for="tm_finalRandSwitch">finalRandSwitch</label>
+                    <input id="tm_finalRandSwitch" type="checkbox" checked class="w-6 h-6 bg-gray-700 text-blue-500 border-gray-600 rounded-md">
+                </div>
+            </div>
+
+            <!-- QS Panel -->
+            <div id="panel-QS" class="param-grid" style="display: none;">
+                <div class="param-group" title="The Level of Detail (LOD). 0 = Value only, 1 = Value + Change Detection, 2 = Value + Progress + Boundary Search.">
+                    <label for="qs_lod">Level of Detail (LOD)</label>
+                    <div class="flex items-center space-x-2">
+                        <input id="qs_lod" type="range" min="0" max="2" value="0" step="1" class="w-full">
+                        <span id="qs_lodValue" class="text-sm text-white font-mono w-6 text-right">0</span>
+                    </div>
+                </div>
+                <div class="param-group" title="The base frequency for the sine waves.">
+                    <label for="qs_baseWaveFreq">baseWaveFreq</label>
+                    <input id="qs_baseWaveFreq" type="number" value="0.0015" step="0.001" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="A multiplier for the second stream's frequency.">
+                    <label for="qs_stream2FreqMult">stream2FreqMult</label>
+                    <input id="qs_stream2FreqMult" type="number" value="5.8" step="0.1" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="The minimum number of quantization levels.">
+                    <label for="qs_quantMin">quantLevelsMin</label>
+                    <input id="qs_quantMin" type="number" value="4" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="The maximum number of quantization levels.">
+                    <label for="qs_quantMax">quantLevelsMax</label>
+                    <input id="qs_quantMax" type="number" value="12" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                 <div class="param-group" title="The duration (in frames) before switching between streams.">
+                    <label for="qs_streamSwitchDur">streamSwitchDur</label>
+                    <input id="qs_streamSwitchDur" type="number" value="38" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="The duration (in frames) stream 1 holds its quantization level.">
+                    <label for="qs_stream1QuantDur">stream1QuantDur</label>
+                    <input id="qs_stream1QuantDur" type="number" value="12" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                 <div class="param-group" title="The duration (in frames) stream 2 holds its quantization level.">
+                    <label for="qs_stream2QuantDur">stream2QuantDur</label>
+                    <input id="qs_stream2QuantDur" type="number" value="43" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="Phase offset for stream 1's sine wave.">
+                    <label for="qs_streamOffset1">streamOffset1</label>
+                    <input id="qs_streamOffset1" type="number" value="10" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="Phase offset for stream 2's sine wave.">
+                    <label for="qs_streamOffset2">streamOffset2</label>
+                    <input id="qs_streamOffset2" type="number" value="46" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="Seed offset for stream 1's quantization selection.">
+                    <label for="qs_quantOffset1">quantOffset1</label>
+                    <input id="qs_quantOffset1" type="number" value="10" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="Seed offset for stream 2's quantization selection.">
+                    <label for="qs_quantOffset2">quantOffset2</label>
+                    <input id="qs_quantOffset2" type="number" value="81" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="If checked, runs the final quantized value through one last randomization.">
+                    <label for="qs_finalRandSwitch">finalRandSwitch</label>
+                    <input id="qs_finalRandSwitch" type="checkbox" checked class="w-6 h-6 bg-gray-700 text-blue-500 border-gray-600 rounded-md">
+                </div>
+            </div>
+
+            <!-- BD Panel -->
+            <div id="panel-BD" class="param-grid" style="display: none;">
+                <div class="param-group" title="The Level of Detail (LOD). 0 = Value only, 1 = Value + Change Detection, 2 = Value + Progress + Boundary Search.">
+                    <label for="bd_lod">Level of Detail (LOD)</label>
+                    <div class="flex items-center space-x-2">
+                        <input id="bd_lod" type="range" min="0" max="2" value="0" step="1" class="w-full">
+                        <span id="bd_lodValue" class="text-sm text-white font-mono w-6 text-right">0</span>
+                    </div>
+                </div>
+                <div class="param-group" title="The size of the macro-rhythm in frames. Defines the 'master loop' size.">
+                    <label for="bd_blockSize">blockSize</label>
+                    <input id="bd_blockSize" type="number" value="64" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="The number of parallel bitstreams to generate and combine.">
+                    <label for="bd_streamsNumber">streamsNumber</label>
+                    <input id="bd_streamsNumber" type="number" value="3" min="1" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="The frame offset between each parallel stream's seed.">
+                    <label for="bd_streamsOffset">streamsOffset</label>
+                    <input id="bd_streamsOffset" type="number" value="11" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="An additional seed offset for the final value calculation.">
+                    <label for="bd_valueSeedOffset">valueSeedOffset</label>
+                    <input id="bd_valueSeedOffset" type="number" value="78901" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="The unary (intra-stream) operation applied to each bitstream.">
+                    <label for="bd_intraOp">intraOp</label>
+                    <select id="bd_intraOp" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                        <option value="none">none</option>
+                        <option value="not">not</option>
+                        <option value="lshift">lshift</option>
+                        <option value="rshift">rshift</option>
+                        <option value="rotl">rotl</option>
+                        <option value="rotr">rotr</option>
+                        <option value="lshift_dynamic">lshift_dynamic</option>
+                        <option value="rshift_dynamic">rshift_dynamic</option>
+                        <option value="rotl_dynamic" selected>rotl_dynamic</option>
+                        <option value="rotr_dynamic">rotr_dynamic</option>
+                    </select>
+                </div>
+                <div class="param-group" title="The binary (inter-stream) operation to combine multiple transformed streams.">
+                    <label for="bd_interOp">interOp</label>
+                    <select id="bd_interOp" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                        <option value="xor">xor</option>
+                        <option value="or">or</option>
+                        <option value="and" selected>and</option>
+                    </select>
+                </div>
+                <div class="param-group" title="For static ops (lshift, rshift, etc.), the fixed number of bits to shift.">
+                    <label for="bd_staticShiftAmount">staticShiftAmount</label>
+                    <input id="bd_staticShiftAmount" type="number" value="1" min="0" max="63" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+                <div class="param-group" title="For dynamic ops, the number of controller bits to read (1-6) to determine the shift amount.">
+                    <label for="bd_dynamicShiftBits">dynamicShiftBits</label>
+                    <input id="bd_dynamicShiftBits" type="number" value="6" min="1" max="6" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                </div>
+            </div>
+
+
+            <!-- Global HPQ Controls -->
+            <div class="mt-6 pt-6 border-t border-gray-700">
+                <h3 class="text-lg font-semibold text-white mb-4">Global HPQ Time Controls</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="param-group" title="Global playback speed. < 1.0 = Slow-Motion (Stretch), > 1.0 = Fast-Motion (Compress)">
+                        <label for="global_frameMultiplier">Playback Speed (frame_multiplier)</label>
+                        <div class="flex items-center space-x-2">
+                            <input id="global_frameMultiplier" type="range" min="0.1" max="4.0" value="1.0" step="0.01" class="w-full">
+                            <input id="global_frameMultiplierInput" type="number" min="0.01" step="0.01" value="1.00" class="w-20 bg-gray-700 text-white border-gray-600 rounded-md p-1 text-xs text-center font-mono">
+                            <button id="resetFrameMultiplierButton" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-1 px-2 rounded-md text-xs transition duration-150" title="Reset to 1.0x">
+                                1.0x
+                            </button>
+                        </div>
+                    </div>
+                    <div class="param-group" title="HPQ runway segment length in application frames. Extended gaps are partitioned into chunks of this size.">
+                        <label for="global_segBlockLength">Segment Length (seg_block_length)</label>
+                        <input id="global_segBlockLength" type="number" value="5" min="1" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                    </div>
+                    <div class="param-group" title="Anchor persistence threshold: -1 = Pure Tape Varispeed, 0 = Obfuscated / Alternate Timeline, >=1 = Phrased Anchor + Infill">
+                        <label for="global_varispeedHoldBlockCount">Anchor Persistence (varispeed_hold_block_count)</label>
+                        <input id="global_varispeedHoldBlockCount" type="number" value="1" min="-1" step="1" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm">
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <!-- Mode: Validator — fit controls -->
+        <div id="modeValidator" style="display: none;">
+            <div class="bg-gray-800 p-4 rounded-lg shadow-lg">
+                <h3 class="text-lg font-semibold text-white mb-3">Fit controls</h3>
+                <div class="flex flex-wrap gap-4 mb-3">
+                    <label class="text-xs font-semibold text-gray-300 uppercase" title="Weight of the timing (X) loss in the combined score.">X loss weight
+                        <input id="wX" type="number" value="1" min="0" max="3" step="0.1" class="w-20 bg-gray-700 text-white border-gray-600 rounded-md p-1 text-sm text-center font-mono"></label>
+                    <label class="text-xs font-semibold text-gray-300 uppercase" title="Weight of the value (Y) loss in the combined score.">Y loss weight
+                        <input id="wY" type="number" value="1" min="0" max="3" step="0.1" class="w-20 bg-gray-700 text-white border-gray-600 rounded-md p-1 text-sm text-center font-mono"></label>
+                    <label class="text-xs font-semibold text-gray-300 uppercase" title="A change-point matches if an FPS-R jump lands within this many frames of a user jump.">X threshold (± frames)
+                        <input id="tolX" type="number" value="2" min="0" max="20" step="1" class="w-20 bg-gray-700 text-white border-gray-600 rounded-md p-1 text-sm text-center font-mono"></label>
+                    <label class="text-xs font-semibold text-gray-300 uppercase" title="A jump counts if the value changes by at least this share of the user's range.">Y threshold (% of range)
+                        <input id="epsY" type="number" value="0.002" min="0" max="0.1" step="0.001" class="w-20 bg-gray-700 text-white border-gray-600 rounded-md p-1 text-sm text-center font-mono"></label>
+                </div>
+                <div class="mt-3 border-t border-gray-700 pt-3">
+                    <button id="mappingKeyToggleBtn" class="w-full flex items-center gap-2 text-left" title="The metric key — what X and Y mean for this stream. It travels with the best-so-far readout.">
+                        <span class="text-sm font-semibold text-white">Mapping key</span>
+                        <span id="mappingKeyToggleChevron" class="text-gray-400 ml-auto">▸</span>
+                    </button>
+                    <div id="mappingKeyBody" class="hidden mt-2">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <p><label class="text-xs font-medium text-gray-400 uppercase">Stream name
+                                <input type="text" id="keyStream" value="Stream A" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm"></label></p>
+                            <p><label class="text-xs font-medium text-gray-400 uppercase">Jump rule — a jump is recorded when
+                                <input type="text" id="keyJump" placeholder="e.g. the ball changes hands" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm"></label></p>
+                            <p><label class="text-xs font-medium text-gray-400 uppercase">X (duration) means
+                                <input type="text" id="keyX" placeholder="e.g. seconds a player holds the ball" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm"></label></p>
+                            <p><label class="text-xs font-medium text-gray-400 uppercase">Y (amplitude) means
+                                <input type="text" id="keyY" placeholder="e.g. distance of the next pass" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 text-sm"></label></p>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-2">Mapping is interpretive — one dataset yields many valid streams.
+                        The key above travels with the “best so far” readout; without it the curve is naked geometry.</p>
+                    </div>
+                </div>
+                <p id="bestSoFar" class="text-sm font-mono text-gray-200 mt-3">Best so far: —</p>
+                <button id="markBest" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded-md text-sm transition duration-150 mt-1" title="Store the current settings and mapping key as the best fit so far.">Mark these settings as best so far</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="fpsr_core_lib.js"></script>
+    <script>
+// FPS-R Fit Explorer — visualiser-port inline script (17 Nov 2026).
+// Same control panels as fpsr_visualiser.html (same ids, same HTML defaults),
+// same canvas / Start Frame / End Frame / Native transport — but no
+// continuous scrolling: the page is filled once (one "page" of the curve
+// buffer), the End Frame is the page size / zoom level, Native resets it
+// to the canvas width at 1 point = 1 pixel, and a page slider scrolls the
+// window through the user's data. A scrub slider slides FPS-R against the
+// user's curve in real time (phase offset, still O(1) per frame).
+(function () {
+  'use strict';
+  var userData = [];    // numbers
+  var userWeights = []; // per-point deviation cost, default 1
+  var activeAlgorithm = 'SM';
+  var pageStart = 0;    // first frame shown in the window (scroll position)
+  var fpsrBase = 0;     // Start Frame: the FPS-R frame the user's first
+  // frame aligns to — the neighbourhood anchor. Scrub (±extent) explores
+  // around it, so changing Start Frame jumps to a new neighbourhood
+  // (e.g. 1000 with 200 data rows: scrub spans FPS-R 800–1200).
+  var viewport = 0;     // window size in points (zoom level; 0 = not set yet)
+  var scrub = 0;        // FPS-R phase offset in frames (slide FPS-R vs user)
+  var best = null;
+  var prevXLoss = null, prevYLoss = null, prevCombined = null, prevNorm = null; // last
+  // shown losses, for the green/red direction colouring (above).
+  function colourLoss(spanId, cur, prev) {
+    var el = $(spanId);
+    if (!el) return;
+    if (prev === null || prev === undefined || cur === prev) { el.style.color = ''; return; }
+    el.style.color = cur < prev ? '#4ade80' : '#f87171';
+  }
+  var fullMin = 0, fullMax = 1; // user's FULL data range (not the window) —
+  // the Y axis is built from this, so scrolling never rescales the plot
+  // and the curves stop jumping vertically as the window slides.
+  function computeFullRange() {
+    fullMin = 0; fullMax = 1;
+    for (var i = 0; i < userData.length; i++) {
+      if (userData[i] < fullMin) fullMin = userData[i];
+      if (userData[i] > fullMax) fullMax = userData[i];
+    }
+  }
+
+  // Refreshes are throttled to one per animation frame. A slider drag
+  // fires input events faster than a full refresh (BigInt FPS-R
+  // evaluation + scoring over the window) can run, and the old code
+  // wrote the slider's value back on every refresh — so a slow refresh
+  // in flight would clobber the browser's newer drag position with a
+  // stale value, and the slider jumped backwards mid-drag (990, 995,
+  // 1000, 1004, then back to 996…). Now the input handler only stores
+  // the latest value (cheap) and the redraw runs once per frame with
+  // that latest value, so nothing stale is ever written back.
+  var refreshQueued = false;
+  function scheduleRefresh() {
+    if (refreshQueued) return;
+    refreshQueued = true;
+    var run = function () { refreshQueued = false; refresh(); };
+    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(run);
+    else run();
+  }
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  // ---------- parameters: read the visualiser panels, HTML defaults ----------
+  function num(id, def) { var v = parseFloat($(id).value); return isNaN(v) ? def : v; }
+  function big(id, def) { try { return BigInt($(id).value); } catch (e) { return BigInt(def); } }
+  function chk(id) { return $(id).checked ? 1 : 0; }
+
+  function readParams() {
+    var sm = {
+      lod: parseInt($('sm_lod').value, 10) || 0,
+      minHold: big('sm_minHold', 4), maxHold: big('sm_maxHold', 60),
+      reseedInterval: big('sm_reseed', 108),
+      seedInner: big('sm_seedInner', 456), seedOuter: big('sm_seedOuter', 123),
+      finalRandSwitch: chk('sm_finalRandSwitch')
+    };
+    if (sm.minHold > sm.maxHold) sm.minHold = sm.maxHold;
+    return {
+      frameMultiplier: num('global_frameMultiplierInput', 1.0),
+      segBlockLength: Math.max(1, Math.round(num('global_segBlockLength', 5))),
+      varispeedHoldBlockCount: Math.round(num('global_varispeedHoldBlockCount', 1)),
+      sm: sm,
+      tm: {
+        lod: parseInt($('tm_lod').value, 10) || 0,
+        periodA: big('tm_periodA', 37), periodB: big('tm_periodB', 25),
+        periodSwitch: big('tm_periodSwitch', 54),
+        seedInner: big('tm_seedInner', 15), seedOuter: big('tm_seedOuter', 0),
+        finalRandSwitch: chk('tm_finalRandSwitch')
+      },
+      qs: {
+        lod: parseInt($('qs_lod').value, 10) || 0,
+        baseWaveFreq: num('qs_baseWaveFreq', 0.0015),
+        stream2FreqMult: num('qs_stream2FreqMult', 5.8),
+        quantLevelsMinMax: [Math.round(num('qs_quantMin', 4)), Math.round(num('qs_quantMax', 12))],
+        streamsOffset: [Math.round(num('qs_streamOffset1', 10)), Math.round(num('qs_streamOffset2', 46))],
+        quantOffsets: [Math.round(num('qs_quantOffset1', 10)), Math.round(num('qs_quantOffset2', 81))],
+        streamSwitchDur: big('qs_streamSwitchDur', 38),
+        stream1QuantDur: big('qs_stream1QuantDur', 12),
+        stream2QuantDur: big('qs_stream2QuantDur', 43),
+        finalRandSwitch: chk('qs_finalRandSwitch'), sine_lod_level: 0
+      },
+      bd: {
+        lod: parseInt($('bd_lod').value, 10) || 0,
+        blockSize: big('bd_blockSize', 64),
+        streamsNumber: Math.max(1, Math.round(num('bd_streamsNumber', 3))),
+        streamsOffset: big('bd_streamsOffset', 11),
+        intraOp: $('bd_intraOp').value, dynamicShiftBits: Math.round(num('bd_dynamicShiftBits', 6)),
+        staticShiftAmount: Math.round(num('bd_staticShiftAmount', 1)),
+        interOp: $('bd_interOp').value, valueSeedOffset: big('bd_valueSeedOffset', 78901)
+      },
+      st_a: { minHold: 10, maxHold: 60 },
+      st_b: { minHold: 10, threshold: 0.10 },
+      perlin: { octaves: 3, freqMult: 2.7, octaveOffset: 684.2, baseFreq: 0.007, persistence: 0.5, quantSteps: 32, finalRandSwitch: 1 },
+      worley: { octaves: 3, freqMult: 2.4, octaveOffset: 79.3, baseFreq: 0.006, metric: 'F1', persistence: 0.35, quantSteps: 32, finalRandSwitch: 1 }
+    };
+  }
+
+  // ---------- CSV parsing: frame,value[,weight] | time,value[,weight] | value[,weight] ----------
+  function parseCSV(text) {
+    var values = [], weights = [], skipped = 0;
+    var lines = text.split(/\r\n|\n|\r/);
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i].trim();
+      if (!line) continue;
+      var cells = line.split(',').map(function (c) { return c.trim(); });
+      var v;
+      if (cells.length >= 3) { v = parseFloat(cells[1]); }
+      else if (cells.length === 2) { v = parseFloat(cells[1]); }
+      else { v = parseFloat(cells[0]); }
+      if (isNaN(v)) { skipped++; continue; }
+      var w = 1;
+      if (cells.length >= 3) { var pw = parseFloat(cells[2]); if (!isNaN(pw) && pw > 0) w = pw; }
+      values.push(v); weights.push(w);
+    }
+    return { values: values, weights: weights, skipped: skipped };
+  }
+
+  // ---------- runs / change-points ----------
+  function changePoints(series, eps) {
+    var pts = [];
+    for (var i = 1; i < series.length; i++) {
+      if (Math.abs(series[i] - series[i - 1]) > eps) pts.push(i);
+    }
+    return pts;
+  }
+  function runsFromPoints(n, pts) {
+    var runs = [], start = 0;
+    for (var i = 0; i < pts.length; i++) { runs.push([start, pts[i] - 1]); start = pts[i]; }
+    runs.push([start, n - 1]);
+    return runs;
+  }
+  function meanHold(runs) {
+    if (!runs.length) return 0;
+    var total = 0;
+    for (var i = 0; i < runs.length; i++) total += runs[i][1] - runs[i][0] + 1;
+    return total / runs.length;
+  }
+  function holdHistogram(runs) {
+    var bins = [0, 0, 0, 0, 0];
+    for (var i = 0; i < runs.length; i++) {
+      var len = runs[i][1] - runs[i][0] + 1;
+      if (len <= 5) bins[0]++; else if (len <= 10) bins[1]++;
+      else if (len <= 20) bins[2]++; else if (len <= 40) bins[3]++; else bins[4]++;
+    }
+    var total = runs.length || 1;
+    return bins.map(function (b) { return b / total; });
+  }
+
+  // ---------- fit scoring over the current window ----------
+  // X loss: change-point timing (within tolerance) + plateau capture.
+  // Y loss: weighted RMSE after a fitted least-squares stretch (scale+offset).
+  function scoreFit(user, weights, fpsr01, tol, epsFrac, wX, wY) {
+    var n = user.length;
+    var uMin = Math.min.apply(null, user), uMax = Math.max.apply(null, user);
+    var span = (uMax - uMin) || 1;
+    var eps = Math.max(1e-12, epsFrac * span);
+    var wSum = 0, wMeanU = 0, wMeanF = 0;
+    for (var i = 0; i < n; i++) { wSum += weights[i]; wMeanU += weights[i] * user[i]; wMeanF += weights[i] * fpsr01[i]; }
+    wMeanU /= (wSum || 1); wMeanF /= (wSum || 1);
+    var wCov = 0, wVarF = 0;
+    for (var j = 0; j < n; j++) {
+      wCov += weights[j] * (fpsr01[j] - wMeanF) * (user[j] - wMeanU);
+      wVarF += weights[j] * (fpsr01[j] - wMeanF) * (fpsr01[j] - wMeanF);
+    }
+    var scale = wVarF > 0 ? wCov / wVarF : 0;
+    var offset = wMeanU - scale * wMeanF;
+    var se = 0;
+    for (var k = 0; k < n; k++) { var d = user[k] - (scale * fpsr01[k] + offset); se += weights[k] * d * d; }
+    var rmse = Math.sqrt(se / (wSum || 1));
+    var rmseNorm = Math.min(1, rmse / span);
+    var uMean = 0, fMean = 0;
+    for (var m = 0; m < n; m++) { uMean += user[m]; fMean += fpsr01[m]; }
+    uMean /= n; fMean /= n;
+    var cov = 0, vu = 0, vf = 0;
+    for (var p = 0; p < n; p++) {
+      cov += (user[p] - uMean) * (fpsr01[p] - fMean);
+      vu += (user[p] - uMean) * (user[p] - uMean);
+      vf += (fpsr01[p] - fMean) * (fpsr01[p] - fMean);
+    }
+    var corr = (vu > 0 && vf > 0) ? cov / Math.sqrt(vu * vf) : 0;
+    var fpsr = fpsr01.map(function (v) { return scale * v + offset; });
+    var uPts = changePoints(user, eps);
+    var fPts = changePoints(fpsr, eps);
+    var matched = 0;
+    for (var a = 0; a < uPts.length; a++) {
+      var bestDist = Infinity;
+      for (var b = 0; b < fPts.length; b++) { var dist = Math.abs(fPts[b] - uPts[a]); if (dist < bestDist) bestDist = dist; }
+      if (bestDist <= tol) matched++;
+    }
+    var cpMatch = uPts.length ? matched / uPts.length : 1;
+    var uRuns = runsFromPoints(n, uPts), fRuns = runsFromPoints(n, fPts);
+    var captured = 0;
+    for (var r = 0; r < uRuns.length; r++) {
+      var us = uRuns[r][0], ue = uRuns[r][1], uLen = ue - us + 1;
+      for (var s = 0; s < fRuns.length; s++) {
+        var overlap = Math.max(0, Math.min(ue, fRuns[s][1]) - Math.max(us, fRuns[s][0]) + 1);
+        if (overlap >= 0.5 * uLen) { captured++; break; }
+      }
+    }
+    var plateauCapture = uRuns.length ? captured / uRuns.length : 1;
+    var xLoss = 0.5 * (1 - cpMatch) + 0.5 * (1 - plateauCapture);
+    var yLoss = rmseNorm;
+    var hU = holdHistogram(uRuns), hF = holdHistogram(fRuns);
+    var histOverlap = 0;
+    for (var q = 0; q < 5; q++) histOverlap += Math.min(hU[q], hF[q]);
+    return {
+      xLoss: xLoss, yLoss: yLoss, combined: wX * xLoss + wY * yLoss,
+      cpMatch: cpMatch, plateauCapture: plateauCapture,
+      meanHoldUser: meanHold(uRuns), meanHoldFpsr: meanHold(fRuns),
+      histOverlap: histOverlap, rmse: rmse, rmseNorm: rmseNorm, correlation: corr,
+      scale: scale, offset: offset
+    };
+  }
+
+  // ---------- colour ramp: normalised combined loss -> green / amber / red ----------
+  function rampColor(norm) {
+    var stops = [[0, [34, 197, 94]], [0.5, [234, 179, 8]], [1, [239, 68, 68]]];
+    norm = Math.max(0, Math.min(1, norm));
+    var lo = stops[0], hi = stops[2];
+    for (var i = 0; i < stops.length - 1; i++) {
+      if (norm <= stops[i + 1][0]) { lo = stops[i]; hi = stops[i + 1]; break; }
+    }
+    var t = (norm - lo[0]) / ((hi[0] - lo[0]) || 1);
+    var c = [0, 1, 2].map(function (k) { return Math.round(lo[1][k] + t * (hi[1][k] - lo[1][k])); });
+    return 'rgb(' + c[0] + ',' + c[1] + ',' + c[2] + ')';
+  }
+
+  // ---------- paging / zoom ----------
+  function sizeCanvas() {
+    var cv = $('visualizerCanvas');
+    cv.width = cv.clientWidth || 860;
+    cv.height = 300;
+  }
+  // End Frame is the full extent of the timeline: the data length when data
+  // is loaded, otherwise the End Frame value the user sets. The zoom slider
+  // is the viewport size (how many points are shown); the scroll slider is
+  // where the window starts. FPS-R frames may be negative — the core
+  // evaluates them directly (verified: all four algorithms vary and hold
+  // at negative frames), so nothing is clamped to frame 0.
+  function extent() {
+    if (userData.length) return userData.length;
+    var v = parseInt($('bufferSizeInput').value, 10);
+    if (isNaN(v) || v < 10) v = $('visualizerCanvas').clientWidth || 860;
+    return v;
+  }
+  function clampView() {
+    var ext = extent();
+    if (!viewport || viewport < 10) viewport = Math.min(ext, $('visualizerCanvas').clientWidth || 860);
+    if (viewport > ext) viewport = ext;
+    var maxStart = Math.max(0, ext - viewport);
+    if (pageStart > maxStart) pageStart = maxStart;
+    if (pageStart < 0) pageStart = 0;
+    var zs = $('zoomSlider');
+    zs.max = String(ext); zs.value = String(viewport);
+    var ws = $('windowSlider');
+    ws.max = String(maxStart); ws.value = String(pageStart);
+    // When the viewport already shows the whole extent there is nothing
+    // to scroll — grey the slider out and say so, instead of leaving a
+    // knob that looks stuck.
+    ws.disabled = maxStart === 0;
+    ws.style.opacity = maxStart === 0 ? '0.4' : '1';
+    ws.title = maxStart === 0
+      ? 'Nothing to scroll — the viewport already shows the whole extent'
+      : 'Scroll the window through the extent';
+    var ss = $('scrubSlider');
+    ss.min = String(-ext); ss.max = String(ext);
+  }
+
+  // ---------- drawing: one page, step lines, user blue / FPS-R ramp-coloured ----------
+  // With no user data yet, FPS-R is still plotted (0..1 range) and a red
+  // 60%-transparent watermark invites the upload — so scrolling and
+  // scrubbing can be tried immediately. ref01 is the faint no-data
+  // reference: FPS-R at scrub 0, fixed to the window, so the live curve
+  // has something to slide against.
+  //
+  // Both curves are plotted in their TRUE values on one SHARED Y axis:
+  // the union of the user's FULL range and the FPS-R range. FPS-R is drawn
+  // natively, NOT through its fitted least-squares stretch — the
+  // stretch lives only in the Y-loss score (and its numbers stay in the
+  // diagnostics). Drawing through the fit was the bug behind a
+  // normalised 0–1 dataset showing its curve filling the plot while
+  // FPS-R collapsed to a thin band: with a poor fit the fitted scale
+  // is near zero, so the shape vanished, and the axis itself was the
+  // user range only. The axis is built from the FULL data range, not
+  // the window's, so scrolling never rescales the plot.
+  function draw(userWin, fpsr01, colour, userAlpha, fpsrAlpha, watermark, ref01) {
+    var cv = $('visualizerCanvas'), ctx = cv.getContext('2d');
+    var W = cv.width, H = cv.height;
+    ctx.clearRect(0, 0, W, H);
+    var uMin = Math.min(fullMin, 0), uMax = Math.max(fullMax, 1);
+    function rangeOf(series) {
+      for (var i = 0; i < series.length; i++) {
+        if (series[i] < uMin) uMin = series[i];
+        if (series[i] > uMax) uMax = series[i];
+      }
+    }
+    rangeOf(fpsr01);
+    if (ref01 && ref01.length) rangeOf(ref01);
+    var span = (uMax - uMin) || 1;
+    var n = Math.max(userWin.length, fpsr01.length);
+    if (!n) { ctx.fillStyle = '#d1d5db'; ctx.fillText('Upload a CSV or use sample data.', 10, 20); return; }
+    var plotBottom = H - 24, plotTop = 8;
+    function X(i) { return (i / Math.max(n - 1, 1)) * (W - 4) + 2; }
+    function Y(v) { return plotBottom - ((v - uMin) / span) * (plotBottom - plotTop); }
+    function step(series, strokeStyle, alpha) {
+      ctx.strokeStyle = strokeStyle; ctx.globalAlpha = alpha; ctx.lineWidth = 2; ctx.beginPath();
+      for (var i = 0; i < series.length; i++) {
+        if (i === 0) ctx.moveTo(X(i), Y(series[i]));
+        else { ctx.lineTo(X(i), Y(series[i - 1])); ctx.lineTo(X(i), Y(series[i])); }
+      }
+      ctx.stroke(); ctx.globalAlpha = 1; ctx.lineWidth = 1;
+    }
+    if (ref01 && ref01.length) step(ref01, '#9ca3af', 0.25);
+    if (userWin.length) step(userWin, '#60a5fa', userAlpha);
+    step(fpsr01, colour, fpsrAlpha);
+    if (watermark) {
+      ctx.save();
+      ctx.globalAlpha = 0.6;
+      ctx.fillStyle = '#ef4444';
+      ctx.font = 'bold 28px system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Upload or paste an empirical dataset', W / 2, H / 2);
+      ctx.restore();
+    }
+    // ---- value gridlines: 0, 0.2, … 1.0 (the FPS-R native range) ----
+    // The shared axis always covers [0, 1], so all six lines are always
+    // in range. Labels run down the left edge; the axis extremes live
+    // on the right edge (below) so they never collide with the 1.0/0.0
+    // grid labels.
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.fillStyle = '#9ca3af';
+    ctx.font = '10px monospace'; ctx.textAlign = 'left'; ctx.lineWidth = 1;
+    for (var g = 0; g <= 5; g++) {
+      var gv = g * 0.2, gy = Y(gv);
+      ctx.beginPath(); ctx.moveTo(2, gy); ctx.lineTo(W - 2, gy); ctx.stroke();
+      var ly = Math.max(10, Math.min(plotBottom - 2, gy + 3));
+      ctx.fillText(gv.toFixed(1), 4, ly);
+    }
+    // ---- frame axis ticks along the bottom ----
+    // Ticks sit on absolute frame numbers (multiples of the interval), so
+    // scrolling moves the labels while scrubbing shifts the curve under
+    // fixed labels. The interval steps up the 1-2-5 ladder automatically
+    // when the labels would crowd — the standard adaptive-tick scheme
+    // (every frame, 2, 5, 10, 20, 50, 100, … as you zoom out).
+    var userInt = parseInt($('tickInterval').value, 10);
+    if (isNaN(userInt) || userInt < 1) userInt = 10;
+    var maxLabels = Math.max(4, Math.floor(W / 70));
+    var eff = effectiveInterval(userInt, n, maxLabels);
+    $('tickEffective').textContent = eff === userInt
+      ? 'every ' + eff + ' frames'
+      : 'auto → every ' + eff + ' frames';
+    var pxPerFrame = (W - 4) / Math.max(n - 1, 1);
+    var sub = $('subTicks') && $('subTicks').checked;
+    ctx.strokeStyle = '#4b5563'; ctx.fillStyle = '#9ca3af';
+    ctx.font = '10px monospace'; ctx.textAlign = 'center'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(2, plotBottom + 0.5); ctx.lineTo(W - 2, plotBottom + 0.5); ctx.stroke();
+    var firstTick = Math.ceil(pageStart / eff) * eff;
+    for (var f = firstTick; f <= pageStart + n - 1; f += eff) {
+      var x = X(f - pageStart);
+      ctx.beginPath(); ctx.moveTo(x, plotBottom); ctx.lineTo(x, plotBottom + 6); ctx.stroke();
+      var lx = Math.max(14, Math.min(W - 14, x));
+      ctx.fillText(String(f), lx, H - 10);
+      if (sub) {
+        var half = f + eff / 2;
+        if (half <= pageStart + n - 1 && (eff / 2) * pxPerFrame >= 12) {
+          var mx = X(half - pageStart);
+          ctx.beginPath(); ctx.moveTo(mx, plotBottom); ctx.lineTo(mx, plotBottom + 3); ctx.stroke();
+        }
+      }
+    }
+    ctx.textAlign = 'left';
+    // Y-axis extremes on the right edge (the left edge carries the 0.2 grid).
+    function fmt(v) { return (Math.round(v * 100) / 100).toString(); }
+    ctx.textAlign = 'right';
+    ctx.fillText(fmt(uMax), W - 4, plotTop + 10);
+    ctx.fillText(fmt(uMin), W - 4, plotBottom - 4);
+    ctx.textAlign = 'left';
+  }
+
+  // Smallest 1-2-5 ladder step >= userInt that keeps the label count
+  // within maxLabels across the viewport.
+  var TICK_LADDER = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000];
+  function effectiveInterval(userInt, viewport, maxLabels) {
+    for (var i = 0; i < TICK_LADDER.length; i++) {
+      if (TICK_LADDER[i] >= userInt && viewport / TICK_LADDER[i] <= maxLabels) return TICK_LADDER[i];
+    }
+    return TICK_LADDER[TICK_LADDER.length - 1];
+  }
+
+  // ---------- refresh: fill the page, score it, update diagnostics ----------
+  function refresh() {
+    sizeCanvas();
+    clampView();
+    var size = viewport;
+    var ext = extent();
+    var params = readParams();
+    if (!userData.length) {
+      // No data yet: still plot FPS-R (0..1) so scrolling and scrubbing
+      // can be tried immediately, under the red watermark. The faint
+      // reference is the same FPS-R at scrub 0, fixed to the window.
+      var fpsrOnly = [];
+      var ref01 = [];
+      for (var i = 0; i < size; i++) {
+        fpsrOnly.push(getFpsrValue(fpsrBase + pageStart + i + scrub, activeAlgorithm, params));
+        ref01.push(getFpsrValue(fpsrBase + pageStart + i, activeAlgorithm, params));
+      }
+      draw([], fpsrOnly, '#22c55e', 1, parseFloat($('fpsrOpacity').value) || 1, true, ref01);
+      // The readout names the FPS-R frames too, so the two sliders stay
+      // visibly distinct: scroll moves the window frames, scrub moves the
+      // FPS-R frames while the window stays put.
+      $('pageReadout').textContent = 'frames ' + pageStart + '–' + (pageStart + size - 1) +
+        ' of ' + ext + ' · FPS-R ' + (fpsrBase + pageStart + scrub) + '–' + (fpsrBase + pageStart + size - 1 + scrub) +
+        ' · zoom ' + size + ' · seed ' + (scrub >= 0 ? '+' : '') + scrub + ' · no data loaded — FPS-R only';
+      return;
+    }
+    var start = pageStart;
+    var end = Math.min(userData.length, start + size);
+    var userWin = userData.slice(start, end);
+    var wWin = userWeights.slice(start, end);
+    var fpsr01 = [];
+    for (var i = 0; i < userWin.length; i++) {
+      fpsr01.push(getFpsrValue(fpsrBase + start + i + scrub, activeAlgorithm, params));
+    }
+    var tol = parseInt($('tolX').value, 10);
+    if (isNaN(tol) || tol < 0) tol = 2;
+    var epsFrac = parseFloat($('epsY').value);
+    if (isNaN(epsFrac) || epsFrac <= 0) epsFrac = 0.002;
+    var wX = parseFloat($('wX').value); if (isNaN(wX) || wX < 0) wX = 1;
+    var wY = parseFloat($('wY').value); if (isNaN(wY) || wY < 0) wY = 1;
+    var s = scoreFit(userWin, wWin, fpsr01, tol, epsFrac, wX, wY);
+    var norm = Math.max(0, Math.min(1, s.combined / ((wX + wY) || 1)));
+    var colour = rampColor(norm);
+    draw(userWin, fpsr01, colour,
+      parseFloat($('userOpacity').value) || 1, parseFloat($('fpsrOpacity').value) || 1);
+    $('pageReadout').textContent = 'frames ' + start + '–' + (end - 1) + ' of ' + userData.length +
+      ' · FPS-R ' + (fpsrBase + start + scrub) + '–' + (fpsrBase + end - 1 + scrub) +
+      ' · zoom ' + size + ' · seed ' + (scrub >= 0 ? '+' : '') + scrub;
+    // Loss numbers are coloured by their direction since the last
+    // refresh: green when the loss fell, red when it rose, default
+    // when unchanged or first shown. Each loss remembers its previous
+    // value (prevXLoss / prevYLoss / prevCombined, reset when new data
+    // loads). The number sits in a span so only it is coloured.
+    $('diagX').innerHTML = 'X loss <span id="diagXLoss">' + s.xLoss.toFixed(3) + '</span>' +
+      ' · change-points ' + (s.cpMatch * 100).toFixed(0) + '% (±' + tol + ' frames)' +
+      ' · plateaus ' + (s.plateauCapture * 100).toFixed(0) + '%' +
+      ' · mean hold user ' + s.meanHoldUser.toFixed(1) + ' vs FPS-R ' + s.meanHoldFpsr.toFixed(1) +
+      ' · hold-histogram overlap ' + (s.histOverlap * 100).toFixed(0) + '%';
+    colourLoss('diagXLoss', s.xLoss, prevXLoss);
+    $('diagY').innerHTML = 'Y loss <span id="diagYLoss">' + s.yLoss.toFixed(3) + '</span>' +
+      ' · RMSE ' + s.rmse.toFixed(4) + ' (' + (s.rmseNorm * 100).toFixed(1) + '% of range)' +
+      ' · correlation ' + s.correlation.toFixed(3) +
+      ' · fitted stretch ×' + s.scale.toFixed(3) + ' + ' + s.offset.toFixed(3);
+    colourLoss('diagYLoss', s.yLoss, prevYLoss);
+    $('diagCombined').innerHTML = 'Combined loss <span id="diagCombinedLoss">' + s.combined.toFixed(3) + '</span>' +
+      ' (= ' + wX + ' × ' + s.xLoss.toFixed(3) + ' + ' + wY + ' × ' + s.yLoss.toFixed(3) +
+      ') · normalised ' + norm.toFixed(2) + ' — lower is better';
+    colourLoss('diagCombinedLoss', s.combined, prevCombined);
+    prevXLoss = s.xLoss; prevYLoss = s.yLoss; prevCombined = s.combined;
+    var sw = $('rampSwatch');
+    sw.style.background = colour;
+    $('rampLabel').innerHTML = 'FPS-R curve colour = normalised loss <span id="rampNormLoss">' + norm.toFixed(2) + '</span>' +
+      ' (green good → amber → red poor)';
+    colourLoss('rampNormLoss', norm, prevNorm);
+    prevNorm = norm;
+  }
+
+  // ---------- data loading: three doors, one loader ----------
+  function loadCSVText(text) {
+    var parsed = parseCSV(text);
+    userData = parsed.values; userWeights = parsed.weights;
+    computeFullRange();
+    prevXLoss = prevYLoss = prevCombined = prevNorm = null; // new data, new baseline
+    pageStart = 0; scrub = 0;
+    $('scrubSlider').value = '0'; $('scrubReadout').textContent = 'seed +0';
+    $('dataSummary').textContent = userData.length + ' rows' +
+      (parsed.skipped ? ' (' + parsed.skipped + ' skipped)' : '');
+    renderProfile();
+    setCollapse('dataBody', 'dataToggleChevron', true);   // tuck the upload away
+    setCollapse('profileBody', 'profileToggleChevron', false); // open the profile
+    refresh();
+  }
+  $('csvFile').addEventListener('change', function (e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () { loadCSVText(reader.result); };
+    reader.readAsText(file);
+  });
+  var dz = $('dropZone');
+  dz.addEventListener('dragover', function (e) { e.preventDefault(); dz.classList.add('over'); });
+  dz.addEventListener('dragleave', function () { dz.classList.remove('over'); });
+  dz.addEventListener('drop', function (e) {
+    e.preventDefault(); dz.classList.remove('over');
+    var file = e.dataTransfer.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () { loadCSVText(reader.result); };
+    reader.readAsText(file);
+  });
+  $('pasteBtn').addEventListener('click', function () { loadCSVText($('pasteBox').value); });
+  $('sampleBtn').addEventListener('click', function () {
+    var params = readParams();
+    params.sm = { lod: 0, minHold: 8n, maxHold: 30n, reseedInterval: 60n, seedInner: -7n, seedOuter: 5n, finalRandSwitch: 1 };
+    userData = [];
+    for (var f = 0; f < 400; f++) userData.push(getFpsrValue(f, 'SM', params));
+    userWeights = userData.map(function () { return 1; });
+    computeFullRange();
+    prevXLoss = prevYLoss = prevCombined = prevNorm = null; // new data, new baseline
+    pageStart = 0; scrub = 0;
+    $('scrubSlider').value = '0'; $('scrubReadout').textContent = 'seed +0';
+    $('dataSummary').textContent = '400 rows (sample: SM 8/30/60, seeds -7/5)';
+    renderProfile();
+    setCollapse('dataBody', 'dataToggleChevron', true);   // tuck the upload away
+    setCollapse('profileBody', 'profileToggleChevron', false); // open the profile
+    refresh();
+  });
+
+  // ---------- user-data profile ----------
+  // Hold statistics of the FULL dataset, using the same exact-change
+  // definition as the X-loss change-points: the timings to tune the
+  // engines against — min/max hold, reseed and switch intervals.
+  function renderProfile() {
+    var el = $('profileText');
+    if (!userData.length) { el.textContent = 'No data loaded — load a dataset to profile it.'; return; }
+    var holds = [], run = 1;
+    for (var i = 1; i < userData.length; i++) {
+      if (userData[i] === userData[i - 1]) run++;
+      else { holds.push(run); run = 1; }
+    }
+    holds.push(run);
+    holds.sort(function (a, b) { return a - b; });
+    var min = holds[0], max = holds[holds.length - 1];
+    var mean = holds.reduce(function (a, b) { return a + b; }, 0) / holds.length;
+    var mid = Math.floor(holds.length / 2);
+    var median = holds.length % 2 ? holds[mid] : (holds[mid - 1] + holds[mid]) / 2;
+    var vMin = Math.min.apply(null, userData), vMax = Math.max.apply(null, userData);
+    var vMean = userData.reduce(function (a, b) { return a + b; }, 0) / userData.length;
+    el.textContent = userData.length + ' frames · ' + holds.length + ' holds' +
+      ' · min hold ' + min + ' · max hold ' + max +
+      ' · median hold ' + median + ' · mean hold ' + mean.toFixed(1) + ' frames' +
+      ' · values ' + vMin.toFixed(3) + '–' + vMax.toFixed(3) + ' · mean ' + vMean.toFixed(3);
+  }
+
+  // ---------- collapsible sections ----------
+  // Header button toggles the body; the chevron shows ▾ open / ▸ closed.
+  function wireCollapse(btnId, bodyId, chevId) {
+    $(btnId).addEventListener('click', function () {
+      var body = $(bodyId);
+      var closed = body.classList.toggle('hidden');
+      $(chevId).textContent = closed ? '▸' : '▾';
+    });
+  }
+  function setCollapse(bodyId, chevId, closed) {
+    var body = $(bodyId);
+    if (closed) body.classList.add('hidden'); else body.classList.remove('hidden');
+    $(chevId).textContent = closed ? '▸' : '▾';
+  }
+  wireCollapse('dataToggleBtn', 'dataBody', 'dataToggleChevron');
+  wireCollapse('profileToggleBtn', 'profileBody', 'profileToggleChevron');
+  wireCollapse('mappingKeyToggleBtn', 'mappingKeyBody', 'mappingKeyToggleChevron');
+  wireCollapse('displayToggleBtn', 'displayBody', 'displayToggleChevron');
+
+  // ---------- transport: Start Frame (FPS-R base) / End Frame / Native / New Seeds / Defaults / Copy ----------
+  $('resetRewindFrameButton').addEventListener('click', function () {
+    $('rewindFrameInput').value = '0'; fpsrBase = 0; refresh();
+  });
+  $('resetBufferSizeButton').addEventListener('click', function () {
+    sizeCanvas();
+    $('bufferSizeInput').value = String($('visualizerCanvas').clientWidth || 860);
+    refresh();
+  });
+  $('bufferSizeInput').addEventListener('input', scheduleRefresh);
+  $('rewindFrameInput').addEventListener('input', function () {
+    var v = parseInt($('rewindFrameInput').value, 10);
+    if (!isNaN(v)) { fpsrBase = v; scheduleRefresh(); }
+  });
+  $('newSeedsButton').addEventListener('click', function () {
+    // New seeds for the active algorithm, as in the visualiser.
+    var r = function () { return Math.floor(Math.random() * 100000); };
+    if (activeAlgorithm === 'SM') { $('sm_seedInner').value = String(r()); $('sm_seedOuter').value = String(r()); }
+    if (activeAlgorithm === 'TM') { $('tm_seedInner').value = String(r()); $('tm_seedOuter').value = String(r()); }
+    if (activeAlgorithm === 'QS') { $('qs_streamOffset1').value = String(r()); $('qs_streamOffset2').value = String(r()); }
+    if (activeAlgorithm === 'BD') { $('bd_valueSeedOffset').value = String(r()); }
+    scrub = 0; $('scrubSlider').value = '0'; $('scrubReadout').textContent = 'seed +0';
+    refresh();
+  });
+  $('defaultsButton').addEventListener('click', function () {
+    // Revert the active engine's parameters to the HTML defaults the
+    // tool loaded with (input.defaultValue / defaultChecked). Only the
+    // current engine — the other engines and the global HPQ controls
+    // are left alone. (PANEL_INPUTS is declared below; the handler
+    // only runs on click, after the whole script has loaded.)
+    var prefix = activeAlgorithm.toLowerCase() + '_';
+    PANEL_INPUTS.forEach(function (id) {
+      if (id.indexOf(prefix) !== 0) return;
+      var el = $(id);
+      if (!el) return;
+      if (el.type === 'checkbox') el.checked = el.defaultChecked;
+      else el.value = el.defaultValue;
+      var span = document.getElementById(id + 'Value');
+      if (span) span.textContent = el.value;
+    });
+    scrub = 0; $('scrubSlider').value = '0'; $('scrubReadout').textContent = 'seed +0';
+    refresh();
+  });
+  $('copyButton').addEventListener('click', function () {
+    var params = readParams();
+    var vals = [];
+    for (var i = 0; i < viewport; i++) {
+      vals.push(getFpsrValue(fpsrBase + pageStart + i + scrub, activeAlgorithm, params));
+    }
+    var text = '[' + vals.map(function (v) { return v.toFixed(3); }).join(', ') + ']';
+    if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text);
+    }
+  });
+
+  // ---------- zoom slider, window (scroll) slider, scrub slider (all live) ----------
+  // Zoom = viewport size: pull left to zoom in on a smaller slice of the
+  // whole extent; pull right to see the full extent. Scroll = where the
+  // window starts. Scrub = FPS-R phase offset — with a small viewport and
+  // a large extent, scrubbing walks FPS-R through the extent page by page.
+  $('zoomSlider').addEventListener('input', function () {
+    viewport = parseInt($('zoomSlider').value, 10) || 10;
+    scheduleRefresh();
+  });
+  $('windowSlider').addEventListener('input', function () {
+    pageStart = parseInt($('windowSlider').value, 10) || 0;
+    scheduleRefresh();
+  });
+  $('windowZeroButton').addEventListener('click', function () {
+    pageStart = 0;
+    $('windowSlider').value = '0';
+    refresh();
+  });
+  $('scrubSlider').addEventListener('input', function () {
+    scrub = parseInt($('scrubSlider').value, 10) || 0;
+    $('scrubReadout').textContent = 'seed ' + (scrub >= 0 ? '+' : '') + scrub;
+    scheduleRefresh();
+  });
+  $('scrubZeroButton').addEventListener('click', function () {
+    scrub = 0;
+    $('scrubSlider').value = '0';
+    $('scrubReadout').textContent = 'seed +0';
+    refresh();
+  });
+  $('zoomNativeButton').addEventListener('click', function () {
+    // Actual pixels: 1 point = 1 pixel, the viewport is the canvas width.
+    viewport = $('visualizerCanvas').clientWidth || 860;
+    refresh();
+  });
+  $('zoomFullButton').addEventListener('click', function () {
+    // Full extent: the viewport is the whole timeline.
+    viewport = extent();
+    refresh();
+  });
+
+  // ---------- fit controls, opacity, mapping key ----------
+  ['wX', 'wY', 'tolX', 'epsY', 'userOpacity', 'fpsrOpacity', 'tickInterval'].forEach(function (id) {
+    $(id).addEventListener('input', scheduleRefresh);
+  });
+  $('subTicks').addEventListener('change', scheduleRefresh);
+  $('markBest').addEventListener('click', function () {
+    if (!userData.length) return;
+    var params = readParams();
+    var size = viewport;
+    var userWin = userData.slice(pageStart, Math.min(userData.length, pageStart + size));
+    var wWin = userWeights.slice(pageStart, Math.min(userData.length, pageStart + size));
+    var fpsr01 = [];
+    for (var i = 0; i < userWin.length; i++) fpsr01.push(getFpsrValue(fpsrBase + pageStart + i + scrub, activeAlgorithm, params));
+    var tol = parseInt($('tolX').value, 10) || 2;
+    var epsFrac = parseFloat($('epsY').value) || 0.002;
+    var wX = parseFloat($('wX').value) || 1, wY = parseFloat($('wY').value) || 1;
+    var s = scoreFit(userWin, wWin, fpsr01, tol, epsFrac, wX, wY);
+    best = {
+      algo: activeAlgorithm, fpsrBase: fpsrBase, pageStart: pageStart, viewport: size, scrub: scrub,
+      weights: { wX: wX, wY: wY, tolX: tol, epsY: epsFrac },
+      scores: { xLoss: +s.xLoss.toFixed(3), yLoss: +s.yLoss.toFixed(3), combined: +s.combined.toFixed(3),
+                cpMatch: +s.cpMatch.toFixed(3), plateauCapture: +s.plateauCapture.toFixed(3),
+                correlation: +s.correlation.toFixed(3) },
+      key: { stream: $('keyStream').value, xMeans: $('keyX').value,
+             yMeans: $('keyY').value, jumpRule: $('keyJump').value }
+    };
+    $('bestSoFar').textContent = 'Best so far: ' + JSON.stringify(best);
+  });
+
+  // ---------- diagnostics info bubbles ----------
+  // Click an (i) to open its bubble; it stays open until clicked away.
+  // Opening one closes the other. Both bubbles are as wide as the
+  // panel and scroll vertically (max 60vh), so on a narrow phone the
+  // text wraps instead of running off the edge.
+  function closeBubble(id) { var b = $(id); if (b) b.classList.add('hidden'); }
+  function toggleBubble(e, id, otherId) {
+    if (e && e.stopPropagation) e.stopPropagation();
+    closeBubble(otherId);
+    $(id).classList.toggle('hidden');
+  }
+  $('diagInfoBtn').addEventListener('click', function (e) { toggleBubble(e, 'diagInfoBubble', 'diagMetricsBubble'); });
+  $('diagMetricsBtn').addEventListener('click', function (e) { toggleBubble(e, 'diagMetricsBubble', 'diagInfoBubble'); });
+  if (document.addEventListener) {
+    document.addEventListener('click', function (e) {
+      var t = e.target;
+      var inside = t && t.closest && (t.closest('#diagInfoBubble') || t.closest('#diagMetricsBubble'));
+      if (!inside) { closeBubble('diagInfoBubble'); closeBubble('diagMetricsBubble'); }
+    });
+  }
+
+  // ---------- Visualiser / Validator mode pill ----------
+  // The sliders + diagnostics above stay visible in both modes; the pill
+  // only swaps the engines-and-params panels for the fit-controls panel.
+  function setMode(mode) {
+    var vis = mode === 'visualiser';
+    $('modeVisualiser').style.display = vis ? '' : 'none';
+    $('modeValidator').style.display = vis ? 'none' : '';
+    $('modeVisualiserBtn').classList.toggle('active', vis);
+    $('modeValidatorBtn').classList.toggle('active', !vis);
+  }
+  $('modeVisualiserBtn').addEventListener('click', function () { setMode('visualiser'); });
+  $('modeValidatorBtn').addEventListener('click', function () { setMode('validator'); });
+  setMode('visualiser');
+
+  // ---------- algorithm tabs + panel sliders (same ids as the visualiser) ----------
+  var ALGOS = ['SM', 'TM', 'QS', 'BD'];
+  ALGOS.forEach(function (algo) {
+    $('tab-' + algo).addEventListener('click', function () {
+      activeAlgorithm = algo;
+      ALGOS.forEach(function (a) {
+        $('tab-' + a).classList.toggle('active', a === algo);
+        $('panel-' + a).style.display = (a === algo) ? '' : 'none';
+      });
+      refresh();
+    });
+  });
+  var PANEL_INPUTS = [
+    'sm_lod', 'sm_minHold', 'sm_maxHold', 'sm_reseed', 'sm_seedInner', 'sm_seedOuter', 'sm_finalRandSwitch',
+    'tm_lod', 'tm_periodA', 'tm_periodB', 'tm_periodSwitch', 'tm_seedInner', 'tm_seedOuter', 'tm_finalRandSwitch',
+    'qs_lod', 'qs_baseWaveFreq', 'qs_stream2FreqMult', 'qs_quantMin', 'qs_quantMax',
+    'qs_streamSwitchDur', 'qs_stream1QuantDur', 'qs_stream2QuantDur',
+    'qs_streamOffset1', 'qs_streamOffset2', 'qs_quantOffset1', 'qs_quantOffset2', 'qs_finalRandSwitch',
+    'bd_lod', 'bd_blockSize', 'bd_streamsNumber', 'bd_streamsOffset', 'bd_intraOp',
+    'bd_interOp', 'bd_staticShiftAmount', 'bd_dynamicShiftBits', 'bd_valueSeedOffset',
+    'global_frameMultiplier', 'global_frameMultiplierInput', 'global_segBlockLength', 'global_varispeedHoldBlockCount'
+  ];
+  PANEL_INPUTS.forEach(function (id) {
+    var el = $(id);
+    if (!el) return;
+    el.addEventListener('input', function () {
+      // Keep the frame-multiplier slider and its number box in sync, as in the visualiser.
+      if (id === 'global_frameMultiplier') $('global_frameMultiplierInput').value = parseFloat(el.value).toFixed(2);
+      if (id === 'global_frameMultiplierInput') $('global_frameMultiplier').value = el.value;
+      // Range sliders show their value beside them (span id = slider id + 'Value').
+      var span = document.getElementById(id + 'Value');
+      if (span) span.textContent = el.value;
+      scheduleRefresh();
+    });
+    el.addEventListener('change', scheduleRefresh);
+  });
+  $('resetFrameMultiplierButton').addEventListener('click', function () {
+    $('global_frameMultiplier').value = '1.0';
+    $('global_frameMultiplierInput').value = '1.00';
+    refresh();
+  });
+  if (typeof window !== 'undefined' && window.addEventListener) {
+    window.addEventListener('resize', refresh);
+  }
+
+  sizeCanvas();
+  $('bufferSizeInput').value = String($('visualizerCanvas').clientWidth || 860);
+  refresh();
+})();
+
+    </script>
+</body>
+</html>
