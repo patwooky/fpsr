@@ -244,7 +244,7 @@ FPS-R 包含 4 种算法。每种算法都以略微不同的方式实现移动-�
 ## 交互式 FPS-R 可视化工具！
 这里有一个 HTML 可视化工具，用于展示四种 FPS-R 算法！
 与参数互动，实时查看输出值的更新。
-![](./resources/readme/images/fpsr_html_visualiser.jpg)
+![](./resources/readme/images/fpsr_visualiser.jpg)
 点击此处查看：
 
 [FPS-R 算法可视化工具](https://patwooky.github.io/fpsr/resources/code/html_javascript/fpsr_visualiser.html)
