@@ -10,6 +10,15 @@ None
 
 ---
 
+## [3.0.20] - 2026-11-19
+### Added
+- **Fit Explorer (`resources/code/html_javascript/fpsr_fit.html`)**:
+  - "Use current FPS-R curve" capture mode — captures the FPS-R curve over the whole extent (End Frame) as the user data, so a generated signal can be matched by another engine: generate a QS signal, capture it, then try to match it with TM or other settings, with no empirical dataset needed. Start Frame moves to the first captured FPS-R frame and the view (scroll position and zoom) is kept, so the live curve still matches the captured data exactly (combined loss 0) until the engine or a parameter changes, and the captured signal can still be scrolled and zoomed through afterwards. The summary records the source engine and the FPS-R frame range. Capturing only the viewport was rejected — it would throw away the rest of the signal and leave nothing to scroll to.
+  - User data panel regrouped into "Generate" and "Upload" sub-frames — Generate holds the capture button and "Use sample data" in one row; Upload holds the file picker, drag-and-drop zone, and paste box.
+### Changed
+- **Fit Explorer (`resources/code/html_javascript/fpsr_fit.html`)**:
+  - Vertical space reclaimed in the User data panel: the Generate note now lives in the capture button's tooltip; "Use sample data" has a tooltip of its own (fixed 400-point generated sample, with a pointer to the capture mode for anything different); the CSV-columns note now shares the "Load pasted data" button's row (button 20%, note 80%).
+
 ## [3.0.19] - 2026-11-18
 ### Added
 - **Fit Explorer (`resources/code/html_javascript/fpsr_fit.html`)**:
