@@ -324,49 +324,72 @@ function fpsr_qs_base_js(frame, params, wavetable = FPSR_DEFAULT_SINE_WAVETABLE)
         finalRandSwitch
     } = params;
 
+    // --- 1. Set default durations and guards if not provided ---
+    if (baseWaveFreq === 0) baseWaveFreq = 0.01;
     if (streamSwitchDur < 1n) streamSwitchDur = 1n;
-    if (stream1QuantDur < 1n) stream1QuantDur = 1n;
-    if (stream2QuantDur < 1n) stream2QuantDur = 1n;
 
+    // --- 1. Switch between the two streams based on streamSwitchDur ---
+    const r = i64_floor_mod(frame, streamSwitchDur);
+    const is_stream1 = (2n * r < streamSwitchDur);
+    const selected_stream_idx = is_stream1 ? 0 : 1;
+
+    // Calculate common quantization range bounds
     const quant_min = BigInt(quantLevelsMinMax[0]);
     const quant_max = BigInt(quantLevelsMinMax[1]);
-    const quant_range = quant_max - quant_min + 1n;
+    let quant_range = quant_max - quant_min + 1n;
+    if (quant_range < 1n) quant_range = 1n;
 
-    const s1_quant_seed_aligned = i64_align_down(BigInt(quantOffsets[0]) + frame, stream1QuantDur);
-    const s1_rand_for_quant = portable_rand_u64(s1_quant_seed_aligned);
-    let s1_quant_level = quant_min + BigInt(Math.floor(s1_rand_for_quant * Number(quant_range)));
+    let randStreams = [0.0, 0.0];
+    let active_stream_val = 0.0;
 
-    const s2_quant_seed_aligned = i64_align_down(BigInt(quantOffsets[1]) + frame, stream2QuantDur);
-    const s2_rand_for_quant = portable_rand_u64(s2_quant_seed_aligned);
-    let s2_quant_level = quant_min + BigInt(Math.floor(s2_rand_for_quant * Number(quant_range)));
+    // --- 2. Process only the active stream ---
+    if (is_stream1) {
+        if (stream1QuantDur < 1n) stream1QuantDur = 1n;
 
-    if (s1_quant_level < 1n) s1_quant_level = 1n;
-    if (s2_quant_level < 1n) s2_quant_level = 1n;
+        // Calculate random quantisation level for stream 1
+        const s1_quant_seed_aligned = i64_align_down(BigInt(quantOffsets[0]) + frame, stream1QuantDur);
+        const s1_rand_for_quant = portable_rand_u64(s1_quant_seed_aligned);
+        let s1_quant_level = quant_min + BigInt(Math.floor(s1_rand_for_quant * Number(quant_range)));
+        if (s1_quant_level < 1n) s1_quant_level = 1n;
 
-    // Phase expressed in cycles [0.0, 1.0)
-    const phase1 = (Number(streamsOffset[0]) + Number(frame)) * baseWaveFreq;
-    const phase2 = (Number(streamsOffset[1]) + Number(frame)) * baseWaveFreq * stream2FreqMult;
+        // Generate the quantised wavetable stream
+        const phase1 = (Number(streamsOffset[0]) + Number(frame)) * baseWaveFreq;
+        const stream1_raw_sine = fpsr_sample_wavetable(phase1, wavetable);
 
-    // Values sampled from the unipolar wavetable [0.0, 1.0]
-    const stream1_raw_sine = fpsr_sample_wavetable(phase1, wavetable);
-    const stream2_raw_sine = fpsr_sample_wavetable(phase2, wavetable);
+        // Direct unipolar quantization [0.0, 1.0]
+        const stream1_val = Math.floor(stream1_raw_sine * Number(s1_quant_level)) / Number(s1_quant_level);
+        randStreams[0] = stream1_val;
+        active_stream_val = stream1_val;
+    } else {
+        if (stream2QuantDur < 1n) stream2QuantDur = 1n;
 
-    const stream1_val = Math.floor(stream1_raw_sine * Number(s1_quant_level)) / Number(s1_quant_level);
-    const stream2_val = Math.floor(stream2_raw_sine * Number(s2_quant_level)) / Number(s2_quant_level);
+        // Calculate random quantisation level for stream 2
+        const s2_quant_seed_aligned = i64_align_down(BigInt(quantOffsets[1]) + frame, stream2QuantDur);
+        const s2_rand_for_quant = portable_rand_u64(s2_quant_seed_aligned);
+        let s2_quant_level = quant_min + BigInt(Math.floor(s2_rand_for_quant * Number(quant_range)));
+        if (s2_quant_level < 1n) s2_quant_level = 1n;
 
-    const r = i64_floor_mod(frame, streamSwitchDur);
-    const selected_stream_idx = (2n * r < streamSwitchDur) ? 0 : 1;
-    const active_stream_val = (selected_stream_idx === 0) ? stream1_val : stream2_val;
+        // Generate the quantised wavetable stream
+        if (stream2FreqMult <= 0) stream2FreqMult = 3.7;
+        const phase2 = (Number(streamsOffset[1]) + Number(frame)) * baseWaveFreq * stream2FreqMult;
+        const stream2_raw_sine = fpsr_sample_wavetable(phase2, wavetable);
 
+        // Direct unipolar quantization [0.0, 1.0]
+        const stream2_val = Math.floor(stream2_raw_sine * Number(s2_quant_level)) / Number(s2_quant_level);
+        randStreams[1] = stream2_val;
+        active_stream_val = stream2_val;
+    }
+
+    // --- 3. Hash the final output to create a random-looking value (or bypass) ---
     let randVal = active_stream_val;
-    if (finalRandSwitch === 1) {
+    if (finalRandSwitch === 1 || finalRandSwitch === true) {
         const hashed_int = BigInt(Math.floor(active_stream_val * 1000000.0));
         randVal = portable_rand_u64(hashed_int);
     }
 
     return {
         randVal: randVal,
-        randStreams: [stream1_val, stream2_val],
+        randStreams: randStreams,
         selected_stream_idx: selected_stream_idx
     };
 }

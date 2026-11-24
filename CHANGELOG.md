@@ -9,9 +9,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 None
 
 ---
+## [3.0.21] - 2026-11-24
+### Changed
+- **Lazy Stream Evaluation in Quantised Switching (`fpsr_qs_base`)**:
+  - Re-routed stream evaluation into conditional branches so that only the active stream (`Stream 1` or `Stream 2` selected by `is_stream1`) computes its dynamic quantization levels, wavetable lookups, and quantised values.
+  - Skips redundant PRNG draws and trigonometric lookups for the discarded stream, reducing per-frame computational overhead while maintaining 100% bit-exact deterministic parity.
+- **HPQ Continuum Mode Routing Optimization (`_get_details`)**:
+  - Streamlined Hierarchical Phrased Quantisation (HPQ) detail functions to branch directly between Mode 1 (Tape Varispeed anchor persistence) and Mode 2 (Telescopic Extension generative blocks) using `segment_index` and `varispeed_hold_block_count`.
+  - Bypasses unnecessary gap seed hashing, struct allocation, and parameter cloning when evaluating within the initial anchor block runway.
+- **Synchronized Implementations**:
+  - Applied uniformly across all core runtimes and documentation:
+    - C Reference: `resources/code/C_reference/fpsr_algo_base_reference.c`, `resources/code/C_reference/fpsr_algo_wrap_reference.c`
+    - Python Reference: `resources/code/python/fpsr_algorithms.py`, `resources/code/python/fpsr_algorithms_wrap.py`
+    - JavaScript Engine: `resources/code/html_javascript/fpsr_core_lib.js`
+    - Data Analysis: `resources/code/data_analysis/fpsr_algoAnalysis.ipynb`
 
 ## [3.0.20] - 2026-11-19
 commit-id: 71c19467506b48e9b05034156f2038e0f068229a
+
 ### Added
 - **Fit Explorer (`resources/code/html_javascript/fpsr_fit.html`)**:
   - "Use current FPS-R curve" capture mode — captures the FPS-R curve over the whole extent (End Frame) as the user data, so a generated signal can be matched by another engine: generate a QS signal, capture it, then try to match it with TM or other settings, with no empirical dataset needed. Start Frame moves to the first captured FPS-R frame and the view (scroll position and zoom) is kept, so the live curve still matches the captured data exactly (combined loss 0) until the engine or a parameter changes, and the captured signal can still be scrolled and zoomed through afterwards. The summary records the source engine and the FPS-R frame range. Capturing only the viewport was rejected — it would throw away the rest of the signal and leave nothing to scroll to.
