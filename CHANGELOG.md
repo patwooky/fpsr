@@ -10,6 +10,7 @@ None
 
 ---
 ## [3.0.21] - 2026-11-24
+commit-id: 500ae0fa619d4c59d5bd3da99d45c3acdc130e5b
 ### Changed
 - **Lazy Stream Evaluation in Quantised Switching (`fpsr_qs_base`)**:
   - Re-routed stream evaluation into conditional branches so that only the active stream (`Stream 1` or `Stream 2` selected by `is_stream1`) computes its dynamic quantization levels, wavetable lookups, and quantised values.
