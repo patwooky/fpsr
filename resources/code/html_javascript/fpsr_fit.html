@@ -85,18 +85,29 @@
                 <span id="dataToggleChevron" class="text-gray-400 ml-auto">▾</span>
             </button>
             <div id="dataBody" class="mt-3">
-            <p>
-                <input type="file" id="csvFile" accept=".csv,.txt" class="text-sm">
-                <button id="sampleBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded-md text-sm transition duration-150">Use sample data</button>
-            </p>
-            <div id="dropZone">…or drag a CSV file onto this box.</div>
-            <p>
-                <textarea id="pasteBox" rows="3" placeholder="…or paste CSV rows here (frame,value — or just one value per line), then click Load pasted data."></textarea><br>
-                <button id="pasteBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded-md text-sm transition duration-150">Load pasted data</button>
-            </p>
-            <p class="text-xs text-gray-400 mt-2">CSV columns: <code>frame,value</code> — or <code>time,value</code>,
-            or just <code>value</code> (frame = row number). Optional third column <code>weight</code> is a
-            per-point deviation cost (default 1.0). Header row allowed; non-numeric rows are skipped and counted.</p>
+            <div class="border border-gray-600 rounded-lg p-3 mb-3">
+                <p class="text-xs font-semibold text-gray-300 uppercase mb-2">Generate</p>
+                <p class="flex flex-wrap gap-2">
+                    <button id="captureBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded-md text-sm transition duration-150" title="Captures the FPS-R curve over the whole extent as the user data — then switch engine or parameters and try to match it. The captured length is the current extent (End Frame).">Use current FPS-R curve</button>
+                    <button id="sampleBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded-md text-sm transition duration-150" title="Uses a fixed-length generated sample of 400 data points. To do anything differently, use the 'Use current FPS-R curve' mode.">Use sample data</button>
+                </p>
+            </div>
+            <div class="border border-gray-600 rounded-lg p-3">
+                <p class="text-xs font-semibold text-gray-300 uppercase mb-2">Upload</p>
+                <p>
+                    <input type="file" id="csvFile" accept=".csv,.txt" class="text-sm">
+                </p>
+                <div id="dropZone">…or drag a CSV file onto this box.</div>
+                <p>
+                    <textarea id="pasteBox" rows="3" placeholder="…or paste CSV rows here (frame,value — or just one value per line), then click Load pasted data."></textarea>
+                </p>
+                <p class="flex items-start gap-3">
+                    <button id="pasteBtn" class="w-1/5 shrink-0 bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded-md text-sm transition duration-150">Load pasted data</button>
+                    <span class="text-xs text-gray-400 w-4/5">CSV columns: <code>frame,value</code> — or <code>time,value</code>,
+                    or just <code>value</code> (frame = row number). Optional third column <code>weight</code> is a
+                    per-point deviation cost (default 1.0). Header row allowed; non-numeric rows are skipped and counted.</span>
+                </p>
+            </div>
             </div>
         </div>
 
@@ -988,20 +999,26 @@
     prevNorm = norm;
   }
 
-  // ---------- data loading: three doors, one loader ----------
-  function loadCSVText(text) {
-    var parsed = parseCSV(text);
-    userData = parsed.values; userWeights = parsed.weights;
+  // ---------- data loading: file / drag-drop / paste / sample / capture, one loader ----------
+  // Every door ends here: set the data and its weights, rebuild the full
+  // range, reset the loss baselines, park the window at the start with
+  // the seed offset at zero, tuck the data panel away, open the profile.
+  function loadData(values, weights, summaryText) {
+    userData = values; userWeights = weights;
     computeFullRange();
     prevXLoss = prevYLoss = prevCombined = prevNorm = null; // new data, new baseline
     pageStart = 0; scrub = 0;
     $('scrubSlider').value = '0'; $('scrubReadout').textContent = 'seed +0';
-    $('dataSummary').textContent = userData.length + ' rows' +
-      (parsed.skipped ? ' (' + parsed.skipped + ' skipped)' : '');
+    $('dataSummary').textContent = summaryText;
     renderProfile();
-    setCollapse('dataBody', 'dataToggleChevron', true);   // tuck the upload away
+    setCollapse('dataBody', 'dataToggleChevron', true);   // tuck the data panel away
     setCollapse('profileBody', 'profileToggleChevron', false); // open the profile
     refresh();
+  }
+  function loadCSVText(text) {
+    var parsed = parseCSV(text);
+    loadData(parsed.values, parsed.weights, parsed.values.length + ' rows' +
+      (parsed.skipped ? ' (' + parsed.skipped + ' skipped)' : ''));
   }
   $('csvFile').addEventListener('change', function (e) {
     var file = e.target.files[0];
@@ -1025,17 +1042,38 @@
   $('sampleBtn').addEventListener('click', function () {
     var params = readParams();
     params.sm = { lod: 0, minHold: 8n, maxHold: 30n, reseedInterval: 60n, seedInner: -7n, seedOuter: 5n, finalRandSwitch: 1 };
-    userData = [];
-    for (var f = 0; f < 400; f++) userData.push(getFpsrValue(f, 'SM', params));
-    userWeights = userData.map(function () { return 1; });
-    computeFullRange();
-    prevXLoss = prevYLoss = prevCombined = prevNorm = null; // new data, new baseline
-    pageStart = 0; scrub = 0;
-    $('scrubSlider').value = '0'; $('scrubReadout').textContent = 'seed +0';
-    $('dataSummary').textContent = '400 rows (sample: SM 8/30/60, seeds -7/5)';
-    renderProfile();
-    setCollapse('dataBody', 'dataToggleChevron', true);   // tuck the upload away
-    setCollapse('profileBody', 'profileToggleChevron', false); // open the profile
+    var values = [];
+    for (var f = 0; f < 400; f++) values.push(getFpsrValue(f, 'SM', params));
+    loadData(values, values.map(function () { return 1; }), '400 rows (sample: SM 8/30/60, seeds -7/5)');
+  });
+  $('captureBtn').addEventListener('click', function () {
+    // Capture the FPS-R curve over the WHOLE extent as the user data,
+    // so another engine — or other settings — can be tried against it:
+    // generate a QS signal, capture it, then try to match it with TM.
+    // The captured length is the extent (End Frame), not the viewport —
+    // capturing only the viewport would throw away the rest of the
+    // signal and leave nothing to scroll to afterwards. The view stays
+    // where it is: Start Frame moves to the first FPS-R frame of the
+    // extent (fpsrBase + scrub) and the seed offset resets to 0, so
+    // the live curve still matches the captured data exactly in the
+    // current window (combined loss 0) until the engine or a parameter
+    // changes, and the user can still zoom and scroll through the
+    // captured signal afterwards.
+    clampView();
+    var params = readParams();
+    var ext = extent();
+    var first = fpsrBase + scrub;
+    var values = [];
+    for (var i = 0; i < ext; i++) values.push(getFpsrValue(first + i, activeAlgorithm, params));
+    var keepStart = pageStart, keepViewport = viewport;
+    fpsrBase = first;
+    $('rewindFrameInput').value = String(first);
+    loadData(values, values.map(function () { return 1; }),
+      values.length + ' frames · captured from FPS-R (' + activeAlgorithm + ') · FPS-R frames ' + first + '–' + (first + values.length - 1));
+    // loadData parks the window at the start; restore the view, so the
+    // user keeps looking at the same frames they captured from.
+    pageStart = Math.min(keepStart, Math.max(0, values.length - keepViewport));
+    viewport = keepViewport;
     refresh();
   });
 

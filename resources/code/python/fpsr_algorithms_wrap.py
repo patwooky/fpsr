@@ -593,48 +593,60 @@ def fpsr_qs_base(frame, baseWaveFreq, stream2FreqMult, quantLevelsMinMax, stream
     """
     output = FPSR_Output()
 
+    # --- 1. Set default durations and guards if not provided ---
+    if baseWaveFreq == 0: baseWaveFreq = 0.01  # Avoid division by zero
     if streamSwitchDur < 1: streamSwitchDur = 1
-    if stream1QuantDur < 1: stream1QuantDur = 1
-    if stream2QuantDur < 1: stream2QuantDur = 1
 
-    # --- 2. Calculate random quantisation levels for each stream ---
+    # --- 1. Switch between the two streams based on streamSwitchDur ---
+    r = i64_floor_mod(int(frame), int(streamSwitchDur))
+    is_stream1 = (2 * r) < streamSwitchDur
+    output.selected_stream_idx = 0 if is_stream1 else 1
+
+    # Calculate common quantization range bounds
     quant_min = int(quantLevelsMinMax[0])
     quant_max = int(quantLevelsMinMax[1])
     quant_range = quant_max - quant_min + 1
     if quant_range < 1: quant_range = 1
 
-    # --- Stream 1 Quant Level ---
-    s1_quant_seed_aligned = i64_align_down(int(quantOffsets[0] + frame), stream1QuantDur)
-    s1_rand_for_quant = portable_rand_u64(s1_quant_seed_aligned)
-    s1_quant_level = quant_min + math.floor(s1_rand_for_quant * float(quant_range))
+    # --- 2. Process only the active stream ---
+    if is_stream1:
+        if stream1QuantDur < 1: stream1QuantDur = 1
 
-    # --- Stream 2 Quant Level ---
-    s2_quant_seed_aligned = i64_align_down(int(quantOffsets[1] + frame), stream2QuantDur)
-    s2_rand_for_quant = portable_rand_u64(s2_quant_seed_aligned)
-    s2_quant_level = quant_min + math.floor(s2_rand_for_quant * float(quant_range))
+        # --- 2. Calculate random quantisation levels for stream 1 ---
+        s1_quant_seed_aligned = i64_align_down(int(quantOffsets[0] + frame), int(stream1QuantDur))
+        s1_rand_for_quant = portable_rand_u64(s1_quant_seed_aligned)
+        s1_quant_level = quant_min + math.floor(s1_rand_for_quant * float(quant_range))
+        if s1_quant_level < 1: s1_quant_level = 1
 
-    s1_quant_level = max(s1_quant_level, 1)
-    s2_quant_level = max(s2_quant_level, 1)
+        # --- 3. Generate the quantised wavetable stream ---
+        phase1 = (float(streamsOffset[0]) + float(frame)) * float(baseWaveFreq)
+        stream1_raw = fpsr_sample_wavetable(phase1, wavetable)
 
-    # --- 3. Generate the two quantised wavetable streams ---
-    if stream2FreqMult <= 0: stream2FreqMult = 3.7
+        # Direct unipolar quantization [0.0, 1.0]
+        stream1 = math.floor(stream1_raw * float(s1_quant_level)) / float(s1_quant_level)
+        output.randStreams[0] = stream1
+        active_stream_val = stream1
+    else:
+        if stream2QuantDur < 1: stream2QuantDur = 1
 
-    phase1 = (float(streamsOffset[0]) + float(frame)) * float(baseWaveFreq)
-    phase2 = (float(streamsOffset[1]) + float(frame)) * float(baseWaveFreq) * float(stream2FreqMult)
+        # --- 2. Calculate random quantisation levels for stream 2 ---
+        s2_quant_seed_aligned = i64_align_down(int(quantOffsets[1] + frame), int(stream2QuantDur))
+        s2_rand_for_quant = portable_rand_u64(s2_quant_seed_aligned)
+        s2_quant_level = quant_min + math.floor(s2_rand_for_quant * float(quant_range))
+        if s2_quant_level < 1: s2_quant_level = 1
 
-    stream1_raw_sine = fpsr_sample_wavetable(phase1, wavetable)
-    stream2_raw_sine = fpsr_sample_wavetable(phase2, wavetable)
+        # --- 3. Generate the quantised wavetable stream ---
+        if stream2FreqMult <= 0: stream2FreqMult = 3.7
 
-    # Direct unipolar quantization [0.0, 1.0]
-    output.randStreams[0] = math.floor(stream1_raw_sine * float(s1_quant_level)) / float(s1_quant_level)
-    output.randStreams[1] = math.floor(stream2_raw_sine * float(s2_quant_level)) / float(s2_quant_level)
+        phase2 = (float(streamsOffset[1]) + float(frame)) * float(baseWaveFreq) * float(stream2FreqMult)
+        stream2_raw = fpsr_sample_wavetable(phase2, wavetable)
 
-    # --- 4. Switch between the two streams ---
-    r = i64_floor_mod(int(frame), streamSwitchDur)
-    output.selected_stream_idx = 0 if (2 * r) < streamSwitchDur else 1
-    active_stream_val = output.randStreams[output.selected_stream_idx]
+        # Direct unipolar quantization [0.0, 1.0]
+        stream2 = math.floor(stream2_raw * float(s2_quant_level)) / float(s2_quant_level)
+        output.randStreams[1] = stream2
+        active_stream_val = stream2
 
-    # --- 5. Hash the final output to create a random-looking value (or bypass) ---
+    # --- 4. Hash the final output to create a random-looking value (or bypass) ---
     if finalRandSwitch:
         hashed_int = math.floor(active_stream_val * 1000000.0)
         output.randVal = portable_rand_u64(hashed_int)

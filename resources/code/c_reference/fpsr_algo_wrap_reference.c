@@ -617,47 +617,59 @@ FPSR_Output fpsr_qs_base(
     const FPSR_Wavetable* wt = (wavetable != NULL) ? wavetable : &FPSR_DEFAULT_SINE_WAVETABLE;
 
     if (streamSwitchDur < 1) { streamSwitchDur = 1; }
-    if (stream1QuantDur < 1) { stream1QuantDur = 1; }
-    if (stream2QuantDur < 1) { stream2QuantDur = 1; }
 
-    // --- 2. Calculate random quantisation levels for each stream ---
+    // --- 1. Switch between the two streams based on streamSwitchDur ---
+    int64_t r = i64_floor_mod(frame, streamSwitchDur);
+    output.selected_stream_idx = (2 * r < streamSwitchDur) ? 0 : 1;
+
+    // Calculate common quantization range bounds
     int64_t quant_min = (int64_t)quantLevelsMinMax[0];
     int64_t quant_max = (int64_t)quantLevelsMinMax[1];
     int64_t quant_range = quant_max - quant_min + 1;
 
-    // --- Stream 1 Quant Level ---
-    int64_t s1_quant_seed_aligned = i64_align_down((int64_t)quantOffsets[0] + frame, stream1QuantDur);
-    double s1_rand_for_quant = portable_rand_u64((uint64_t)s1_quant_seed_aligned);
-    int64_t s1_quant_level = quant_min + (int64_t)floor(s1_rand_for_quant * (double)quant_range);
+    double active_stream_val;
 
-    // --- Stream 2 Quant Level ---
-    int64_t s2_quant_seed_aligned = i64_align_down((int64_t)quantOffsets[1] + frame, stream2QuantDur);
-    double s2_rand_for_quant = portable_rand_u64((uint64_t)s2_quant_seed_aligned);
-    int64_t s2_quant_level = quant_min + (int64_t)floor(s2_rand_for_quant * (double)quant_range);
+    if (output.selected_stream_idx == 0) {
+        if (stream1QuantDur < 1) { stream1QuantDur = 1; }
 
-    if (s1_quant_level < 1) { s1_quant_level = 1; }
-    if (s2_quant_level < 1) { s2_quant_level = 1; }
-    
-    // --- 3. Generate the two quantised sine wave streams ---
-    if (stream2FreqMult <= 0) { stream2FreqMult = 3.7; }
-    
-    // Phase expressed in cycles [0.0, 1.0)
-    double phase1 = ((double)streamsOffset[0] + (double)frame) * baseWaveFreq;
-    double phase2 = ((double)streamsOffset[1] + (double)frame) * baseWaveFreq * stream2FreqMult;
+        // --- 2. Calculate random quantisation levels for each stream ---
+        // --- Stream 1 Quant Level ---
+        int64_t s1_quant_seed_aligned = i64_align_down((int64_t)quantOffsets[0] + frame, stream1QuantDur);
+        double s1_rand_for_quant = portable_rand_u64((uint64_t)s1_quant_seed_aligned);
+        int64_t s1_quant_level = quant_min + (int64_t)floor(s1_rand_for_quant * (double)quant_range);
+        if (s1_quant_level < 1) { s1_quant_level = 1; }
 
-    double stream1_raw_sine = fpsr_sample_wavetable(phase1, wt);
-    double stream2_raw_sine = fpsr_sample_wavetable(phase2, wt);    
+        // --- 3. Generate the quantised sine wave stream ---
+        // Phase expressed in cycles [0.0, 1.0)
+        double phase1 = ((double)streamsOffset[0] + (double)frame) * baseWaveFreq;
+        double stream1_raw_sine = fpsr_sample_wavetable(phase1, wt);
 
-    // Values are already unipolar [0.0, 1.0] from the wavetable
-    output.randStreams[0] = floor(stream1_raw_sine * (double)s1_quant_level) / (double)s1_quant_level;
-    output.randStreams[1] = floor(stream2_raw_sine * (double)s2_quant_level) / (double)s2_quant_level;
-    
-    // --- 4. Switch between the two streams based on streamSwitchDur ---
-    int64_t r = i64_floor_mod(frame, streamSwitchDur);
-    output.selected_stream_idx = (2 * r < streamSwitchDur) ? 0 : 1;
-    double active_stream_val = (output.selected_stream_idx == 0) ? output.randStreams[0] : output.randStreams[1];
+        // Values are already unipolar [0.0, 1.0] from the wavetable
+        output.randStreams[0] = floor(stream1_raw_sine * (double)s1_quant_level) / (double)s1_quant_level;
+        active_stream_val = output.randStreams[0];
+    } else {
+        if (stream2QuantDur < 1) { stream2QuantDur = 1; }
 
-    // --- 5. Hash the final output or bypass ---
+        // --- 2. Calculate random quantisation levels for each stream ---
+        // --- Stream 2 Quant Level ---
+        int64_t s2_quant_seed_aligned = i64_align_down((int64_t)quantOffsets[1] + frame, stream2QuantDur);
+        double s2_rand_for_quant = portable_rand_u64((uint64_t)s2_quant_seed_aligned);
+        int64_t s2_quant_level = quant_min + (int64_t)floor(s2_rand_for_quant * (double)quant_range);
+        if (s2_quant_level < 1) { s2_quant_level = 1; }
+
+        // --- 3. Generate the quantised sine wave stream ---
+        if (stream2FreqMult <= 0) { stream2FreqMult = 3.7; }
+
+        // Phase expressed in cycles [0.0, 1.0)
+        double phase2 = ((double)streamsOffset[1] + (double)frame) * baseWaveFreq * stream2FreqMult;
+        double stream2_raw_sine = fpsr_sample_wavetable(phase2, wt);
+
+        // Values are already unipolar [0.0, 1.0] from the wavetable
+        output.randStreams[1] = floor(stream2_raw_sine * (double)s2_quant_level) / (double)s2_quant_level;
+        active_stream_val = output.randStreams[1];
+    }
+
+    // --- 4. Hash the final output or bypass ---
     if (finalRandSwitch == 1) {
         int64_t hashed_int = (int64_t)floor(active_stream_val * 1000000.0);
         output.randVal = portable_rand_u64((uint64_t)hashed_int + (uint64_t)valueSeedOffset);

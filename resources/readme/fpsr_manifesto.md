@@ -570,7 +570,7 @@ FPS-R: Quantised Switching Timeline Graph Preview
 A live, interactive demo of the FPS-R algorithms is available.
 
 **[Click here to launch the visualizer](https://patwooky.github.io/fpsr/resources/code/html_javascript/fpsr_visualiser.html)**
-![img](../../resources/readme/images/fpsr_html_visualiser.jpg)
+![img](../../resources/readme/images/fpsr_visualiser.jpg)
 
 ---
 ## 🧬 Flavours of FPS-R
